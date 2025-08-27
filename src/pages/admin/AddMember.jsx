@@ -1,34 +1,61 @@
 import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import { useAddMember } from "../../backend/hooks/useAddMembers";
 
 const AddMember = () => {
+
+  const { mutate: addMember, isPending, isError, error, isSuccess } = useAddMember();
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+
   const [formData, setFormData] = useState({
 
-    memberName: "",
-    avatar: "",
-    memberType: "Regular",
-    shareCapital: 0,
-    birthdate: "",
-    sex: "",
+    // MEMBER INFO
+    f_name: "",
+    m_name: "",
+    l_name: "",
+    account_type: "Regular",
+    account_status: "Active",
     address: "",
-    contactNumber: "",
+    application_date: "",
+    description: "",
     email: "",
-    employmentStatus: "",
+    sex: "",
+    contact_number: "",
+    employment_date: "",
+    birthday: "",
+
+    // PAYMENT INITIAL
+    membership_fee: 0,
+    initial_share_capital: 0,
+    fee_status: "Unpaid",
+    payment_date: "",
+    remarks: "",
+
+    // Login Account
+    loginEmail: "",
+    password: "",
+
+    // Avatar
+    avatar: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "shareCapital" ? Number(value) : value,
+      [name]:
+        ["membership_fee", "initial_share_capital"].includes(name)
+          ? Number(value)
+          : value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // TODO: Add Supabase insert logic here
+    console.log("Submitting:", formData);
+    addMember(formData);
   };
 
   const handleAvatarUpload = (e) => {
@@ -46,29 +73,53 @@ const AddMember = () => {
 
   // ALL NECESSARY INPUT FIELDS
   const personalFields = [
-    { label: "Name", name: "memberName", type: "text" },
-    { label: "Sex", name: "sex", type: "select", options: ["Female", "Male"] },
-    { label: "Birthdate", name: "birthdate", type: "date" },
-    { label: "Email Address", name: "email", type: "email" },
-    { label: "Contact Number", name: "contactNumber", type: "text" },
-    { label: "Home Address" , name: "address", type: "text" },
+    { label: "First Name", name: "first_name", type: "text" },
+    { label: "Middle Name", name: "middle_name", type: "text" },
+    { label: "Last Name", name: "last_name", type: "text" },
     {
-      label: "Employment Status",
-      name: "employmentStatus",
-      type: "select",
-      options: ["Employed", "Self-Employed", "Retired", "Unemployed"],
-    },
-  ];
-
-  const membershipFields = [
-    {
-      label: "Membership Type",
-      name: "memberType",
+      label: "Account Type",
+      name: "account_type",
       type: "select",
       options: ["Regular", "Associate"],
     },
-    { label: "Initial Share Capital", name: "shareCapital", type: "number" },
+    {
+      label: "Account Status",
+      name: "account_status",
+      type: "select",
+      options: ["Active", "Inactive", "Pending"],
+    },
+    { label: "Application Date", name: "application_date", type: "date" },
+    { label: "Description", name: "description", type: "text" },
+    { label: "Email Address", name: "email", type: "email" },
+    { label: "Sex", name: "sex", type: "select", options: ["Female", "Male"] },
+    { label: "Contact Number", name: "contact_number", type: "text" },
+    { label: "Employment Date", name: "employment_date", type: "date" },
+    { label: "Birthday", name: "birthday", type: "date" },
+    { label: "Home Address", name: "address", type: "text" },
   ];
+
+  const membershipFields = [
+    { label: "Membership Fee", name: "membership_fee", type: "number" },
+    {
+      label: "Initial Share Capital",
+      name: "initial_share_capital",
+      type: "number",
+    },
+    {
+      label: "Fee Status",
+      name: "fee_status",
+      type: "select",
+      options: ["Paid", "Unpaid", "Pending"],
+    },
+    { label: "Payment Date", name: "payment_date", type: "date" },
+    { label: "Remarks", name: "remarks", type: "text" },
+  ];
+
+  const loginCredentials = [
+    { label: "Email Address", name: "loginEmail", type: "text" },
+    { label: "Password", name: "password", type: "text" },
+    { label: "Confirm Password", name: "cpassword", type: "text" }
+  ]
 
   return (
     <div className="min-h-screen py-5">
@@ -80,6 +131,7 @@ const AddMember = () => {
           </p>
         </header>
 
+        {/* Tabs */}
         <div className="tabs tabs-border mb-6">
           <div
             className={`tab ${activeTab === 0
@@ -95,11 +147,26 @@ const AddMember = () => {
               : "text-gray-500 pointer-events-none"
               }`}
           >
-            2. Membership
+            2. Membership & Payment
+          </div>
+
+          <div
+            className={`tab ${activeTab === 2
+              ? "tab-active"
+              : "text-gray-500 pointer-events-none"
+              }`}
+          >
+            2. Membership & Payment
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
+
+          {isError && <p className="text-red-500">{error.message}</p>}
+          {isSuccess && <p className="text-green-600">Member registered successfully!</p>}
+          {isPending && <p>Saving member...</p>}
+
+
           {/* PERSONAL DETAILS TAB */}
           {activeTab === 0 && (
             <>
@@ -125,7 +192,6 @@ const AddMember = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* It will loop through the array and display only necessary fields that exists on that array */}
                 {personalFields.map(({ label, name, type, options }) => (
                   <div key={name} className="form-control w-full">
                     <label htmlFor={name} className="label">
@@ -138,7 +204,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="select select-bordered w-full"
-                        required
+                          
                       >
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -154,7 +220,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="input input-bordered w-full"
-                        required
+                          
                       />
                     )}
                   </div>
@@ -188,7 +254,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="select select-bordered w-full"
-                        required
+                          
                       >
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -204,7 +270,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="input input-bordered w-full"
-                        required={name !== "avatar"}
+                            
                       />
                     )}
                   </div>
@@ -218,8 +284,56 @@ const AddMember = () => {
                 >
                   Back
                 </button>
+                <button type="submit" className="btn btn-success px-8" onClick={() => setActiveTab(2)}>
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+
+
+          {activeTab === 2 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {loginCredentials.map(({ label, name, type }) => (
+                  <div key={name} className="form-control w-full">
+                    <label htmlFor={name} className="label">
+                      <span className="label-text font-medium">{label}</span>
+                    </label>
+                    {type === "select" ? (
+                      <select
+                        id={name}
+                        name={name}
+                        value={formData[name] || ""}
+                        onChange={handleChange}
+                        className="select select-bordered w-full"
+                          
+                      >
+                      </select>
+                    ) : (
+                      <input
+                        id={name}
+                        type={type}
+                        name={name}
+                        value={formData[name] || ""}
+                        onChange={handleChange}
+                        className="input input-bordered w-full"
+                        
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  className="btn btn-soft"
+                  onClick={() => setActiveTab(1)}
+                >
+                  Back
+                </button>
                 <button type="submit" className="btn btn-success px-8">
-                  Register
+                  {isPending ? "Processing":"Register"}
                 </button>
               </div>
             </>
