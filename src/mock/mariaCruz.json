@@ -1,0 +1,212 @@
+{
+  "memberID": "M-001",
+
+  "profile": {
+    "memberID": "M-001",
+    "memberName": "Maria Cruz",
+    "avatar": "https://i.pravatar.cc/150?img=1",
+    "email": "maria.cruz@example.com",
+    "contactNumber": "09171234567",
+    "sex": "Female",
+    "memberType": "Regular",
+    "memberSince": "2022-01-10",
+    "shareCapital": 18000,
+    "membershipDurationMonths": 30,
+    "birthdate": "1985-04-12",
+    "address": "123 Mabini St, Quezon City",
+    "employmentStatus": "Employed"
+  },
+
+  "shareCapital": [
+    {
+      "refNo": "SC-1001",
+      "memberID": "M-001",
+      "amount": 1000,
+      "paymentCategory": "Initial",
+      "paymentMethod": "Cash",
+      "date": "2025-06-01"
+    },
+    {
+      "refNo": "SC-1002",
+      "memberID": "M-001",
+      "amount": 500,
+      "paymentCategory": "Monthly",
+      "paymentMethod": "GCash",
+      "date": "2025-07-01"
+    },
+    {
+      "refNo": "SC-1003",
+      "memberID": "M-001",
+      "amount": 1000,
+      "paymentCategory": "Monthly",
+      "paymentMethod": "Cash",
+      "date": "2025-08-01"
+    },
+    {
+      "refNo": "SC-1004",
+      "memberID": "M-001",
+      "amount": 1000,
+      "paymentCategory": "Monthly",
+      "paymentMethod": "Cash",
+      "date": "2025-09-01"
+    },
+    {
+      "refNo": "SC-1005",
+      "memberID": "M-001",
+      "amount": 500,
+      "paymentCategory": "Monthly",
+      "paymentMethod": "GCash",
+      "date": "2025-10-01"
+    },
+    {
+      "refNo": "SC-1006",
+      "memberID": "M-001",
+      "amount": 500,
+      "paymentCategory": "Monthly",
+      "paymentMethod": "Cash",
+      "date": "2025-11-01"
+    }
+  ],
+
+  "clubFunds": [
+    {
+      "refNo": "CF-1001",
+      "memberID": "M-001",
+      "amount": 250,
+      "paymentCategory": "GMM",
+      "paymentMethod": "Cash",
+      "date": "2025-06-01"
+    },
+    {
+      "refNo": "CF-1002",
+      "memberID": "M-001",
+      "amount": 150,
+      "paymentCategory": "Community Service",
+      "paymentMethod": "Cash",
+      "date": "2025-07-01"
+    },
+    {
+      "refNo": "CF-1003",
+      "memberID": "M-001",
+      "amount": 100,
+      "paymentCategory": "Monthly Dues",
+      "paymentMethod": "GCash",
+      "date": "2025-08-01"
+    },
+    {
+      "refNo": "CF-1004",
+      "memberID": "M-001",
+      "amount": 300,
+      "paymentCategory": "Activities",
+      "paymentMethod": "GCash",
+      "date": "2025-09-01"
+    },
+    {
+      "refNo": "CF-1005",
+      "memberID": "M-001",
+      "amount": 100,
+      "paymentCategory": "Monthly Dues",
+      "paymentMethod": "Cash",
+      "date": "2025-10-01"
+    }
+  ],
+
+  "loanPayments": [
+  {
+    "refNo": "LP-2001",
+    "memberID": "M-001",
+    "loanID": 1002,
+    "amount": 4167,
+    "paymentMethod": "GCash",
+    "date": "2025-06-01",
+    "balance": 45833
+  },
+  {
+    "refNo": "LP-2002",
+    "memberID": "M-001",
+    "loanID": 1002,
+    "amount": 4167,
+    "paymentMethod": "Cash",
+    "date": "2025-07-01",
+    "balance": 41666
+  },
+  {
+    "refNo": "LP-2003",
+    "memberID": "M-001",
+    "loanID": 1002,
+    "amount": 4167,
+    "paymentMethod": "GCash",
+    "date": "2025-08-01",
+    "balance": 37499
+  },
+  {
+    "refNo": "LP-2004",
+    "memberID": "M-001",
+    "loanID": 1002,
+    "amount": 4167,
+    "paymentMethod": "Cash",
+    "date": "2025-09-01",
+    "balance": 33332
+  },
+  {
+    "refNo": "LP-2005",
+    "memberID": "M-001",
+    "loanID": 1002,
+    "amount": 4167,
+    "paymentMethod": "GCash",
+    "date": "2025-10-01",
+    "balance": 29165
+  }
+  ],
+
+  "ongoingLoans": [
+  {
+    "loanID": "1002",
+    "type": "Regular",
+    "amount": 50000,
+    "remaining": 37499,
+    "term": 12,
+    "nextDue": "2025-07-15",
+    "monthlyPayment": 4167,
+    "schedule": [
+      { "month": "1", "dueDate": "2025-03-15", "amount": 4167, "paymentMethod": "GCash", "paid": true, "datePaid": "2025-03-15" },
+      { "month": "2", "dueDate": "2025-04-15", "amount": 4167, "paymentMethod": "Cash", "paid": true, "datePaid": "2025-04-15" },
+      { "month": "3", "dueDate": "2025-05-15", "amount": 4167, "paymentMethod": "GCash", "paid": true, "datePaid": "2025-05-15" },
+      { "month": "4", "dueDate": "2025-06-15", "amount": 4167, "paymentMethod": "GCash", "paid": true, "datePaid": "2025-06-01" },
+      { "month": "5", "dueDate": "2025-07-15", "amount": 4167, "paymentMethod": "Cash", "paid": true, "datePaid": "2025-07-01" },
+      { "month": "6", "dueDate": "2025-08-15", "amount": 4167, "paymentMethod": "GCash", "paid": true, "datePaid": "2025-08-01" },
+      { "month": "7", "dueDate": "2025-09-15", "amount": 4167, "paymentMethod": "Cash", "paid": true, "datePaid": "2025-09-01" },
+      { "month": "8", "dueDate": "2025-10-15", "amount": 4167, "paymentMethod": "GCash", "paid": true, "datePaid": "2025-10-01" },
+      { "month": "9", "dueDate": "2025-11-15", "amount": 4167, "paymentMethod": null, "paid": false, "datePaid": null },
+      { "month": "10", "dueDate": "2025-12-15", "amount": 4167, "paymentMethod": null, "paid": false, "datePaid": null },
+      { "month": "11", "dueDate": "2026-01-15", "amount": 4167, "paymentMethod": null, "paid": false, "datePaid": null },
+      { "month": "12", "dueDate": "2026-02-15", "amount": 4167, "paymentMethod": null, "paid": false, "datePaid": null }
+    ]
+  }
+  ],
+
+  "pastLoans": [
+  {
+    "loanID": "1001",
+    "type": "Regular",
+    "amount": 20000,
+    "start": "2024-01-01",
+    "end": "2024-12-01",
+    "memberID": "M-001",
+    "schedule": [
+      { "month": "1", "dueDate": "2024-02-01", "amount": 1667, "paymentMethod": "GCash", "paid": true, "datePaid": "2024-01-31" },
+      { "month": "2", "dueDate": "2024-03-01", "amount": 1667, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-02-29" },
+      { "month": "3", "dueDate": "2024-04-01", "amount": 1667, "paymentMethod": "GCash", "paid": true, "datePaid": "2024-03-31" },
+      { "month": "4", "dueDate": "2024-05-01", "amount": 1667, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-04-30" },
+      { "month": "5", "dueDate": "2024-06-01", "amount": 1667, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-05-30" },
+      { "month": "6", "dueDate": "2024-07-01", "amount": 1667, "paymentMethod": "GCash", "paid": true, "datePaid": "2024-06-30" },
+      { "month": "7", "dueDate": "2024-08-01", "amount": 1667, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-07-31" },
+      { "month": "8", "dueDate": "2024-09-01", "amount": 1667, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-08-30" },
+      { "month": "9", "dueDate": "2024-10-01", "amount": 1667, "paymentMethod": "GCash", "paid": true, "datePaid": "2024-09-30" },
+      { "month": "10", "dueDate": "2024-11-01", "amount": 1667, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-10-31" },
+      { "month": "11", "dueDate": "2024-12-01", "amount": 1667, "paymentMethod": "GCash", "paid": true, "datePaid": "2024-11-30" },
+      { "month": "12", "dueDate": "2025-01-01", "amount": 1663, "paymentMethod": "Cash", "paid": true, "datePaid": "2024-12-30" }
+    ]
+  }
+  ]
+}

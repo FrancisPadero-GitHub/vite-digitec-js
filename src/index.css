@@ -1,68 +1,79 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import "tailwindcss";
+@plugin "daisyui";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  --font-display: "Inter", sans-serif;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* USE THESE COLORS HERE FOR THE MAIN ELEMENTS; FEEL FREE TO CHANGE THEM THOUGH */
+@plugin "daisyui/theme" {
+  name: "digitec-light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: oklch(98% 0.01 100);
+  --color-base-200: oklch(95% 0.015 100);
+  --color-base-300: oklch(90% 0.03 100);
+  --color-base-content: oklch(0% 0 0);
+  --color-primary: oklch(55% 0.22 145);
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: oklch(65% 0.2 300);
+  --color-secondary-content: oklch(10% 0.01 100);
+  --color-accent: oklch(79% 0.184 86.047);
+  --color-accent-content: oklch(100% 0 0);
+  --color-neutral: oklch(37% 0.077 168.94);
+  --color-neutral-content: oklch(100% 0 0);
+  --color-info: oklch(60% 0.18 250);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(52% 0.22 140);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(80% 0.2 90);
+  --color-warning-content: oklch(100% 0 0);
+  --color-error: oklch(60% 0.22 30);
+  --color-error-content: oklch(100% 0 0);
+  --radius-selector: 2rem;
+  --radius-field: 2rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 0.5px;
+  --depth: 1;
+  --noise: 0;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+@plugin "daisyui/theme" {
+  /* DARK MODE */
+  name: "digitec-dark";
+  default: false;
+  prefersdark: false;
+  color-scheme: "dark";
+  --color-base-100: oklch(0% 0 0);
+  --color-base-200: oklch(21% 0 0);
+  --color-base-300: oklch(22% 0 0);
+  --color-base-content: oklch(98% 0.002 247.839);
+  --color-primary: oklch(55% 0.22 145);
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: oklch(65% 0.2 300);
+  --color-secondary-content: oklch(10% 0.01 100);
+  --color-accent: oklch(85% 0.2 80);
+  --color-accent-content: oklch(100% 0 0);
+  --color-neutral: oklch(37% 0.077 168.94);
+  --color-neutral-content: oklch(100% 0 0);
+  --color-info: oklch(60% 0.18 250);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(52% 0.22 140);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(80% 0.2 90);
+  --color-warning-content: oklch(100% 0 0);
+  --color-error: oklch(60% 0.22 30);
+  --color-error-content: oklch(100% 0 0);
+  --radius-selector: 2rem;
+  --radius-field: 2rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 0.5px;
+  --depth: 1;
+  --noise: 0;
 }
