@@ -33,26 +33,25 @@ const insertMember = async (formData) => {
     .from("members")
     .insert([
       {
-        login_id: user.id, // FK from Supabase Auth
-        // f_name: formData.f_name,
-        // m_name: formData.m_name,
-        // l_name: formData.l_name,
-        // account_type: formData.account_type,
-        // account_status: formData.account_status,
-        // address: formData.address,
-        // application_date: formData.application_date,
-        // description: formData.description,
-        // email: formData.loginEmail,
-        // sex: formData.sex,
-        // contact_number: formData.contact_number,
-        // // employment_date: formData.employment_date,
-        // birthday: formData.birthday,
-        // avatar: formData.avatar,
+        login_id: user.id,
+        f_name: formData.f_name || null, // Added null cause supabase config also expecting a null value.
+        m_name: formData.m_name || null,
+        l_name: formData.l_name || null,
+        account_type: formData.account_type || null,
+        account_status: formData.account_status || null,
+        address: formData.address || null,
+        application_date: formData.application_date || null,
+        description: formData.description || null,
+        email: formData.email || null,
+        sex: formData.sex || null,
+        contact_number: formData.contact_number || null,
+        employment_status: formData.employment_status || null,
+        birthday: formData.birthday || null,
       },
     ])
     .select()
     .single();
-  console.log("members data", member)
+  console.log("members data", member);
   const memberID = member.member_id;
   if (!memberID)
     throw new Error("Failed to retrieve member ID from member table");
@@ -64,11 +63,11 @@ const insertMember = async (formData) => {
     .insert([
       {
         member_id: memberID, // assumes member has PK `id`
-        // membership_fee: formData.membership_fee,
-        // initial_share_capital: formData.initial_share_capital,
-        // fee_status: formData.fee_status,
-        // //payment_date: formData.payment_date,
-        // remarks: formData.remarks,
+        membership_fee: formData.membership_fee || null,
+        initial_share_capital: formData.initial_share_capital || null,
+        fee_status: formData.fee_status || null,
+        payment_date: formData.payment_date || null,
+        remarks: formData.remarks || null,
       },
     ]);
 

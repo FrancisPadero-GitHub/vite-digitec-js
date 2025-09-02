@@ -2,6 +2,10 @@ import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAddMember } from "../../backend/hooks/useAddMembers";
 
+// To Do
+// add mode of payment
+// better input validations of all fields
+
 const AddMember = () => {
 
   const { mutate: addMember, isPending, isError, error, isSuccess } = useAddMember();
@@ -14,21 +18,21 @@ const AddMember = () => {
     f_name: "",
     m_name: "",
     l_name: "",
-    account_type: "Regular",
-    account_status: "Active",
+    account_type: "",
+    account_status: "",
     address: "",
     application_date: "",
     description: "",
     email: "",
     sex: "",
-    contact_number: "",
-    employment_date: "",
+    contact_number: 0,
+    employment_status: "",
     birthday: "",
 
     // PAYMENT INITIAL
     membership_fee: 0,
     initial_share_capital: 0,
-    fee_status: "Unpaid",
+    fee_status: "",
     payment_date: "",
     remarks: "",
 
@@ -45,7 +49,7 @@ const AddMember = () => {
     setFormData((prev) => ({
       ...prev,
       [name]:
-        ["membership_fee", "initial_share_capital"].includes(name)
+        ["membership_fee", "initial_share_capital", "contact_number"].includes(name)
           ? Number(value)
           : value,
     }));
@@ -73,14 +77,14 @@ const AddMember = () => {
 
   // ALL NECESSARY INPUT FIELDS
   const personalFields = [
-    { label: "First Name", name: "first_name", type: "text" },
-    { label: "Middle Name", name: "middle_name", type: "text" },
-    { label: "Last Name", name: "last_name", type: "text" },
+    { label: "First Name", name: "f_name", type: "text" },
+    { label: "Middle Name", name: "m_name", type: "text" },
+    { label: "Last Name", name: "l_name", type: "text" },
     {
       label: "Account Type",
       name: "account_type",
       type: "select",
-      options: ["Regular", "Associate"],
+      options: ["Admin", "Regular", "Associate", "Treasurer", "Board of Directors",],
     },
     {
       label: "Account Status",
@@ -91,9 +95,9 @@ const AddMember = () => {
     { label: "Application Date", name: "application_date", type: "date" },
     { label: "Description", name: "description", type: "text" },
     { label: "Email Address", name: "email", type: "email" },
-    { label: "Sex", name: "sex", type: "select", options: ["Female", "Male"] },
-    { label: "Contact Number", name: "contact_number", type: "text" },
-    { label: "Employment Date", name: "employment_date", type: "date" },
+    { label: "Sex", name: "sex", type: "select", options: ["Female", "Male", "Yes please!"] },
+    { label: "Contact Number", name: "contact_number", type: "number" },
+    { label: "Employment Status", name: "employment_status", type: "select", options: ["Employed", "Unemployed", "Student"] },
     { label: "Birthday", name: "birthday", type: "date" },
     { label: "Home Address", name: "address", type: "text" },
   ];
@@ -156,7 +160,7 @@ const AddMember = () => {
               : "text-gray-500 pointer-events-none"
               }`}
           >
-            2. Membership & Payment
+            2. Login Credentials
           </div>
         </div>
 
@@ -204,8 +208,9 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="select select-bordered w-full"
-                          
                       >
+                        {/* This makes sure that the select input is always record and not only the last one */}
+                        <option value="">-- Select {label} --</option>
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}
@@ -220,7 +225,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="input input-bordered w-full"
-                          
+
                       />
                     )}
                   </div>
@@ -254,14 +259,15 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="select select-bordered w-full"
-                          
                       >
+                        <option value="">-- Select {label} --</option>
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}
                           </option>
                         ))}
                       </select>
+
                     ) : (
                       <input
                         id={name}
@@ -270,7 +276,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="input input-bordered w-full"
-                            
+
                       />
                     )}
                   </div>
@@ -307,7 +313,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="select select-bordered w-full"
-                          
+
                       >
                       </select>
                     ) : (
@@ -318,7 +324,7 @@ const AddMember = () => {
                         value={formData[name] || ""}
                         onChange={handleChange}
                         className="input input-bordered w-full"
-                        
+
                       />
                     )}
                   </div>
@@ -333,7 +339,7 @@ const AddMember = () => {
                   Back
                 </button>
                 <button type="submit" className="btn btn-success px-8">
-                  {isPending ? "Processing":"Register"}
+                  {isPending ? "Processing" : "Register"}
                 </button>
               </div>
             </>
