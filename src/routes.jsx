@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import AddMember from "./pages/admin/AddMember";
 import SystemSettings from "./pages/admin/SystemSettings";
+import UserManagement from "./pages/admin/UserManagement.jsx";
 
 
 
@@ -48,7 +49,7 @@ function AppRoutes() {
       path: `/${getRolePath("admin")}`,
       element: <Layout />,
       children: [
-        { index: true, element: <AddMember /> },
+        { index: true, element: <UserManagement /> },
         { path: "add-member", element: <AddMember /> },
         { path: "system-settings", element: <SystemSettings /> },
       ],
