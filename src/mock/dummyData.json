@@ -1,0 +1,791 @@
+{
+  "members": [
+    {
+      "memberID": "M-001",
+      "memberName": "Maria Cruz",
+      "avatar": "https://i.pravatar.cc/150?img=1",
+      "email": "maria.cruz@example.com",
+      "contactNumber": "09171234567",
+      "sex": "Female",
+      "memberType": "Regular",
+      "memberSince": "2022-01-10",
+      "shareCapital": 18000,
+      "membershipDurationMonths": 30,
+      "birthdate": "1985-04-12",
+      "address": "123 Mabini St, Quezon City",
+      "employmentStatus": "Employed"
+    },
+    {
+      "memberID": "M-002",
+      "memberName": "John Dela Rosa",
+      "avatar": "https://i.pravatar.cc/150?img=2",
+      "email": "john.delarosa@example.com",
+      "contactNumber": "09181234567",
+      "sex": "Male",
+      "memberType": "Regular",
+      "memberSince": "2021-06-05",
+      "shareCapital": 22000,
+      "membershipDurationMonths": 49,
+      "birthdate": "1980-08-22",
+      "address": "456 Bonifacio St, Manila",
+      "employmentStatus": "Self-Employed"
+    },
+    {
+      "memberID": "M-003",
+      "memberName": "Lia Mendoza",
+      "avatar": "https://i.pravatar.cc/150?img=3",
+      "email": "lia.mendoza@example.com",
+      "contactNumber": "09191234567",
+      "sex": "Female",
+      "memberType": "Regular",
+      "memberSince": "2023-02-20",
+      "shareCapital": 12000,
+      "membershipDurationMonths": 17,
+      "birthdate": "1993-02-10",
+      "address": "789 Central Ave, Makati City",
+      "employmentStatus": "Employed"
+    },
+    {
+      "memberID": "M-004",
+      "memberName": "Marco Reyes",
+      "avatar": "https://i.pravatar.cc/150?img=4",
+      "email": "marco.reyes@example.com",
+      "contactNumber": "09201234567",
+      "sex": "Male",
+      "memberType": "Regular",
+      "memberSince": "2020-11-01",
+      "shareCapital": 30000,
+      "membershipDurationMonths": 56,
+      "birthdate": "1988-06-30",
+      "address": "10 Rizal Blvd, Cebu City",
+      "employmentStatus": "Employed"
+    },
+    {
+      "memberID": "M-005",
+      "memberName": "Erika Santos",
+      "avatar": "https://i.pravatar.cc/150?img=5",
+      "email": "erika.santos@example.com",
+      "contactNumber": "09211234567",
+      "sex": "Female",
+      "memberType": "Regular",
+      "memberSince": "2022-03-15",
+      "shareCapital": 25000,
+      "membershipDurationMonths": 27,
+      "birthdate": "1977-07-30",
+      "address": "Phase 3A, Villa Trinitas, Bugo, CDO City",
+      "employmentStatus": "Employed"
+    },
+    {
+      "memberID": "M-006",
+      "memberName": "James Tan",
+      "avatar": "https://i.pravatar.cc/150?img=6",
+      "email": "james.tan@example.com",
+      "contactNumber": "09221234567",
+      "sex": "Male",
+      "memberType": "Regular",
+      "memberSince": "2023-07-01",
+      "shareCapital": 8000,
+      "membershipDurationMonths": 12,
+      "birthdate": "1995-11-15",
+      "address": "123 Katipunan Ave, Davao City",
+      "employmentStatus": "Unemployed"
+    },
+    {
+      "memberID": "M-007",
+      "memberName": "Anna Lim",
+      "avatar": "https://i.pravatar.cc/150?img=7",
+      "email": "anna.lim@example.com",
+      "contactNumber": "09231234567",
+      "sex": "Female",
+      "memberType": "Regular",
+      "memberSince": "2024-01-10",
+      "shareCapital": 6000,
+      "membershipDurationMonths": 6,
+      "birthdate": "1999-09-05",
+      "address": "456 Panganiban St, Iloilo City",
+      "employmentStatus": "Student"
+    },
+    {
+      "memberID": "M-008",
+      "memberName": "Carlos Torres",
+      "avatar": "https://i.pravatar.cc/150?img=8",
+      "email": "carlos.torres@example.com",
+      "contactNumber": "09241234567",
+      "sex": "Male",
+      "memberType": "Regular",
+      "memberSince": "2022-09-10",
+      "shareCapital": 15000,
+      "membershipDurationMonths": 22,
+      "birthdate": "1983-01-28",
+      "address": "789 McArthur Hwy, Tarlac City",
+      "employmentStatus": "Employed"
+    },
+    {
+      "memberID": "M-009",
+      "memberName": "Bianca Chua",
+      "avatar": "https://i.pravatar.cc/150?img=9",
+      "email": "bianca.chua@example.com",
+      "contactNumber": "09251234567",
+      "sex": "Female",
+      "memberType": "Associate",
+      "memberSince": "2023-04-25",
+      "shareCapital": 10000,
+      "membershipDurationMonths": 15,
+      "birthdate": "1997-12-11",
+      "address": "Sta. Rosa Heights, Laguna",
+      "employmentStatus": "Part-time"
+    },
+    {
+      "memberID": "M-010",
+      "memberName": "Kevin Go",
+      "avatar": "https://i.pravatar.cc/150?img=10",
+      "email": "kevin.go@example.com",
+      "contactNumber": "09261234567",
+      "sex": "Male",
+      "memberType": "Regular",
+      "memberSince": "2021-09-15",
+      "shareCapital": 14000,
+      "membershipDurationMonths": 46,
+      "birthdate": "1992-04-01",
+      "address": "123 Balibago St, Angeles City",
+      "employmentStatus": "Freelancer"
+    },
+    {
+      "memberID": "M-011",
+      "memberName": "Elena Yu",
+      "avatar": "https://i.pravatar.cc/150?img=11",
+      "email": "elena.yu@example.com",
+      "contactNumber": "09271234567",
+      "sex": "Female",
+      "memberType": "Associate",
+      "memberSince": "2023-06-01",
+      "shareCapital": 7000,
+      "membershipDurationMonths": 13,
+      "birthdate": "2000-03-18",
+      "address": "Bacaca Rd, Davao City",
+      "employmentStatus": "Student"
+    },
+    {
+      "memberID": "M-012",
+      "memberName": "Noah Garcia",
+      "avatar": "https://i.pravatar.cc/150?img=12",
+      "email": "noah.garcia@example.com",
+      "contactNumber": "09281234567",
+      "sex": "Male",
+      "memberType": "Regular",
+      "memberSince": "2020-01-20",
+      "shareCapital": 27000,
+      "membershipDurationMonths": 66,
+      "birthdate": "1987-07-07",
+      "address": "Puerto, CDO City",
+      "employmentStatus": "Employed"
+    },
+    {
+      "memberID": "M-013",
+      "memberName": "Sofia Uy",
+      "avatar": "https://i.pravatar.cc/150?img=13",
+      "email": "sofia.uy@example.com",
+      "contactNumber": "09291234567",
+      "sex": "Female",
+      "memberType": "Regular",
+      "memberSince": "2022-10-05",
+      "shareCapital": 19000,
+      "membershipDurationMonths": 21,
+      "birthdate": "1991-06-12",
+      "address": "Brgy. Carmen, CDO City",
+      "employmentStatus": "Self-Employed"
+    }
+  ],
+
+  "shareCapital": [
+  {
+    "refNo": "SC-1001",
+    "memberID": "M-001",
+    "amount": 1000,
+    "paymentCategory": "Initial",
+    "paymentMethod": "Cash",
+    "date": "2025-07-10"
+  },
+  {
+    "refNo": "SC-1002",
+    "memberID": "M-002",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "Cash",
+    "date": "2025-06-02"
+  },
+  {
+    "refNo": "SC-1003",
+    "memberID": "M-003",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "Cash",
+    "date": "2025-06-03"
+  },
+  {
+    "refNo": "SC-1004",
+    "memberID": "M-004",
+    "amount": 1000,
+    "paymentCategory": "Initial",
+    "paymentMethod": "Cash",
+    "date": "2025-06-04"
+  },
+  {
+    "refNo": "SC-1005",
+    "memberID": "M-005",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "GCash",
+    "date": "2025-06-05"
+  },
+  {
+    "refNo": "SC-1006",
+    "memberID": "M-006",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "GCash",
+    "date": "2025-06-06"
+  },
+  {
+    "refNo": "SC-1007",
+    "memberID": "M-007",
+    "amount": 1000,
+    "paymentCategory": "Initial",
+    "paymentMethod": "Cash",
+    "date": "2025-06-07"
+  },
+  {
+    "refNo": "SC-1008",
+    "memberID": "M-008",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "Cash",
+    "date": "2025-06-08"
+  },
+  {
+    "refNo": "SC-1009",
+    "memberID": "M-009",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "Cash",
+    "date": "2025-06-09"
+  },
+  {
+    "refNo": "SC-1010",
+    "memberID": "M-010",
+    "amount": 500,
+    "paymentCategory": "Monthly",
+    "paymentMethod": "Cash",
+    "date": "2025-06-10"
+  }
+  ],
+
+  "clubFunds": [
+  {
+    "refNo": "CF-1001",
+    "memberID": "M-001",
+    "amount": 250,
+    "paymentCategory": "GMM",
+    "paymentMethod": "Cash",
+    "date": "2025-05-29"
+  },
+  {
+    "refNo": "CF-1002",
+    "memberID": "M-002",
+    "amount": 100,
+    "paymentCategory": "Monthly Dues",
+    "paymentMethod": "GCash",
+    "date": "2025-05-30"
+  },
+  {
+    "refNo": "CF-1003",
+    "memberID": "M-003",
+    "amount": 100,
+    "paymentCategory": "Monthly Dues",
+    "paymentMethod": "Cash",
+    "date": "2025-06-03"
+  },
+  {
+    "refNo": "CF-1004",
+    "memberID": "M-004",
+    "amount": 250,
+    "paymentCategory": "GMM",
+    "paymentMethod": "GCash",
+    "date": "2025-06-04"
+  },
+  {
+    "refNo": "CF-1005",
+    "memberID": "M-005",
+    "amount": 180,
+    "paymentCategory": "Activities",
+    "paymentMethod": "Cash",
+    "date": "2025-06-06"
+  },
+  {
+    "refNo": "CF-1006",
+    "memberID": "M-006",
+    "amount": 100,
+    "paymentCategory": "Monthly Dues",
+    "paymentMethod": "GCash",
+    "date": "2025-06-06"
+  },
+  {
+    "refNo": "CF-1007",
+    "memberID": "M-007",
+    "amount": 250,
+    "paymentCategory": "GMM",
+    "paymentMethod": "GCash",
+    "date": "2025-06-07"
+  },
+  {
+    "refNo": "CF-1008",
+    "memberID": "M-008",
+    "amount": 500,
+    "paymentCategory": "Alalayang Agila",
+    "paymentMethod": "Cash",
+    "date": "2025-06-08"
+  },
+  {
+    "refNo": "CF-1009",
+    "memberID": "M-009",
+    "amount": 300,
+    "paymentCategory": "Community Service",
+    "paymentMethod": "Cash",
+    "date": "2025-06-09"
+  },
+  {
+    "refNo": "CF-1010",
+    "memberID": "M-010",
+    "amount": 100,
+    "paymentCategory": "Monthly Dues",
+    "paymentMethod": "Cash",
+    "date": "2025-06-10"
+  }
+  ],
+
+  "clubExpenses": [
+    {
+      "refNo": "CE-1001",
+      "expenseName": "GMM",
+      "amount": 5000,
+      "date": "2025-06-10"
+    },
+    {
+      "refNo": "CE-1002",
+      "expenseName": "Activities",
+      "amount": 3200,
+      "date": "2025-06-11"
+    },
+    {
+      "refNo": "CE-1003",
+      "expenseName": "Community Service",
+      "amount": 2800,
+      "date": "2025-06-12"
+    },
+    {
+      "refNo": "CE-1004",
+      "expenseName": "Others",
+      "amount": 1500,
+      "date": "2025-06-05"
+    },
+    {
+      "refNo": "CE-1005",
+      "expenseName": "Activities",
+      "amount": 2700,
+      "date": "2025-05-30"
+    },
+    {
+      "refNo": "CE-1006",
+      "expenseName": "GMM",
+      "amount": 5200,
+      "date": "2025-05-28"
+    },
+    {
+      "refNo": "CE-1007",
+      "expenseName": "Community Service",
+      "amount": 3100,
+      "date": "2025-05-22"
+    },
+    {
+      "refNo": "CE-1008",
+      "expenseName": "Others",
+      "amount": 1800,
+      "date": "2025-05-16"
+    },
+    {
+      "refNo": "CE-1009",
+      "expenseName": "Activities",
+      "amount": 2900,
+      "date": "2025-05-10"
+    },
+    {
+      "refNo": "CE-1010",
+      "expenseName": "GMM",
+      "amount": 5300,
+      "date": "2025-05-04"
+    }
+  ],
+
+  "loanPayments": [
+  {
+    "refNo": "LP-2001",
+    "memberID": "M-001",
+    "amount": 4167,
+    "paymentMethod": "GCash",
+    "date": "2025-06-01",
+    "balance": 45833
+  },
+  {
+    "refNo": "LP-2002",
+    "memberID": "M-002",
+    "amount": 2000,
+    "paymentMethod": "Cash",
+    "date": "2025-06-02",
+    "balance": 22000
+  },
+  {
+    "refNo": "LP-2003",
+    "memberID": "M-003",
+    "amount": 1000,
+    "paymentMethod": "GCash",
+    "date": "2025-06-03",
+    "balance": 9800
+  },
+  {
+    "refNo": "LP-2004",
+    "memberID": "M-004",
+    "amount": 2500,
+    "paymentMethod": "Cash",
+    "date": "2025-06-04",
+    "balance": 19500
+  },
+  {
+    "refNo": "LP-2005",
+    "memberID": "M-005",
+    "amount": 1000,
+    "paymentMethod": "GCash",
+    "date": "2025-06-05",
+    "balance": 15400
+  },
+  {
+    "refNo": "LP-2006",
+    "memberID": "M-006",
+    "amount": 1200,
+    "paymentMethod": "Cash",
+    "date": "2025-06-06",
+    "balance": 17300
+  },
+  {
+    "refNo": "LP-2007",
+    "memberID": "M-007",
+    "amount": 2000,
+    "paymentMethod": "GCash",
+    "date": "2025-06-07",
+    "balance": 14300
+  },
+  {
+    "refNo": "LP-2008",
+    "memberID": "M-008",
+    "amount": 1500,
+    "paymentMethod": "Cash",
+    "date": "2025-06-08",
+    "balance": 18200
+  },
+  {
+    "refNo": "LP-2009",
+    "memberID": "M-009",
+    "amount": 800,
+    "paymentMethod": "GCash",
+    "date": "2025-06-09",
+    "balance": 16100
+  },
+  {
+    "refNo": "LP-2010",
+    "memberID": "M-010",
+    "amount": 1000,
+    "paymentMethod": "Cash",
+    "date": "2025-06-10",
+    "balance": 12500
+  }
+  ],
+
+  "loanApplications": [
+  {
+    "refNo": "LA-3001",
+    "memberID": "M-001",
+    "requestedAmount": 15000,
+    "term": 12,
+    "status": "Approved",
+    "date": "2025-06-01",
+    "purpose": "For school tuition of eldest child",
+    "shareCapital": 25000,
+    "loanHistory": [
+      { "loanID": "L-0001", "amount": 10000, "status": "Paid" },
+      { "loanID": "L-0004", "amount": 12000, "status": "Ongoing", "balance": 3000 }
+    ]
+  },
+  {
+    "refNo": "LA-3002",
+    "memberID": "M-002",
+    "requestedAmount": 20000,
+    "term": 18,
+    "status": "Pending",
+    "date": "2025-06-02",
+    "purpose": "Motorcycle purchase for GrabFood side hustle",
+    "shareCapital": 18000,
+    "loanHistory": [
+      { "loanID": "L-0002", "amount": 5000, "status": "Paid" }
+    ]
+  },
+  {
+    "refNo": "LA-3003",
+    "memberID": "M-003",
+    "requestedAmount": 10000,
+    "term": 6,
+    "status": "Approved",
+    "date": "2025-06-03",
+    "purpose": "Emergency medical bills for grandmother",
+    "shareCapital": 12000,
+    "loanHistory": []
+  },
+  {
+    "refNo": "LA-3004",
+    "memberID": "M-004",
+    "requestedAmount": 25000,
+    "term": 24,
+    "status": "Pending",
+    "date": "2025-06-04",
+    "purpose": "Capital for sari-sari store expansion",
+    "shareCapital": 30000,
+    "loanHistory": [
+      { "loanID": "L-0003", "amount": 15000, "status": "Paid" },
+      { "loanID": "L-0007", "amount": 20000, "status": "Ongoing", "balance": 7000 }
+    ]
+  },
+  {
+    "refNo": "LA-3005",
+    "memberID": "M-005",
+    "requestedAmount": 8000,
+    "term": 4,
+    "status": "Rejected",
+    "date": "2025-06-05",
+    "purpose": "Back-to-school supplies for kids",
+    "shareCapital": 10000,
+    "loanHistory": [
+      { "loanID": "L-0005", "amount": 8000, "status": "Paid" }
+    ]
+  }
+  ],
+
+  "activityLogs": [
+  {
+    "logID": "LOG-001",
+    "userID": "M-002",
+    "username": "John Dela Rosa",
+    "role": "Regular Member",
+    "action": "Submitted loan application",
+    "affectedTable": "loanApplications",
+    "affectedRefNo": "LA-3002",
+    "timestamp": "2025-06-02T09:15:23"
+  },
+  {
+    "logID": "LOG-002",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added share capital contribution for James Tan",
+    "affectedTable": "shareCapital",
+    "affectedRefNo": "SC-1006",
+    "timestamp": "2025-06-06T10:03:47"
+  },
+  {
+    "logID": "LOG-003",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added club fund contribution for Erika Santos",
+    "affectedTable": "clubFunds",
+    "affectedRefNo": "CF-1005",
+    "timestamp": "2025-06-06T10:10:12"
+  },
+  {
+    "logID": "LOG-004",
+    "userID": "B-001",
+    "username": "Victor Santos",
+    "role": "Board of Director",
+    "action": "Approved loan application",
+    "affectedTable": "loanApplications",
+    "affectedRefNo": "LA-3003",
+    "timestamp": "2025-06-03T14:45:02"
+  },
+  {
+    "logID": "LOG-005",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added loan payment for Lia Mendoza",
+    "affectedTable": "loanPayments",
+    "affectedRefNo": "LP-2003",
+    "timestamp": "2025-06-03T08:22:33"
+  },
+  {
+    "logID": "LOG-006",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added club fund contribution for Maria Cruz",
+    "affectedTable": "clubFunds",
+    "affectedRefNo": "CF-1001",
+    "timestamp": "2025-05-29T17:05:10"
+  },
+  {
+    "logID": "LOG-007",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added club expense entry for Community Service",
+    "affectedTable": "clubExpenses",
+    "affectedRefNo": "CE-1003",
+    "timestamp": "2025-06-12T12:00:00"
+  },
+  {
+    "logID": "LOG-008",
+    "userID": "B-002",
+    "username": "Celia Ramos",
+    "role": "Board of Director",
+    "action": "Rejected loan application",
+    "affectedTable": "loanApplications",
+    "affectedRefNo": "LA-3005",
+    "timestamp": "2025-06-05T15:38:19"
+  },
+  {
+    "logID": "LOG-009",
+    "userID": "M-004",
+    "username": "Marco Reyes",
+    "role": "Regular Member",
+    "action": "Submitted loan application",
+    "affectedTable": "loanApplications",
+    "affectedRefNo": "LA-3004",
+    "timestamp": "2025-06-04T08:30:00"
+  },
+  {
+    "logID": "LOG-010",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added loan payment for Kevin Go",
+    "affectedTable": "loanPayments",
+    "affectedRefNo": "LP-2010",
+    "timestamp": "2025-06-10T09:10:44"
+  },
+  {
+    "logID": "LOG-011",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added share capital contribution for Lia Mendoza",
+    "affectedTable": "shareCapital",
+    "affectedRefNo": "SC-1003",
+    "timestamp": "2025-06-03T10:01:17"
+  },
+  {
+    "logID": "LOG-012",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added club fund contribution for Erika Santos",
+    "affectedTable": "clubFunds",
+    "affectedRefNo": "CF-1005",
+    "timestamp": "2025-06-06T11:30:00"
+  },
+  {
+    "logID": "LOG-013",
+    "userID": "B-001",
+    "username": "Victor Santos",
+    "role": "Board of Director",
+    "action": "Approved loan application",
+    "affectedTable": "loanApplications",
+    "affectedRefNo": "LA-3001",
+    "timestamp": "2025-06-01T14:50:20"
+  },
+  {
+    "logID": "LOG-014",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added share capital contribution for John Dela Rosa",
+    "affectedTable": "shareCapital",
+    "affectedRefNo": "SC-1002",
+    "timestamp": "2025-06-07T13:11:59"
+  },
+  {
+    "logID": "LOG-015",
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "role": "Treasurer",
+    "action": "Added club fund contribution for Carlos Torres",
+    "affectedTable": "clubFunds",
+    "affectedRefNo": "CF-1008",
+    "timestamp": "2025-06-08T10:44:03"
+  }
+  ],
+
+  "officers": [
+  {
+    "userID": "T-001",
+    "username": "Lara Valdez",
+    "email": "lara.valdez@example.com",
+    "role": "Treasurer",
+    "status": "Active",
+    "avatar": "https://i.pravatar.cc/150?img=47"
+  },
+  {
+    "userID": "T-002",
+    "username": "Harvey Miller",
+    "email": "harvey.miller@example.com",
+    "role": "Treasurer",
+    "status": "Revoked",
+    "avatar": "https://i.pravatar.cc/150?img=65"
+  },
+  {
+    "userID": "B-001",
+    "username": "Victor Santos",
+    "email": "victor.santos@example.com",
+    "role": "Board of Director",
+    "status": "Active",
+    "avatar": "https://i.pravatar.cc/150?img=12"
+  },
+  {
+    "userID": "B-002",
+    "username": "Celia Ramos",
+    "email": "celia.ramos@example.com",
+    "role": "Board of Director",
+    "status": "Active",
+    "avatar": "https://i.pravatar.cc/150?img=26"
+  },
+  {
+    "userID": "B-003",
+    "username": "Archie Lou",
+    "email": "archie.lou@example.com",
+    "role": "Board of Director",
+    "status": "Revoked",
+    "avatar": "https://i.pravatar.cc/150?img=19"
+  },
+  {
+    "userID": "B-004",
+    "username": "Ana Rivera",
+    "email": "ana.rivera@example.com",
+    "role": "Board of Director",
+    "status": "Active",
+    "avatar": "https://i.pravatar.cc/150?img=33"
+  },
+  {
+    "userID": "T-003",
+    "username": "Juan Dela Cruz",
+    "email": "juan.delacruz@example.com",
+    "role": "Treasurer",
+    "status": "Revoked",
+    "avatar": "https://i.pravatar.cc/150?img=52"
+  }
+  ]
+}

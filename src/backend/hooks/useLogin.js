@@ -48,20 +48,20 @@ export const useLogin = () => {
       setErrorMsg(null);
 
       switch (account_type) {
-        case "admin":
+        case "Admin":
           navigate("/admin");
           break;
-        case "board":
+        case "Board of Directors":
           navigate("/board");
           break;
-        case "treasurer":
+        case "Treasurer":
           navigate("/treasurer");
           break;
-        case "associate-member":
-          navigate("/associate-members");
+        case "Associate":
+          navigate("/associate-member");
           break;
-        case "regular-member":
-          navigate("/regular-members");
+        case "Regular":
+          navigate("/regular-member");
           break;
         default:
           setErrorMsg("Invalid role assigned. Contact admin.");
