@@ -2,18 +2,12 @@ import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAddMember } from "../../backend/hooks/useAddMembers";
 
-// To Do
-// add mode of payment
-// better input validations of all fields
-
 const AddMember = () => {
-
-  const { mutate: addMember, isPending, isError, error, isSuccess } = useAddMember();
+  const { mutate, isPending, isError, error, isSuccess } = useAddMember();
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
 
   const [formData, setFormData] = useState({
-
     // MEMBER INFO
     f_name: "",
     m_name: "",
@@ -25,13 +19,13 @@ const AddMember = () => {
     description: "",
     email: "",
     sex: "",
-    contact_number: 0,
+    contact_number: "",
     employment_status: "",
     birthday: "",
 
     // PAYMENT INITIAL
-    membership_fee: 0,
-    initial_share_capital: 0,
+    membership_fee: "",
+    initial_share_capital: "",
     fee_status: "",
     payment_date: "",
     remarks: "",
@@ -39,13 +33,18 @@ const AddMember = () => {
     // Login Account
     loginEmail: "",
     password: "",
+    cpassword: "",
 
     // Avatar
     avatar: "",
   });
 
+  const [formErrors, setFormErrors] = useState({});
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // update form data
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -53,13 +52,6 @@ const AddMember = () => {
           ? Number(value)
           : value,
     }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Add Supabase insert logic here
-    console.log("Submitting:", formData);
-    addMember(formData);
   };
 
   const handleAvatarUpload = (e) => {
@@ -75,7 +67,69 @@ const AddMember = () => {
     }
   };
 
-  // ALL NECESSARY INPUT FIELDS
+  // --- VALIDATION FUNCTIONS ---
+  const validatePersonal = () => {
+    let errors = {};
+    if (!formData.f_name) errors.f_name = "First name is required";
+    if (!formData.m_name) errors.m_name = "Middle name is required";
+    if (!formData.l_name) errors.l_name = "Last name is required";
+    if (!formData.email) errors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      errors.email = "Invalid email format";
+    if (!formData.account_type) errors.account_type = "Select account type";
+    if (!formData.account_status)
+      errors.account_status = "Select account status";
+    if (!formData.application_date) errors.application_date = "Application date is required";
+    if (!formData.contact_number)
+      errors.contact_number = "Contact number required";
+    if (!formData.sex) errors.sex = "sex is required";
+    if (!formData.employment_status) errors.employment_status = "Employment status is required";
+    if (!formData.address) errors.address = "Address is required";
+    if (!formData.birthday) errors.birthday = "Birthday required";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateMembership = () => {
+    const errors = {};
+    if (!formData.membership_fee || formData.membership_fee <= 0)
+      errors.membership_fee = "Membership fee must be greater than 0";
+    if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
+      errors.initial_share_capital =
+        "Initial share capital must be greater than 0";
+    if (!formData.fee_status) errors.fee_status = "Select fee status";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateLogin = () => {
+    const errors = {};
+    if (!formData.loginEmail) errors.loginEmail = "Login email required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
+      errors.loginEmail = "Invalid email format";
+    if (!formData.password || formData.password.length < 6)
+      errors.password = "Password must be at least 6 characters";
+    if (formData.password !== formData.cpassword)
+      errors.cpassword = "Passwords do not match";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // --- TAB NAVIGATION ---
+  const handleNext = () => {
+    if (activeTab === 0 && validatePersonal()) setActiveTab(1);
+    else if (activeTab === 1 && validateMembership()) setActiveTab(2);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateLogin()) {
+      console.log("Submitting:", formData);
+      mutate(formData); // execute the custom hook
+    }
+  };
+
+  // Fields
   const personalFields = [
     { label: "First Name", name: "f_name", type: "text" },
     { label: "Middle Name", name: "m_name", type: "text" },
@@ -84,7 +138,7 @@ const AddMember = () => {
       label: "Account Type",
       name: "account_type",
       type: "select",
-      options: ["Admin", "Regular", "Associate", "Treasurer", "Board of Directors",],
+      options: ["Admin", "Regular", "Associate", "Treasurer", "Board of Directors"],
     },
     {
       label: "Account Status",
@@ -95,9 +149,19 @@ const AddMember = () => {
     { label: "Application Date", name: "application_date", type: "date" },
     { label: "Description", name: "description", type: "text" },
     { label: "Email Address", name: "email", type: "email" },
-    { label: "Sex", name: "sex", type: "select", options: ["Female", "Male", "Yes please!"] },
+    {
+      label: "Sex",
+      name: "sex",
+      type: "select",
+      options: ["Female", "Male", "Yes please!"],
+    },
     { label: "Contact Number", name: "contact_number", type: "number" },
-    { label: "Employment Status", name: "employment_status", type: "select", options: ["Employed", "Unemployed", "Student"] },
+    {
+      label: "Employment Status",
+      name: "employment_status",
+      type: "select",
+      options: ["Employed", "Unemployed", "Student"],
+    },
     { label: "Birthday", name: "birthday", type: "date" },
     { label: "Home Address", name: "address", type: "text" },
   ];
@@ -121,9 +185,9 @@ const AddMember = () => {
 
   const loginCredentials = [
     { label: "Email Address", name: "loginEmail", type: "text" },
-    { label: "Password", name: "password", type: "text" },
-    { label: "Confirm Password", name: "cpassword", type: "text" }
-  ]
+    { label: "Password", name: "password", type: "password" },
+    { label: "Confirm Password", name: "cpassword", type: "password" },
+  ];
 
   return (
     <div className="min-h-screen py-5">
@@ -135,45 +199,17 @@ const AddMember = () => {
           </p>
         </header>
 
-        {/* Tabs */}
-        <div className="tabs tabs-border mb-6">
-          <div
-            className={`tab ${activeTab === 0
-              ? "tab-active"
-              : "text-gray-500 pointer-events-none"
-              }`}
-          >
-            1. Personal Info
-          </div>
-          <div
-            className={`tab ${activeTab === 1
-              ? "tab-active"
-              : "text-gray-500 pointer-events-none"
-              }`}
-          >
-            2. Membership & Payment
-          </div>
-
-          <div
-            className={`tab ${activeTab === 2
-              ? "tab-active"
-              : "text-gray-500 pointer-events-none"
-              }`}
-          >
-            2. Login Credentials
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-8">
-
           {isError && <p className="text-red-500">{error.message}</p>}
-          {isSuccess && <p className="text-green-600">Member registered successfully!</p>}
+          {isSuccess && (
+            <p className="text-green-600">Member registered successfully!</p>
+          )}
           {isPending && <p>Saving member...</p>}
-
 
           {/* PERSONAL DETAILS TAB */}
           {activeTab === 0 && (
             <>
+              {/* Avatar Upload */}
               <div className="flex justify-center mb-6">
                 <div className="avatar cursor-pointer relative group">
                   <div className="w-24 h-24 rounded-full ring ring-neutral ring-offset-base-100 ring-offset-2 overflow-hidden">
@@ -195,6 +231,7 @@ const AddMember = () => {
                 </div>
               </div>
 
+              {/* Inputs */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {personalFields.map(({ label, name, type, options }) => (
                   <div key={name} className="form-control w-full">
@@ -207,9 +244,10 @@ const AddMember = () => {
                         name={name}
                         value={formData[name] || ""}
                         onChange={handleChange}
-                        className="select select-bordered w-full"
+                        className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
+                          }`}
+                        required
                       >
-                        {/* This makes sure that the select input is always record and not only the last one */}
                         <option value="">-- Select {label} --</option>
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -224,18 +262,23 @@ const AddMember = () => {
                         name={name}
                         value={formData[name] || ""}
                         onChange={handleChange}
-                        className="input input-bordered w-full"
-
+                        className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
+                          }`}
+                        required
                       />
+                    )}
+                    {formErrors[name] && (
+                      <p className="text-red-500 text-sm">{formErrors[name]}</p>
                     )}
                   </div>
                 ))}
               </div>
+
               <div className="flex justify-end">
                 <button
                   type="button"
                   className="btn btn-primary px-8"
-                  onClick={() => setActiveTab(1)}
+                  onClick={handleNext}
                 >
                   Next
                 </button>
@@ -258,7 +301,9 @@ const AddMember = () => {
                         name={name}
                         value={formData[name] || ""}
                         onChange={handleChange}
-                        className="select select-bordered w-full"
+                        className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
+                          }`}
+                        required
                       >
                         <option value="">-- Select {label} --</option>
                         {options?.map((opt) => (
@@ -267,7 +312,6 @@ const AddMember = () => {
                           </option>
                         ))}
                       </select>
-
                     ) : (
                       <input
                         id={name}
@@ -275,9 +319,13 @@ const AddMember = () => {
                         name={name}
                         value={formData[name] || ""}
                         onChange={handleChange}
-                        className="input input-bordered w-full"
-
+                        className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
+                          }`}
+                        required
                       />
+                    )}
+                    {formErrors[name] && (
+                      <p className="text-red-500 text-sm">{formErrors[name]}</p>
                     )}
                   </div>
                 ))}
@@ -290,14 +338,18 @@ const AddMember = () => {
                 >
                   Back
                 </button>
-                <button type="submit" className="btn btn-success px-8" onClick={() => setActiveTab(2)}>
+                <button
+                  type="button"
+                  className="btn btn-success px-8"
+                  onClick={handleNext}
+                >
                   Next
                 </button>
               </div>
             </>
           )}
 
-
+          {/* LOGIN CREDENTIALS TAB */}
           {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -306,26 +358,18 @@ const AddMember = () => {
                     <label htmlFor={name} className="label">
                       <span className="label-text font-medium">{label}</span>
                     </label>
-                    {type === "select" ? (
-                      <select
-                        id={name}
-                        name={name}
-                        value={formData[name] || ""}
-                        onChange={handleChange}
-                        className="select select-bordered w-full"
-
-                      >
-                      </select>
-                    ) : (
-                      <input
-                        id={name}
-                        type={type}
-                        name={name}
-                        value={formData[name] || ""}
-                        onChange={handleChange}
-                        className="input input-bordered w-full"
-
-                      />
+                    <input
+                      id={name}
+                      type={type}
+                      name={name}
+                      value={formData[name] || ""}
+                      onChange={handleChange}
+                      className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
+                        }`}
+                      required
+                    />
+                    {formErrors[name] && (
+                      <p className="text-red-500 text-sm">{formErrors[name]}</p>
                     )}
                   </div>
                 ))}
@@ -338,8 +382,12 @@ const AddMember = () => {
                 >
                   Back
                 </button>
-                <button type="submit" className="btn btn-success px-8">
-                  {isPending ? "Processing" : "Register"}
+                <button
+                  type="submit"
+                  className="btn btn-success px-8"
+                  disabled={isPending}
+                >
+                  {isPending ? "Processing..." : "Register"}
                 </button>
               </div>
             </>

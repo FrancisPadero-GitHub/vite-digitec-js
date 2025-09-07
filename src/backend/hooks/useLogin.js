@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
  * Attempts to log in a user using Supabase authentication,
  * then fetches their account type from the "members" table.
  */
-async function loginUser({ email, password }) {
+const loginUser = async ({ email, password }) => {
   // Step 1: Authenticate user with email + password
   const { data: authData, error: authError } =
     await supabase.auth.signInWithPassword({ email, password });
@@ -35,7 +35,7 @@ async function loginUser({ email, password }) {
   }
 
   return memberData.account_type;
-}
+};
 
 /**
  * Custom hook for logging in users with Supabase.

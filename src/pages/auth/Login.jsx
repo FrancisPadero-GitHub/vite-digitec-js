@@ -17,7 +17,7 @@ const Login = () => {
   // Local state for validation + server errors
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [error, setError] = useState(null);
 
   // ------------------------------
   //#region Input validation helpers
@@ -33,7 +33,7 @@ const Login = () => {
   const emailInputChange = (event) => {
     const value = event.target.value;
     setEmail(value);
-    setErrorMsg(null); // clear server error when typing
+    setError(null); // clear server error when typing
 
     if (!value) {
       setEmailError("Email is required");
@@ -48,7 +48,7 @@ const Login = () => {
   const passwordInputChange = (event) => {
     const value = event.target.value;
     setPassword(value);
-    setErrorMsg(null); // clear server error when typing
+    setError(null); // clear server error when typing
 
     if (!value) {
       setPasswordError("Password is required");
@@ -69,14 +69,14 @@ const Login = () => {
     // Block submission if validation fails
     if (emailError || passwordError || !email || !password) return;
 
-    setErrorMsg(null); // reset any previous server error
+    setError(null); // reset any previous server error
 
     mutate(
       { email, password },
       {
         // Capture errors from backend hook (e.g. invalid login)
         onError: (err) => {
-          setErrorMsg(err.message || "An unexpected error occurred");
+          setError(err.message || "An unexpected error occurred");
         },
       }
     );
@@ -128,7 +128,7 @@ const Login = () => {
             )}
 
             {/* Server-side error (login failure, etc.) */}
-            {errorMsg && <p className="text-red-600 text-center">{errorMsg}</p>}
+            {error && <p className="text-red-600 text-center">{error}</p>}
 
             {/* Submit button with loading state */}
             <button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMembers } from "../../backend/hooks/useFetchMembers.js";
 
 
@@ -22,7 +22,7 @@ export default function UserManagement() {
           <div className="flex flex-row items-center gap-3">
             <button
               className="btn btn-neutral whitespace-nowrap"
-              onClick={""}
+
             >
               + Add Officer
             </button>
@@ -58,6 +58,7 @@ export default function UserManagement() {
 
         {/* Users Table */}
         <section className="space-y-4">
+
           <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
             <table className="table">
               <thead>
@@ -71,7 +72,7 @@ export default function UserManagement() {
               </thead>
               <tbody>
                 {members.map((member) => (
-                  <div key={member.member_id}>
+                  <React.Fragment key={member.member_id}>
                     <tr
                       onClick={() => toggleExpand(member.member_id)}
                       className="cursor-pointer hover:bg-base-200/50"
@@ -147,7 +148,7 @@ export default function UserManagement() {
                         </td>
                       </tr>
                     )}
-                  </div>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
