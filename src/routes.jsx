@@ -67,7 +67,7 @@ function AppRoutes() {
     {
       path: `/${getRolePath("admin")}`,
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute roleAllowed="admin">
           <Layout />
         </ProtectedRoute>
       ),
@@ -83,7 +83,7 @@ function AppRoutes() {
     {
       path: `/${getRolePath("board")}`,
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute roleAllowed="board">
           <Layout />
         </ProtectedRoute>
       ),
@@ -101,7 +101,7 @@ function AppRoutes() {
     {
       path: `/${getRolePath("regular-member")}`,
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute roleAllowed="regular-member">
           <Layout />
         </ProtectedRoute>
       ),
@@ -122,7 +122,7 @@ function AppRoutes() {
     {
       path: `/${getRolePath("associate-member")}`,
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute roleAllowed="associate-member">
           <Layout />
         </ProtectedRoute>
       ),
@@ -143,7 +143,7 @@ function AppRoutes() {
     {
       path: `/${getRolePath("treasurer")}`,
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute roleAllowed="treasurer">
           <Layout />
         </ProtectedRoute>
       ),
