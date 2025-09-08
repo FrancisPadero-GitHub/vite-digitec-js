@@ -97,7 +97,8 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "User Management", icon: ManageAccountsIcon, path: "/admin" },
-        { label: "Add Member", icon: AddCircleOutlineIcon, path: "/admin/add-member" },
+        // REMOVED kay na balhin sa user management as button to invoke this path
+        //{ label: "Add Member", icon: AddCircleOutlineIcon, path: "/admin/add-member" },
         { label: "Activity Logs", icon: HistoryIcon, path: "/admin/activity-logs" },
       ],
     },

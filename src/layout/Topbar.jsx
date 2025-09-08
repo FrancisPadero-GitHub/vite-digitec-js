@@ -12,11 +12,23 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { getRoleLabel, getRolePath } from "../constants/Roles";
 import { format } from "date-fns";
 
+import { supabase } from "../backend/supabase";
+
 const Topbar = ({ role }) => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [dateTimeStr, setDateTimeStr] = useState("");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsLoggingOut(true);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error.message);
+      setIsLoggingOut(false);
+    }
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -165,7 +177,7 @@ const Topbar = ({ role }) => {
             {/* LOGOUT */}
             <li className="mt-2 pt-2">
               <button
-                onClick={() => navigate("/login")}
+                onClick={handleSignOut} disabled={isLoggingOut}
                 className="btn btn-error w-full flex items-center"
               >
                 <LogoutIcon fontSize="small" />

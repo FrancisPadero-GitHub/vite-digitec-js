@@ -4,6 +4,7 @@ import { getRolePath } from "./constants/Roles.js";
 // TanStack Query + Auth Provider for universal user ID retrieval
 import { AuthProvider } from "./backend/context/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ProtectedRoute from "./ProtectedRoutes.jsx";
 
 
 // Pages
@@ -65,7 +66,11 @@ function AppRoutes() {
     // ADMIN
     {
       path: `/${getRolePath("admin")}`,
-      element: <Layout />,
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
       children: [
         { index: true, element: <UserManagement /> },
         { path: "add-member", element: <AddMember /> },
@@ -77,7 +82,11 @@ function AppRoutes() {
     // BOD
     {
       path: `/${getRolePath("board")}`,
-      element: <Layout />,
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
       children: [
         { index: true, element: <Dashboard /> },
         { path: "member-records", element: <MemberRecords /> },
@@ -91,7 +100,11 @@ function AppRoutes() {
     // REGULAR MEMBERS
     {
       path: `/${getRolePath("regular-member")}`,
-      element: <Layout />,
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
       children: [
         { index: true, element: <MemberDashboard /> },
         { path: "regular-member-club-funds", element: <RegularMemberClubFunds /> },
@@ -108,7 +121,11 @@ function AppRoutes() {
     // ASSOCIATE MEMBERS
     {
       path: `/${getRolePath("associate-member")}`,
-      element: <Layout />,
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
       children: [
         { index: true, element: <MemberDashboard /> },
         { path: "associate-member-share-capital", element: <MemberShareCapital /> },
@@ -125,7 +142,11 @@ function AppRoutes() {
     // TREASURER
     {
       path: `/${getRolePath("treasurer")}`,
-      element: <Layout />,
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
       children: [
         { index: true, element: <Dashboard /> },
         { path: "member-records", element: <MemberRecords /> },
