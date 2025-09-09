@@ -179,3 +179,6 @@ function AppRoutes() {
 }
 
 export default AppRoutes;
+
+// This is for the Tanstack Query Dev tools
+window.__TANSTACK_QUERY_CLIENT__ = queryClient;

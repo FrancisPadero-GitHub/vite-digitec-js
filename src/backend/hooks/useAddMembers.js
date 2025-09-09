@@ -8,7 +8,9 @@ import { supabase } from "../supabase";
  * 3. Initial payment in "initial_payments" table
  */
 const insertMember = async (formData) => {
-  // --- Build structured payload ---
+  /**  --- Build structured payload ---
+   * This is to double check the data that will be sent kay wala man ta ga typescript kay yawa mn ang typescript :>
+   */
   const payload = {
     auth: {
       email: formData.loginEmail,
@@ -63,8 +65,8 @@ const insertMember = async (formData) => {
   const { data: member, error: memberError } = await supabase
     .from("members")
     .insert([{ ...payload.member, login_id: authID }])
-    .select()
-    .single();
+    .select() // After you insert, also return the inserted row(s) for the onSuccess to work
+    .single(); // Expecting only a single row to return its gonna return an error if it returns a multiple rows
 
   if (memberError) {
     throw new Error(`Failed to insert member: ${memberError.message}`);
@@ -95,9 +97,9 @@ export const useAddMember = () => {
 
   return useMutation({
     mutationFn: insertMember,
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate members query so UI refreshes with new data
-      queryClient.invalidateQueries(["members"]);
+      queryClient.invalidateQueries(["members"]); // no specific ID cause queries for all data 
     },
     onError: (error) => {
       // Optional: Log or send to error monitoring service

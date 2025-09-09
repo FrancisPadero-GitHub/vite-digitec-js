@@ -44,7 +44,11 @@ const AddMember = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // update form data
+    /**
+    * Sets the form data but it checks first if the value correctly corresponds to the value like
+    * if membership_fee is indeed a value which is a number then proceeds to assign that value to
+    * formData
+    */
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -122,9 +126,9 @@ const AddMember = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // stop the page refresh that html normally does after form submission
     if (validateLogin()) {
-      console.log("Submitting:", formData);
+      // console.log("Submitting:", formData);
       mutate(formData); // execute the custom hook
     }
   };

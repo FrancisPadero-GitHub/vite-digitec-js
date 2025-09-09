@@ -1,4 +1,3 @@
-// src/hooks/useMembers.js
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase";
 
