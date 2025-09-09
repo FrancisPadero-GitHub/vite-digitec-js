@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase";
 
 /**
+ *  !! MAJOR PROBLEM !! IT NEEDS ADMIN AUTH FOR MEMBER MANAGEMENT 
+ * 
  * Insert a new member with:
  * 1. Supabase Auth account (login credentials)
  * 2. Member profile in "members" table
@@ -12,12 +14,13 @@ const insertMember = async (formData) => {
    * This is to double check the data that will be sent kay wala man ta ga typescript kay yawa mn ang typescript :>
    */
   const payload = {
-    auth: {
-      email: formData.loginEmail,
-      password: formData.password,
-      full_name: `${formData.f_name} ${formData.m_name} ${formData.l_name}`,
-    },
+    // auth: {
+    //   email: formData.loginEmail,
+    //   password: formData.password,
+    //   full_name: `${formData.f_name} ${formData.m_name} ${formData.l_name}`,
+    // },
     member: {
+      login_id: null,
       f_name: formData.f_name || null,
       m_name: formData.m_name || null,
       l_name: formData.l_name || null,
@@ -42,29 +45,30 @@ const insertMember = async (formData) => {
   };
 
   // --- 1. Create Supabase Auth user ---
-  const {
-    data: { user },
-    error: registerError,
-  } = await supabase.auth.signUp({
-    email: payload.auth.email,
-    password: payload.auth.password,
-    options: { data: { full_name: payload.auth.full_name } },
-  });
+  // Temporarily Disabled due to it needs to have a authentication admin for it to add new users without logging out the current use logged in
+  // const {
+  //   data: { user },
+  //   error: registerError,
+  // } = await supabase.auth.signUp({
+  //   email: payload.auth.email,
+  //   password: payload.auth.password,
+  //   options: { data: { full_name: payload.auth.full_name } },
+  // });
 
-  if (registerError) {
-    throw new Error(`Auth signup failed: ${registerError.message}`);
-  }
-  if (!user?.id) {
-    throw new Error(
-      "Auth signup succeeded but no user ID returned. Email confirmation may be required in Supabase settings."
-    );
-  }
-  const authID = user.id;
+  // if (registerError) {
+  //   throw new Error(`Auth signup failed: ${registerError.message}`);
+  // }
+  // if (!user?.id) {
+  //   throw new Error(
+  //     "Auth signup succeeded but no user ID returned. Email confirmation may be required in Supabase settings."
+  //   );
+  // }
+  // const authID = user.id;
 
   // --- 2. Insert into "members" table ---
   const { data: member, error: memberError } = await supabase
     .from("members")
-    .insert([{ ...payload.member, login_id: authID }])
+    .insert([{ ...payload.member }])
     .select() // After you insert, also return the inserted row(s) for the onSuccess to work
     .single(); // Expecting only a single row to return its gonna return an error if it returns a multiple rows
 
@@ -85,7 +89,7 @@ const insertMember = async (formData) => {
   }
 
   // --- Final success ---
-  return { member, authID };
+  return member ; //authID
 };
 
 /**
@@ -97,7 +101,8 @@ export const useAddMember = () => {
 
   return useMutation({
     mutationFn: insertMember,
-    onSuccess: (data) => {
+    onSuccess: (member) => {
+      console.log("Member data that is being returned from :  ", member)
       // Invalidate members query so UI refreshes with new data
       queryClient.invalidateQueries(["members"]); // no specific ID cause queries for all data 
     },

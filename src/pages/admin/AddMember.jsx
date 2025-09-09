@@ -1,8 +1,10 @@
 import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAddMember } from "../../backend/hooks/useAddMembers";
+import { useNavigate } from "react-router";
 
 const AddMember = () => {
+  const navigate = useNavigate();
   const { mutate, isPending, isError, error, isSuccess } = useAddMember();
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -72,65 +74,68 @@ const AddMember = () => {
   };
 
   // --- VALIDATION FUNCTIONS ---
-  const validatePersonal = () => {
-    let errors = {};
-    if (!formData.f_name) errors.f_name = "First name is required";
-    if (!formData.m_name) errors.m_name = "Middle name is required";
-    if (!formData.l_name) errors.l_name = "Last name is required";
-    if (!formData.email) errors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      errors.email = "Invalid email format";
-    if (!formData.account_type) errors.account_type = "Select account type";
-    if (!formData.account_status)
-      errors.account_status = "Select account status";
-    if (!formData.application_date) errors.application_date = "Application date is required";
-    if (!formData.contact_number)
-      errors.contact_number = "Contact number required";
-    if (!formData.sex) errors.sex = "sex is required";
-    if (!formData.employment_status) errors.employment_status = "Employment status is required";
-    if (!formData.address) errors.address = "Address is required";
-    if (!formData.birthday) errors.birthday = "Birthday required";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // const validatePersonal = () => {
+  //   let errors = {};
+  //   if (!formData.f_name) errors.f_name = "First name is required";
+  //   if (!formData.m_name) errors.m_name = "Middle name is required";
+  //   if (!formData.l_name) errors.l_name = "Last name is required";
+  //   if (!formData.email) errors.email = "Email is required";
+  //   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+  //     errors.email = "Invalid email format";
+  //   if (!formData.account_type) errors.account_type = "Select account type";
+  //   if (!formData.account_status)
+  //     errors.account_status = "Select account status";
+  //   if (!formData.application_date) errors.application_date = "Application date is required";
+  //   if (!formData.contact_number)
+  //     errors.contact_number = "Contact number required";
+  //   if (!formData.sex) errors.sex = "sex is required";
+  //   if (!formData.employment_status) errors.employment_status = "Employment status is required";
+  //   if (!formData.address) errors.address = "Address is required";
+  //   if (!formData.birthday) errors.birthday = "Birthday required";
+  //   setFormErrors(errors);
+  //   return Object.keys(errors).length === 0;
+  // };
 
-  const validateMembership = () => {
-    const errors = {};
-    if (!formData.membership_fee || formData.membership_fee <= 0)
-      errors.membership_fee = "Membership fee must be greater than 0";
-    if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
-      errors.initial_share_capital =
-        "Initial share capital must be greater than 0";
-    if (!formData.fee_status) errors.fee_status = "Select fee status";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // const validateMembership = () => {
+  //   const errors = {};
+  //   if (!formData.membership_fee || formData.membership_fee <= 0)
+  //     errors.membership_fee = "Membership fee must be greater than 0";
+  //   if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
+  //     errors.initial_share_capital =
+  //       "Initial share capital must be greater than 0";
+  //   if (!formData.fee_status) errors.fee_status = "Select fee status";
+  //   setFormErrors(errors);
+  //   return Object.keys(errors).length === 0;
+  // };
 
-  const validateLogin = () => {
-    const errors = {};
-    if (!formData.loginEmail) errors.loginEmail = "Login email required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
-      errors.loginEmail = "Invalid email format";
-    if (!formData.password || formData.password.length < 6)
-      errors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.cpassword)
-      errors.cpassword = "Passwords do not match";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // const validateLogin = () => {
+  //   const errors = {};
+  //   if (!formData.loginEmail) errors.loginEmail = "Login email required";
+  //   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
+  //     errors.loginEmail = "Invalid email format";
+  //   if (!formData.password || formData.password.length < 6)
+  //     errors.password = "Password must be at least 6 characters";
+  //   if (formData.password !== formData.cpassword)
+  //     errors.cpassword = "Passwords do not match";
+  //   setFormErrors(errors);
+  //   return Object.keys(errors).length === 0;
+  // };
 
   // --- TAB NAVIGATION ---
   const handleNext = () => {
-    if (activeTab === 0 && validatePersonal()) setActiveTab(1);
-    else if (activeTab === 1 && validateMembership()) setActiveTab(2);
+    if (activeTab === 0) setActiveTab(1); // && validatePersonal()
+    else if (activeTab === 1) setActiveTab(2); // && validateMembership()
   };
 
   const handleSubmit = (e) => {
     e.preventDefault(); // stop the page refresh that html normally does after form submission
-    if (validateLogin()) {
-      // console.log("Submitting:", formData);
-      mutate(formData); // execute the custom hook
-    }
+    // if (validateLogin()) {
+    //   // console.log("Submitting:", formData);
+    //   mutate(formData); // execute the custom hook
+    // }
+
+    mutate(formData); // execute the custom hook
+    navigate("/admin")
   };
 
   // Fields
@@ -187,11 +192,11 @@ const AddMember = () => {
     { label: "Remarks", name: "remarks", type: "text" },
   ];
 
-  const loginCredentials = [
-    { label: "Email Address", name: "loginEmail", type: "text" },
-    { label: "Password", name: "password", type: "password" },
-    { label: "Confirm Password", name: "cpassword", type: "password" },
-  ];
+  // const loginCredentials = [
+  //   { label: "Email Address", name: "loginEmail", type: "text" },
+  //   { label: "Password", name: "password", type: "password" },
+  //   { label: "Confirm Password", name: "cpassword", type: "password" },
+  // ];
 
   return (
     <div className="min-h-screen py-5">
@@ -202,6 +207,15 @@ const AddMember = () => {
             Fill out the fields below to register a new member.
           </p>
         </header>
+
+        <div className="tabs tabs-border mb-6">
+          <div className={`tab ${activeTab === 0 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+            1. Personal Info
+          </div>
+          <div className={`tab ${activeTab === 1 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+            2. Membership
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {isError && <p className="text-red-500">{error.message}</p>}
@@ -250,7 +264,7 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
                           }`}
-                        required
+                        
                       >
                         <option value="">-- Select {label} --</option>
                         {options?.map((opt) => (
@@ -268,7 +282,7 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
                           }`}
-                        required
+                        
                       />
                     )}
                     {formErrors[name] && (
@@ -307,7 +321,7 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
                           }`}
-                        required
+                        
                       >
                         <option value="">-- Select {label} --</option>
                         {options?.map((opt) => (
@@ -325,7 +339,7 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
                           }`}
-                        required
+                        
                       />
                     )}
                     {formErrors[name] && (
@@ -342,18 +356,28 @@ const AddMember = () => {
                 >
                   Back
                 </button>
-                <button
+                {/* <button
                   type="button"
                   className="btn btn-success px-8"
                   onClick={handleNext}
                 >
-                  Next
+                  Register
+                </button> */}
+                <button
+                  type="submit"
+                  className="btn btn-success px-8"
+                  disabled={isPending}
+                >
+                  {isPending ? "Processing..." : "Register"}
                 </button>
               </div>
             </>
           )}
 
-          {/* LOGIN CREDENTIALS TAB */}
+          {/* LOGIN CREDENTIALS TAB 
+
+           TEMPORARILY DISABLED DUE TO A BUG
+
           {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -370,7 +394,7 @@ const AddMember = () => {
                       onChange={handleChange}
                       className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
                         }`}
-                      required
+                      
                     />
                     {formErrors[name] && (
                       <p className="text-red-500 text-sm">{formErrors[name]}</p>
@@ -395,7 +419,7 @@ const AddMember = () => {
                 </button>
               </div>
             </>
-          )}
+          )} */}
         </form>
       </div>
     </div>

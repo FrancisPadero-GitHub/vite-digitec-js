@@ -12,7 +12,7 @@ const insertClubfunds = async (formData) => {
     payment_covered = null,
     payment_method = null,
     remarks = null,
-  } = formData;
+  } = formData; // if the form data is empty it will fallback to these null values
 
   const payload = {
     member_id,
