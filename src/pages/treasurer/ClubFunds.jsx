@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import { Link } from 'react-router';
 import { useFetchClubFunds } from './hooks/useFetchClubFunds'
 import { useMembers } from '../../backend/hooks/useFetchMembers';
+import { useAddClubFunds } from './hooks/useAddClubFunds';
 
 function ClubFunds() {
-  const { data: ClubFunds, isLoading, isError, error } = useFetchClubFunds();
+  const { data: funds, isLoading, isError, error } = useFetchClubFunds();
+  const { mutate } = useAddClubFunds(); // activate the mutateFn which activates the query inside
   const { data: members } = useMembers();
 
   // form data
@@ -14,12 +16,12 @@ function ClubFunds() {
     category: "",
     payment_date: "",
     payment_method: "",
-    payment_covered: "",
+    period_covered: "",
     remarks: "",
   }
   );
 
-  const [addModalOpen, setAddModalOpen] = useState();
+  const [addModalOpen, setAddModalOpen] = useState(false);
   // This is named edit but it is information modal for now
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedFund, setSelectedFund] = useState(null);
@@ -32,6 +34,8 @@ function ClubFunds() {
   // const openAddTransactionModal = () => {
   //   setAddModalOpen(true);
   // }
+
+
 
   const fundFields = [
     { label: "Amount", name: "amount", type: "number" },
@@ -71,6 +75,7 @@ function ClubFunds() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setAddModalOpen(false);
+    mutate(formData);
     console.log("Form data", formData)
     setFormData("");
   }
@@ -113,14 +118,24 @@ function ClubFunds() {
               </thead>
 
               <tbody>
-                {ClubFunds.map((fund) => (
+                {funds.map((fund) => (
                   <React.Fragment key={fund.contribution_id}>
-                    <tr
+                    {/* onClick FN on tr === table row */}
+                    <tr 
                       onClick={() => openSelectedFundModal(fund)}
                       className="cursor-pointer hover:bg-base-200/50"
                     >
                       <td>{fund.contribution_id}</td>
                       <td>
+                        {/**
+                         * Immediately Invoked Function Expression (IIFE)
+                         * 
+                         * (()=>{...}) ()
+                         * 
+                         * first () is an expression then followed by a arrow function
+                         * then the last () is to execute this EXPRESSION FUNCTION.... fuck me unsa maneh
+                         * 
+                         *  */}
                         {(() => {
                           const matchedMember = members?.find(
                             (member) => member.member_id === fund.member_id
@@ -130,7 +145,7 @@ function ClubFunds() {
                           return `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim();
                         })()}
                       </td>
-                      <td>{fund.amount?.toLocaleString() || "0"}</td>
+                      <td>₱ {fund.amount?.toLocaleString() || "0"}</td>
                       <td>{fund.category || "Not Provided"}</td>
                       <td>{fund.payment_date ? new Date(fund.payment_date).toLocaleDateString() : "Not Provided"}</td>
                       <td className={`badge badge-soft font-semibold ${fund.payment_method === "Cash" ? "badge-success" : "badge-info"}`}>{fund.payment_method || "Not Provided"}</td>
@@ -162,7 +177,13 @@ function ClubFunds() {
         </section>
       </div>
 
-      {/* MODAL FOR FUND INFORMATION*/}
+      {/**
+       * 
+       *  MODAL FOR FUND INFORMATION
+       * 
+       *  this is named editModalOpen cause it will be changed later on to edit.
+       * 
+       * */}
       {editModalOpen && selectedFund && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md p-6">
@@ -238,7 +259,7 @@ function ClubFunds() {
 
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-start">
               <button
                 onClick={() => setEditModalOpen(false)}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors"

@@ -1,21 +1,20 @@
-// src/hooks/useFetchClubFunds.js
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../../backend/supabase";
 
-async function fetchClubFunds() {
+async function fetchExpenses() {
   const { data, error } = await supabase
-    .from("club_funds_contributions")
+    .from("club_funds_expenses")
     .select("*")
-    .order("contribution_id", { ascending: false });
+    .order("transaction_id", { ascending: false });
 
   if (error) throw new Error(error.message);
   return data;
 }
 
-export function useFetchClubFunds() {
+export function useFetchExpenses() {
   return useQuery({
-    queryKey: ["club_funds_contributions"], // no need to specify the identifier cause it selects all data
-    queryFn: fetchClubFunds,
+    queryKey: ["club_funds_expenses"], // no need to specify the identifier cause it selects all data
+    queryFn: fetchExpenses,
     staleTime: 1000 * 60 * 1, // for 1 min before it is going to stale and "refetch" data
     // cacheTime: 1000 * 60 * 5, // keep in cache or keep the data for 5 minutes
   });

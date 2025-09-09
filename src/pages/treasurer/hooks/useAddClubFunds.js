@@ -9,7 +9,7 @@ const insertClubfunds = async (formData) => {
     amount = null,
     category = null,
     payment_date = null,
-    payment_covered = null,
+    period_covered = null,
     payment_method = null,
     remarks = null,
   } = formData; // if the form data is empty it will fallback to these null values
@@ -19,7 +19,7 @@ const insertClubfunds = async (formData) => {
     amount,
     category,
     payment_date,
-    payment_covered,
+    period_covered,
     payment_method,
     remarks,
   };
@@ -39,6 +39,7 @@ const insertClubfunds = async (formData) => {
 
 // React Query mutation hook
 export const useAddClubFunds = () => {
+
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -46,7 +47,7 @@ export const useAddClubFunds = () => {
     onSuccess: (data) => {
       console.log("✅ Contribution added:", data);
       // Refresh the list automatically
-      queryClient.invalidateQueries(["club_funds_contributions"]);
+      queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
     },
     onError: (error) => {
       console.error("❌ Add club fund contribution failed:", error.message);
