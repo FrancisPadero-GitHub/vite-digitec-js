@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router';
-import { useFetchClubFunds } from './hooks/useFetchClubFunds'
 import { useMembers } from '../../backend/hooks/useFetchMembers';
+import { useFetchClubFunds } from './hooks/useFetchClubFunds'
 import { useAddClubFunds } from './hooks/useAddClubFunds';
 
 function ClubFunds() {
+  const { data: members } = useMembers();
   const { data: funds, isLoading, isError, error } = useFetchClubFunds();
   const { mutate } = useAddClubFunds(); // activate the mutateFn which activates the query inside
-  const { data: members } = useMembers();
 
   // form data
   const [formData, setFormData] = useState({
@@ -76,7 +76,7 @@ function ClubFunds() {
     e.preventDefault();
     setAddModalOpen(false);
     mutate(formData);
-    console.log("Form data", formData)
+    console.log("Club Funds Form data", formData)
     setFormData("");
   }
 
@@ -121,7 +121,7 @@ function ClubFunds() {
                 {funds.map((fund) => (
                   <React.Fragment key={fund.contribution_id}>
                     {/* onClick FN on tr === table row */}
-                    <tr 
+                    <tr
                       onClick={() => openSelectedFundModal(fund)}
                       className="cursor-pointer hover:bg-base-200/50"
                     >

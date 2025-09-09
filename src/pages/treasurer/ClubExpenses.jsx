@@ -12,6 +12,15 @@ function ClubExpenses() {
     amount: 0,
     transaction_date: "",
   })
+
+  const fields = [
+    { label: "Amount", name: "amount", type: "number" },
+    { label: "Type", name: "type", type: "text" },
+    { label: "Category", name: "category", type: "text" },
+    { label: "Description", name: "description", type: "text" },
+    { label: "Date", name: "transaction_date", type: "date" },
+  ]
+
   const { mutate } = useAddExpenses();
 
   const [selectedRow, setSelectedRow] = useState(null);
@@ -43,17 +52,10 @@ function ClubExpenses() {
     e.preventDefault();
     setAddModalOpen(false);
     mutate(formData); // add expenses
-    console.log("Form data", formData)
+    console.log("Club Expenses Form data", formData)
     setFormData("");
   }
 
-  const fields = [
-    { label: "Amount", name: "amount", type: "number" },
-    { label: "Type", name: "type", type: "text" },
-    { label: "Category", name: "category", type: "text" },
-    { label: "Description", name: "description", type: "text" },
-    { label: "Date", name: "transaction_date", type: "date" },
-  ]
 
   // This should be almost always be the bottom code just above return
   if (isLoading) return <div>Loading Club Expenses...</div>;

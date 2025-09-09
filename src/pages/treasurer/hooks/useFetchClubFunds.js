@@ -1,4 +1,3 @@
-// src/hooks/useFetchClubFunds.js
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../../backend/supabase";
 
