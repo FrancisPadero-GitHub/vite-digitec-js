@@ -9,11 +9,12 @@ import { supabase } from "../../../backend/supabase";
  * @returns
  */
 
-const markAsDelete = async ({table, table_id_name, transaction_id}) => {
+const markAsDelete = async ({ table, column_name, id }) => {
+  console.log(id)
   const { data, error } = await supabase
     .from(table)
     .update({ deleted_at: new Date().toISOString() })
-    .eq(table_id_name, transaction_id)
+    .eq(column_name, id)
     .select()
     .single();
 
@@ -21,17 +22,17 @@ const markAsDelete = async ({table, table_id_name, transaction_id}) => {
   return data;
 };
 
-export const useDelete = () => {
+export const useDelete = (table) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: markAsDelete,
     onSuccess: () => {
-      // refresh active rows automatically
-      queryClient.invalidateQueries(["club_funds_expenses", "active"]);
+      console.log("Record marked as deleted, table:", table);
+      queryClient.invalidateQueries([table, "active"]);
     },
     onError: (error) => {
-      console.error("Failed to delete expense", error.message);
+      console.error("Failed to delete", error.message);
     },
   });
 };

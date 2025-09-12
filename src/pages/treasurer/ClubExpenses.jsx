@@ -17,7 +17,7 @@ function ClubExpenses() {
   // mutation hooks for adding and editing expenses
   const { mutate: mutateAdd } = useAddExpenses();
   const { mutate: mutateEdit } = useEditExpenses();
-  const { mutate: mutateDelete } = useDelete();
+  const { mutate: mutateDelete } = useDelete('club_funds_expenses');
 
   // Form default values
   const [formData, setFormData] = useState({
@@ -38,9 +38,9 @@ function ClubExpenses() {
    */
   const fields = [
     { label: "Type", name: "type", type: "text" },
+    { label: "Amount", name: "amount", type: "number" },
     { label: "Category", name: "category", type: "text" },
     { label: "Description", name: "description", type: "text" },
-    { label: "Amount", name: "amount", type: "number" },
     { label: "Date", name: "transaction_date", type: "date" },
   ];
 
@@ -71,10 +71,15 @@ function ClubExpenses() {
   };
 
   /**
-   * Form Handlers
-   */
+    * Form Handlers
+    */
   const handleChange = (e) => {
     const { name, value } = e.target;
+    /**
+      * Sets the form data but it checks first if the value correctly corresponds to the value like
+      * if membership_fee is indeed a value which is a number then proceeds to assign that value to
+      * formData
+      */
     setFormData((prev) => ({
       ...prev,
       [name]: name === "amount" ? Number(value) : value,
@@ -82,7 +87,7 @@ function ClubExpenses() {
   };
 
   const handleDelete = (transaction_id) => {
-    mutateDelete({ table: "club_funds_expenses", table_id_name: "transaction_id", transaction_id }); // hard coded base on what file the modal is imported
+    mutateDelete({ table: "club_funds_expenses", column_name: "transaction_id", id: transaction_id }); // hard coded base on what file the modal is imported
     closeModal();
   };
 
@@ -117,18 +122,35 @@ function ClubExpenses() {
             </Link>
           </div>
         </div>
+        {/** Toolbar  */}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
+            {/* <SearchIcon className="text-base-content/50" /> */}
+            <input
+              type="text"
+              placeholder="Search..."
+              className="grow"
+              value={""}
+              onChange={""}
+            />
+          </label>
 
+        </div>
+
+
+
+        {/** 
+         *  Expenses Table
+         * 
+         */}
         <section className="space-y-4">
           <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
             <table className="table">
               <thead>
                 <tr className="bg-base-200/30 text-left">
-                  <th>#</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Date</th>
+                  {fields.map(({ label }) => (
+                    <th key={label}>{label}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -138,7 +160,6 @@ function ClubExpenses() {
                     onClick={() => openEditModal(expenses)}
                     className="cursor-pointer hover:bg-base-200/50"
                   >
-                    <td>{expenses.transaction_id || "Not Provided"}</td>
                     <td>{expenses.type || "Not Provided"}</td>
                     <td>₱ {expenses.amount?.toLocaleString() || "0"}</td>
                     <td>{expenses.category || "Not Provided"}</td>
@@ -155,6 +176,11 @@ function ClubExpenses() {
           </div>
         </section>
       </div>
+
+      {/** 
+       * Form Modal Declaration
+       * 
+       * */}
 
       <FormModal
         open={modalType !== null} // which will be set to true if value is present

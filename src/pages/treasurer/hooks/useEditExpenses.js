@@ -43,7 +43,7 @@ export const useEditExpenses = () => {
     mutationFn: updateExpenses,
     onSuccess: (data) => {
       console.log("Expenses Updated!: ", data);
-      queryClient.invalidateQueries(["club_funds_expenses"]); // refetch after update
+      queryClient.invalidateQueries(["club_funds_expenses", "active"]); // refetch after update
     },
     onError: (error) => {
       console.error("Updating expenses failed", error.message);

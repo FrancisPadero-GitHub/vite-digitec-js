@@ -1,10 +1,9 @@
 import { supabase } from "../../../backend/supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 
-// Insert function
-const insertClubfunds = async (formData) => {
-  // Build payload safely with destructuring + null fallback
+const updateClubFunds = async (formData) => {
   const {
+    contribution_id, // we need this to identify which row to update
     member_id = null,
     amount = null,
     category = null,
@@ -15,6 +14,7 @@ const insertClubfunds = async (formData) => {
   } = formData; // if the form data is empty it will fallback to these null values
 
   const payload = {
+    contribution_id,
     member_id,
     amount,
     category,
@@ -26,7 +26,8 @@ const insertClubfunds = async (formData) => {
 
   const { data, error } = await supabase
     .from("club_funds_contributions")
-    .insert(payload)
+    .update(payload)
+    .eq("contribution_id", contribution_id)
     .select()
     .single();
 
@@ -38,18 +39,16 @@ const insertClubfunds = async (formData) => {
 };
 
 // React Query mutation hook
-export const useAddClubFunds = () => {
+export const useEditClubFunds = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: insertClubfunds,
+    mutationFn: updateClubFunds,
     onSuccess: (data) => {
-      console.log("✅ Contribution added:", data);
-      // Refresh the list automatically
-      queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
+      console.log("Contribution Updated!", data);
+      queryClient.invalidateQueries(["club_funds_contributions", "active"]); // to reflect the change instantly
     },
     onError: (error) => {
-      console.error("❌ Add club fund contribution failed:", error.message);
+      console.error("Updating contribution failed!", error.message);
     },
   });
 };

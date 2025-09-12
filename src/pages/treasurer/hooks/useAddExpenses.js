@@ -20,7 +20,7 @@ const insertExpenses = async (formData) => {
 
   const { data, error } = await supabase
     .from("club_funds_expenses")
-    .insert([payload])
+    .insert(payload)
     .select()
     .single();
 
@@ -36,7 +36,7 @@ export const useAddExpenses = () => {
     mutationFn: insertExpenses,
     onSuccess: (data) => {
       console.log("Expenses Added!: ", data);
-      queryClient.invalidateQueries(["club_funds_expenses"]);
+      queryClient.invalidateQueries(["club_funds_expenses", "active"]);
     },
     onError: (error) => {
       console.error("Adding expenses failed", error.message);

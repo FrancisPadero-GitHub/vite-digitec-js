@@ -14,7 +14,7 @@ const insertCoopContributions = async (formData) => {
 
   const { data, error } = await supabase
     .from("coop_cbu_contributions")
-    .insert([payload])
+    .insert(payload)
     .select()
     .single();
 
