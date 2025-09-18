@@ -1,25 +1,39 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router';
+
+// Hooks
 import { useMembers } from '../../backend/hooks/useFetchMembers';
 import { useFetchCoopContributions } from './hooks/useFetchCoopContributions';
 import { useAddCoopContributions } from './hooks/useAddCoopContributions';
+import { useEditCoopContributions } from './hooks/useEditCoopContributions';
+import { useDelete } from './hooks/useDelete';
+
+// components
+import FormModal from './modals/FormModal';
 
 function CoopShareCapital() {
-  const { mutate } = useAddCoopContributions();
+
+  // useQuery hook to fetch coop funds and members
   const { data: members } = useMembers();
   const { data: coop, isLoading, isError, error } = useFetchCoopContributions();
 
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
 
+  // mutation hooks for adding and editing funds
+  const { mutate: mutateAdd } = useAddCoopContributions();
+  const { mutate: mutateEdit } = useEditCoopContributions();
+  const { mutate: mutateDelete } = useDelete('coop_cbu_contributions');
+
+  // form data
   const [formData, setFormData] = useState({
+    coop_contri_id: null,
     member_id: null,
     source: "",
     amount: 0,
     contribution_date: "",
     remarks: "",
   })
+
+  const [modalType, setModalType] = useState(null); // "add" | "edit" | null
 
   const fields = [
     { label: "Amount", name: "amount", type: "number" },
@@ -28,12 +42,39 @@ function CoopShareCapital() {
     { label: "Remarks", name: "remarks", type: "text" },
   ]
 
-  const openSelectedRowModal = (contribution) => {
-    setSelectedRow(contribution);
-    setEditModalOpen(true);
+  /**
+   * Modal Handlers
+   * 
+   */
+  const openAddModal = () => {
+    // Reset form data to initial state
+    setFormData({
+      coop_contri_id: null,
+      member_id: null,
+      source: "",
+      amount: 0,
+      contribution_date: "",
+      remarks: "",
+    })
+    setModalType("add");
   }
 
+  const openEditModal = (selectedRowData) => {
+    setFormData(selectedRowData); // preload form with selected row data
+    console.log(selectedRowData)
+    setModalType("edit");
+  };
+
+  const closeModal = () => {
+    setModalType(null);
+  };
+
   const handleChange = (e) => {
+    /**
+  * Sets the form data but it checks first if the value correctly corresponds to the value like
+  * if membership_fee is indeed a value which is a number then proceeds to assign that value to
+  * formData
+  */
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -44,12 +85,24 @@ function CoopShareCapital() {
     }));
   };
 
+  const handleDelete = (coop_contri_id) => {
+    console.log("Deleting Coop contribution:", coop_contri_id);
+    mutateDelete({ table: "coop_cbu_contributions", column_name: "coop_contri_id", id: coop_contri_id });
+    closeModal();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    setAddModalOpen(false);
-    mutate(formData);
-    console.log("Expenses Form data", formData)
-    setFormData("");
+
+    if (modalType === "add") {
+      mutateAdd(formData);
+      console.log("Adding Coop contribution:", formData);
+    } else if (modalType === "edit") {
+      mutateEdit(formData);
+      console.log("Updating Coop contribution:", formData);
+    }
+
+    closeModal();
   }
 
   if (isLoading) return <div>Loading Coop Contributions...</div>;
@@ -63,7 +116,7 @@ function CoopShareCapital() {
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
-              onClick={() => setAddModalOpen(true)}
+              onClick={openAddModal}
 
             >
               + Add Contribution
@@ -76,7 +129,7 @@ function CoopShareCapital() {
               <thead>
                 <tr className="bg-base-200/30 text-left">
                   <td>#</td>
-                  <td>Member Name</td>
+                  <td>Name</td>
                   <td>Amount</td>
                   <td>Source</td>
                   <td>Date</td>
@@ -84,29 +137,47 @@ function CoopShareCapital() {
                 </tr>
               </thead>
               <tbody>
-                {coop.map((contribution) => (
-                  <React.Fragment key={contribution.coop_contri_id}>
-                    <tr
-                      onClick={() => openSelectedRowModal(contribution)}
-                      className="cursor-pointer hover:bg-base-200/50"
-                    >
-                      <td>{contribution.coop_contri_id}</td>
-                      <td>
-                        {(() => {
-                          const matchedMember = members?.find(
-                            (member) => member.member_id === contribution.member_id);
-                          if (!matchedMember) return "System";
-                          return `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim();
-                        })()}
+                {coop.map((contribution) => {
+                  const matchedMember = members?.find(
+                    (member) => member.member_id === contribution.member_id
+                  );
 
-                      </td>
-                      <td>₱ {contribution.amount?.toLocaleString() || "0"}</td>
-                      <td>{contribution.source || "Not Provided"}</td>
-                      <td>{contribution.contribution_date ? new Date(contribution.contribution_date).toLocaleDateString() : "Not Provided"}</td>
-                      <td>{contribution.remarks || "Not Provided"}</td>
-                    </tr>
-                  </React.Fragment>
-                ))}
+                  const isDisabled = !matchedMember; // true if no member found
+
+                  return (
+                    <React.Fragment key={contribution.coop_contri_id}>
+                      <tr
+                        onClick={!isDisabled ? () => openEditModal(contribution) : undefined}
+                        className={`${!isDisabled ? "cursor-pointer hover:bg-base-200/50" : "cursor-not-allowed opacity-50"}`}
+                      >
+                        <td>{contribution.coop_contri_id}</td>
+                        <td className="relative group">
+                          {matchedMember
+                            ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                            : "System"}
+
+                          {/* Tooltip for system-generated contributions and is disabled */}
+                          {isDisabled && (
+                            <span className="hidden group-hover:inline ml-2 bg-green-800 text-white text-xs rounded px-2 py-0.5 shadow">
+                              System Generated
+                            </span>
+                          )}
+                          
+                        </td>
+
+                        <td>₱ {contribution.amount?.toLocaleString() || "0"}</td>
+                        <td>{contribution.source || "Not Provided"}</td>
+                        <td>
+                          {contribution.contribution_date
+                            ? new Date(contribution.contribution_date).toLocaleDateString()
+                            : "Not Provided"}
+                        </td>
+                        <td>{contribution.remarks || "Not Provided"}</td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                })}
+
               </tbody>
             </table>
             {/* Footer */}
@@ -127,171 +198,73 @@ function CoopShareCapital() {
           </div>
         </section>
       </div>
+      <FormModal
+        open={modalType !== null}
+        close={closeModal}
+        action={modalType === "edit"}
+        onSubmit={handleSubmit}
+        deleteAction={() => handleDelete(formData.coop_contri_id)}
+      >
+        <div className="form-control w-full">
+          <label htmlFor="member_id" className="label mb-1">
+            <span className="label-text font-medium text-gray-700">Member</span>
+          </label>
+          <select
+            id="member_id"
+            name="member_id"
+            value={formData.member_id || ""}
+            onChange={handleChange}
+            className="select select-bordered w-full"
+            required
+          >
+            <option value="">-- Select Member --</option>
+            {members?.map((m) => (
+              <option key={m.member_id} value={m.member_id}>
+                {m.f_name} {m.l_name} ({m.email})
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/** 
-       * Expanded information or edit expenses modal
-       * 
-      */}
+        {fields.map(({ label, name, type, options }) => (
+          <div key={name} className="form-control w-full">
+            <label htmlFor={name} className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                {label}
+              </span>
+            </label>
 
-      {editModalOpen && selectedRow && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md p-6">
-            <h4 className="text-2xl font-bold text-gray-800 mb-6">
-             Contribution Information
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-              <div>
-                <p className="text-gray-500">#</p>
-                <p className="font-medium text-gray-900">
-                  {selectedRow.coop_contri_id || "Not Provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Type</p>
-                <p className="font-medium text-gray-900">
-                  {(() => {
-                    const matchedMember = members?.find(
-                      (member) => member.member_id === selectedRow.member_id);
-                    if (!matchedMember) return "System";
-                    return `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim();
-                  })()}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Amount</p>
-                <p className="font-medium text-gray-900">
-                  {selectedRow.amount || "Not Provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Source</p>
-                <p className="font-medium text-gray-900">
-                  {selectedRow.source || "Not Provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Date</p>
-                <p className="font-medium text-gray-900">
-                  {selectedRow.contribution_date ? new Date(selectedRow.contribution_date).toLocaleDateString() : "Not Provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Remarks</p>
-                <p className="font-medium text-gray-900">
-                  {selectedRow.remarks}
-                </p>
-              </div>
-
-            </div>
-
-            <div className="mt-6 flex justify-start">
-              <button
-                onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors"
+            {type === "select" ? (
+              <select
+                id={name}
+                name={name}
+                value={formData[name] || ""}
+                onChange={handleChange}
+                className="select select-bordered w-full"
+                required
               >
-                Close
-              </button>
-            </div>
+                <option value="">-- Select {label} --</option>
+                {options?.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                id={name}
+                type={type}
+                name={name}
+                value={formData[name] || ""}
+                onChange={handleChange}
+                className="input input-bordered w-full"
+                required
+              />
+            )}
           </div>
-        </div>
-      )}
+        ))}
 
-      {/**
-       * Add expenses transaction modal
-       * 
-       * 
-      */}
-      {addModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-11/12 max-w-md p-6 transform transition-all scale-100 animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Add Contribution
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-
-              <div className="form-control w-full">
-                <label htmlFor="member_id" className="label mb-1">
-                  <span className="label-text font-medium text-gray-700">Member</span>
-                </label>
-                <select
-                  id="member_id"
-                  name="member_id"
-                  value={formData.member_id || ""}
-                  onChange={handleChange}
-                  className="select select-bordered w-full"
-                  required
-                >
-                  <option value="">-- Select Member --</option>
-                  {members?.map((m) => (
-                    <option key={m.member_id} value={m.member_id}>
-                      {m.f_name} {m.l_name} ({m.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {fields.map(({ label, name, type, options }) => (
-                <div key={name} className="form-control w-full">
-                  <label htmlFor={name} className="label mb-1">
-                    <span className="label-text font-medium text-gray-700">{label}</span>
-                  </label>
-
-                  {type === "select" ? (
-                    <select
-                      id={name}
-                      name={name}
-                      value={formData[name] || ""}
-                      onChange={handleChange}
-                      className="select select-bordered w-full"
-                      required
-                    >
-                      <option value="">-- Select {label} --</option>
-                      {options?.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      id={name}
-                      type={type}
-                      name={name}
-                      value={formData[name] || ""}
-                      onChange={handleChange}
-                      className="input input-bordered w-full"
-                      required
-                    />
-                  )}
-                </div>
-              ))}
-
-              {/* Footer buttons */}
-              <div className="flex justify-between gap-3 pt-4 ">
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => setAddModalOpen(false)}
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-success px-8"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      </FormModal>
 
     </div>
   )

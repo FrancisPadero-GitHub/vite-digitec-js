@@ -66,6 +66,7 @@ function ClubFunds() {
    * 
    */
   const openAddModal = () => {
+    // Reset form data to initial state
     setFormData({
       contribution_id: null,
       member_id: null,
@@ -88,6 +89,8 @@ function ClubFunds() {
   const closeModal = () => {
     setModalType(null);
   };
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     /**
@@ -106,7 +109,7 @@ function ClubFunds() {
 
   const handleDelete = (contribution_id) => {
     console.log("Deleting Club fund:", contribution_id);
-    mutateDelete({ table: "club_funds_contributions", column_name: "contribution_id", id: contribution_id }); // hard coded base on what file the modal is imported
+    mutateDelete({ table: "club_funds_contributions", column_name: "contribution_id", id: contribution_id }); 
     closeModal();
   };
 
@@ -151,7 +154,7 @@ function ClubFunds() {
                 <tr className="bg-base-200/30 text-left">
 
                   <th>#</th>
-                  <th>Member Name</th>
+                  <th>Name</th>
                   <th>Amount</th>
                   <th>Category</th>
                   <th>Payment Date</th>

@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../../backend/supabase";
 
+/**
+ * @params {key} "active" - to fetch only active records
+ * @returns {Promise<Array>} - a promise that resolves to an array of active expense records
+ */
+
 async function fetchExpenses() {
   const { data, error } = await supabase
     .from("club_funds_expenses")
