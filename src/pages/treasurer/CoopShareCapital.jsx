@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Select from "react-select"; // for the searchable dropdown below for members
 import { Link } from 'react-router';
 
 // Hooks
@@ -205,7 +206,8 @@ function CoopShareCapital() {
         onSubmit={handleSubmit}
         deleteAction={() => handleDelete(formData.coop_contri_id)}
       >
-        <div className="form-control w-full">
+        {/* MIGHT USE LATER: THIS IS THE OLD DROPDOWN SELECT FOR MEMBERS */}
+        {/* <div className="form-control w-full">
           <label htmlFor="member_id" className="label mb-1">
             <span className="label-text font-medium text-gray-700">Member</span>
           </label>
@@ -224,10 +226,28 @@ function CoopShareCapital() {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
+
+        {/* Member Select dropdown and search component from react-select */}
+        <Select
+          options={members?.map((m) => ({
+            value: m.member_id,
+            label: `${m.f_name} ${m.l_name} (${m.email})`,
+          }))}
+          value={members?.find((m) => m.member_id === formData.member_id) ? {
+            value: formData.member_id,
+            label: `${members.find((m) => m.member_id === formData.member_id)?.f_name} 
+            ${members.find((m) => m.member_id === formData.member_id)?.l_name}`
+          } : null}
+          onChange={(option) =>
+            handleChange({ target: { name: "member_id", value: option?.value } })
+          }
+          placeholder="Search or select member..."
+          className="w-full"
+        />
 
         {fields.map(({ label, name, type, options }) => (
-          <div key={name} className="form-control w-full">
+          <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name} className="label mb-1">
               <span className="label-text font-medium text-gray-700">
                 {label}

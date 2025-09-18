@@ -190,7 +190,7 @@ function ClubExpenses() {
         deleteAction={() => handleDelete(formData.transaction_id)}
       >
         {fields.map(({ label, name, type, options }) => (
-          <div key={name} className="form-control w-full">
+          <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name} className="label mb-1">
               <span className="label-text font-medium text-gray-700">
                 {label}

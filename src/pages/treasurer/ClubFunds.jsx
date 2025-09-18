@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Select from "react-select"; // for the searchable dropdown below for members
 import { Link } from 'react-router';
 
 // hooks
@@ -21,6 +22,8 @@ function ClubFunds() {
   const { mutate: mutateEdit } = useEditClubFunds();
   const { mutate: mutateDelete } = useDelete('club_funds_contributions');
 
+
+
   // form data
   const [formData, setFormData] = useState({
     contribution_id: null,
@@ -29,10 +32,10 @@ function ClubFunds() {
     category: "",
     payment_date: "",
     payment_method: "",
-    period_covered: "",
+    period_start: "",
+    period_end: "",
     remarks: "",
-  }
-  );
+  });
 
   const [modalType, setModalType] = useState(null); // "add" | "edit" | null
 
@@ -57,7 +60,9 @@ function ClubFunds() {
       type: "select",
       options: ["Gcash", "Cash"],
     },
-    { label: "Period Covered", name: "period_covered", type: "text" },
+    { label: "Period Start", name: "period_start", type: "date" },
+    { label: "Period End", name: "period_end", type: "date" },
+
     { label: "Remarks", name: "remarks", type: "text" },
   ];
 
@@ -74,7 +79,8 @@ function ClubFunds() {
       category: "",
       payment_date: "",
       payment_method: "",
-      period_covered: "",
+      period_start: "",
+      period_end: "",
       remarks: "",
     })
     setModalType("add");
@@ -109,7 +115,7 @@ function ClubFunds() {
 
   const handleDelete = (contribution_id) => {
     console.log("Deleting Club fund:", contribution_id);
-    mutateDelete({ table: "club_funds_contributions", column_name: "contribution_id", id: contribution_id }); 
+    mutateDelete({ table: "club_funds_contributions", column_name: "contribution_id", id: contribution_id });
     closeModal();
   };
 
@@ -168,41 +174,83 @@ function ClubFunds() {
               <tbody>
                 {clubFunds.map((fund) => (
                   <React.Fragment key={fund.contribution_id}>
-                    {/* onClick FN on tr === table row */}
                     <tr
                       onClick={() => openEditModal(fund)}
-                      className="cursor-pointer hover:bg-base-200/50"
+                      className="cursor-pointer hover:bg-base-200/70 transition-colors"
                     >
-                      <td>{fund.contribution_id}</td>
-                      <td>
-                        {/**
-                         * Immediately Invoked Function Expression (IIFE)
-                         * 
-                         * (()=>{...}) ()
-                         * 
-                         * first () is an expression then followed by a arrow function
-                         * then the last () is to execute this EXPRESSION FUNCTION.... fuck me unsa maneh
-                         * 
-                         *  */}
+                      {/* Contribution ID */}
+                      <td className="px-4 py-2 font-mono text-gray-700">{fund.contribution_id}</td>
+
+                      {/* Member Name */}
+                      <td className="px-4 py-2">
                         {(() => {
                           const matchedMember = members?.find(
                             (member) => member.member_id === fund.member_id
                           );
-                          if (!matchedMember) return "Not Provided";
+                          if (!matchedMember) return <span className="italic text-gray-400">Not Provided</span>;
 
-                          return `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim();
+                          return (
+                            <span className="font-medium text-gray-800">
+                              {`${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()}
+                            </span>
+                          );
                         })()}
                       </td>
-                      <td>₱ {fund.amount?.toLocaleString() || "0"}</td>
-                      <td>{fund.category || "Not Provided"}</td>
-                      <td>{fund.payment_date ? new Date(fund.payment_date).toLocaleDateString() : "Not Provided"}</td>
-                      <td className={`badge badge-soft font-semibold ${fund.payment_method === "Cash" ? "badge-success" : "badge-info"}`}>{fund.payment_method || "Not Provided"}</td>
-                      <td>{fund.period_covered || "Not Provided"}</td>
-                      <td>{fund.remarks || "Not Provided"}</td>
+
+                      {/* Amount */}
+                      <td className="px-4 py-2">
+                        <span className="px-2 py-1 rounded bg-green-50 text-green-700 font-semibold">
+                          ₱ {fund.amount?.toLocaleString() || "0"}
+                        </span>
+                      </td>
+
+                      {/* Category */}
+                      <td className="px-4 py-2 text-gray-700">{fund.category || "Not Provided"}</td>
+
+                      {/* Payment Date */}
+                      <td className="px-4 py-2">
+                        {fund.payment_date ? (
+                          <span>{new Date(fund.payment_date).toLocaleDateString()}</span>
+                        ) : (
+                          <span className="italic text-gray-400">Not Provided</span>
+                        )}
+                      </td>
+
+                      {/* Payment Method */}
+                      <td className="px-4 py-2">
+                        {fund.payment_method ? (
+                          <span
+                            className={`badge font-semibold px-3 py-1 ${fund.payment_method === "Cash"
+                                ? "badge-success bg-green-600 text-white"
+                                : "badge-info bg-blue-600 text-white"
+                              }`}
+                          >
+                            {fund.payment_method}
+                          </span>
+                        ) : (
+                          <span className="italic text-gray-400">Not Provided</span>
+                        )}
+                      </td>
+
+                      {/* Period Covered */}
+                      <td className="px-4 py-2">
+                        {fund.period_start && fund.period_end ? (
+                          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-sm font-medium">
+                            {new Date(fund.period_start).toLocaleDateString()} –{" "}
+                            {new Date(fund.period_end).toLocaleDateString()}
+                          </span>
+                        ) : (
+                          <span className="italic text-gray-400">Not Provided</span>
+                        )}
+                      </td>
+
+                      {/* Remarks */}
+                      <td className="px-4 py-2 text-gray-600">{fund.remarks || "Not Provided"}</td>
                     </tr>
                   </React.Fragment>
                 ))}
               </tbody>
+
 
             </table>
 
@@ -231,30 +279,26 @@ function ClubFunds() {
         onSubmit={handleSubmit}
         deleteAction={() => handleDelete(formData.contribution_id)}
       >
-        <div className="form-control w-full">
-          <label htmlFor="member_id" className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Member</span>
-          </label>
-          <select
-            id="member_id"
-            name="member_id"
-            value={formData.member_id || ""}
-            onChange={handleChange}
-            className="select select-bordered w-full"
-            required
-          >
-            <option value="">-- Select Member --</option>
-            {members?.map((m) => (
-              <option key={m.member_id} value={m.member_id}>
-                {m.f_name} {m.l_name} ({m.email})
-              </option>
-            ))}
-          </select>
-        </div>
-
+        {/* Member Select dropdown and search component from react-select */}
+        <Select
+          options={members?.map((m) => ({
+            value: m.member_id,
+            label: `${m.f_name} ${m.l_name} (${m.email})`,
+          }))}
+          value={members?.find((m) => m.member_id === formData.member_id) ? {
+            value: formData.member_id,
+            label: `${members.find((m) => m.member_id === formData.member_id)?.f_name} 
+            ${members.find((m) => m.member_id === formData.member_id)?.l_name}`
+          } : null}
+          onChange={(option) =>
+            handleChange({ target: { name: "member_id", value: option?.value } })
+          }
+          placeholder="Search or select member..."
+          className="w-full"
+        />
 
         {fields.map(({ label, name, type, options }) => (
-          <div key={name} className="form-control w-full">
+          <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name} className="label mb-1">
               <span className="label-text font-medium text-gray-700">
                 {label}
