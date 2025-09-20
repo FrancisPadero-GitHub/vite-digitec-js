@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const insertExpenses = async (formData) => {
   const {
     amount = null,
-    type = null,
+    title = null,
     category = null,
     description = null,
     transaction_date = null,
@@ -12,7 +12,7 @@ const insertExpenses = async (formData) => {
 
   const payload = {
     amount,
-    type,
+    title,
     category,
     description,
     transaction_date,

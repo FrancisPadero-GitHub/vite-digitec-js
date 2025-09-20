@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SearchIcon from "@mui/icons-material/Search";
 import { Link } from "react-router";
 
 // hooks
@@ -22,7 +23,7 @@ function ClubExpenses() {
   // Form default values
   const [formData, setFormData] = useState({
     transaction_id: null,
-    type: "",
+    title: "",
     category: "",
     description: "",
     amount: 0,
@@ -37,9 +38,9 @@ function ClubExpenses() {
    *  example: { label: "Type", name: "type", type: "select", options: ["Food", "Transport"] }
    */
   const fields = [
-    { label: "Type", name: "type", type: "text" },
+    { label: "Title", name: "title", type: "text" },
     { label: "Amount", name: "amount", type: "number" },
-    { label: "Category", name: "category", type: "text" },
+    { label: "Category", name: "category", type: "select", options: ["GMM", "Monthly Dues", "Activities", "Alalayang Agila", "Community Service", "Others"] },
     { label: "Description", name: "description", type: "text" },
     { label: "Date", name: "transaction_date", type: "date" },
   ];
@@ -52,7 +53,7 @@ function ClubExpenses() {
     // resets form if it was previously used for editing
     setFormData({
       transaction_id: null,
-      type: "",
+      title: "",
       category: "",
       description: "",
       amount: 0,
@@ -112,8 +113,9 @@ function ClubExpenses() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Club Expenses Page</h1>
+          <h1 className="text-2xl font-bold">Club Expenses</h1>
           <div className="flex flex-row items-center gap-3">
+            <button className="btn btn-outline">Export as CSV</button>
             <Link
               className="btn btn-neutral whitespace-nowrap"
               onClick={openAddModal}
@@ -122,19 +124,47 @@ function ClubExpenses() {
             </Link>
           </div>
         </div>
-        {/** Toolbar  */}
+        {/** Toolbar functionality to be implemented */}
         <div className="flex flex-wrap items-center gap-2">
           <label className="input input-bordered flex items-center bg-base-100 md:w-64">
             {/* <SearchIcon className="text-base-content/50" /> */}
+            <SearchIcon className="text-base-content/50" />
             <input
               type="text"
               placeholder="Search..."
               className="grow"
-              value={""}
-              onChange={""}
+
             />
           </label>
 
+          <select
+
+            className="select select-bordered w-40"
+
+
+          >
+            <option> Type </option>
+            <option> 2 </option>
+          </select>
+
+
+          <select
+
+            className="select select-bordered w-40"
+
+          >
+            <option> Year </option>
+            <option> 2 </option>
+          </select>
+
+          <select
+
+            className="select select-bordered w-40"
+
+          >
+            <option> Month </option>
+            <option> 2 </option>
+          </select>
         </div>
 
 
@@ -160,7 +190,7 @@ function ClubExpenses() {
                     onClick={() => openEditModal(expenses)}
                     className="cursor-pointer hover:bg-base-200/50"
                   >
-                    <td>{expenses.type || "Not Provided"}</td>
+                    <td>{expenses.title || "Not Provided"}</td>
                     <td>₱ {expenses.amount?.toLocaleString() || "0"}</td>
                     <td>{expenses.category || "Not Provided"}</td>
                     <td>{expenses.description || "Not Provided"}</td>
@@ -173,8 +203,24 @@ function ClubExpenses() {
                 ))}
               </tbody>
             </table>
+            {/* Footer functionality to be implemented*/}
+            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
+              <div className="text-sm text-base-content/70">
+                Showing 1 to 3 of 3 entries
+              </div>
+              <div className="join">
+                <button className="join-item btn btn-sm" disabled>
+                  «
+                </button>
+                <button className="join-item btn btn-sm">Page 1 of 1</button>
+                <button className="join-item btn btn-sm" disabled>
+                  »
+                </button>
+              </div>
+            </div>
           </div>
         </section>
+
       </div>
 
       {/** 
@@ -206,7 +252,7 @@ function ClubExpenses() {
                 className="select select-bordered w-full"
                 required
               >
-                <option value="">-- Select {label} --</option>
+                <option value="" className="label" disabled>Select {label}</option>
                 {options?.map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}

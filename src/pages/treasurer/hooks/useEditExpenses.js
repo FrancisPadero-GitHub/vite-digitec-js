@@ -5,7 +5,7 @@ const updateExpenses = async (formData) => {
   const {
     transaction_id, // we need this to identify which row to update
     amount = null,
-    type = null,
+    title = null,
     category = null,
     description = null,
     transaction_date = null,
@@ -17,7 +17,7 @@ const updateExpenses = async (formData) => {
 
   const payload = {
     amount,
-    type,
+    title,
     category,
     description,
     transaction_date,

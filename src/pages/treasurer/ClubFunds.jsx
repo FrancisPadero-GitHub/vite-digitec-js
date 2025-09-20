@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import Select from "react-select"; // for the searchable dropdown below for members
+import SearchIcon from "@mui/icons-material/Search";
+import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react'; // for the searchable dropdown below for members
 import { Link } from 'react-router';
 
 // hooks
@@ -36,6 +37,20 @@ function ClubFunds() {
     period_end: "",
     remarks: "",
   });
+
+  /**
+   * This is for the member search for the modal
+   */
+  const [query, setQuery] = useState("");
+  const filteredMembers =
+    query === ""
+      ? members || []
+      : members?.filter((m) =>
+        `${m.f_name} ${m.l_name} ${m.email}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      ) || [];
+
 
   const [modalType, setModalType] = useState(null); // "add" | "edit" | null
 
@@ -141,7 +156,7 @@ function ClubFunds() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Club Funds page</h1>
+          <h1 className="text-2xl font-bold">Club Funds</h1>
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
@@ -151,6 +166,42 @@ function ClubFunds() {
               + Add Transaction
             </Link>
           </div>
+        </div>
+
+        {/** Toolbar functionality to be implemented */}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
+            {/* <SearchIcon className="text-base-content/50" /> */}
+            <SearchIcon className="text-base-content/50" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="grow"
+
+            />
+          </label>
+
+          <select
+            className="select select-bordered w-40"
+          >
+            <option> Type </option>
+            <option> 2 </option>
+          </select>
+
+
+          <select
+            className="select select-bordered w-40"
+          >
+            <option> Year </option>
+            <option> 2 </option>
+          </select>
+
+          <select
+            className="select select-bordered w-40"
+          >
+            <option> Month </option>
+            <option> 2 </option>
+          </select>
         </div>
 
         <section className="space-y-4">
@@ -220,9 +271,9 @@ function ClubFunds() {
                       <td className="px-4 py-2">
                         {fund.payment_method ? (
                           <span
-                            className={`badge font-semibold px-3 py-1 ${fund.payment_method === "Cash"
-                                ? "badge-success bg-green-600 text-white"
-                                : "badge-info bg-blue-600 text-white"
+                            className={`badge font-semibold ${fund.payment_method === "Cash"
+                              ? "badge-success"
+                              : "badge-info"
                               }`}
                           >
                             {fund.payment_method}
@@ -279,23 +330,56 @@ function ClubFunds() {
         onSubmit={handleSubmit}
         deleteAction={() => handleDelete(formData.contribution_id)}
       >
-        {/* Member Select dropdown and search component from react-select */}
-        <Select
-          options={members?.map((m) => ({
-            value: m.member_id,
-            label: `${m.f_name} ${m.l_name} (${m.email})`,
-          }))}
-          value={members?.find((m) => m.member_id === formData.member_id) ? {
-            value: formData.member_id,
-            label: `${members.find((m) => m.member_id === formData.member_id)?.f_name} 
-            ${members.find((m) => m.member_id === formData.member_id)?.l_name}`
-          } : null}
-          onChange={(option) =>
-            handleChange({ target: { name: "member_id", value: option?.value } })
-          }
-          placeholder="Search or select member..."
-          className="w-full"
-        />
+
+        <div className="form-control w-full">
+          <label className="label text-sm font-semibold">Member</label>
+          <div className="relative">
+            <Combobox
+              value={members.find((m) => m.member_id === formData.member_id) || null}
+              onChange={(member) =>
+                handleChange({ target: { name: "member_id", value: member?.member_id } })
+              }
+            >
+              <ComboboxInput
+                required
+                className="input input-bordered w-full"
+                placeholder="Search or select member..."
+                displayValue={(member) =>
+                  member ? `${member.f_name} ${member.l_name} (${member.email})` : ""
+                }
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <ComboboxOptions className="absolute z-[999] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                {filteredMembers.length === 0 ? (
+                  <div className="px-4 py-2 text-base-content/60">No members found.</div>
+                ) : (
+                  filteredMembers.map((member) => (
+                    <ComboboxOption
+                      key={member.member_id}
+                      value={member}
+                      className={({ focus }) =>
+                        `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                        }`
+                      }
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* AVATAR WILL BE IMPLMENTED LATER */}
+                        {/* <img
+                          src={member.avatar}
+                          className="w-7 h-7 rounded-full border border-base-300"
+                          alt="avatar"
+                        /> */}
+                        <span className="truncate">
+                          {member.f_name} {member.l_name} ({member.email})
+                        </span>
+                      </div>
+                    </ComboboxOption>
+                  ))
+                )}
+              </ComboboxOptions>
+            </Combobox>
+          </div>
+        </div>
 
         {fields.map(({ label, name, type, options }) => (
           <div key={name} className="form-control w-full mt-2">
@@ -314,7 +398,7 @@ function ClubFunds() {
                 className="select select-bordered w-full"
                 required
               >
-                <option value="">-- Select {label} --</option>
+                <option value="" className="label" disabled>Select {label}</option>
                 {options?.map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}

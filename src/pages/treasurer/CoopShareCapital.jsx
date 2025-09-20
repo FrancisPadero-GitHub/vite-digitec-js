@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import Select from "react-select"; // for the searchable dropdown below for members
+import SearchIcon from "@mui/icons-material/Search";
+import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { Link } from 'react-router';
 
 // Hooks
@@ -28,17 +29,32 @@ function CoopShareCapital() {
   const [formData, setFormData] = useState({
     coop_contri_id: null,
     member_id: null,
-    source: "",
+    source: "Member Contribution", // given default value for it 
+    category: "",
     amount: 0,
     contribution_date: "",
     remarks: "",
   })
 
+  /**
+   * This is for the member search for the modal
+   */
+  const [query, setQuery] = useState("");
+  const filteredMembers =
+    query === ""
+      ? members || []
+      : members?.filter((m) =>
+        `${m.f_name} ${m.l_name} ${m.email}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      ) || [];
+
+
   const [modalType, setModalType] = useState(null); // "add" | "edit" | null
 
   const fields = [
     { label: "Amount", name: "amount", type: "number" },
-    { label: "Source", name: "source", type: "text" },
+    { label: "Payment Category", name: "category", type: "select", options: ['Initial', 'Monthly'] },
     { label: "Date", name: "contribution_date", type: "date" },
     { label: "Remarks", name: "remarks", type: "text" },
   ]
@@ -52,7 +68,8 @@ function CoopShareCapital() {
     setFormData({
       coop_contri_id: null,
       member_id: null,
-      source: "",
+      source: "Member Contribution", // given default value for it 
+      category: "",
       amount: 0,
       contribution_date: "",
       remarks: "",
@@ -113,7 +130,7 @@ function CoopShareCapital() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold" >Coop Share Capital Page</h1>
+          <h1 className="text-2xl font-bold" >Coop Share Capital</h1>
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
@@ -124,6 +141,44 @@ function CoopShareCapital() {
             </Link>
           </div>
         </div>
+
+        {/** Toolbar functionality to be implemented */}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
+            {/* <SearchIcon className="text-base-content/50" /> */}
+            <SearchIcon className="text-base-content/50" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="grow"
+
+            />
+          </label>
+
+          <select
+            className="select select-bordered w-40"
+
+          >
+            <option> Type </option>
+            <option> 2 </option>
+          </select>
+
+
+          <select
+            className="select select-bordered w-40"
+          >
+            <option> Year </option>
+            <option> 2 </option>
+          </select>
+
+          <select
+            className="select select-bordered w-40"
+          >
+            <option> Month </option>
+            <option> 2 </option>
+          </select>
+        </div>
+
         <section className="space-y-4">
           <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
             <table className="table">
@@ -133,6 +188,7 @@ function CoopShareCapital() {
                   <td>Name</td>
                   <td>Amount</td>
                   <td>Source</td>
+                  <td>Payment Category</td>
                   <td>Date</td>
                   <td>Remarks</td>
                 </tr>
@@ -143,43 +199,82 @@ function CoopShareCapital() {
                     (member) => member.member_id === contribution.member_id
                   );
 
-                  const isDisabled = !matchedMember; // true if no member found
+                  const isDisabled = !matchedMember;
 
                   return (
                     <React.Fragment key={contribution.coop_contri_id}>
                       <tr
                         onClick={!isDisabled ? () => openEditModal(contribution) : undefined}
-                        className={`${!isDisabled ? "cursor-pointer hover:bg-base-200/50" : "cursor-not-allowed opacity-50"}`}
+                        className={`transition-colors ${!isDisabled
+                          ? "cursor-pointer hover:bg-base-200/70"
+                          : "cursor-not-allowed opacity-60 bg-base-100/70"
+                          }`}
                       >
-                        <td>{contribution.coop_contri_id}</td>
-                        <td className="relative group">
-                          {matchedMember
-                            ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                            : "System"}
+                        <td className="px-4 py-2 font-medium">{contribution.coop_contri_id}</td>
 
-                          {/* Tooltip for system-generated contributions and is disabled */}
-                          {isDisabled && (
-                            <span className="hidden group-hover:inline ml-2 bg-green-800 text-white text-xs rounded px-2 py-0.5 shadow">
-                              System Generated
-                            </span>
-                          )}
-                          
+                        {/* Member / System Column */}
+                        <td className="px-4 py-2">
+                          <span className="flex items-center gap-2">
+                            {matchedMember
+                              ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                              : "System"}
+
+                            {/* Tooltip badge beside the name */}
+                            {isDisabled && (
+                              <div className="tooltip tooltip-top" data-tip="System Generated">
+                                <span className="badge badge-sm badge-ghost">?</span>
+                              </div>
+                            )}
+                          </span>
                         </td>
 
-                        <td>₱ {contribution.amount?.toLocaleString() || "0"}</td>
-                        <td>{contribution.source || "Not Provided"}</td>
-                        <td>
+
+                        <td className="px-4 py-2 font-semibold text-success">
+                          ₱ {contribution.amount?.toLocaleString() || "0"}
+                        </td>
+
+                        <td className="px-4 py-2">
+                          {contribution.source || (
+                            <span className="text-gray-400 italic">Not Provided</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-2">
+                          {contribution.category ? (
+                            <span
+                              className={`badge font-semibold ${contribution.category === "Initial"
+                                ? "badge-warning"
+                                : contribution.category === "Monthly"
+                                  ? "badge-info"
+                                  : "badge-neutral"
+                                }`}
+                            >
+                              {contribution.category}
+                            </span>
+                          ) : (
+                            <span className="badge font-semibold badge-error">Not Provided</span>
+                          )}
+                        </td>
+
+
+
+                        <td className="px-4 py-2">
                           {contribution.contribution_date
                             ? new Date(contribution.contribution_date).toLocaleDateString()
-                            : "Not Provided"}
+                            : <span className="text-gray-400 italic">Not Provided</span>}
                         </td>
-                        <td>{contribution.remarks || "Not Provided"}</td>
+
+                        <td className="px-4 py-2">
+                          {contribution.remarks || (
+                            <span className="text-gray-400 italic">Not Provided</span>
+                          )}
+                        </td>
                       </tr>
                     </React.Fragment>
                   );
                 })}
-
               </tbody>
+
             </table>
             {/* Footer */}
             <div className="flex justify-between items-center p-4 border-t border-base-content/5">
@@ -199,6 +294,7 @@ function CoopShareCapital() {
           </div>
         </section>
       </div>
+
       <FormModal
         open={modalType !== null}
         close={closeModal}
@@ -229,7 +325,7 @@ function CoopShareCapital() {
         </div> */}
 
         {/* Member Select dropdown and search component from react-select */}
-        <Select
+        {/* <Select
           options={members?.map((m) => ({
             value: m.member_id,
             label: `${m.f_name} ${m.l_name} (${m.email})`,
@@ -244,12 +340,67 @@ function CoopShareCapital() {
           }
           placeholder="Search or select member..."
           className="w-full"
-        />
+        /> */}
+
+        {/* Member Select dropdown and search component headless UI */}
+        <div className="form-control w-full">
+          <label className="label text-sm font-semibold">Member</label>
+          <div className="relative">
+            <Combobox
+              value={members.find((m) => m.member_id === formData.member_id) || null}
+              onChange={(member) =>
+                handleChange({ target: { name: "member_id", value: member?.member_id } })
+              }
+            >
+              <ComboboxInput
+                required
+                className="input input-bordered w-full"
+                placeholder="Search or select member..."
+                displayValue={(member) =>
+                  member ? `${member.f_name} ${member.l_name} (${member.email})` : ""
+                }
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <ComboboxOptions className="absolute z-[999] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                {filteredMembers.length === 0 ? (
+                  <div className="px-4 py-2 text-base-content/60">No members found.</div>
+                ) : (
+                  filteredMembers.map((member) => (
+                    <ComboboxOption
+                      key={member.member_id}
+                      value={member}
+                      className={({ focus }) =>
+                        `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                        }`
+                      }
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* AVATAR WILL BE IMPLMENTED LATER */}
+                        {/* <img
+                          src={member.avatar}
+                          className="w-7 h-7 rounded-full border border-base-300"
+                          alt="avatar"
+                        /> */}
+                        <span className="truncate">
+                          {member.f_name} {member.l_name} ({member.email})
+                        </span>
+                      </div>
+                    </ComboboxOption>
+                  ))
+                )}
+              </ComboboxOptions>
+            </Combobox>
+          </div>
+        </div>
+
+
+
+
 
         {fields.map(({ label, name, type, options }) => (
           <div key={name} className="form-control w-full mt-2">
-            <label htmlFor={name} className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
+            <label htmlFor={name}>
+              <span className="label text-sm font-semibold mb-2">
                 {label}
               </span>
             </label>
@@ -263,7 +414,7 @@ function CoopShareCapital() {
                 className="select select-bordered w-full"
                 required
               >
-                <option value="">-- Select {label} --</option>
+                <option value="" className="label" disabled>Select {label}</option>
                 {options?.map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}

@@ -1,0 +1,29 @@
+The purpose is this for me to remember what shit I do in supabase 
+
+// Creates a RPC function to calculate total with filters (years and month)
+
+
+// CLUB FUNDS TOTAL
+
+CREATE OR REPLACE FUNCTION public.get_club_funds_total(
+  p_year INT DEFAULT NULL,
+  p_month INT DEFAULT NULL
+)
+RETURNS BIGINT
+LANGUAGE sql
+SECURITY DEFINER
+AS $$
+  SELECT COALESCE(SUM(amount), 0)::BIGINT
+  FROM public.club_funds_contributions
+  WHERE deleted_at IS NULL
+    AND (p_year IS NULL OR EXTRACT(YEAR FROM payment_date) = p_year)
+    AND (p_month IS NULL OR EXTRACT(MONTH FROM payment_date) = p_month);
+$$;
+
+
+
+
+
+
+
+

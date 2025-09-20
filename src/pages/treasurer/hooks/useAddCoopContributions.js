@@ -6,11 +6,12 @@ const insertCoopContributions = async (formData) => {
     member_id = null,
     source = null,
     amount = null,
+    category = null,
     contribution_date = null,
     remarks = null,
   } = formData;
 
-  const payload = { member_id, source, amount, contribution_date, remarks };
+  const payload = { member_id, source, amount, category, contribution_date, remarks };
 
   const { data, error } = await supabase
     .from("coop_cbu_contributions")
