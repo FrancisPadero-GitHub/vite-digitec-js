@@ -1,7 +1,14 @@
 import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-material';
-import StatCard from './components/StatCard';
+
+// hooks
 import { useState } from 'react';
 import { useFetchTotal } from './hooks/useFetchTotal';
+
+// components
+import StatCard from './components/StatCard';
+import ExpensesChart from './components/ExpensesChart';
+import CoopContributionChart from './components/CoopContributionChart';
+
 
 function Dashboard() {
 
@@ -19,6 +26,7 @@ function Dashboard() {
   /**
    * Fetches totals for specific tables using RPC functions
    * rpc code can be viewed on supabase functions
+   * 
    */
   const { data: incomeTotal, isLoading: incomeLoading, isError: incomeIsError, error: incomeError } = useFetchTotal({
     rpcFn: "get_club_income_total",
@@ -79,13 +87,13 @@ function Dashboard() {
       growthPercent: 8, // Will be changed later on
       amount: clubFundsTotal ?? 0,
       subtitle: filters.funds.subtitle,
-      onSubtitleChange: (label) => {
+      onSubtitleChange: (date_label) => {
         setFilters((prev) => ({
           ...prev,
           funds: {
-            subtitle: label,
-            month: label === "This Month" ? new Date().getMonth() + 1 : null,
-            year: label !== "All Time" ? new Date().getFullYear() : null,
+            subtitle: date_label,
+            month: date_label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: date_label !== "All Time" ? new Date().getFullYear() : null,
           },
         }));
       },
@@ -156,13 +164,25 @@ function Dashboard() {
               ))}
             </section>
 
-            {/* Share Capital Area Cahrt */}
+            {/* Expenses Chart */}
+
+            {/* CLUB EXPENSES DONUT CHART */}
+            <section className="card bg-base-100/90 shadow-md h-[450px] p-6 sm:p-6 rounded-2xl">
+              <div className="flex flex-col h-full">
+                <h2 className="text-xl font-semibold">Club Expenses Breakdown</h2>
+                <p className="text-base-content/60">Distribution of club expenses by category.</p>
+                <ExpensesChart />
+              </div>
+            </section>
+
+
+            {/* Share Capital Area Chart */}
             <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
               <div className="p-6 flex flex-col">
                 <h2 className="text-xl font-semibold">Share Capital Activity</h2>
                 <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
                 <div className="w-full min-w-0">
-                  {/* <CapitalAreaChart data={monthlyShareData} /> */}
+                  <CoopContributionChart />
                 </div>
               </div>
             </section>

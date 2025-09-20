@@ -7,7 +7,7 @@
  * @returns {function} Statcard- reusable card that displays stats of the tables like totals etc.
  */
 
-const filter = ["All Time", "This Month", "This Year"];
+const filter = ["All Time", "This Month", "This Year"]; // date_label
 
 function StatCard({
   icon,
@@ -40,14 +40,14 @@ function StatCard({
 
       </h3>
       <div className="flex justify-center mb-1">
-        {filter.map((label) => (
+        {filter.map((date_label) => (
           <button
-            key={label}
-            className={`join-item btn btn-xs ${subtitle === label ? "btn-primary" : "btn-ghost text-gray-400"
+            key={date_label}
+            className={`join-item btn btn-xs ${subtitle === date_label ? "btn-primary" : "btn-ghost text-gray-400"
               }`}
-            onClick={() => onSubtitleChange?.(label)}
+            onClick={() => onSubtitleChange?.(date_label)}
           >
-            {label}
+            {date_label}
           </button>
         ))}
       </div>
