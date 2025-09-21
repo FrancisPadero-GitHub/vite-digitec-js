@@ -3,16 +3,62 @@ import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-materia
 // hooks
 import { useState } from 'react';
 import { useFetchTotal } from './hooks/useFetchTotal';
+import { useFetchIncome } from './hooks/useFetchIncome';
+import { useMembers } from '../../backend/hooks/useFetchMembers';
+import { useFetchExpenses } from '../treasurer/hooks/useFetchExpenses';
+import { useFetchClubFunds } from '../treasurer/hooks/useFetchClubFunds';
+import { useFetchCoopContributions } from '../treasurer/hooks/useFetchCoopContributions';
+
 
 // components
 import StatCard from './components/StatCard';
 import ExpensesChart from './components/ExpensesChart';
 import CoopContributionChart from './components/CoopContributionChart';
-
+import DataTable from './components/BaseDashboardTable';
 
 function Dashboard() {
 
+  // recent income table
+  const { data: income, isLoading: incomeIsLoading } = useFetchIncome();
+  const incomeColumns = [
+    { header: "Title", key: "title" },
+    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
+    { header: "Source", key: "source" },
+    { header: "Date", key: "date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
+    { header: "Remarks", key: "remarks" },
+  ]
 
+  // for the recent expenses quick table
+  const { data: fundExpenses, isLoading: expensesIsLoading } = useFetchExpenses();
+  const expensesColumns = [
+    { header: "Title", key: "title" },
+    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
+    { header: "Category", key: "category" },
+    { header: "Date", key: "transaction_date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
+    { header: "Description", key: "description" },
+  ];
+
+  // recent club funds
+  const { data: members } = useMembers();
+  const { data: clubFunds, isLoading: clubFundsIsLoading } = useFetchClubFunds();
+  const clubFundsColumns = [
+    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
+    { header: "Category", key: "category" },
+    { header: "Payment Date", key: "payment_date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
+    { header: "Payment Method", key: "payment_method" },
+    { header: "Remarks", key: "remarks" },
+
+  ];
+
+  // recent coop share capital
+  const { data: coopFunds, isLoading: coopIsloading } = useFetchCoopContributions();
+  const coopFundsColumns = [
+    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
+    { header: "Source", key: "source" },
+    { header: "Payment Category", key: "category" },
+    { header: "Date", key: "contribution_date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
+    { header: "Remarks", key: "remarks" },
+  ]
 
   // Filters for the cards
   const subText = "All Time";
@@ -27,6 +73,7 @@ function Dashboard() {
    * Fetches totals for specific tables using RPC functions
    * rpc code can be viewed on supabase functions
    * 
+   * Filter here are accomodated base on the RPC function on supabase
    */
   const { data: incomeTotal, isLoading: incomeLoading, isError: incomeIsError, error: incomeError } = useFetchTotal({
     rpcFn: "get_club_income_total",
@@ -47,7 +94,7 @@ function Dashboard() {
   });
 
   const { data: expensesTotal, isLoading: expensesLoading, isError: expensesIsError, error: expensesError } = useFetchTotal({
-    rpcFn: "get_coop_contributions_total",
+    rpcFn: "get_club_expenses_total",
     year: filters.expenses.year,
     month: filters.expenses.month,
   });
@@ -164,17 +211,64 @@ function Dashboard() {
               ))}
             </section>
 
-            {/* Expenses Chart */}
+            <DataTable
+              title={"Income"}
+              columns={incomeColumns}
+              data={income}
+              isLoading={incomeIsLoading}
+              rowLimit={10}
+              linkPath={"/treasurer"} // will provide later on
+            />
+
+
+            <DataTable
+              title={"Expenses"}
+              columns={expensesColumns}
+              data={fundExpenses}
+              isLoading={expensesIsLoading}
+              rowLimit={10}
+              linkPath={"/treasurer/club-expenses"}
+            />
+
+            <DataTable
+              title={"Club Funds"}
+              columns={clubFundsColumns}
+              data={clubFunds}
+              isLoading={clubFundsIsLoading}
+              rowLimit={10}
+              linkPath={"/treasurer/club-funds"}
+              members={members}
+            />
+
+            <DataTable
+              title={"Share Capital Contribution"}
+              columns={coopFundsColumns}
+              data={coopFunds}
+              isLoading={coopIsloading}
+              rowLimit={10}
+              linkPath={"/treasurer/coop-share-capital"}
+              members={members}
+            />
+          </div>
+
+          {/* RIGHT SIDE */}
+          <div className="w-full lg:w-[30%] flex flex-col gap-6">
 
             {/* CLUB EXPENSES DONUT CHART */}
-            <section className="card bg-base-100/90 shadow-md h-[450px] p-6 sm:p-6 rounded-2xl">
-              <div className="flex flex-col h-full">
-                <h2 className="text-xl font-semibold">Club Expenses Breakdown</h2>
-                <p className="text-base-content/60">Distribution of club expenses by category.</p>
-                <ExpensesChart />
+            <section className="card bg-base-100 shadow-lg min-h-[480px] p-8 rounded-3xl">
+              <div className="flex flex-col h-full gap-6">
+                <div>
+                  <span className="text-2xl font-bold tracking-tight">Club Expenses Breakdown</span>
+                  <span className="text-gray-400"> | All Time</span>
+                  <p className="mt-1 text-sm text-base-content/70">
+                    Distribution of club expenses by category
+                  </p>
+                </div>
+                <div className="flex-grow">
+                  <ExpensesChart />
+                </div>
               </div>
             </section>
-
 
             {/* Share Capital Area Chart */}
             <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
@@ -186,8 +280,6 @@ function Dashboard() {
                 </div>
               </div>
             </section>
-
-
           </div>
         </div>
       </div>

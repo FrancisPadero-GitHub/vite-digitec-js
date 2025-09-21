@@ -207,7 +207,7 @@ function CoopShareCapital() {
                         onClick={!isDisabled ? () => openEditModal(contribution) : undefined}
                         className={`transition-colors ${!isDisabled
                           ? "cursor-pointer hover:bg-base-200/70"
-                          : "cursor-not-allowed opacity-60 bg-base-100/70"
+                          : "cursor-not-allowed opacity-80 bg-base-100/70"
                           }`}
                       >
                         <td className="px-4 py-2 font-medium">{contribution.coop_contri_id}</td>

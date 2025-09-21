@@ -1,63 +1,124 @@
 import { Link } from "react-router-dom";
 
-export default function BaseDashboardTable() {
-  const title = "Recent Transactions";
-  const linkPath = "/transactions";
-  const headers = ["ID", "User", "Amount", "Status"];
+/**
+ * Renders dynamic and reusable table
+ *
+ * @param {string} title
+ * @param {object[]} columns - base column definitions
+ * @param {array} data - fetched or empty array fallback
+ * @param {string} linkPath - path for the original table
+ * @param {number} rowLimit - number of rows to render
+ * @param {boolean} isLoading - loading state
+ * @param {array} members - optional member data for resolving names
+ */
 
-  const data = [
-    { id: "#T-001", user: "Lara Valdez", amount: "$120.00", status: "Completed" },
-    { id: "#T-002", user: "Victor Santos", amount: "$75.50", status: "Pending" },
-    { id: "#T-003", user: "Celia Ramos", amount: "$200.00", status: "Failed" },
-  ];
+function BaseDashboardTable({
+  title,
+  columns,
+  data = [],
+  linkPath,
+  rowLimit,
+  isLoading,
+  members = null,
+}) {
+  const rows = rowLimit ? data.slice(0, rowLimit) : data;
+
+  // If members are provided, append a "Member" column dynamically
+  const finalColumns = members
+    ? [
+      {
+        header: "Member",
+        key: "member_name", // unique key
+        render: (_, row) => {
+          const matchedMember = members.find((m) => m.member_id === row.member_id);
+          const isDisabled = !matchedMember; // condition (you can adjust logic)
+
+          return (
+            <span
+              className={`flex items-center gap-2 ${isDisabled ? "opacity-50" : ""
+                }`}
+            >
+              {matchedMember
+                ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                : "System"}
+
+              {isDisabled && (
+                <div className="tooltip tooltip-top" data-tip="System Generated">
+                  <span className="badge badge-sm badge-ghost">?</span>
+                </div>
+              )}
+            </span>
+          );
+        },
+      },
+      ...columns,
+    ] : columns;
+
+
 
   return (
     <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md">
       <div className="flex flex-row justify-between items-center">
         <h2 className="p-4">
           <span className="text-xl font-semibold">{title}</span>
-          <span className="text-gray-400"> | This Week</span>
+          <span className="text-gray-400"> | Recent</span>
         </h2>
-        <Link
-          to={linkPath}
-          className="btn btn-link no-underline text-primary hover:underline p-4"
-        >
-          See More ➜
-        </Link>
+        {linkPath && (
+          <Link
+            to={linkPath}
+            className="btn btn-link no-underline text-primary hover:underline p-4"
+          >
+            See More ➜
+          </Link>
+        )}
       </div>
 
-      <table className="table">
-        <thead>
-          <tr className="bg-base-200/30 text-center">
-            {headers.map((h, i) => (
-              <th key={i} className="text-center">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item, i) => (
-            <tr key={i} className="text-center">
-              <td>{item.id}</td>
-              <td>{item.user}</td>
-              <td>{item.amount}</td>
-              <td>
-                <span
-                  className={`badge ${item.status === "Completed"
-                    ? "badge-success"
-                    : item.status === "Pending"
-                      ? "badge-warning"
-                      : "badge-error"
-                    }`}
-                >
-                  {item.status}
-                </span>
-              </td>
+      <div className="border border-base-content/5 bg-base-100/90 rounded-1xl shadow-md">
+        {/* Table header */}
+        <table className="table table-fixed w-full">
+          <thead>
+            <tr className="bg-base-200/30 text-left">
+              {finalColumns.map(({ header, key }) => (
+                <th key={key}>{header}</th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+        </table>
+
+        {/* Scrollable body */}
+        <div className="max-h-96 overflow-y-auto overflow-x-auto">
+          <table className="table table-fixed w-full">
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={finalColumns.length} className="py-10">
+                    <div className="flex justify-center items-center">
+                      <span className="loading loading-spinner loading-lg text-primary"></span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                rows.map((row, idx) => (
+                  <tr
+                    key={row.transaction_id || idx}
+                    className="cursor-pointer hover:bg-base-200/50"
+                  >
+                    {finalColumns.map(({ key, render }) => (
+                      <td key={key}>
+                        {render
+                          ? render(row[key], row)
+                          : row[key] ?? "Not Provided"}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
   );
 }
+
+export default BaseDashboardTable;
