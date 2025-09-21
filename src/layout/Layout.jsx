@@ -2,17 +2,46 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Footer from "./Footer";
-import { roleInfo } from "../constants/Roles.js";
+import { useAuth } from "../backend/context/AuthProvider.jsx";
+import { useMembers } from "../backend/hooks/useFetchMembers.js";
 
 const Layout = () => {
   const location = useLocation();
+  const { user } = useAuth();
+  const { data: members } = useMembers();
 
-  // TAKE ROLE NAME FROM URL
+  // Normalize account type to match route naming
+  const normalizeRole = (accountType = "") => {
+    switch (accountType) {
+      case "Admin":
+        return "admin";
+      case "Treasurer":
+        return "treasurer";
+      case "Board":
+        return "board";
+      case "Regular":
+        return "regular-member";
+      case "Associate":
+        return "associate-member";
+      default:
+        return accountType.toLowerCase().replace(/\s+/g, "-");
+    }
+  };
+
+  // role segment from the URL
   const roleFromUrl = location.pathname.split("/")[1];
 
-  // CHECK IF ROLE ACTUALLY A PART OF THE VALID ROLES FROM ROLES
-  const role = roleFromUrl in roleInfo ? roleFromUrl : null;
-  if (!role) return <Navigate to="/not-found" replace />;
+  // Find member linked to this user
+  const member = members?.find((m) => m.login_id === user?.id);
+
+  // Get normalized member role
+  const memberRole = member ? normalizeRole(member.account_type) : null;
+
+  // Redirect if user role doesn't match URL role
+  if (!memberRole || roleFromUrl !== memberRole) {
+    console.log("Sidebar from Layout.jsx didn't match any URL role fetched from db")
+    return <Navigate to="/not-found" replace />;
+  }
 
   return (
     <div className="drawer lg:drawer-open">
@@ -20,7 +49,7 @@ const Layout = () => {
 
       {/* PAGE CONTENT, HEADER, FOOTER */}
       <div className="bg-base-200 drawer-content flex flex-col min-h-screen">
-        <Topbar role={role} />
+        <Topbar role={memberRole} />
         <main className="p-5 space-y-4 flex-grow">
           <Outlet />
         </main>
@@ -28,7 +57,7 @@ const Layout = () => {
       </div>
 
       {/* SIDEBAR */}
-      <Sidebar role={role} />
+      <Sidebar role={memberRole} />
     </div>
   );
 };

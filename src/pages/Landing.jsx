@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
 import logo from "../assets/digitec-logo.png";
 
+/**
+ * 
+ * Provide a navigation router here that if a session is detected from a logged in user redirect
+ * them to their specific role page
+ * 
+ */
+
 const Landing = () => {
   return (
     <div className="min-h-screen text-base-content">

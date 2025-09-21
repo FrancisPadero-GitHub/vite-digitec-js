@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { getRolePath } from "./constants/Roles.js";
 
 // TanStack Query + Auth Provider for universal user ID retrieval
 import { AuthProvider } from "./backend/context/AuthProvider";
@@ -65,7 +64,7 @@ function AppRoutes() {
 
     // ADMIN
     {
-      path: `/${getRolePath("admin")}`,
+      path: "/admin",
       element: (
         <ProtectedRoute roleAllowed="admin">
           <Layout />
@@ -81,7 +80,7 @@ function AppRoutes() {
 
     // BOD
     {
-      path: `/${getRolePath("board")}`,
+      path: "/board",
       element: (
         <ProtectedRoute roleAllowed="board">
           <Layout />
@@ -99,7 +98,7 @@ function AppRoutes() {
 
     // REGULAR MEMBERS
     {
-      path: `/${getRolePath("regular-member")}`,
+      path: "/regular-member",
       element: (
         <ProtectedRoute roleAllowed="regular-member">
           <Layout />
@@ -120,7 +119,7 @@ function AppRoutes() {
 
     // ASSOCIATE MEMBERS
     {
-      path: `/${getRolePath("associate-member")}`,
+      path: "/associate-members",
       element: (
         <ProtectedRoute roleAllowed="associate-member">
           <Layout />
@@ -141,7 +140,7 @@ function AppRoutes() {
 
     // TREASURER
     {
-      path: `/${getRolePath("treasurer")}`,
+      path:"/treasurer",
       element: (
         <ProtectedRoute roleAllowed="treasurer">
           <Layout />

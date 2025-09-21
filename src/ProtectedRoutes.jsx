@@ -29,6 +29,8 @@ const LoadingContainer = ({ children }) => (
  * Converts account_type from the DB to route/sidebar role keys
  * Temporary should be removed and replaced with better design and handling on the user registration or from the database 
  * or anywhere just remove this on future code changes
+ * 
+ * 
  */
 const normalizeRole = (accountType) => {
   switch (accountType) {
@@ -36,11 +38,11 @@ const normalizeRole = (accountType) => {
       return "admin";
     case "Treasurer":
       return "treasurer";
-    case "Board of Directors":
+    case "Board":
       return "board";
-    case "Regular Member":
+    case "Regular":
       return "regular-member";
-    case "Associate Member":
+    case "Associate":
       return "associate-member";
     default:
       return accountType.toLowerCase().replace(/\s+/g, "-"); // fallback
@@ -57,7 +59,7 @@ const ProtectedRoute = ({ children, roleAllowed }) => {
       <LoadingContainer>
         <CircularProgress size={60} thickness={4} />
         <Typography variant="h6" color="text.secondary">
-          Loading...
+          For a while...
         </Typography>
       </LoadingContainer>
     );

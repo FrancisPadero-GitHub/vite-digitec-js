@@ -74,39 +74,39 @@ const AddMember = () => {
   };
 
   // --- VALIDATION FUNCTIONS ---
-  // const validatePersonal = () => {
-  //   let errors = {};
-  //   if (!formData.f_name) errors.f_name = "First name is required";
-  //   if (!formData.m_name) errors.m_name = "Middle name is required";
-  //   if (!formData.l_name) errors.l_name = "Last name is required";
-  //   if (!formData.email) errors.email = "Email is required";
-  //   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-  //     errors.email = "Invalid email format";
-  //   if (!formData.account_type) errors.account_type = "Select account type";
-  //   if (!formData.account_status)
-  //     errors.account_status = "Select account status";
-  //   if (!formData.application_date) errors.application_date = "Application date is required";
-  //   if (!formData.contact_number)
-  //     errors.contact_number = "Contact number required";
-  //   if (!formData.sex) errors.sex = "sex is required";
-  //   if (!formData.employment_status) errors.employment_status = "Employment status is required";
-  //   if (!formData.address) errors.address = "Address is required";
-  //   if (!formData.birthday) errors.birthday = "Birthday required";
-  //   setFormErrors(errors);
-  //   return Object.keys(errors).length === 0;
-  // };
+  const validatePersonal = () => {
+    let errors = {};
+    if (!formData.f_name) errors.f_name = "First name is required";
+    if (!formData.m_name) errors.m_name = "Middle name is required";
+    if (!formData.l_name) errors.l_name = "Last name is required";
+    if (!formData.email) errors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      errors.email = "Invalid email format";
+    if (!formData.account_type) errors.account_type = "Select account type";
+    if (!formData.account_status)
+      errors.account_status = "Select account status";
+    if (!formData.application_date) errors.application_date = "Application date is required";
+    if (!formData.contact_number)
+      errors.contact_number = "Contact number required";
+    if (!formData.sex) errors.sex = "sex is required";
+    if (!formData.employment_status) errors.employment_status = "Employment status is required";
+    if (!formData.address) errors.address = "Address is required";
+    if (!formData.birthday) errors.birthday = "Birthday required";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-  // const validateMembership = () => {
-  //   const errors = {};
-  //   if (!formData.membership_fee || formData.membership_fee <= 0)
-  //     errors.membership_fee = "Membership fee must be greater than 0";
-  //   if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
-  //     errors.initial_share_capital =
-  //       "Initial share capital must be greater than 0";
-  //   if (!formData.fee_status) errors.fee_status = "Select fee status";
-  //   setFormErrors(errors);
-  //   return Object.keys(errors).length === 0;
-  // };
+  const validateMembership = () => {
+    const errors = {};
+    if (!formData.membership_fee || formData.membership_fee <= 0)
+      errors.membership_fee = "Membership fee must be greater than 0";
+    if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
+      errors.initial_share_capital =
+        "Initial share capital must be greater than 0";
+    if (!formData.fee_status) errors.fee_status = "Select fee status";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // const validateLogin = () => {
   //   const errors = {};
@@ -123,8 +123,8 @@ const AddMember = () => {
 
   // --- TAB NAVIGATION ---
   const handleNext = () => {
-    if (activeTab === 0) setActiveTab(1); // && validatePersonal()
-    else if (activeTab === 1) setActiveTab(2); // && validateMembership()
+    if (activeTab === 0) validatePersonal() && setActiveTab(1)  ; // 
+    else if (activeTab === 1) validateMembership() &&  setActiveTab(2) ; // 
   };
 
   const handleSubmit = (e) => {
@@ -147,7 +147,7 @@ const AddMember = () => {
       label: "Account Type",
       name: "account_type",
       type: "select",
-      options: ["Admin", "Regular", "Associate", "Treasurer", "Board of Directors"],
+      options: ["Admin", "Regular", "Associate", "Treasurer", "Board"],
     },
     {
       label: "Account Status",
@@ -162,7 +162,7 @@ const AddMember = () => {
       label: "Sex",
       name: "sex",
       type: "select",
-      options: ["Female", "Male", "Yes please!"],
+      options: ["Female", "Male"],
     },
     { label: "Contact Number", name: "contact_number", type: "number" },
     {
@@ -264,9 +264,9 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
                           }`}
-                        
+
                       >
-                        <option value="">-- Select {label} --</option>
+                        <option value="" className="label" disabled>Select {label}</option>
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}
@@ -282,7 +282,7 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
                           }`}
-                        
+
                       />
                     )}
                     {formErrors[name] && (
@@ -321,9 +321,9 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
                           }`}
-                        
+
                       >
-                        <option value="">-- Select {label} --</option>
+                        <option value="" className="label" disabled>Select {label}</option>
                         {options?.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}
@@ -339,7 +339,7 @@ const AddMember = () => {
                         onChange={handleChange}
                         className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
                           }`}
-                        
+
                       />
                     )}
                     {formErrors[name] && (

@@ -54,7 +54,7 @@ export function useLogin() {
         case "Admin":
           navigate("/admin");
           break;
-        case "Board of Directors":
+        case "Board":
           navigate("/board");
           break;
         case "Treasurer":

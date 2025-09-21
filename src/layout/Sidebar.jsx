@@ -111,6 +111,12 @@ const sidebarConfig = {
   ],
 };
 
+/**
+ * 
+ * @param {string} role - takes a string parameter fetched from members account_type column in Layout.jsx
+ * @returns rendered sidebar component with role specific navigations
+ */
+
 // SIDEBAR COMPONENT
 const Sidebar = ({ role }) => {
   const sections = sidebarConfig[role] || [];
