@@ -12,10 +12,30 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now 
 import { format } from "date-fns";
 
+// hooks
+import { useMembers } from "../backend/hooks/useFetchMembers";
+import { useAuth } from "../backend/context/AuthProvider";
+
 import { supabase } from "../backend/supabase";
 
 const Topbar = ({ role }) => {
   const navigate = useNavigate();
+
+  // to fetch member name for the logged in id
+  const { user } = useAuth();
+  const { data: members } = useMembers();
+
+  // Find member linked to this user
+  const member = members?.find((m) => m.login_id === user?.id);
+  
+  // Renders fetched name and shortend the last name to single char
+  const matchedMember = member
+    ? [
+      member.f_name,
+      member.l_name ? `${member.l_name.charAt(0)}.` : null,
+    ].filter(Boolean).join(" ")
+    : null;
+
 
   const [searchTerm, setSearchTerm] = useState("");
   const [dateTimeStr, setDateTimeStr] = useState("");
@@ -87,7 +107,11 @@ const Topbar = ({ role }) => {
                 />
               </div>
             </div>
-            <span className="hidden sm:block font-medium">Cindy B.</span>
+
+
+            <span className="hidden sm:block font-medium">{matchedMember || "Error"}</span>
+
+
             <ExpandMoreIcon />
           </label>
 
@@ -106,7 +130,7 @@ const Topbar = ({ role }) => {
                 </div>
               </div>
               <div>
-                <p className="font-medium text-base-content">Cindy Booc</p>
+                <p className="font-medium text-base-content">{matchedMember || "Error"}</p>
                 <p className="text-xs text-base-content/60">
                   {getRoleLabel(role)}
                 </p>

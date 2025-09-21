@@ -62,7 +62,7 @@ function Dashboard() {
     {
       icon: <Wallet />,
       iconBgColor: "bg-purple-400",
-      statName: "Club Total Income",
+      statName: "Total Income",
       growthPercent: 12, // Will be changed later on
       amount: incomeTotal ?? 0,
       subtitle: filters.income.subtitle,
@@ -83,7 +83,7 @@ function Dashboard() {
     {
       icon: <Savings />,
       iconBgColor: "bg-lime-400",
-      statName: "Club Total Funds",
+      statName: "Total Funds",
       growthPercent: 8, // Will be changed later on
       amount: clubFundsTotal ?? 0,
       subtitle: filters.funds.subtitle,
@@ -126,7 +126,7 @@ function Dashboard() {
     {
       icon: <ReceiptLong />,
       iconBgColor: "bg-red-400",
-      statName: "Club Total Expenses",
+      statName: "Total Expenses",
       growthPercent: 2, // Will be changed later on
 
       amount: expensesTotal ?? 0,
