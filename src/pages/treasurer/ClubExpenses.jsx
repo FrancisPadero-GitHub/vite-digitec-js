@@ -178,9 +178,15 @@ function ClubExpenses() {
             <table className="table">
               <thead>
                 <tr className="bg-base-200/30 text-left">
-                  {fields.map(({ label }) => (
+                  {/* {fields.map(({ label }) => (
                     <th key={label}>{label}</th>
-                  ))}
+                  ))} */}
+                  <th>#</th>
+                  <th>Title</th>
+                  <th>Amount</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,8 +196,11 @@ function ClubExpenses() {
                     onClick={() => openEditModal(expenses)}
                     className="cursor-pointer hover:bg-base-200/50"
                   >
+                    <td>{expenses.transaction_id}</td>
                     <td>{expenses.title || "Not Provided"}</td>
-                    <td>₱ {expenses.amount?.toLocaleString() || "0"}</td>
+                    <td className="px-4 py-2 font-semibold text-success">
+                      ₱ {expenses.amount?.toLocaleString() || "0"}
+                    </td>
                     <td>{expenses.category || "Not Provided"}</td>
                     <td>{expenses.description || "Not Provided"}</td>
                     <td>

@@ -200,7 +200,7 @@ function CoopShareCapital() {
                   );
 
                   const isDisabled = !matchedMember;
-
+                  // Second return here if it fetches a member one the conditional
                   return (
                     <React.Fragment key={contribution.coop_contri_id}>
                       <tr

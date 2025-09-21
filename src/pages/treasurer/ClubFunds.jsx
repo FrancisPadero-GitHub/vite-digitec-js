@@ -230,7 +230,7 @@ function ClubFunds() {
                       className="cursor-pointer hover:bg-base-200/70 transition-colors"
                     >
                       {/* Contribution ID */}
-                      <td className="px-4 py-2 font-mono text-gray-700">{fund.contribution_id}</td>
+                      <td className="px-4 py-2 font-medium">{fund.contribution_id}</td>
 
                       {/* Member Name */}
                       <td className="px-4 py-2">
@@ -238,10 +238,10 @@ function ClubFunds() {
                           const matchedMember = members?.find(
                             (member) => member.member_id === fund.member_id
                           );
-                          if (!matchedMember) return <span className="italic text-gray-400">Not Provided</span>;
+                          if (!matchedMember) return <span className="italic">Not Provided</span>;
 
                           return (
-                            <span className="font-medium text-gray-800">
+                            <span className="flex items-center gap-2">
                               {`${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()}
                             </span>
                           );
@@ -249,21 +249,22 @@ function ClubFunds() {
                       </td>
 
                       {/* Amount */}
-                      <td className="px-4 py-2">
-                        <span className="px-2 py-1 rounded bg-green-50 text-green-700 font-semibold">
+                      <td className="px-4 py-2 font-semibold text-success">
+                       
+                        
                           ₱ {fund.amount?.toLocaleString() || "0"}
-                        </span>
+                        
                       </td>
 
                       {/* Category */}
-                      <td className="px-4 py-2 text-gray-700">{fund.category || "Not Provided"}</td>
+                      <td className="px-4 py-2">{fund.category || "Not Provided"}</td>
 
                       {/* Payment Date */}
                       <td className="px-4 py-2">
                         {fund.payment_date ? (
                           <span>{new Date(fund.payment_date).toLocaleDateString()}</span>
                         ) : (
-                          <span className="italic text-gray-400">Not Provided</span>
+                          <span className="italic">Not Provided</span>
                         )}
                       </td>
 
@@ -279,7 +280,7 @@ function ClubFunds() {
                             {fund.payment_method}
                           </span>
                         ) : (
-                          <span className="italic text-gray-400">Not Provided</span>
+                          <span className="italic">Not Provided</span>
                         )}
                       </td>
 
@@ -291,12 +292,12 @@ function ClubFunds() {
                             {new Date(fund.period_end).toLocaleDateString()}
                           </span>
                         ) : (
-                          <span className="italic text-gray-400">Not Provided</span>
+                          <span className="italic">Not Provided</span>
                         )}
                       </td>
 
                       {/* Remarks */}
-                      <td className="px-4 py-2 text-gray-600">{fund.remarks || "Not Provided"}</td>
+                      <td className="px-4 py-2">{fund.remarks || "Not Provided"}</td>
                     </tr>
                   </React.Fragment>
                 ))}
@@ -384,7 +385,7 @@ function ClubFunds() {
         {fields.map(({ label, name, type, options }) => (
           <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name} className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
+              <span className="label-text font-medium">
                 {label}
               </span>
             </label>
