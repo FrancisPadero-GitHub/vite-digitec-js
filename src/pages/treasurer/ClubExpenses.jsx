@@ -5,15 +5,40 @@ import { Link } from "react-router";
 // hooks
 import { useAddExpenses } from "./hooks/useAddExpenses";
 import { useEditExpenses } from "./hooks/useEditExpenses";
-import { useFetchExpenses } from "./hooks/useFetchExpenses";
+// import { useFetchExpenses } from "./hooks/useFetchExpenses";
+
+import { useFetchExpenses } from "./custom/useFetchExpenses";
 import { useDelete } from "./hooks/useDelete";
 
 // components
-import FormModal from "./modals/FormModal";
+import FormModal from './modals/FormModal';
+import MainDataTable from './components/MainDataTable';
+
+// constants
+import { CLUB_CATEGORY_COLORS } from '../../constants/Color';
 
 function ClubExpenses() {
+    // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
+    const [page, setPage] = useState(1);
+    // This renders how many rows is being rendered inside the table to avoid infinite renders of all data
+    const [limit] = useState(20); // or make it adjustable
+  
+    /**
+     * NOTE: IF YOU WANT THE TABLE TO HAVE A FIXED SIZE AND SCROLLBLE YOU NEED THIS VALUES 
+     * 
+     * <div className="max-h-50 min-h-[550px]"></div>
+     * &
+     * const [limit] = useState(20); 
+     * 
+     * This works well on 1080p large display dko sure ug mo fit ni kay cindy sa inch sa display
+     */
+  
   // useQuery hook to fetch expenses
-  const { data: fundExpenses, isLoading, isError, error } = useFetchExpenses();
+  const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses(page, limit);
+
+  // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
+  const fundExpenses = fundExpensesData?.data || [];
+  const total = fundExpensesData?.count || 0;
 
   // mutation hooks for adding and editing expenses
   const { mutate: mutateAdd } = useAddExpenses();
@@ -173,62 +198,35 @@ function ClubExpenses() {
          *  Expenses Table
          * 
          */}
-        <section className="space-y-4">
-          <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
-            <table className="table">
-              <thead>
-                <tr className="bg-base-200/30 text-left">
-                  {/* {fields.map(({ label }) => (
-                    <th key={label}>{label}</th>
-                  ))} */}
-                  <th>#</th>
-                  <th>Title</th>
-                  <th>Amount</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fundExpenses.map((expenses) => (
-                  <tr
-                    key={expenses.transaction_id}
-                    onClick={() => openEditModal(expenses)}
-                    className="cursor-pointer hover:bg-base-200/50"
-                  >
-                    <td>{expenses.transaction_id}</td>
-                    <td>{expenses.title || "Not Provided"}</td>
-                    <td className="px-4 py-2 font-semibold text-success">
-                      ₱ {expenses.amount?.toLocaleString() || "0"}
-                    </td>
-                    <td>{expenses.category || "Not Provided"}</td>
-                    <td>{expenses.description || "Not Provided"}</td>
-                    <td>
-                      {expenses.transaction_date
-                        ? new Date(expenses.transaction_date).toLocaleDateString()
-                        : "Not Provided"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* Footer functionality to be implemented*/}
-            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
-              <div className="text-sm text-base-content/70">
-                Showing 1 to 3 of 3 entries
-              </div>
-              <div className="join">
-                <button className="join-item btn btn-sm" disabled>
-                  «
-                </button>
-                <button className="join-item btn btn-sm">Page 1 of 1</button>
-                <button className="join-item btn btn-sm" disabled>
-                  »
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+
+       <MainDataTable 
+          headers={["Ref No.", "Title", "Amount", "Category", "Date", "Description"]}
+          data={fundExpenses}
+          isLoading={isLoading}
+          page={page}
+          limit={limit}
+          total={total}
+          setPage={setPage}
+          renderRow = {(row) => (
+            <tr key={row.transaction_id} className=" cursor-pointer hover:bg-base-200/50"
+              onClick={() => openEditModal(row)}
+            >
+              <td className="text-center">EXP_{row.transaction_id?.toLocaleString() || "ID"}</td>
+              <td className="px-4 py-2">{row.title}</td>
+              <td className="px-4 py-2 font-semibold text-success">
+                ₱ {row.amount?.toLocaleString() || "0"}
+              </td>
+              <td className="px-4 py-2">
+                <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
+                  {row.category || "Not Provided"}
+                </span>
+              </td>
+              <td className="px-4 py-2">{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
+              <td className="px-4 py-2">{row.description}</td>
+            </tr>
+            
+          )}
+       />
 
       </div>
 

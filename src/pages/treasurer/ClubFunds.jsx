@@ -5,18 +5,44 @@ import { Link } from 'react-router';
 
 // hooks
 import { useMembers } from '../../backend/hooks/useFetchMembers';
-import { useFetchClubFunds } from './hooks/useFetchClubFunds'
+
+// import { useFetchClubFunds } from './hooks/useFetchClubFunds'
+import { useFetchClubFunds } from './custom/useFetchClubFunds';
+
 import { useAddClubFunds } from './hooks/useAddClubFunds';
 import { useEditClubFunds } from './hooks/useEditClubFunds';
 import { useDelete } from './hooks/useDelete';
 
 // components
 import FormModal from './modals/FormModal';
+import MainDataTable from './components/MainDataTable';
+
+// constants
+import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 function ClubFunds() {
+    // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
+    const [page, setPage] = useState(1);
+    // This renders how many rows is being rendered inside the table to avoid infinite renders of all data
+    const [limit] = useState(10); // or make it adjustable
+  
+    /**
+     * NOTE: IF YOU WANT THE TABLE TO HAVE A FIXED SIZE AND SCROLLBLE YOU NEED THIS VALUES 
+     * 
+     * <div className="max-h-50 min-h-[550px]"></div>
+     * &
+     * const [limit] = useState(20); 
+     * 
+     * This works well on 1080p large display dko sure ug mo fit ni kay cindy sa inch sa display
+     */
+  
   // useQuery hook to fetch club funds and members
   const { data: members } = useMembers();
-  const { data: clubFunds, isLoading, isError, error } = useFetchClubFunds();
+  const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds(page, limit);
+
+  // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
+  const clubFunds = clubFundsData?.data || [];
+  const total = clubFundsData?.count || 0;
 
   // mutation hooks for adding and editing funds
   const { mutate: mutateAdd } = useAddClubFunds();
@@ -158,7 +184,7 @@ function ClubFunds() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Club Funds</h1>
+          <h1 className="text-2xl font-bold">Club Funds Contribution</h1>
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
@@ -206,125 +232,88 @@ function ClubFunds() {
           </select>
         </div>
 
-        <section className="space-y-4">
-          <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
-            <table className="table">
-              <thead>
-                <tr className="bg-base-200/30 text-left">
+        <MainDataTable
+          headers={["Ref No.", "Name", "Amount", "Category", "Date", "Method", "Period Covered", "Remarks"]}
+          data={clubFunds}
+          isLoading={isLoading}
+          page={page}
+          limit={limit}
+          total={total}
+          setPage={setPage}
+          renderRow={(row) => {
+            const matchedMember = members?.find(
+              (member) => member.member_id === row.member_id
+            );
+            return (
+              <tr
+                key={row.contribution_id}
+                onClick={() => openEditModal(row)}
+                className="transition-colors  cursor-pointer hover:bg-base-200/70"
+              >
+                <td className="px-4 py-2 text-center font-medium">CFC_{row.contribution_id}</td>
+                <td className="px-4 py-2">
+                  <span className="flex items-center gap-2">
+                    {matchedMember
+                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                      : "System"}
+                  </span>
+                </td>
+                {/* Amount */}
+                <td className="px-4 py-2 font-semibold text-success">
+                  ₱ {row.amount?.toLocaleString() || "0"}
+                </td>
 
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Amount</th>
-                  <th>Category</th>
-                  <th>Payment Date</th>
-                  <th>Payment Method</th>
-                  <th>Period Covered</th>
-                  <th>Remarks</th>
+                {/* Category */}
+                <td className='px-4 py-2'>
+                  <span
+                    className={` font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}
+                  >
+                    {row.category || "Not Provided"}
+                  </span>
+                </td>
 
-                </tr>
-              </thead>
+                {/* Payment Date */}
+                <td className="px-4 py-2">
+                  {row.payment_date ? (
+                    <span>{new Date(row.payment_date).toLocaleDateString()}</span>
+                  ) : (
+                    <span className="italic">Not Provided</span>
+                  )}
+                </td>
 
-              <tbody>
-                {clubFunds.map((fund) => (
-                  <React.Fragment key={fund.contribution_id}>
-                    <tr
-                      onClick={() => openEditModal(fund)}
-                      className="cursor-pointer hover:bg-base-200/70 transition-colors"
-                    >
-                      {/* Contribution ID */}
-                      <td className="px-4 py-2 font-medium">{fund.contribution_id}</td>
+                {/* Payment Method */}
+                <td className='px-4 py-2' >
 
-                      {/* Member Name */}
-                      <td className="px-4 py-2">
-                        {(() => {
-                          const matchedMember = members?.find(
-                            (member) => member.member_id === fund.member_id
-                          );
-                          if (!matchedMember) return <span className="italic">Not Provided</span>;
+                  {row.payment_date ? 
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                      {row.payment_method}
+                    </span>
+                    : 
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                }
 
-                          return (
-                            <span className="flex items-center gap-2">
-                              {`${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()}
-                            </span>
-                          );
-                        })()}
-                      </td>
+                </td>
 
-                      {/* Amount */}
-                      <td className="px-4 py-2 font-semibold text-success">
-                       
-                        
-                          ₱ {fund.amount?.toLocaleString() || "0"}
-                        
-                      </td>
+                {/* Period Covered */}
+                <td className="px-4 py-2">
+                  {row.period_start && row.period_end ? (
+                    <span className="px-3 py-1 text-sm font-small">
+                      {new Date(row.period_start).toLocaleDateString()} –{" "}
+                      {new Date(row.period_end).toLocaleDateString()}
+                    </span>
+                  ) : (
+                    <span className="italic">Not Provided</span>
+                  )}
+                </td>
 
-                      {/* Category */}
-                      <td className="px-4 py-2">{fund.category || "Not Provided"}</td>
+                {/* Remarks */}
+                <td className="px-4 py-2">{row.remarks || "Not Provided"}</td>
 
-                      {/* Payment Date */}
-                      <td className="px-4 py-2">
-                        {fund.payment_date ? (
-                          <span>{new Date(fund.payment_date).toLocaleDateString()}</span>
-                        ) : (
-                          <span className="italic">Not Provided</span>
-                        )}
-                      </td>
+              </tr>
+            )
+          }}
+        />
 
-                      {/* Payment Method */}
-                      <td className="px-4 py-2">
-                        {fund.payment_method ? (
-                          <span
-                            className={`badge font-semibold ${fund.payment_method === "Cash"
-                              ? "badge-success"
-                              : "badge-info"
-                              }`}
-                          >
-                            {fund.payment_method}
-                          </span>
-                        ) : (
-                          <span className="italic">Not Provided</span>
-                        )}
-                      </td>
-
-                      {/* Period Covered */}
-                      <td className="px-4 py-2">
-                        {fund.period_start && fund.period_end ? (
-                          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-sm font-medium">
-                            {new Date(fund.period_start).toLocaleDateString()} –{" "}
-                            {new Date(fund.period_end).toLocaleDateString()}
-                          </span>
-                        ) : (
-                          <span className="italic">Not Provided</span>
-                        )}
-                      </td>
-
-                      {/* Remarks */}
-                      <td className="px-4 py-2">{fund.remarks || "Not Provided"}</td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-
-
-            </table>
-
-            {/* Footer */}
-            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
-              <div className="text-sm text-base-content/70">
-                Showing 1 to 3 of 3 entries
-              </div>
-              <div className="join">
-                <button className="join-item btn btn-sm" disabled>
-                  «
-                </button>
-                <button className="join-item btn btn-sm">Page 1 of 1</button>
-                <button className="join-item btn btn-sm" disabled>
-                  »
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
       <FormModal
         open={modalType !== null} // which will be set to true if value is present

@@ -16,6 +16,7 @@ import { useDelete } from './hooks/useDelete';
 import FormModal from './modals/FormModal';
 import MainDataTable from './components/MainDataTable';
 
+// constants
 import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
 
 
@@ -160,7 +161,7 @@ function CoopShareCapital() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold" >Coop Share Capital</h1>
+          <h1 className="text-2xl font-bold" >Share Capital / Coop Contribution</h1>
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
@@ -210,8 +211,6 @@ function CoopShareCapital() {
         </div>
 
         <MainDataTable
-          title="Coop Contributions"
-          linkPath="/coop/contributions"
           headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
           data={coop}
           isLoading={isLoading}
@@ -233,7 +232,7 @@ function CoopShareCapital() {
                     : "cursor-not-allowed opacity-80 bg-base-100/70"
                   }`}
               >
-                <td className="px-4 py-2 font-medium">{row.coop_contri_id}</td>
+                <td className="px-4 py-2 text-center font-medium">SCC_{row.coop_contri_id}</td>
                 <td className="px-4 py-2">
                   <span className="flex items-center gap-2">
                     {matchedMember

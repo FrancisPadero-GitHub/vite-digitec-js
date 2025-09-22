@@ -3,14 +3,14 @@ import { supabase } from "../../../backend/supabase";
 
 // Pagination version of the fetchCoopContributions for the main table
 
-async function fetchCoop({ page = 1, limit = 10 }) {
+async function fetchExpenses({ page = 1, limit = 10 }) {
   const from = (page - 1) * limit;
   const to = page * limit - 1;
 
   const { data, error, count } = await supabase
-    .from("coop_cbu_contributions")
+    .from("club_funds_expenses")
     .select("*", { count: "exact" }) // fetch count for pagination
-    .order("coop_contri_id", { ascending: false })
+    .order("transaction_id", { ascending: false })
     .is("deleted_at", null)
     .range(from, to); // specific range for pagination
 
@@ -18,10 +18,10 @@ async function fetchCoop({ page = 1, limit = 10 }) {
   return { data, count };
 }
 
-export function useFetchCoopContributions(page, limit) {
+export function useFetchExpenses(page, limit) {
   return useQuery({
-    queryKey: ["coop_cbu_contributions", "active", page, limit],
-    queryFn: () => fetchCoop({ page, limit }),
+    queryKey: ["club_funds_expenses", "active", page, limit],
+    queryFn: () => fetchExpenses({ page, limit }),
     keepPreviousData: true, // smooth pagination
     staleTime: 1000 * 60 * 1,
   });

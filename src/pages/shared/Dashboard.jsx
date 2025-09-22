@@ -193,7 +193,7 @@ function Dashboard() {
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
                 return (
                   <tr key={row.contribution_id} className="text-center cursor-pointer hover:bg-base-200/50">
-                    <td>CF_{row.contribution_id?.toLocaleString() || "ID"}</td>
+                    <td>CFC_{row.contribution_id?.toLocaleString() || "ID"}</td>
 
                     {/* Member Render from members table */}
                     <td>
@@ -215,10 +215,14 @@ function Dashboard() {
                       </span>
                     </td>
 
-
-                    <td>
-                      {row.payment_date ? new Date(row.payment_date).toLocaleDateString() : "Not Provided"}
-
+                    <td className='px-4 py-2' >
+                      {row.payment_date ? 
+                        <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                          {row.payment_method}
+                        </span>
+                        : 
+                        <span className="badge font-semibold badge-error">Not Provided</span>
+                    }
                     </td>
 
                     <td>
