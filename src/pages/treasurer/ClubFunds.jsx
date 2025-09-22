@@ -295,16 +295,25 @@ function ClubFunds() {
                 </td>
 
                 {/* Period Covered */}
-                <td className="px-4 py-2">
+                <td className="text-center px-4 py-2 w-50">
                   {row.period_start && row.period_end ? (
-                    <span className="px-3 py-1 text-sm font-small">
-                      {new Date(row.period_start).toLocaleDateString()} –{" "}
-                      {new Date(row.period_end).toLocaleDateString()}
+                    <span className="px-3 py-1 text-xs">
+                      {new Date(row.period_start).toLocaleDateString("en-US", {
+                        month: "long",   // "January"
+                        day: "numeric",
+                        year: "numeric",
+                      })} - {" "}
+                      {new Date(row.period_end).toLocaleDateString("en-US", {
+                        month: "long",   // "January"
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </span>
                   ) : (
                     <span className="italic">Not Provided</span>
                   )}
                 </td>
+
 
                 {/* Remarks */}
                 <td className="px-4 py-2">{row.remarks || "Not Provided"}</td>

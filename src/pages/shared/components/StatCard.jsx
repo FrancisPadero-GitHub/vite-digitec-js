@@ -62,7 +62,7 @@ function StatCard({
 
         <div>
           {/* Displays a loading spinner or an error if it should return */}
-          <div className="text-3xl font-bold h-10 flex items-center">
+          <div className="text-2xl font-bold h-9 flex items-center">
             {loading ? (
               <span className="loading loading-spinner loading-md text-primary"></span>
             ) : error ? (
