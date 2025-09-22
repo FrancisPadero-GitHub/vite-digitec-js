@@ -1,29 +1,41 @@
-The purpose is this for me to remember what shit I do in supabase 
+        {/* MIGHT USE LATER: THIS IS THE OLD DROPDOWN SELECT FOR MEMBERS */}
+        {/* <div className="form-control w-full">
+          <label htmlFor="member_id" className="label mb-1">
+            <span className="label-text font-medium text-gray-700">Member</span>
+          </label>
+          <select
+            id="member_id"
+            name="member_id"
+            value={formData.member_id || ""}
+            onChange={handleChange}
+            className="select select-bordered w-full"
+            required
+          >
+            <option value="">-- Select Member --</option>
+            {members?.map((m) => (
+              <option key={m.member_id} value={m.member_id}>
+                {m.f_name} {m.l_name} ({m.email})
+              </option>
+            ))}
+          </select>
+        </div> */}
 
-// Creates a RPC function to calculate total with filters (years and month)
+        {/* Member Select dropdown and search component from react-select */}
+        {/* <Select
+          options={members?.map((m) => ({
+            value: m.member_id,
+            label: `${m.f_name} ${m.l_name} (${m.email})`,
+          }))}
+          value={members?.find((m) => m.member_id === formData.member_id) ? {
+            value: formData.member_id,
+            label: `${members.find((m) => m.member_id === formData.member_id)?.f_name} 
+            ${members.find((m) => m.member_id === formData.member_id)?.l_name}`
+          } : null}
+          onChange={(option) =>
+            handleChange({ target: { name: "member_id", value: option?.value } })
+          }
+          placeholder="Search or select member..."
+          className="w-full"
+        /> */}
 
-
-// CLUB FUNDS TOTAL
-
-CREATE OR REPLACE FUNCTION public.get_club_funds_total(
-  p_year INT DEFAULT NULL,
-  p_month INT DEFAULT NULL
-)
-RETURNS BIGINT
-LANGUAGE sql
-SECURITY DEFINER
-AS $$
-  SELECT COALESCE(SUM(amount), 0)::BIGINT
-  FROM public.club_funds_contributions
-  WHERE deleted_at IS NULL
-    AND (p_year IS NULL OR EXTRACT(YEAR FROM payment_date) = p_year)
-    AND (p_month IS NULL OR EXTRACT(MONTH FROM payment_date) = p_month);
-$$;
-
-
-
-
-
-
-
-
+        {/* Member Select dropdown and search component headless UI */}

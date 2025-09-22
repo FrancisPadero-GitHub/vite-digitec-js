@@ -273,9 +273,13 @@ function Dashboard() {
                       {row.source}</td>
 
                     <td>
-                      <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
-                        {row.category}
-                      </span>
+                      {row.category ? (
+                        <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
+                          {row.category}
+                        </span>
+                      ) : (
+                        <span className="badge font-semibold badge-error">Not Provided</span>
+                      )}
                     </td>
 
                     <td>

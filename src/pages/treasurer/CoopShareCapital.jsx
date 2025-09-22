@@ -5,20 +5,50 @@ import { Link } from 'react-router';
 
 // Hooks
 import { useMembers } from '../../backend/hooks/useFetchMembers';
-import { useFetchCoopContributions } from './hooks/useFetchCoopContributions';
+// import { useFetchCoopContributions } from './hooks/useFetchCoopContributions'; // Old Fetch contributions 
+import { useFetchCoopContributions } from './custom/useFetchCoop'; // implemented pagination
+
 import { useAddCoopContributions } from './hooks/useAddCoopContributions';
 import { useEditCoopContributions } from './hooks/useEditCoopContributions';
 import { useDelete } from './hooks/useDelete';
 
 // components
 import FormModal from './modals/FormModal';
+import MainDataTable from './components/MainDataTable';
+
+import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
+
+
+/**
+ * 
+ * The size of table inside is configurable in here MainDataTable
+ * 
+ */
 
 function CoopShareCapital() {
 
+  // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
+  const [page, setPage] = useState(1);
+  // This renders how many rows is being rendered inside the table to avoid infinite renders of all data
+  const [limit] = useState(20); // or make it adjustable
+
+  /**
+   * NOTE: IF YOU WANT THE TABLE TO HAVE A FIXED SIZE AND SCROLLBLE YOU NEED THIS VALUES 
+   * 
+   * <div className="max-h-50 min-h-[550px]"></div>
+   * &
+   * const [limit] = useState(20); 
+   * 
+   * This works well on 1080p large display dko sure ug mo fit ni kay cindy sa inch sa display
+   */
+
   // useQuery hook to fetch coop funds and members
   const { data: members } = useMembers();
-  const { data: coop, isLoading, isError, error } = useFetchCoopContributions();
+  const { data: coopData, isLoading, isError, error } = useFetchCoopContributions(page, limit);
 
+  // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
+  const coop = coopData?.data || [];
+  const total = coopData?.count || 0;
 
   // mutation hooks for adding and editing funds
   const { mutate: mutateAdd } = useAddCoopContributions();
@@ -179,120 +209,76 @@ function CoopShareCapital() {
           </select>
         </div>
 
-        <section className="space-y-4">
-          <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
-            <table className="table">
-              <thead>
-                <tr className="bg-base-200/30 text-left">
-                  <td>#</td>
-                  <td>Name</td>
-                  <td>Amount</td>
-                  <td>Source</td>
-                  <td>Payment Category</td>
-                  <td>Date</td>
-                  <td>Remarks</td>
-                </tr>
-              </thead>
-              <tbody>
-                {coop.map((contribution) => {
-                  const matchedMember = members?.find(
-                    (member) => member.member_id === contribution.member_id
-                  );
+        <MainDataTable
+          title="Coop Contributions"
+          linkPath="/coop/contributions"
+          headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
+          data={coop}
+          isLoading={isLoading}
+          page={page}
+          limit={limit}
+          total={total}
+          setPage={setPage}
+          renderRow={(row) => {
+            const matchedMember = members?.find(
+              (member) => member.member_id === row.member_id
+            );
+            const isDisabled = !matchedMember;
+            return (
+              <tr
+                key={row.coop_contri_id}
+                onClick={!isDisabled ? () => openEditModal(row) : undefined}
+                className={`transition-colors ${!isDisabled
+                    ? "cursor-pointer hover:bg-base-200/70"
+                    : "cursor-not-allowed opacity-80 bg-base-100/70"
+                  }`}
+              >
+                <td className="px-4 py-2 font-medium">{row.coop_contri_id}</td>
+                <td className="px-4 py-2">
+                  <span className="flex items-center gap-2">
+                    {matchedMember
+                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                      : "System"}
+                    {isDisabled && (
+                      <div className="tooltip tooltip-top" data-tip="System Generated">
+                        <span className="badge badge-sm badge-ghost">?</span>
+                      </div>
+                    )}
+                  </span>
+                </td>
+                <td className="px-4 py-2 font-semibold text-success">
+                  ₱ {row.amount?.toLocaleString() || "0"}
+                </td>
+                <td className="px-4 py-2">
+                  {row.source || (
+                    <span className="text-gray-400 italic">Not Provided</span>
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {row.category ? (
+                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
+                      {row.category} 
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {row.contribution_date
+                    ? new Date(row.contribution_date).toLocaleDateString()
+                    : <span className="text-gray-400 italic">Not Provided</span>}
+                </td>
+                <td className="px-4 py-2">
+                  {row.remarks || (
+                    <span className="text-gray-400 italic">Not Provided</span>
+                  )}
+                </td>
+              </tr>
+            );
+          }}
+       />
 
-                  const isDisabled = !matchedMember;
-                  // Second return here if it fetches a member one the conditional
-                  return (
-                    <React.Fragment key={contribution.coop_contri_id}>
-                      <tr
-                        onClick={!isDisabled ? () => openEditModal(contribution) : undefined}
-                        className={`transition-colors ${!isDisabled
-                          ? "cursor-pointer hover:bg-base-200/70"
-                          : "cursor-not-allowed opacity-80 bg-base-100/70"
-                          }`}
-                      >
-                        <td className="px-4 py-2 font-medium">{contribution.coop_contri_id}</td>
-
-                        {/* Member / System Column */}
-                        <td className="px-4 py-2">
-                          <span className="flex items-center gap-2">
-                            {matchedMember
-                              ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                              : "System"}
-
-                            {/* Tooltip badge beside the name */}
-                            {isDisabled && (
-                              <div className="tooltip tooltip-top" data-tip="System Generated">
-                                <span className="badge badge-sm badge-ghost">?</span>
-                              </div>
-                            )}
-                          </span>
-                        </td>
-
-
-                        <td className="px-4 py-2 font-semibold text-success">
-                          ₱ {contribution.amount?.toLocaleString() || "0"}
-                        </td>
-
-                        <td className="px-4 py-2">
-                          {contribution.source || (
-                            <span className="text-gray-400 italic">Not Provided</span>
-                          )}
-                        </td>
-
-                        <td className="px-4 py-2">
-                          {contribution.category ? (
-                            <span
-                              className={`badge font-semibold ${contribution.category === "Initial"
-                                ? "badge-warning"
-                                : contribution.category === "Monthly"
-                                  ? "badge-info"
-                                  : "badge-neutral"
-                                }`}
-                            >
-                              {contribution.category}
-                            </span>
-                          ) : (
-                            <span className="badge font-semibold badge-error">Not Provided</span>
-                          )}
-                        </td>
-
-
-
-                        <td className="px-4 py-2">
-                          {contribution.contribution_date
-                            ? new Date(contribution.contribution_date).toLocaleDateString()
-                            : <span className="text-gray-400 italic">Not Provided</span>}
-                        </td>
-
-                        <td className="px-4 py-2">
-                          {contribution.remarks || (
-                            <span className="text-gray-400 italic">Not Provided</span>
-                          )}
-                        </td>
-                      </tr>
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-
-            </table>
-            {/* Footer */}
-            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
-              <div className="text-sm text-base-content/70">
-                Showing 1 to 3 of 3 entries
-              </div>
-              <div className="join">
-                <button className="join-item btn btn-sm" disabled>
-                  «
-                </button>
-                <button className="join-item btn btn-sm">Page 1 of 1</button>
-                <button className="join-item btn btn-sm" disabled>
-                  »
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+      
       </div>
 
       <FormModal
@@ -302,47 +288,8 @@ function CoopShareCapital() {
         onSubmit={handleSubmit}
         deleteAction={() => handleDelete(formData.coop_contri_id)}
       >
-        {/* MIGHT USE LATER: THIS IS THE OLD DROPDOWN SELECT FOR MEMBERS */}
-        {/* <div className="form-control w-full">
-          <label htmlFor="member_id" className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Member</span>
-          </label>
-          <select
-            id="member_id"
-            name="member_id"
-            value={formData.member_id || ""}
-            onChange={handleChange}
-            className="select select-bordered w-full"
-            required
-          >
-            <option value="">-- Select Member --</option>
-            {members?.map((m) => (
-              <option key={m.member_id} value={m.member_id}>
-                {m.f_name} {m.l_name} ({m.email})
-              </option>
-            ))}
-          </select>
-        </div> */}
 
-        {/* Member Select dropdown and search component from react-select */}
-        {/* <Select
-          options={members?.map((m) => ({
-            value: m.member_id,
-            label: `${m.f_name} ${m.l_name} (${m.email})`,
-          }))}
-          value={members?.find((m) => m.member_id === formData.member_id) ? {
-            value: formData.member_id,
-            label: `${members.find((m) => m.member_id === formData.member_id)?.f_name} 
-            ${members.find((m) => m.member_id === formData.member_id)?.l_name}`
-          } : null}
-          onChange={(option) =>
-            handleChange({ target: { name: "member_id", value: option?.value } })
-          }
-          placeholder="Search or select member..."
-          className="w-full"
-        /> */}
 
-        {/* Member Select dropdown and search component headless UI */}
         <div className="form-control w-full">
           <label className="label text-sm font-semibold">Member</label>
           <div className="relative">
@@ -392,10 +339,6 @@ function CoopShareCapital() {
             </Combobox>
           </div>
         </div>
-
-
-
-
 
         {fields.map(({ label, name, type, options }) => (
           <div key={name} className="form-control w-full mt-2">
