@@ -9,56 +9,26 @@ import { useFetchExpenses } from '../treasurer/hooks/useFetchExpenses';
 import { useFetchClubFunds } from '../treasurer/hooks/useFetchClubFunds';
 import { useFetchCoopContributions } from '../treasurer/hooks/useFetchCoopContributions';
 
+// constants
+import { PAYMENT_METHOD_COLORS, CLUB_CATEGORY_COLORS, INCOME_SOURCE_COLORS, CAPITAL_CATEGORY_COLORS} from '../../constants/Color';
 
 // components
 import StatCard from './components/StatCard';
 import ExpensesChart from './components/ExpensesChart';
 import CoopContributionChart from './components/CoopContributionChart';
-import DataTable from './components/BaseDashboardTable';
+
+import DataTable from './components/DataTable';
 
 function Dashboard() {
 
-  // recent income table
-  const { data: income, isLoading: incomeIsLoading } = useFetchIncome();
-  const incomeColumns = [
-    { header: "Title", key: "title" },
-    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
-    { header: "Source", key: "source" },
-    { header: "Date", key: "date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
-    { header: "Remarks", key: "remarks" },
-  ]
-
-  // for the recent expenses quick table
-  const { data: fundExpenses, isLoading: expensesIsLoading } = useFetchExpenses();
-  const expensesColumns = [
-    { header: "Title", key: "title" },
-    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
-    { header: "Category", key: "category" },
-    { header: "Date", key: "transaction_date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
-    { header: "Description", key: "description" },
-  ];
-
-  // recent club funds
+  // Supabase Hooks
   const { data: members } = useMembers();
+  const { data: income, isLoading: incomeIsLoading } = useFetchIncome();
+  const { data: fundExpenses, isLoading: expensesIsLoading } = useFetchExpenses();
   const { data: clubFunds, isLoading: clubFundsIsLoading } = useFetchClubFunds();
-  const clubFundsColumns = [
-    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
-    { header: "Category", key: "category" },
-    { header: "Payment Date", key: "payment_date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
-    { header: "Payment Method", key: "payment_method" },
-    { header: "Remarks", key: "remarks" },
-
-  ];
-
-  // recent coop share capital
   const { data: coopFunds, isLoading: coopIsloading } = useFetchCoopContributions();
-  const coopFundsColumns = [
-    { header: "Amount", key: "amount", render: (value) => `₱ ${value?.toLocaleString() || "0"}` },
-    { header: "Source", key: "source" },
-    { header: "Payment Category", key: "category" },
-    { header: "Date", key: "contribution_date", render: (val) => val ? new Date(val).toLocaleDateString() : "Not Provided" },
-    { header: "Remarks", key: "remarks" },
-  ]
+
+
 
   // Filters for the cards
   const subText = "All Time";
@@ -102,9 +72,7 @@ function Dashboard() {
   /**
    * 
    * This will be looped through and rendered below as StatCards props arguments
-   * 
    */
-
   const stats = [
     {
       icon: <Wallet />,
@@ -195,7 +163,7 @@ function Dashboard() {
 
   ];
 
-
+ 
   return (
     <div>
       <div className="mb-6 space-y-4">
@@ -211,44 +179,176 @@ function Dashboard() {
               ))}
             </section>
 
+             {/** 
+              * 
+              *  Income Recent Table
+               */}
             <DataTable
               title={"Income"}
-              columns={incomeColumns}
+              linkPath={"/treasurer"} // will provide later on
+              headers={["Ref No.", "Title", "Amount", "Source", "Date", "Remarks"]}
               data={income}
               isLoading={incomeIsLoading}
-              rowLimit={10}
-              linkPath={"/treasurer"} // will provide later on
+              renderRow={(row) => (
+                <tr key={row.income_id} className="text-center">
+                  <td >IC_{row.income_id?.toLocaleString() || "ID"}</td>
+                  <td>
+                    {row.title}
+                  </td>
+                  <td className="px-4 py-2 font-semibold text-success">
+                    ₱ {row.amount?.toLocaleString() || "0"}
+                  </td>
+                  <td >
+                    <span className={`badge badge-soft font-semibold ${INCOME_SOURCE_COLORS[row.source] || "badge-ghost"}`}>
+                      {row.source}
+                    </span>
+                  </td>
+                  <td>{row.date ? new Date(row.date).toLocaleDateString() : "Not Provided"}</td>
+                  <td>{row.remarks}</td>
+                </tr>
+              )}
             />
 
-
+            {/** 
+             * 
+             * Expenses Recent Table
+              */}
             <DataTable
               title={"Expenses"}
-              columns={expensesColumns}
+              linkPath={"/treasurer/club-expenses"}
+              headers={["Ref No.", "Title", "Amount", "Category", "Date", "Description"]}
               data={fundExpenses}
               isLoading={expensesIsLoading}
-              rowLimit={10}
-              linkPath={"/treasurer/club-expenses"}
+              renderRow={(row) => (
+                <tr key={row.transaction_id} className="text-center">
+                  <td>EXP_{row.transaction_id?.toLocaleString() || "ID"}</td>
+                  <td>{row.title}</td>
+                  <td className="px-4 py-2 font-semibold text-success">
+                    ₱ {row.amount?.toLocaleString() || "0"}
+                  </td>
+                  <td>
+                    <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
+                      {row.category || "Not Provided"}
+                    </span>
+                  </td>
+                  <td>{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
+                  <td>{row.description}</td>
+                </tr>
+
+              )}
             />
 
+            {/** 
+             * 
+             * Club Funds Recent Table
+              */}
             <DataTable
               title={"Club Funds"}
-              columns={clubFundsColumns}
+              linkPath={"/treasurer/club-funds"}
+              headers={["Ref No.", "Name", "Amount", "Category", "Date", "Payment Method", "Remarks"]}
               data={clubFunds}
               isLoading={clubFundsIsLoading}
-              rowLimit={10}
-              linkPath={"/treasurer/club-funds"}
-              members={members}
-            />
+              renderRow={(row) => {
+                const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
+                return (
+                  <tr key={row.contribution_id} className="text-center">
+                    <td>CF_{row.contribution_id?.toLocaleString() || "ID"}</td>
 
+                    {/* Member Render from members table */}
+                    <td>
+                      <span className="gap-2">
+                        {matchedMember
+                          ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                          : "System"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 font-semibold text-success">
+                      ₱ {row.amount?.toLocaleString() || "0"}
+                    </td>
+                    
+                    <td>
+                      <span
+                        className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}
+                      >
+                        {row.category || "Not Provided"}
+                      </span>
+                    </td>
+
+
+                    <td>
+                      {row.payment_date ? new Date(row.payment_date).toLocaleDateString() : "Not Provided"}
+
+                    </td>
+
+                    <td>
+                      <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                        {row.payment_method}
+                      </span>
+                    </td>
+                    <td>{row.remarks}</td>
+
+                  </tr>
+                )
+              }
+            }
+            /> 
+
+            {/** 
+             * 
+             * Share Capital Contribution Recent Table
+              */}
             <DataTable
               title={"Share Capital Contribution"}
-              columns={coopFundsColumns}
+              linkPath={"/treasurer/coop-share-capital"}
+              headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
               data={coopFunds}
               isLoading={coopIsloading}
-              rowLimit={10}
-              linkPath={"/treasurer/coop-share-capital"}
-              members={members}
-            />
+              renderRow={(row) => {
+                const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
+                const isDisabled = !matchedMember; // condition (you can adjust logic)
+                return (
+                  <tr key={row.coop_contri_id} className={`text-center ${isDisabled ? "opacity-60" : ""}`}>
+                    <td>SCC_{row.coop_contri_id.toLocaleString() || "ID"}</td>
+                    <td>
+                      <span
+                        className={`gap-2`}
+                      >
+                        {matchedMember
+                          ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""
+                            }`.trim()
+                          : "System"}
+
+                        {isDisabled && (
+                          <div className="tooltip tooltip-top" data-tip="System Generated">
+                            <span className="badge badge-sm badge-ghost">?</span>
+                          </div>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 font-semibold text-success">
+                      ₱ {row.amount?.toLocaleString() || "0"}
+                    </td>
+                    <td>{row.source}</td>
+
+                    <td>
+                      <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
+                        {row.category}
+                      </span>
+                    </td>
+
+                    <td>
+                      {row.payment_date ? new Date(row.payment_date).toLocaleDateString() : "Not Provided"}
+                    </td>
+                    <td>{row.remarks}</td>
+
+                  </tr>
+
+                )
+
+              }
+            }
+            /> 
+              
           </div>
 
           {/* RIGHT SIDE */}

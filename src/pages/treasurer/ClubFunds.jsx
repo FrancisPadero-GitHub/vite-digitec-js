@@ -62,18 +62,20 @@ function ClubFunds() {
 
   const fields = [
     { label: "Amount", name: "amount", type: "number" },
+    
     {
       label: "Category",
       name: "category",
       type: "select",
-      options: ["Monthly Dues", "GMMM payments", "Fund Raising", "Donations"]
+      options: ["GMM", "Monthly Dues", "Activities", "Alalayang Agila", "Community Service", "Others"] 
     },
+
     { label: "Payment Date", name: "payment_date", type: "date" },
     {
       label: "Payment Method",
       name: "payment_method",
       type: "select",
-      options: ["Gcash", "Cash"],
+      options: ["GCash", "Cash"],
     },
     { label: "Period Start", name: "period_start", type: "date" },
     { label: "Period End", name: "period_end", type: "date" },

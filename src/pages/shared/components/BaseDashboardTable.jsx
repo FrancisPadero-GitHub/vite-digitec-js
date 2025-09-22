@@ -9,7 +9,6 @@ import { Link } from "react-router-dom";
  * @param {string} linkPath - path for the original table
  * @param {number} rowLimit - number of rows to render
  * @param {boolean} isLoading - loading state
- * @param {array} members - optional member data for resolving names
  */
 
 function BaseDashboardTable({
@@ -19,42 +18,8 @@ function BaseDashboardTable({
   linkPath,
   rowLimit,
   isLoading,
-  members = null,
 }) {
   const rows = rowLimit ? data.slice(0, rowLimit) : data;
-
-  // If members are provided, append a "Member" column dynamically
-  const finalColumns = members
-    ? [
-      {
-        header: "Member",
-        key: "member_name", // unique key
-        render: (_, row) => {
-          const matchedMember = members.find((m) => m.member_id === row.member_id);
-          const isDisabled = !matchedMember; // condition (you can adjust logic)
-
-          return (
-            <span
-              className={`flex items-center gap-2 ${isDisabled ? "opacity-50" : ""
-                }`}
-            >
-              {matchedMember
-                ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                : "System"}
-
-              {isDisabled && (
-                <div className="tooltip tooltip-top" data-tip="System Generated">
-                  <span className="badge badge-sm badge-ghost">?</span>
-                </div>
-              )}
-            </span>
-          );
-        },
-      },
-      ...columns,
-    ] : columns;
-
-
 
   return (
     <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md">
@@ -78,7 +43,7 @@ function BaseDashboardTable({
         <table className="table table-fixed w-full">
           <thead>
             <tr className="bg-base-200/30 text-left">
-              {finalColumns.map(({ header, key }) => (
+              {columns.map(({ header, key }) => (
                 <th key={key}>{header}</th>
               ))}
             </tr>
@@ -91,7 +56,7 @@ function BaseDashboardTable({
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={finalColumns.length} className="py-10">
+                  <td colSpan={columns.length} className="py-10">
                     <div className="flex justify-center items-center">
                       <span className="loading loading-spinner loading-lg text-primary"></span>
                     </div>
@@ -103,7 +68,7 @@ function BaseDashboardTable({
                     key={row.transaction_id || idx}
                     className="cursor-pointer hover:bg-base-200/50"
                   >
-                    {finalColumns.map(({ key, render }) => (
+                    {columns.map(({ key, render }) => (
                       <td key={key}>
                         {render
                           ? render(row[key], row)
