@@ -16,6 +16,7 @@ import { PAYMENT_METHOD_COLORS, CLUB_CATEGORY_COLORS, INCOME_SOURCE_COLORS, CAPI
 import StatCard from './components/StatCard';
 import ExpensesChart from './components/ExpensesChart';
 import CoopContributionChart from './components/CoopContributionChart';
+import ComparisonChart from './components/ComparisonChart';
 
 import DataTable from './components/DataTable';
 
@@ -366,7 +367,7 @@ function Dashboard() {
           <div className="w-full lg:w-[30%] flex flex-col gap-6">
 
             {/* CLUB EXPENSES DONUT CHART */}
-            <section className="card bg-base-100 shadow-lg min-h-[480px] p-8 rounded-3xl">
+            <section className="card bg-base-100 shadow-md min-h-[480px] p-8 rounded-3xl">
               <div className="flex flex-col h-full gap-6">
                 <div>
                   <span className="text-2xl font-bold tracking-tight">Club Expenses Breakdown</span>
@@ -380,6 +381,19 @@ function Dashboard() {
                 </div>
               </div>
             </section>
+
+            {/* CLUB FUNDS VS EXPENSES DUAL LINE CHART */}
+            <section className="card bg-base-100/90 shadow-md h-[400px] p-6 sm:p-6 rounded-2xl">
+              <div className="flex flex-col h-full">
+                <div>
+                  <span className="text-2xl font-semibold">Club Funds vs. Expenses</span>
+                  <span className="text-gray-400"> | This Year</span>
+                  <p className="text-base-content/60 mb-6">Track the yearly trends between club fund contributions and expenses.</p>
+                </div>
+                <ComparisonChart />
+              </div>
+            </section>
+
 
             {/* Share Capital Area Chart */}
             <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">

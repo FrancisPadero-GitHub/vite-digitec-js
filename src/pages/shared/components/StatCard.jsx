@@ -39,12 +39,13 @@ function StatCard({
         <span className="text-lg font-semibold">{statName}</span>
 
       </h3>
-      <div className="flex justify-center mb-1">
+      <div className="flex justify-center mb-1 flex-wrap gap-1">
         {filter.map((date_label) => (
           <button
             key={date_label}
-            className={`join-item btn btn-xs ${subtitle === date_label ? "btn-primary" : "btn-ghost text-gray-400"
-              }`}
+            className={`join-item btn btn-xs 
+        whitespace-nowrap text-[10px] sm:text-xs md:text-sm 
+        ${subtitle === date_label ? "btn-primary" : "btn-ghost text-gray-400"}`}
             onClick={() => onSubtitleChange?.(date_label)}
           >
             {date_label}
@@ -52,9 +53,11 @@ function StatCard({
         ))}
       </div>
 
+
       <div className="flex items-center gap-4">
-        <div className={`w-14 h-14 rounded-full ${iconBgColor} flex items-center justify-center`}>
-          <span className="text-3xl text-white">{icon}</span>
+        <div className={`rounded-full ${iconBgColor} flex items-center justify-center 
+              w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14`}>
+          <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white">{icon}</span>
         </div>
 
         <div>
@@ -69,11 +72,11 @@ function StatCard({
             )}
           </div>
 
-          <div className={`text-sm font-semibold ${colorClass}`}>
+          <div className={`text-sm font-semibold ${colorClass}`} title="Hard Coded Temporarily">
             {typeof growthPercent === "number"
               ? `${Math.abs(growthPercent)}% ${resolvedType}`
               : growthPercent}
-            <span className="text-warning"> vs last month</span>
+            {/* <span className="text-warning"> vs last month</span> */}
           </div>
         </div>
       </div>

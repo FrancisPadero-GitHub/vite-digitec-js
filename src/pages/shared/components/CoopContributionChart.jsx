@@ -22,8 +22,11 @@ function CoopContributionChart() {
     if (!item.contribution_date) return;
 
     const date = new Date(item.contribution_date);
-    const monthName = date.toLocaleString("default", { month: "short" }); // Jan, Feb, etc.
-    monthlyTotals[monthName] = (monthlyTotals[monthName] || 0) + (item.amount || 0);
+    const year = date.getFullYear();
+    const month = date.toLocaleString("default", { month: "short" }); // Jan, Feb, etc.
+
+    const key = `${month} ${year}`; // e.g., "Jan 2024"
+    monthlyTotals[key] = (monthlyTotals[key] || 0) + (item.amount || 0);
   });
 
   // Convert aggregated object into array for recharts
