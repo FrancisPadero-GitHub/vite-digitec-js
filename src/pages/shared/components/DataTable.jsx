@@ -33,7 +33,7 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
          </table>
           
           
-        <div className="max-h-96 overflow-y-auto overflow-x-auto">
+        <div className="max-h-96 min-h-[300px] overflow-y-auto overflow-x-auto">
           <table className="table table-fixed w-full">
             {/* Scrollable body */}
               <tbody>

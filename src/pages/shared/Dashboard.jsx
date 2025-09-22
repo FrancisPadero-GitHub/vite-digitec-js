@@ -179,65 +179,6 @@ function Dashboard() {
               ))}
             </section>
 
-             {/** 
-              * 
-              *  Income Recent Table
-               */}
-            <DataTable
-              title={"Income"}
-              linkPath={"/treasurer"} // will provide later on
-              headers={["Ref No.", "Title", "Amount", "Source", "Date", "Remarks"]}
-              data={income}
-              isLoading={incomeIsLoading}
-              renderRow={(row) => (
-                <tr key={row.income_id} className="text-center">
-                  <td >IC_{row.income_id?.toLocaleString() || "ID"}</td>
-                  <td>
-                    {row.title}
-                  </td>
-                  <td className="px-4 py-2 font-semibold text-success">
-                    ₱ {row.amount?.toLocaleString() || "0"}
-                  </td>
-                  <td >
-                    <span className={`badge badge-soft font-semibold ${INCOME_SOURCE_COLORS[row.source] || "badge-ghost"}`}>
-                      {row.source}
-                    </span>
-                  </td>
-                  <td>{row.date ? new Date(row.date).toLocaleDateString() : "Not Provided"}</td>
-                  <td>{row.remarks}</td>
-                </tr>
-              )}
-            />
-
-            {/** 
-             * 
-             * Expenses Recent Table
-              */}
-            <DataTable
-              title={"Expenses"}
-              linkPath={"/treasurer/club-expenses"}
-              headers={["Ref No.", "Title", "Amount", "Category", "Date", "Description"]}
-              data={fundExpenses}
-              isLoading={expensesIsLoading}
-              renderRow={(row) => (
-                <tr key={row.transaction_id} className="text-center">
-                  <td>EXP_{row.transaction_id?.toLocaleString() || "ID"}</td>
-                  <td>{row.title}</td>
-                  <td className="px-4 py-2 font-semibold text-success">
-                    ₱ {row.amount?.toLocaleString() || "0"}
-                  </td>
-                  <td>
-                    <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
-                      {row.category || "Not Provided"}
-                    </span>
-                  </td>
-                  <td>{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
-                  <td>{row.description}</td>
-                </tr>
-
-              )}
-            />
-
             {/** 
              * 
              * Club Funds Recent Table
@@ -251,7 +192,7 @@ function Dashboard() {
               renderRow={(row) => {
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
                 return (
-                  <tr key={row.contribution_id} className="text-center">
+                  <tr key={row.contribution_id} className="text-center cursor-pointer hover:bg-base-200/50">
                     <td>CF_{row.contribution_id?.toLocaleString() || "ID"}</td>
 
                     {/* Member Render from members table */}
@@ -265,7 +206,7 @@ function Dashboard() {
                     <td className="px-4 py-2 font-semibold text-success">
                       ₱ {row.amount?.toLocaleString() || "0"}
                     </td>
-                    
+
                     <td>
                       <span
                         className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}
@@ -290,15 +231,15 @@ function Dashboard() {
                   </tr>
                 )
               }
-            }
-            /> 
+              }
+            />
 
             {/** 
              * 
              * Share Capital Contribution Recent Table
               */}
             <DataTable
-              title={"Share Capital Contribution"}
+              title={"Share Capital / Coop"}
               linkPath={"/treasurer/coop-share-capital"}
               headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
               data={coopFunds}
@@ -307,7 +248,7 @@ function Dashboard() {
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
                 const isDisabled = !matchedMember; // condition (you can adjust logic)
                 return (
-                  <tr key={row.coop_contri_id} className={`text-center ${isDisabled ? "opacity-60" : ""}`}>
+                  <tr key={row.coop_contri_id} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
                     <td>SCC_{row.coop_contri_id.toLocaleString() || "ID"}</td>
                     <td>
                       <span
@@ -328,7 +269,8 @@ function Dashboard() {
                     <td className="px-4 py-2 font-semibold text-success">
                       ₱ {row.amount?.toLocaleString() || "0"}
                     </td>
-                    <td>{row.source}</td>
+                    <td>
+                      {row.source}</td>
 
                     <td>
                       <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
@@ -339,16 +281,77 @@ function Dashboard() {
                     <td>
                       {row.payment_date ? new Date(row.payment_date).toLocaleDateString() : "Not Provided"}
                     </td>
-                    <td>{row.remarks}</td>
+                    <td>
+                      {row.remarks}
+                    </td>
 
                   </tr>
-
                 )
-
               }
-            }
-            /> 
-              
+              } /> 
+
+
+            {/** 
+             * 
+             * Expenses Recent Table
+              */}
+            <DataTable
+              title={"Expenses"}
+              linkPath={"/treasurer/club-expenses"}
+              headers={["Ref No.", "Title", "Amount", "Category", "Date", "Description"]}
+              data={fundExpenses}
+              isLoading={expensesIsLoading}
+              renderRow={(row) => (
+                <tr key={row.transaction_id} className="text-center cursor-pointer hover:bg-base-200/50">
+                  <td>EXP_{row.transaction_id?.toLocaleString() || "ID"}</td>
+                  <td>{row.title}</td>
+                  <td className="px-4 py-2 font-semibold text-success">
+                    ₱ {row.amount?.toLocaleString() || "0"}
+                  </td>
+                  <td>
+                    <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
+                      {row.category || "Not Provided"}
+                    </span>
+                  </td>
+                  <td>{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
+                  <td>{row.description}</td>
+                </tr>
+
+              )}
+            />
+
+            {/** 
+              * 
+              *  Income Recent Table
+               */}
+            <DataTable
+              title={"Income"}
+              linkPath={"/treasurer"} // will provide later on
+              headers={["Ref No.", "Title", "Amount", "Source", "Date", "Remarks"]}
+              data={income}
+              isLoading={incomeIsLoading}
+              renderRow={(row) => (
+                <tr key={row.income_id} className="text-center cursor-pointer hover:bg-base-200/50">
+                  <td >IC_{row.income_id?.toLocaleString() || "ID"}</td>
+                  <td>
+                    {row.title}
+                  </td>
+                  <td className="px-4 py-2 font-semibold text-success">
+                    ₱ {row.amount?.toLocaleString() || "0"}
+                  </td>
+                  <td >
+                    <span className={`badge badge-soft font-semibold ${INCOME_SOURCE_COLORS[row.source] || "badge-ghost"}`}>
+                      {row.source}
+                    </span>
+                  </td>
+                  <td>{row.date ? new Date(row.date).toLocaleDateString() : "Not Provided"}</td>
+                  <td>{row.remarks}</td>
+                </tr>
+              )}
+            />
+
+
+             
           </div>
 
           {/* RIGHT SIDE */}
