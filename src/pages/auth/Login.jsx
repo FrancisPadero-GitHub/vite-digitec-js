@@ -1,4 +1,7 @@
-import { Eye, EyeOff } from "lucide-react";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useState } from "react";
 import { useLogin } from "../../backend/hooks/useLogin";
 
@@ -88,57 +91,83 @@ const Login = () => {
   return (
     <div className="min-h-screen font-inter bg-base-200">
       <section className="min-h-screen flex justify-center items-center px-4">
-        <div className="card max-w-xl w-full bg-base-100 shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-center mb-4">Login Here</h2>
+        <div className="card card-side w-[900px] h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
+          <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden">
+            <img src="/src/assets/auth-bg.jpg" className="w-full h-full object-cover"/>
+          </figure>
 
-          <form onSubmit={submitForm} className="flex flex-col gap-4">
-            {/* Email input */}
-            <input
-              type="email"
-              placeholder="EMAIL"
-              className={`input input-bordered w-full ${emailError ? "input-error" : ""
-                }`}
-              value={email}
-              onChange={emailInputChange}
-              required
-            />
-            {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+          <div className="card-body w-full md:w-1/2 justify-center">
+            <h2 className="text-4xl font-bold text-center text-base-content mb-6">Login</h2>
 
-            {/* Password input with visibility toggle */}
-            <div className="relative w-full">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="PASSWORD"
-                className={`input input-bordered w-full pr-10 ${passwordError ? "input-error" : ""
+            <form onSubmit={submitForm} className="space-y-4">
+              {/* Email Field */}
+              <div className="relative w-full">
+                <EmailOutlinedIcon fontSize="small" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none" />
+                <input
+                  type="email"
+                  placeholder="Your Email..."
+                  className={`input input-bordered w-full pl-10 ${
+                    emailError ? "input-error" : ""
                   }`}
-                value={password}
-                onChange={passwordInputChange}
-                required
-              />
+                  value={email}
+                  onChange={emailInputChange}
+                  required
+                />
+              </div>
+              
+              {/* Error message */}
+              {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+
+              {/* Password Field */}
+              <div className="relative w-full">
+                <LockOutlinedIcon fontSize="small" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Your Password..."
+                  className={`input input-bordered w-full pl-10 pr-10 ${
+                    passwordError ? "input-error" : ""
+                  }`}
+                  value={password}
+                  onChange={passwordInputChange}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10"
+                >
+                  {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                </button>
+              </div>
+              {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+
+              {/* Error message */}
+              {error && <p className="text-red-600 text-center">{error}</p>}
+
+              {/* Forgot password */}
+              <p className="text-right text-xs text-gray-500">
+                <a href="/forgot-password" className="link">
+                  Forgot Password?
+                </a>
+              </p>
+
+              {/* Submit button */}
               <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10"
+                type="submit"
+                disabled={isPending}
+                className="btn btn-primary w-full"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {isPending ? (
+                  <>
+                    <span className="loading loading-ball loading-sm mr-2"></span>
+                    Logging in...
+                  </>
+                ) : (
+                  "Login"
+                )}
               </button>
-            </div>
-            {passwordError && (
-              <p className="text-red-500 text-sm">{passwordError}</p>
-            )}
-
-            {/* Server-side error (login failure, etc.) */}
-            {error && <p className="text-red-600 text-center">{error}</p>}
-
-            {/* Submit button with loading state */}
-            <button
-              type="submit"
-              disabled={isPending}
-              className="btn btn-primary w-full"
-            >
-              {isPending ? "Logging in..." : "LOGIN"}
-            </button>
-          </form>
+            </form>
+          </div>
         </div>
       </section>
     </div>
