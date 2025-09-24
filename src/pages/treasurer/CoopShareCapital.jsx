@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 
 // Hooks
 import { useMembers } from '../../backend/hooks/useFetchMembers';
-// import { useFetchCoopContributions } from './hooks/useFetchCoopContributions'; // Old Fetch contributions 
+// import { useFetchCoopContributions } from './hooks/useFetchCoopContributions'; // Old Fetch contributions with
 import { useFetchCoopContributions } from './custom/useFetchCoop'; // implemented pagination
 
 import { useAddCoopContributions } from './hooks/useAddCoopContributions';
@@ -15,10 +15,10 @@ import { useDelete } from './hooks/useDelete';
 // components
 import FormModal from './modals/FormModal';
 import MainDataTable from './components/MainDataTable';
+import FilterToolbar from '../shared/components/FilterToolbar';
 
 // constants
 import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
-
 
 /**
  * 
@@ -27,6 +27,13 @@ import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
  */
 
 function CoopShareCapital() {
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
+  const [sourceFilter, setSourceFilter] = useState("");
+
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
   const [page, setPage] = useState(1);
@@ -48,8 +55,47 @@ function CoopShareCapital() {
   const { data: coopData, isLoading, isError, error } = useFetchCoopContributions(page, limit);
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
-  const coop = coopData?.data || [];
+ 
   const total = coopData?.count || 0;
+  const coopRaw = coopData?.data || [];
+
+  // Apply filters
+
+  /**
+   * 
+   * CURRENT LIMITATION
+   * 
+   * it only search rows that is being paginated with the value of (20)
+   * means that rows that is not paginated within that is not included on the filter
+   * 
+   */
+  const TABLE_PREFIX = "SCC"; // You can change this per table
+  const coop = coopRaw.filter((row) => {
+    const member = members?.find((m) => m.member_id === row.member_id);
+    const fullName = member
+      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
+      : "";
+
+    const generatedId = `${TABLE_PREFIX}_${row.coop_contri_id}`;
+
+    const matchesSearch =
+      searchTerm === "" ||
+      fullName.includes(searchTerm.toLowerCase()) ||
+      row.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.source?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
+
+    const matchesCategory =
+      categoryFilter === "" || row.category === categoryFilter;
+
+    const date = row.contribution_date ? new Date(row.contribution_date) : null;
+    const matchesYear =
+      yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+
+    return matchesSearch && matchesCategory && matchesYear && matchesMonth;
+  });
 
   // mutation hooks for adding and editing funds
   const { mutate: mutateAdd } = useAddCoopContributions();
@@ -174,41 +220,70 @@ function CoopShareCapital() {
         </div>
 
         {/** Toolbar functionality to be implemented */}
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
-            {/* <SearchIcon className="text-base-content/50" /> */}
-            <SearchIcon className="text-base-content/50" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="grow"
+        {/* base toolbar should be implemented here  */}
+        <FilterToolbar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          dropdowns={[
+            {
+              label: "Source",
+              value: sourceFilter,
+              onChange: setSourceFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "Member Contribution", value: "member contribution" },
+                { label: "System", value: "system" },
 
-            />
-          </label>
+              ],
+            },
+            {
+              label: "Payment Category",
+              value: categoryFilter,
+              onChange: setCategoryFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "Initial", value: "Initial" },
+                { label: "Monthly", value: "Monthly" },
+                { label: "System", value: "System" },
+              ],
+            },
+            {
+              label: "Year",
+              value: yearFilter,
+              onChange: setYearFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "2025", value: "2025" },
+                { label: "2024", value: "2024" },
+                { label: "2023", value: "2023" },
+                { label: "2022", value: "2022" },
+                { label: "2021", value: "2021" },
+                { label: "2020", value: "2020" },
+              ],
+            },
+            {
+              label: "Month",
+              value: monthFilter,
+              onChange: setMonthFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "January", value: "1" },
+                { label: "February", value: "2" },
+                { label: "March", value: "3" },
+                { label: "April", value: "4" },
+                { label: "May", value: "5" },
+                { label: "June", value: "6" },
+                { label: "July", value: "7" },
+                { label: "August", value: "8" },
+                { label: "September", value: "9" },
+                { label: "October", value: "10" },
+                { label: "November", value: "11" },
+                { label: "December", value: "12" },
+              ],
+            },
+          ]}
+        />
 
-          <select
-            className="select select-bordered w-40"
-
-          >
-            <option> Type </option>
-            <option> 2 </option>
-          </select>
-
-
-          <select
-            className="select select-bordered w-40"
-          >
-            <option> Year </option>
-            <option> 2 </option>
-          </select>
-
-          <select
-            className="select select-bordered w-40"
-          >
-            <option> Month </option>
-            <option> 2 </option>
-          </select>
-        </div>
 
         <MainDataTable
           headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
@@ -225,7 +300,7 @@ function CoopShareCapital() {
             const isDisabled = !matchedMember;
             return (
               <tr
-                key={row.coop_contri_id}
+                key={`${TABLE_PREFIX}$row.coop_contri_id`}
                 onClick={!isDisabled ? () => openEditModal(row) : undefined}
                 className={`transition-colors ${!isDisabled
                     ? "cursor-pointer hover:bg-base-200/70"
