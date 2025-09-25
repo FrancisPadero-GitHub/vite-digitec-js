@@ -13,6 +13,7 @@ import { useDelete } from "./hooks/useDelete";
 // components
 import FormModal from './modals/FormModal';
 import MainDataTable from './components/MainDataTable';
+import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 import { CLUB_CATEGORY_COLORS } from '../../constants/Color';
@@ -37,8 +38,48 @@ function ClubExpenses() {
   const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses(page, limit);
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
-  const fundExpenses = fundExpensesData?.data || [];
+  const fundExpensesRaw = fundExpensesData?.data || [];
   const total = fundExpensesData?.count || 0;
+
+    // Apply filters
+  
+    /**
+     * 
+     * CURRENT LIMITATION
+     * 
+     * it only search rows that is being paginated with the value of (20)
+     * means that rows that is not paginated within that is not included on the filter
+     * 
+     */
+  
+    // Search and filter states
+    const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+    const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
+    const [yearFilter, setYearFilter] = useState("");
+    const [monthFilter, setMonthFilter] = useState("");
+
+  const TABLE_PREFIX = "EXP"; // You can change this per table, this for the the unique table ID but this is not included in the database
+  const fundExpenses = fundExpensesRaw.filter((row) => {
+   
+    const generatedId = `${TABLE_PREFIX}_${row.transaction_id}`;
+
+    const matchesSearch =
+      searchTerm === "" ||
+      row.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
+
+    const matchesCategory =
+      categoryFilter === "" || row.category === categoryFilter;
+
+    const date = row.transaction_date ? new Date(row.transaction_date) : null;
+    const matchesYear =
+      yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+
+    return matchesSearch && matchesCategory && matchesYear && matchesMonth;
+  });
 
   // mutation hooks for adding and editing expenses
   const { mutate: mutateAdd } = useAddExpenses();
@@ -149,49 +190,60 @@ function ClubExpenses() {
             </Link>
           </div>
         </div>
-        {/** Toolbar functionality to be implemented */}
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
-            {/* <SearchIcon className="text-base-content/50" /> */}
-            <SearchIcon className="text-base-content/50" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="grow"
 
-            />
-          </label>
-
-          <select
-
-            className="select select-bordered w-40"
-
-
-          >
-            <option> Type </option>
-            <option> 2 </option>
-          </select>
-
-
-          <select
-
-            className="select select-bordered w-40"
-
-          >
-            <option> Year </option>
-            <option> 2 </option>
-          </select>
-
-          <select
-
-            className="select select-bordered w-40"
-
-          >
-            <option> Month </option>
-            <option> 2 </option>
-          </select>
-        </div>
-
+        <FilterToolbar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          dropdowns={[
+            {
+              label: "Category",
+              value: categoryFilter,
+              onChange: setCategoryFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "Monthly Dues", value: "Monthly Dues" },
+                { label: "Activites", value: "Activities" },
+                { label: "Alalayang Agila", value: "Alalayang Agila" },
+                { label: "Community Service", value: "Community Service" },
+                { label: "Others", value: "Others" },
+              ],
+            },
+            {
+              label: "Year",
+              value: yearFilter,
+              onChange: setYearFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "2025", value: "2025" },
+                { label: "2024", value: "2024" },
+                { label: "2023", value: "2023" },
+                { label: "2022", value: "2022" },
+                { label: "2021", value: "2021" },
+                { label: "2020", value: "2020" },
+              ],
+            },
+            {
+              label: "Month",
+              value: monthFilter,
+              onChange: setMonthFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "January", value: "1" },
+                { label: "February", value: "2" },
+                { label: "March", value: "3" },
+                { label: "April", value: "4" },
+                { label: "May", value: "5" },
+                { label: "June", value: "6" },
+                { label: "July", value: "7" },
+                { label: "August", value: "8" },
+                { label: "September", value: "9" },
+                { label: "October", value: "10" },
+                { label: "November", value: "11" },
+                { label: "December", value: "12" },
+              ],
+            },
+          ]}
+        />
 
 
         {/** 
@@ -208,10 +260,10 @@ function ClubExpenses() {
           total={total}
           setPage={setPage}
           renderRow = {(row) => (
-            <tr key={row.transaction_id} className=" cursor-pointer hover:bg-base-200/50"
+            <tr key={`${TABLE_PREFIX}row.transaction_id`} className=" cursor-pointer hover:bg-base-200/50"
               onClick={() => openEditModal(row)}
             >
-              <td className="text-center">EXP_{row.transaction_id?.toLocaleString() || "ID"}</td>
+              <td className="text-center">{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
               <td className="px-4 py-2">{row.title}</td>
               <td className="px-4 py-2 font-semibold text-success">
                 ₱ {row.amount?.toLocaleString() || "0"}

@@ -22,18 +22,12 @@ import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
 
 /**
  * 
- * The size of table inside is configurable in here MainDataTable
+ * The size of table inside is configurable in here MainDataTable component
  * 
  */
 
 function CoopShareCapital() {
-  // Search and filter states
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
-  const [sourceFilter, setSourceFilter] = useState("");
 
-  const [yearFilter, setYearFilter] = useState("");
-  const [monthFilter, setMonthFilter] = useState("");
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
   const [page, setPage] = useState(1);
@@ -69,7 +63,15 @@ function CoopShareCapital() {
    * means that rows that is not paginated within that is not included on the filter
    * 
    */
-  const TABLE_PREFIX = "SCC"; // You can change this per table
+
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+  const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
+
+  const TABLE_PREFIX = "SCC"; // You can change this per table, this for the the unique table ID but this is not included in the database
   const coop = coopRaw.filter((row) => {
     const member = members?.find((m) => m.member_id === row.member_id);
     const fullName = member
@@ -88,13 +90,16 @@ function CoopShareCapital() {
     const matchesCategory =
       categoryFilter === "" || row.category === categoryFilter;
 
+    const matchesSource =
+      sourceFilter === "" || row.source === sourceFilter;
+
     const date = row.contribution_date ? new Date(row.contribution_date) : null;
     const matchesYear =
       yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
     const matchesMonth =
       monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
-    return matchesSearch && matchesCategory && matchesYear && matchesMonth;
+    return matchesSearch && matchesCategory && matchesYear && matchesMonth && matchesSource;
   });
 
   // mutation hooks for adding and editing funds
@@ -219,8 +224,6 @@ function CoopShareCapital() {
           </div>
         </div>
 
-        {/** Toolbar functionality to be implemented */}
-        {/* base toolbar should be implemented here  */}
         <FilterToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -230,18 +233,18 @@ function CoopShareCapital() {
               value: sourceFilter,
               onChange: setSourceFilter,
               options: [
-                { label: "All", value: "" },
+                { label: "All", value: "" },  // will be used also for the disabled label of the dropdown
                 { label: "Member Contribution", value: "member contribution" },
                 { label: "System", value: "system" },
 
               ],
             },
             {
-              label: "Payment Category",
+              label: "Category",
               value: categoryFilter,
               onChange: setCategoryFilter,
               options: [
-                { label: "All", value: "" },
+                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
                 { label: "Initial", value: "Initial" },
                 { label: "Monthly", value: "Monthly" },
                 { label: "System", value: "System" },
@@ -283,7 +286,6 @@ function CoopShareCapital() {
             },
           ]}
         />
-
 
         <MainDataTable
           headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}

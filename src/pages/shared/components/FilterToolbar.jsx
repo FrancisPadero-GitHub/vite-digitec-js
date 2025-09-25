@@ -22,10 +22,12 @@ function FilterToolbar({
       {dropdowns.map((dropdown, idx) => (
         <select
           key={idx}
+
           className={`select select-bordered ${dropdown.className ?? "w-40"}`}
           value={dropdown.value}
           onChange={(e) => dropdown.onChange(e.target.value)}
         >
+          <option value="" className="label" disabled>{dropdown.label}</option>
           {dropdown.options.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}

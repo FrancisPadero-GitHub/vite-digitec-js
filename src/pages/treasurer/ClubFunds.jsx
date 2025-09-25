@@ -16,6 +16,7 @@ import { useDelete } from './hooks/useDelete';
 // components
 import FormModal from './modals/FormModal';
 import MainDataTable from './components/MainDataTable';
+import FilterToolbar from '../shared/components/FilterToolbar';
 
 // constants
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from '../../constants/Color';
@@ -41,15 +42,64 @@ function ClubFunds() {
   const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds(page, limit);
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
-  const clubFunds = clubFundsData?.data || [];
+  const clubFundsRaw = clubFundsData?.data || [];
   const total = clubFundsData?.count || 0;
+
+    // Apply filters
+  
+    /**
+     * 
+     * CURRENT LIMITATION
+     * 
+     * it only search rows that is being paginated with the value of (20)
+     * means that rows that is not paginated within that is not included on the filter
+     * 
+     */
+  
+    // Search and filter states
+    const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+    const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
+    const [methodFilter, setmethodFilter] = useState("");
+    const [yearFilter, setYearFilter] = useState("");
+    const [monthFilter, setMonthFilter] = useState("");
+
+
+    const TABLE_PREFIX = "CFC"; // You can change this per table, this for the the unique table ID but this is not included in the database
+    const clubFunds = clubFundsRaw.filter((row) => {
+      const member = members?.find((m) => m.member_id === row.member_id);
+      const fullName = member
+        ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
+        : "";
+
+      const generatedId = `${TABLE_PREFIX}_${row.contribution_id}`;
+
+      const matchesSearch =
+        searchTerm === "" ||
+        fullName.includes(searchTerm.toLowerCase()) ||
+        row.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
+
+      const matchesCategory =
+        categoryFilter === "" || row.category === categoryFilter;
+
+      const matchesMethod = methodFilter === "" || row.payment_method === methodFilter;
+
+      const date = row.payment_date ? new Date(row.payment_date) : null;
+      const matchesYear =
+        yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+
+      return matchesSearch && matchesCategory && matchesYear && matchesMonth && matchesMethod;
+    });
+
+
 
   // mutation hooks for adding and editing funds
   const { mutate: mutateAdd } = useAddClubFunds();
   const { mutate: mutateEdit } = useEditClubFunds();
   const { mutate: mutateDelete } = useDelete('club_funds_contributions');
-
-
 
   // form data
   const [formData, setFormData] = useState({
@@ -196,41 +246,71 @@ function ClubFunds() {
           </div>
         </div>
 
-        {/** Toolbar functionality to be implemented */}
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
-            {/* <SearchIcon className="text-base-content/50" /> */}
-            <SearchIcon className="text-base-content/50" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="grow"
+        <FilterToolbar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          dropdowns={[
+            {
+              label: "Method",
+              value: methodFilter,
+              onChange: setmethodFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "Cash", value: "Cash" },
+                { label: "GCash", value: "GCash" },
 
-            />
-          </label>
+              ],
+            },
+            {
+              label: "Category",
+              value: categoryFilter,
+              onChange: setCategoryFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "Monthly Dues", value: "Monthly Dues" },
+                { label: "Activites", value: "Activities" },
+                { label: "Alalayang Agila", value: "Alalayang Agila" },
+                { label: "Community Service", value: "Community Service" },
+                { label: "Others", value: "Others" },
+              ],
+            },
+            {
+              label: "Year",
+              value: yearFilter,
+              onChange: setYearFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "2025", value: "2025" },
+                { label: "2024", value: "2024" },
+                { label: "2023", value: "2023" },
+                { label: "2022", value: "2022" },
+                { label: "2021", value: "2021" },
+                { label: "2020", value: "2020" },
+              ],
+            },
+            {
+              label: "Month",
+              value: monthFilter,
+              onChange: setMonthFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "January", value: "1" },
+                { label: "February", value: "2" },
+                { label: "March", value: "3" },
+                { label: "April", value: "4" },
+                { label: "May", value: "5" },
+                { label: "June", value: "6" },
+                { label: "July", value: "7" },
+                { label: "August", value: "8" },
+                { label: "September", value: "9" },
+                { label: "October", value: "10" },
+                { label: "November", value: "11" },
+                { label: "December", value: "12" },
+              ],
+            },
+          ]}
+        />
 
-          <select
-            className="select select-bordered w-40"
-          >
-            <option> Type </option>
-            <option> 2 </option>
-          </select>
-
-
-          <select
-            className="select select-bordered w-40"
-          >
-            <option> Year </option>
-            <option> 2 </option>
-          </select>
-
-          <select
-            className="select select-bordered w-40"
-          >
-            <option> Month </option>
-            <option> 2 </option>
-          </select>
-        </div>
 
         <MainDataTable
           headers={["Ref No.", "Name", "Amount", "Category", "Date", "Method", "Period Covered", "Remarks"]}
@@ -246,11 +326,11 @@ function ClubFunds() {
             );
             return (
               <tr
-                key={row.contribution_id}
+                key={`${TABLE_PREFIX}row.contribution_id`}
                 onClick={() => openEditModal(row)}
                 className="transition-colors  cursor-pointer hover:bg-base-200/70"
               >
-                <td className="px-4 py-2 text-center font-medium">CFC_{row.contribution_id}</td>
+                <td className="px-4 py-2 text-center font-medium">{TABLE_PREFIX}_{row.contribution_id}</td>
                 <td className="px-4 py-2">
                   <span className="flex items-center gap-2">
                     {matchedMember
