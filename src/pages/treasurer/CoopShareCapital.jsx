@@ -302,7 +302,7 @@ function CoopShareCapital() {
             const isDisabled = !matchedMember;
             return (
               <tr
-                key={`${TABLE_PREFIX}$row.coop_contri_id`}
+                key={`${TABLE_PREFIX}${row.coop_contri_id}`}
                 onClick={!isDisabled ? () => openEditModal(row) : undefined}
                 className={`transition-colors ${!isDisabled
                     ? "cursor-pointer hover:bg-base-200/70"

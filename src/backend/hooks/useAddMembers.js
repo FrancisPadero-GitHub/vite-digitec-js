@@ -2,23 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase";
 
 /**
- *  !! MAJOR PROBLEM !! IT NEEDS ADMIN AUTH FOR MEMBER MANAGEMENT 
- * 
  * Insert a new member with:
- * 1. Supabase Auth account (login credentials)
+ * 1. Supabase Auth account (via Edge Function, admin auth)
  * 2. Member profile in "members" table
  * 3. Initial payment in "initial_payments" table
  */
 const insertMember = async (formData) => {
-  /**  --- Build structured payload ---
-   * This is to double check the data that will be sent kay wala man ta ga typescript kay yawa mn ang typescript :>
-   */
+  // --- Build structured payload ---
   const payload = {
-    // auth: {
-    //   email: formData.loginEmail,
-    //   password: formData.password,
-    //   full_name: `${formData.f_name} ${formData.m_name} ${formData.l_name}`,
-    // },
     member: {
       login_id: null,
       f_name: formData.f_name || null,
@@ -28,7 +19,6 @@ const insertMember = async (formData) => {
       account_status: formData.account_status || null,
       address: formData.address || null,
       application_date: formData.application_date || null,
-      description: formData.description || null,
       email: formData.email || null,
       sex: formData.sex || null,
       contact_number: formData.contact_number || null,
@@ -44,33 +34,37 @@ const insertMember = async (formData) => {
     },
   };
 
-  // --- 1. Create Supabase Auth user ---
-  // Temporarily Disabled due to it needs to have a authentication admin for it to add new users without logging out the current use logged in
-  // const {
-  //   data: { user },
-  //   error: registerError,
-  // } = await supabase.auth.signUp({
-  //   email: payload.auth.email,
-  //   password: payload.auth.password,
-  //   options: { data: { full_name: payload.auth.full_name } },
-  // });
+  // --- 1. Create Auth user via Edge Function ---
+const session = await supabase.auth.getSession(); // gets the session key for the logged in admin account
 
-  // if (registerError) {
-  //   throw new Error(`Auth signup failed: ${registerError.message}`);
-  // }
-  // if (!user?.id) {
-  //   throw new Error(
-  //     "Auth signup succeeded but no user ID returned. Email confirmation may be required in Supabase settings."
-  //   );
-  // }
-  // const authID = user.id;
+const response = await fetch(
+  "https://kvsyknteyxhyjbogbaya.supabase.co/functions/v1/create-user",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.data.session?.access_token}`,
+    },
+    body: JSON.stringify({
+      email: formData.loginEmail,
+      password: formData.password,
+      full_name: `${formData.f_name} ${formData.l_name}`,
+    }),
+  }
+);
+  const result = await response.json();
+  console.log("User Created: ", result.user)
+  await supabase.inviteUserByEmail(formData.loginEm);
+  if (result.error) throw new Error(result.error);
+  
+  const authUser = result.user; // contains Supabase Auth user info
 
-  // --- 2. Insert into "members" table ---
+  // --- 2. Insert into "members" table, linking login_id = authUser.id ---
   const { data: member, error: memberError } = await supabase
     .from("members")
-    .insert([{ ...payload.member }])
-    .select() // After you insert, also return the inserted row(s) for the onSuccess to work
-    .single(); // Expecting only a single row to return its gonna return an error if it returns a multiple rows
+    .insert([{ ...payload.member, login_id: authUser.id }])
+    .select()
+    .single();
 
   if (memberError) {
     throw new Error(`Failed to insert member: ${memberError.message}`);
@@ -89,12 +83,11 @@ const insertMember = async (formData) => {
   }
 
   // --- Final success ---
-  return member ; //authID
+  return member;
 };
 
 /**
  * Custom hook: useAddMember
- * Handles mutation for adding a new member with auth + DB inserts.
  */
 export const useAddMember = () => {
   const queryClient = useQueryClient();
@@ -102,12 +95,10 @@ export const useAddMember = () => {
   return useMutation({
     mutationFn: insertMember,
     onSuccess: (member) => {
-      console.log("Member data that is being returned from :  ", member)
-      // Invalidate members query so UI refreshes with new data
-      queryClient.invalidateQueries(["members"]); // no specific ID cause queries for all data 
+      console.log("New member created:", member);
+      queryClient.invalidateQueries(["members"]); // refreshes UI
     },
     onError: (error) => {
-      // Optional: Log or send to error monitoring service
       console.error("Add member failed:", error.message);
     },
   });

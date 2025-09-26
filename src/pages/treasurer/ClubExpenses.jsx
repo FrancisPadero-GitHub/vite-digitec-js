@@ -260,7 +260,7 @@ function ClubExpenses() {
           total={total}
           setPage={setPage}
           renderRow = {(row) => (
-            <tr key={`${TABLE_PREFIX}row.transaction_id`} className=" cursor-pointer hover:bg-base-200/50"
+            <tr key={`${TABLE_PREFIX}${row.transaction_id}`} className=" cursor-pointer hover:bg-base-200/50"
               onClick={() => openEditModal(row)}
             >
               <td className="text-center">{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>

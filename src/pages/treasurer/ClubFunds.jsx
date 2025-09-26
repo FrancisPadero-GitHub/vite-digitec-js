@@ -326,7 +326,7 @@ function ClubFunds() {
             );
             return (
               <tr
-                key={`${TABLE_PREFIX}row.contribution_id`}
+                key={`${TABLE_PREFIX}${row.contribution_id}`}
                 onClick={() => openEditModal(row)}
                 className="transition-colors  cursor-pointer hover:bg-base-200/70"
               >

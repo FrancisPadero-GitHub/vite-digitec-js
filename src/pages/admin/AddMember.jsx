@@ -18,7 +18,6 @@ const AddMember = () => {
     account_status: "",
     address: "",
     application_date: "",
-    description: "",
     email: "",
     sex: "",
     contact_number: "",
@@ -108,23 +107,27 @@ const AddMember = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // const validateLogin = () => {
-  //   const errors = {};
-  //   if (!formData.loginEmail) errors.loginEmail = "Login email required";
-  //   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
-  //     errors.loginEmail = "Invalid email format";
-  //   if (!formData.password || formData.password.length < 6)
-  //     errors.password = "Password must be at least 6 characters";
-  //   if (formData.password !== formData.cpassword)
-  //     errors.cpassword = "Passwords do not match";
-  //   setFormErrors(errors);
-  //   return Object.keys(errors).length === 0;
-  // };
+  const validateLogin = () => {
+    const errors = {};
+    if (!formData.loginEmail) errors.loginEmail = "Login email required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
+      errors.loginEmail = "Invalid email format";
+    if (!formData.password || formData.password.length < 6)
+      errors.password = "Password must be at least 6 characters";
+    if (formData.password !== formData.cpassword)
+      errors.cpassword = "Passwords do not match";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // --- TAB NAVIGATION ---
+  // const handleNext = () => {
+  //   if (activeTab === 0) validatePersonal() && setActiveTab(1)  ; // 
+  //   else if (activeTab === 1) validateMembership() &&  setActiveTab(2) ; // 
+  // };
   const handleNext = () => {
-    if (activeTab === 0) validatePersonal() && setActiveTab(1)  ; // 
-    else if (activeTab === 1) validateMembership() &&  setActiveTab(2) ; // 
+    if (activeTab === 0)  setActiveTab(1); // 
+    else if (activeTab === 1) setActiveTab(2); // 
   };
 
   const handleSubmit = (e) => {
@@ -156,7 +159,6 @@ const AddMember = () => {
       options: ["Active", "Inactive", "Pending"],
     },
     { label: "Application Date", name: "application_date", type: "date" },
-    { label: "Description", name: "description", type: "text" },
     { label: "Email Address", name: "email", type: "email" },
     {
       label: "Sex",
@@ -192,11 +194,11 @@ const AddMember = () => {
     { label: "Remarks", name: "remarks", type: "text" },
   ];
 
-  // const loginCredentials = [
-  //   { label: "Email Address", name: "loginEmail", type: "text" },
-  //   { label: "Password", name: "password", type: "password" },
-  //   { label: "Confirm Password", name: "cpassword", type: "password" },
-  // ];
+  const loginCredentials = [
+    { label: "Email Address", name: "loginEmail", type: "text" },
+    { label: "Password", name: "password", type: "password" },
+    { label: "Confirm Password", name: "cpassword", type: "password" },
+  ];
 
   return (
     <div className="min-h-screen py-5">
@@ -214,6 +216,9 @@ const AddMember = () => {
           </div>
           <div className={`tab ${activeTab === 1 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
             2. Membership
+          </div>
+          <div className={`tab ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+            2. Login Credentials
           </div>
         </div>
 
@@ -356,28 +361,25 @@ const AddMember = () => {
                 >
                   Back
                 </button>
-                {/* <button
+                <button
                   type="button"
                   className="btn btn-success px-8"
                   onClick={handleNext}
                 >
-                  Register
-                </button> */}
-                <button
+                  Next
+                </button>
+                {/* <button
                   type="submit"
                   className="btn btn-success px-8"
                   disabled={isPending}
                 >
                   {isPending ? "Processing..." : "Register"}
-                </button>
+                </button> */}
               </div>
             </>
           )}
 
-          {/* LOGIN CREDENTIALS TAB 
-
-           TEMPORARILY DISABLED DUE TO A BUG
-
+          {/* LOGIN CREDENTIALS TAB  */}
           {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -419,7 +421,7 @@ const AddMember = () => {
                 </button>
               </div>
             </>
-          )} */}
+          )}
         </form>
       </div>
     </div>
