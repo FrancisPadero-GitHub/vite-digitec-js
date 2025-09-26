@@ -67,8 +67,8 @@ const sidebarConfig = {
     {
       section: "Finance",
       items: [
-        { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
+        { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
         { label: "Coop Loans", icon: HandshakeIcon, path: "/regular-member/regular-member-coop-loans" },
       ],
     },
