@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
@@ -10,7 +11,8 @@ import StickyNote2Icon from '@mui/icons-material/StickyNote2';
 import HistoryIcon from '@mui/icons-material/History';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 // SIDEBAR CONFIG BASED ON ROLE
 const sidebarConfig = {
@@ -69,7 +71,19 @@ const sidebarConfig = {
       items: [
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
-        { label: "Coop Loans", icon: HandshakeIcon, path: "/regular-member/regular-member-coop-loans" },
+
+        // I still don't understand how this works how does children and the routes work togeher 
+        {
+          label: "Coop Loans",
+          icon: HandshakeIcon,
+          children: [
+            { label: "Loan Information", path: "/regular-member/coop-loans/my-information" },
+            { label: "View Loan Payment History", path: "/regular-member/coop-loans/payments" },
+            { label: "View Currently Active Loans", path: "/regular-member/coop-loans/active" },
+            { label: "View Applied Loans", path: "/regular-member/coop-loans/applied" },
+            { label: "View Approved Loans (History)", path: "/regular-member/coop-loans/approved" },
+          ],
+        },
       ],
     },
   ],
@@ -117,10 +131,15 @@ const sidebarConfig = {
  * @returns rendered sidebar component with role specific navigations
  */
 
-// SIDEBAR COMPONENT
+// --- SIDEBAR COMPONENT ---
 const Sidebar = ({ role }) => {
   const sections = sidebarConfig[role] || [];
   const location = useLocation();
+  const [openMenus, setOpenMenus] = useState({}); // Track collapses
+
+  const toggleMenu = (label) => {
+    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <div className="drawer-side z-40">
@@ -137,10 +156,54 @@ const Sidebar = ({ role }) => {
         <ul className="menu flex-grow">
           {sections.map((section) => (
             <li key={section.section}>
-              <div className="menu-title pb-3 uppercase text-xs text-gray-300 mt-5">{section.section}</div>
+              <div className="menu-title pb-3 uppercase text-xs text-gray-300 mt-5">
+                {section.section}
+              </div>
               <ul>
                 {section.items.map((item, i) => {
                   const isActive = location.pathname === item.path;
+
+                  if (item.children) {
+                    const isOpen = openMenus[item.label] || false;
+                    return (
+                      <li key={i}>
+                        <button
+                          onClick={() => toggleMenu(item.label)}
+                          className="flex items-center justify-between w-full py-2 px-4 rounded-md text-base mb-2 hover:bg-green-950/30"
+                        >
+                          <div className="flex items-center gap-3">
+                            <item.icon fontSize="small" />
+                            <span>{item.label}</span>
+                          </div>
+                          {isOpen ? (
+                            <ExpandLessIcon fontSize="small" />
+                          ) : (
+                            <ExpandMoreIcon fontSize="small" />
+                          )}
+                        </button>
+                        {isOpen && (
+                          <ul className="ml-8 mt-1">
+                            {item.children.map((child, idx) => {
+                              const isChildActive = location.pathname === child.path;
+                              return (
+                                <li key={idx}>
+                                  <Link
+                                    to={child.path}
+                                    className={`flex items-center gap-2 py-1 px-3 rounded-md text-sm mb-1 ${isChildActive ? "bg-green-900 text-white" : "hover:bg-green-950/20"
+                                      }`}
+                                  >
+                                    <span>•</span>
+                                    {child.label}
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  }
+
                   return (
                     <li key={i}>
                       <Link
