@@ -119,7 +119,7 @@ function AppRoutes() {
 
     // ASSOCIATE MEMBERS
     {
-      path: "/associate-members",
+      path: "/associate-member",
       element: (
         <ProtectedRoute roleAllowed="associate-member">
           <Layout />
