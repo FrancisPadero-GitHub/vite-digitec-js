@@ -107,36 +107,36 @@ const AddMember = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const validateLogin = () => {
-    const errors = {};
-    if (!formData.loginEmail) errors.loginEmail = "Login email required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
-      errors.loginEmail = "Invalid email format";
-    if (!formData.password || formData.password.length < 6)
-      errors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.cpassword)
-      errors.cpassword = "Passwords do not match";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // const validateLogin = () => {
+  //   const errors = {};
+  //   if (!formData.loginEmail) errors.loginEmail = "Login email required";
+  //   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
+  //     errors.loginEmail = "Invalid email format";
+  //   if (!formData.password || formData.password.length < 6)
+  //     errors.password = "Password must be at least 6 characters";
+  //   if (formData.password !== formData.cpassword)
+  //     errors.cpassword = "Passwords do not match";
+  //   setFormErrors(errors);
+  //   return Object.keys(errors).length === 0;
+  // };
 
   // --- TAB NAVIGATION ---
-  // const handleNext = () => {
-  //   if (activeTab === 0) validatePersonal() && setActiveTab(1)  ; // 
-  //   else if (activeTab === 1) validateMembership() &&  setActiveTab(2) ; // 
-  // };
   const handleNext = () => {
-    if (activeTab === 0)  setActiveTab(1); // 
-    else if (activeTab === 1) setActiveTab(2); // 
+    if (activeTab === 0) validatePersonal() && setActiveTab(1)  ; // 
+    else if (activeTab === 1) validateMembership() &&  setActiveTab(2) ; // 
   };
+
+  // const handleNext = () => {
+  //   if (activeTab === 0)  setActiveTab(1); // 
+  //   else if (activeTab === 1) setActiveTab(2); // 
+  // };
 
   const handleSubmit = (e) => {
     e.preventDefault(); // stop the page refresh that html normally does after form submission
     // if (validateLogin()) {
-    //   // console.log("Submitting:", formData);
+    //   console.log("Submitting:", formData);
     //   mutate(formData); // execute the custom hook
     // }
-
     mutate(formData); // execute the custom hook
     navigate("/admin")
   };
@@ -188,17 +188,23 @@ const AddMember = () => {
       label: "Fee Status",
       name: "fee_status",
       type: "select",
-      options: ["Paid", "Unpaid", "Pending"],
+      options: ["Paid", "Unpaid", "Partial"],
+    },
+    {
+      label: "Payment Method",
+      name: "payment_method",
+      type: "select",
+      options: ["Cash", "GCash"],
     },
     { label: "Payment Date", name: "payment_date", type: "date" },
     { label: "Remarks", name: "remarks", type: "text" },
   ];
 
-  const loginCredentials = [
-    { label: "Email Address", name: "loginEmail", type: "text" },
-    { label: "Password", name: "password", type: "password" },
-    { label: "Confirm Password", name: "cpassword", type: "password" },
-  ];
+  // const loginCredentials = [
+  //   { label: "Email Address", name: "loginEmail", type: "text" },
+  //   { label: "Password", name: "password", type: "password" },
+  //   { label: "Confirm Password", name: "cpassword", type: "password" },
+  // ];
 
   return (
     <div className="min-h-screen py-5">
@@ -217,9 +223,9 @@ const AddMember = () => {
           <div className={`tab ${activeTab === 1 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
             2. Membership
           </div>
-          <div className={`tab ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+          {/* <div className={`tab ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
             2. Login Credentials
-          </div>
+          </div> */}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -361,26 +367,26 @@ const AddMember = () => {
                 >
                   Back
                 </button>
-                <button
+                {/* <button
                   type="button"
                   className="btn btn-success px-8"
                   onClick={handleNext}
                 >
                   Next
-                </button>
-                {/* <button
+                </button> */}
+                <button
                   type="submit"
                   className="btn btn-success px-8"
                   disabled={isPending}
                 >
                   {isPending ? "Processing..." : "Register"}
-                </button> */}
+                </button>
               </div>
             </>
           )}
 
           {/* LOGIN CREDENTIALS TAB  */}
-          {activeTab === 2 && (
+          {/* {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {loginCredentials.map(({ label, name, type }) => (
@@ -421,7 +427,7 @@ const AddMember = () => {
                 </button>
               </div>
             </>
-          )}
+          )} */}
         </form>
       </div>
     </div>
