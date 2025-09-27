@@ -25,7 +25,7 @@ function ClubFunds() {
     // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
     const [page, setPage] = useState(1);
     // This renders how many rows is being rendered inside the table to avoid infinite renders of all data
-    const [limit] = useState(10); // or make it adjustable
+    const [limit] = useState(20); // or make it adjustable
   
     /**
      * NOTE: IF YOU WANT THE TABLE TO HAVE A FIXED SIZE AND SCROLLBLE YOU NEED THIS VALUES 

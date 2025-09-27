@@ -9,6 +9,7 @@ const AddMember = () => {
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
 
+  const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData] = useState({
     // MEMBER INFO
     f_name: "",
@@ -17,18 +18,19 @@ const AddMember = () => {
     account_type: "",
     account_status: "",
     address: "",
-    application_date: "",
+    application_date: today,
     email: "",
     sex: "",
-    contact_number: "",
+    contact_number: 0,
     employment_status: "",
-    birthday: "",
+    birthday: today,           
 
     // PAYMENT INITIAL
-    membership_fee: "",
-    initial_share_capital: "",
+    membership_fee: 0,
+    initial_share_capital: 0,
     fee_status: "",
-    payment_date: "",
+    payment_date: today,
+    payment_method: "",   
     remarks: "",
 
     // Login Account
@@ -40,22 +42,27 @@ const AddMember = () => {
     avatar: "",
   });
 
+
   const [formErrors, setFormErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
 
     /**
     * Sets the form data but it checks first if the value correctly corresponds to the value like
     * if membership_fee is indeed a value which is a number then proceeds to assign that value to
     * formData
     */
+   
     setFormData((prev) => ({
       ...prev,
       [name]:
-        ["membership_fee", "initial_share_capital", "contact_number"].includes(name)
-          ? Number(value)
-          : value,
+        // Convert empty strings from <input type="date"> into null
+        type === "date" && value === ""
+          ? null
+          : ["membership_fee", "initial_share_capital", "contact_number"].includes(name)
+            ? Number(value)
+            : value,
     }));
   };
 
@@ -99,6 +106,8 @@ const AddMember = () => {
     const errors = {};
     if (!formData.membership_fee || formData.membership_fee <= 0)
       errors.membership_fee = "Membership fee must be greater than 0";
+    if (!formData.payment_date) errors.payment_date = "Payment date is required";
+    if (!formData.payment_method) errors.payment_method = "Payment method is required";
     if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
       errors.initial_share_capital =
         "Initial share capital must be greater than 0";
@@ -131,14 +140,30 @@ const AddMember = () => {
   //   else if (activeTab === 1) setActiveTab(2); // 
   // };
 
+
+  // OLD might use later
+  // const handleSubmit = (e) => {
+  //   e.preventDefault(); // stop the page refresh that html normally does after form submission
+  //   // if (validateLogin()) {
+  //   //   console.log("Submitting:", formData);
+  //   //   mutate(formData); // execute the custom hook
+  //   // }
+  //   mutate(formData); // execute the custom hook
+  //   setTimeout(() => {
+  //     navigate("/admin");
+  //   }, 1500);
+  // };
+
   const handleSubmit = (e) => {
-    e.preventDefault(); // stop the page refresh that html normally does after form submission
-    // if (validateLogin()) {
-    //   console.log("Submitting:", formData);
-    //   mutate(formData); // execute the custom hook
-    // }
-    mutate(formData); // execute the custom hook
-    navigate("/admin")
+    e.preventDefault();
+    mutate(formData, {
+      onSuccess: () => {
+        navigate("/admin");
+      },
+      onError: (err) => {
+        console.error("Failed to submit:", err.message);
+      },
+    });
   };
 
   // Fields
