@@ -67,7 +67,7 @@ export default function UserManagement() {
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
-              to='add-user' // do not put / before or else it would need the parent path for it
+              to='add-member' // do not put / before or else it would need the parent path for it
             >
               + Create User
             </Link>
@@ -175,7 +175,7 @@ export default function UserManagement() {
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Member Information
+              User Information
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
