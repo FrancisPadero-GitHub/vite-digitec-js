@@ -1,15 +1,52 @@
-import React, { useState } from "react";
-import { useMembers } from "../../backend/hooks/useFetchMembers.js";
+import { useState } from "react";
+import { useMembers } from "./hooks/useFetchMembers.js";
+import MainDataTable from "../treasurer/components/MainDataTable.jsx";
+import FilterToolbar from "../shared/components/FilterToolbar.jsx";
 import { Link } from "react-router-dom";
 
-
 export default function UserManagement() {
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20); // determines how many rows to render per page
 
   const { data: members, isLoading, isError, error } = useMembers();
 
+  // Get total count and raw data
+  const total = members?.count || 0;
+  const usersRaw = members?.data || [];
 
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const TABLE_PREFIX = "UID"; // unique ID prefix
+  const users = usersRaw
+  .map((row) => {
+    const displayName = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
+
+    return {
+      ...row,
+      generatedId: `${TABLE_PREFIX}_${row.member_id}`,
+      displayName,
+      searchKey: `${displayName} ${row.email ?? ""}`.toLowerCase(),
+      role: row.account_type,
+      status: row.account_status,
+    };
+  })
+  .filter((row) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      row.generatedId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.searchKey.includes(searchTerm.toLowerCase());
+
+    const matchesRole = roleFilter === "" || row.role === roleFilter;
+    const matchesStatus = statusFilter === "" || row.status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
+  // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
-
   const [selectedMember, setSelectedMember] = useState(null);
 
   const openModal = (member) => {
@@ -17,8 +54,10 @@ export default function UserManagement() {
     setEditModalOpen(true);
   };
 
-  if (isLoading) return <div>Loading members...</div>;
+  if (isLoading) return <div>Loading users...</div>;
   if (isError) return <div>Error: {error.message}</div>;
+
+  console.log(users);
 
   return (
     <div>
@@ -28,125 +67,108 @@ export default function UserManagement() {
           <div className="flex flex-row items-center gap-3">
             <Link
               className="btn btn-neutral whitespace-nowrap"
-              to='add-member' // do not put / before or else it would need the parent path for it
+              to='add-user' // do not put / before or else it would need the parent path for it
             >
-              + Add Members
+              + Create User
             </Link>
           </div>
         </div>
+
         {/* Dropdown toolbar */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search box */}
-          <label className="input input-bordered flex items-center bg-base-100 md:w-64">
-
-            <input
-              type="text"
-              placeholder="Search..."
-              className="grow"
-              defaultValue=""
-            />
-          </label>
-
-          {/* Dropdown #1 */}
-          <select className="select select-bordered w-40">
-            <option value="all">All Roles</option>
-            <option value="treasurer">Treasurer</option>
-            <option value="board">Board of Director</option>
-          </select>
-
-          {/* Dropdown #2 */}
-          <select className="select select-bordered w-40">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="revoked">Revoked</option>
-          </select>
-        </div>
+        <FilterToolbar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          dropdowns={[
+            {
+              label: "Role",
+              value: roleFilter,
+              onChange: setRoleFilter,
+              options: [
+                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
+                { label: "Admin", value: "Admin" },
+                { label: "Treasurer", value: "Treasurer" },
+                { label: "Board of Director", value: "Board" },
+                { label: "Regular Member", value: "Regular" },
+                { label: "Associate Member", value: "Associate" },
+              ],
+            },
+            {
+              label: "Status",
+              value: statusFilter,
+              onChange: setStatusFilter,
+              options: [
+                { label: "All", value: "" },
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+                { label: "Revoked", value: "Revoked" },
+              ],
+            },
+          ]}
+        />
 
         {/* Users Table */}
-        <section className="space-y-4">
-          <div className="overflow-x-auto border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
-            <table className="table">
-              <thead>
-                <tr className="bg-base-200/30 text-left">
+        <MainDataTable
+          headers={["ID", "User", "Role", "Status"]}
+          data={users}
+          isLoading={isLoading}
+          page={page}
+          limit={limit}
+          total={total}
+          setPage={setPage}
+          renderRow={(row) => {
+            return (
+              <tr
+                key={`${TABLE_PREFIX}${row.member_id}`}
+                onClick={() => openModal(row)}
+                className="cursor-pointer hover:bg-base-200/70 transition-colors"
+              >
+                <td className="px-4 py-2 text-center font-medium">{row.generatedId}</td>
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="avatar">
+                      <div className="mask mask-circle w-10 h-10">
+                        <img
+                          src={`https://i.pravatar.cc/40?u=${row.generatedId}`}
+                          alt={row.displayName}
+                        />
+                      </div>
+                    </div>
 
-                  <th>ID</th>
-                  <th>User</th>
-                  <th>Role</th>
-                  <th>Status</th>
-
-
-                </tr>
-              </thead>
-
-              <tbody>
-                {members.map((member) => (
-                  <React.Fragment key={member.member_id}>
-                    <tr
-                      // ❌ WRONG: this *calls* openModal immediately during render which causes render loop
-                      // onClick={openModal(member)}
-
-                      // ✅ RIGHT: this creates a function that will call openModal *later*
-                      onClick={() => openModal(member)}
-                      className="cursor-pointer hover:bg-base-200/50"
+                    <div>
+                      <div className="font-bold">{row.displayName}</div>
+                      <div className="text-sm text-gray-500">{row.email || "No email"}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-2 font-bold">
+                  {row.role || (
+                    <span className="text-gray-400 italic">Not Provided</span>
+                  )}
+                </td>
+                <td className="px-5 py-2">
+                  {row.status ? (
+                    <span
+                      className={`badge badge-soft font-semibold ${
+                        row.status === "Active"
+                          ? "badge-success"
+                          : row.status === "Inactive"
+                          ? "badge-ghost text-gray-500"
+                          : row.status === "Revoked"
+                          ? "badge-error"
+                          : "badge-soft"
+                      }`}
                     >
-                      <td>{member.member_id}</td>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <div className="avatar">
-                            <div className="mask mask-circle w-10 h-10">
-                              <img
-                                src={`https://i.pravatar.cc/40?u=${member.email}`}
-                                alt={member.f_name}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="font-bold">
-                              {member.f_name} {member.l_name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {member.email}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{member.account_type || "N/A"}</td>
-                      <td>
-                        <span
-                          className={`badge ${member.account_status === "Active"
-                            ? "badge-success"
-                            : "badge-error"
-                            }`}
-                        >
-                          {member.account_status || "Unknown"}
-                        </span>
-                      </td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Footer */}
-            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
-              <div className="text-sm text-base-content/70">
-                Showing 1 to 3 of 3 entries
-              </div>
-              <div className="join">
-                <button className="join-item btn btn-sm" disabled>
-                  «
-                </button>
-                <button className="join-item btn btn-sm">Page 1 of 1</button>
-                <button className="join-item btn btn-sm" disabled>
-                  »
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+                      {row.status}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
+              </tr>
+            );
+          }}
+        />
       </div>
-
-
 
       {/* This MODAL should render if editModalOpen is true */}
       {editModalOpen && selectedMember && (
@@ -222,9 +244,6 @@ export default function UserManagement() {
           </div>
         </div>
       )}
-
-
     </div>
-
   )
 }
