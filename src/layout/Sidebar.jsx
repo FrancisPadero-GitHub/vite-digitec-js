@@ -17,6 +17,20 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 // SIDEBAR CONFIG BASED ON ROLE
 const sidebarConfig = {
   // TREASURER PATHS
+
+ /**
+  * The path on these must be complete both parent and children path
+  * for example 
+  * 
+  * treasurer/member-records/ 
+  * 
+  * instead of just 
+  * 
+  * /member-records
+  * 
+  * because it inherits its leading path to the parent
+  * 
+  */
   treasurer: [
     {
       section: "Overview",
@@ -71,19 +85,19 @@ const sidebarConfig = {
       items: [
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
-
+        { label: "Coop Funds", icon: HandshakeIcon, path: "/regular-member/regular-member-coop-loans" },
         // I still don't understand how this works how does children and the routes work togeher 
-        {
-          label: "Coop Loans",
-          icon: HandshakeIcon,
-          children: [
-            { label: "Loan Information", path: "/regular-member/coop-loans/my-information" },
-            { label: "View Loan Payment History", path: "/regular-member/coop-loans/payments" },
-            { label: "View Currently Active Loans", path: "/regular-member/coop-loans/active" },
-            { label: "View Applied Loans", path: "/regular-member/coop-loans/applied" },
-            { label: "View Approved Loans (History)", path: "/regular-member/coop-loans/approved" },
-          ],
-        },
+        // {
+        //   label: "Coop Loans",
+        //   icon: HandshakeIcon,
+        //   children: [
+        //     { label: "Loan Information", path: "/regular-member/coop-loans/my-information" },
+        //     { label: "View Loan Payment History", path: "/regular-member/coop-loans/payments" },
+        //     { label: "View Currently Active Loans", path: "/regular-member/coop-loans/active" },
+        //     { label: "View Applied Loans", path: "/regular-member/coop-loans/applied" },
+        //     { label: "View Approved Loans (History)", path: "/regular-member/coop-loans/approved" },
+        //   ],
+        // },
       ],
     },
   ],

@@ -63,6 +63,16 @@ function AppRoutes() {
 
 
     // ADMIN
+    /**
+     * So the idea on parent path and children is 
+     *  
+     * the children will inherit the parent path for example 
+     * 
+     * /admin/add-member
+     * 
+     * and also this will be used in sidebar to pinpoint where the Link path will be
+     * 
+     */
     {
       path: "/admin",
       element: (
@@ -109,13 +119,15 @@ function AppRoutes() {
         { path: "regular-member-club-funds", element: <RegularMemberClubFunds /> },
         { path: "regular-member-share-capital", element: <MemberShareCapital /> },
 
-        // { path: "regular-member-coop-loans", element: <MemberCoopLoans /> },
+        { path: "regular-member-coop-loans", element: <MemberCoopLoans /> },
         // ✅ Coop Loans collapsible sub-routes
-        { path: "coop-loans/my-information", element: <MemberCoopLoans type="information" /> },
-        { path: "coop-loans/applied", element: <MemberCoopLoans type="applied" /> },
-        { path: "coop-loans/approved", element: <MemberCoopLoans type="approved" /> },
-        { path: "coop-loans/active", element: <MemberCoopLoans type="active" /> },
-        { path: "coop-loans/payments", element: <MemberCoopLoans type="payments" /> },
+        // { path: "coop-loans/my-information", element: <MemberCoopLoans type="information" /> },
+        // { path: "coop-loans/payments", element: <MemberCoopLoans type="payments" /> },
+        // { path: "coop-loans/active", element: <MemberCoopLoans type="active" /> },
+        // { path: "coop-loans/applied", element: <MemberCoopLoans type="applied" /> },
+        // { path: "coop-loans/approved", element: <MemberCoopLoans type="approved" /> },
+        
+       
 
         { path: "regular-member-reports", element: <MemberReports /> },
         { path: "regular-member-help", element: <MemberHelp /> },

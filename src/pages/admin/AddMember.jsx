@@ -83,7 +83,7 @@ const AddMember = () => {
   const validatePersonal = () => {
     let errors = {};
     if (!formData.f_name) errors.f_name = "First name is required";
-    if (!formData.m_name) errors.m_name = "Middle name is required";
+    // if (!formData.m_name) errors.m_name = "Middle name is required"; // ge comment out nako kay ang uban walay middle name
     if (!formData.l_name) errors.l_name = "Last name is required";
     if (!formData.email) errors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
@@ -175,7 +175,7 @@ const AddMember = () => {
       label: "Account Type",
       name: "account_type",
       type: "select",
-      options: ["Admin", "Regular", "Associate", "Treasurer", "Board"],
+      options: ["Regular", "Associate", "Treasurer", "Boar  d"],
     },
     {
       label: "Account Status",

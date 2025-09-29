@@ -57,8 +57,6 @@ export default function UserManagement() {
   if (isLoading) return <div>Loading users...</div>;
   if (isError) return <div>Error: {error.message}</div>;
 
-  console.log(users);
-
   return (
     <div>
       <div className="mb-6 space-y-4">
