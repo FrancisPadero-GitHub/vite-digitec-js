@@ -3,7 +3,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAddMember } from "../../backend/hooks/useAddMembers";
 import { useNavigate } from "react-router";
 
-const AddMember = () => {
+function AddMember (){
   const navigate = useNavigate();
   const { mutate, isPending, isError, error, isSuccess } = useAddMember();
   const [previewAvatar, setPreviewAvatar] = useState(null);
@@ -175,7 +175,7 @@ const AddMember = () => {
       label: "Account Type",
       name: "account_type",
       type: "select",
-      options: ["Regular", "Associate", "Treasurer", "Boar  d"],
+      options: ["Regular", "Associate", "Treasurer", "Board"],
     },
     {
       label: "Account Status",

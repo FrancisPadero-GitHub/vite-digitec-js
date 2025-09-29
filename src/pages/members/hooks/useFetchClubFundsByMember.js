@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../../../backend/context/AuthProvider.jsx";
 import { useMemberId } from "./useFetchMemberId.js";
 import { supabase } from "../../../backend/supabase";
 
@@ -29,14 +28,12 @@ async function fetchClubFundsByMember(memberId, page = 1, limit = 10) {
 }
 
 export function useFetchClubFundsByMember(page, limit) {
-    const { user, loading } = useAuth(); //get current logged in user 
-    const { data: memberId, isLoading: memberLoading } = useMemberId(user?.id); //fetch memberId
-
+    const { data: memberId, isLoading: memberLoading } = useMemberId(); //fetch memberId
     return useQuery({
-        queryKey: ["club_funds_contributions", "member", memberId, page, limit],
-        queryFn: () => fetchClubFundsByMember(memberId, page, limit),
-        enabled: !!memberId && !loading && !memberLoading, //only run if there's memberId, and auth + memberId are done loading
-        keepPreviousData: true,
-        staleTime: 1000 * 60 * 1,
+      queryKey: ["club_funds_contributions", "member", memberId, page, limit],
+      queryFn: () => fetchClubFundsByMember(memberId, page, limit),
+      enabled: !!memberId && !memberLoading, //only run if there's memberId, and auth + memberId are done loading
+      keepPreviousData: true, // keeps the pagination smoother the preserving older data on pagination
+      staleTime: 1000 * 60 * 1,
     });
 }

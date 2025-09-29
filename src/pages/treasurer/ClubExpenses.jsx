@@ -52,11 +52,11 @@ function ClubExpenses() {
      * 
      */
   
-    // Search and filter states
-    const [searchTerm, setSearchTerm] = useState(""); // for the search bar
-    const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
-    const [yearFilter, setYearFilter] = useState("");
-    const [monthFilter, setMonthFilter] = useState("");
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+  const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
 
   const TABLE_PREFIX = "EXP"; // You can change this per table, this for the the unique table ID but this is not included in the database
   const fundExpenses = fundExpensesRaw.filter((row) => {
@@ -202,7 +202,7 @@ function ClubExpenses() {
               options: [
                 { label: "All", value: "" },
                 { label: "Monthly Dues", value: "Monthly Dues" },
-                { label: "Activites", value: "Activities" },
+                { label: "Activities", value: "Activities" },
                 { label: "Alalayang Agila", value: "Alalayang Agila" },
                 { label: "Community Service", value: "Community Service" },
                 { label: "Others", value: "Others" },
@@ -260,7 +260,7 @@ function ClubExpenses() {
           total={total}
           setPage={setPage}
           renderRow = {(row) => (
-            <tr key={`${TABLE_PREFIX}${row.transaction_id}`} className=" cursor-pointer hover:bg-base-200/50"
+            <tr key={`${TABLE_PREFIX}_${row.transaction_id}`} className=" cursor-pointer hover:bg-base-200/50"
               onClick={() => openEditModal(row)}
             >
               <td className="text-center">{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>

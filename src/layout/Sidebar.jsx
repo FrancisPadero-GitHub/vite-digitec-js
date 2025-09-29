@@ -85,7 +85,7 @@ const sidebarConfig = {
       items: [
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
-        { label: "Coop Funds", icon: HandshakeIcon, path: "/regular-member/regular-member-coop-loans" },
+        { label: "Coop Loans", icon: HandshakeIcon, path: "/regular-member/regular-member-coop-loans" },
         // I still don't understand how this works how does children and the routes work togeher 
         // {
         //   label: "Coop Loans",
