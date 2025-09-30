@@ -17,7 +17,9 @@ const insertLoanApp = async (formData, memberId) => {
     term,
     application_date,
     remarks,
-    member_id: memberId, // ✅ attach member_id here
+    loan_type: "Regular", // defaults
+    status: "Pending",  // defaults
+    member_id: memberId,
   };
 
   const { data, error } = await supabase
