@@ -47,7 +47,8 @@ export const useEditClubFunds = () => {
     mutationFn: updateClubFunds,
     onSuccess: (data) => {
       console.log("Contribution Updated!", data);
-      queryClient.invalidateQueries(["club_funds_contributions", "active"]); // to reflect the change instantly
+      queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("Updating contribution failed!", error.message);

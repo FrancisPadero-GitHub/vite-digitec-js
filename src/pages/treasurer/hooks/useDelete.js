@@ -29,7 +29,8 @@ export const useDelete = (table) => {
     mutationFn: markAsDelete,
     onSuccess: () => {
       console.log("Record marked as deleted, table:", table);
-      queryClient.invalidateQueries([table, "active"]);
+      queryClient.invalidateQueries([table]);
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("Failed to delete", error.message);

@@ -6,6 +6,8 @@ import { supabase } from "../../../backend/supabase";
  * A row is not included in the calculation of the total if its column
  * deleted_at has a date value
  * 
+ * Also this is dynamic so it 
+ * 
  * @param {string} rpcFN - the name of the function inside supabase (not a table)
  * @param {date} year - and the month
 
@@ -13,7 +15,8 @@ import { supabase } from "../../../backend/supabase";
 
 async function fetchTotal({ queryKey }) {
   const [_key, { rpcFn, year, month }] = queryKey;
-  const { data, error } = await supabase.rpc(rpcFn, {
+  const { data, error } = await supabase
+  .rpc(rpcFn, {
     // p_year: year === "all" ? null : year, // if the p_year receives a "all" value it sets the default to null which fetches unfiltered total
     // p_month: month === "all" ? null : month,
     p_year: year,
@@ -26,7 +29,7 @@ async function fetchTotal({ queryKey }) {
 export function useFetchTotal({ rpcFn, year, month }) {
   return useQuery({
     // Temporary queyrKey might change it to something practical later on
-    queryKey: ["Digitec Totals", { rpcFn, year, month }],
+    queryKey: ["rpc_totals", { rpcFn, year, month }],
     queryFn: fetchTotal,
     staleTime: 1000 * 60 * 1,
   });

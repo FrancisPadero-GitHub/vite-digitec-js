@@ -18,7 +18,7 @@ async function fetchCoop() {
 
 export function useFetchCoopContributions() {
   return useQuery({
-    queryKey: ["coop_cbu_contributions", "active"],
+    queryKey: ["coop_cbu_contributions"],
     queryFn: fetchCoop,
     staleTime: 1000 * 60 * 1,
   });

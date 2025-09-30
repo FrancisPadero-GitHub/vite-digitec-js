@@ -52,7 +52,7 @@ function ComparisonChart() {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data} margin={{ top: 10, right: 10, bottom: 40, left: -20 }}>
+      <LineChart data={data} margin={{ top: 40, right: 10, bottom: 10, left: -20 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" fontSize={11} />
         <YAxis fontSize={11} />

@@ -19,7 +19,7 @@ async function fetchClubFunds() {
 
 export function useFetchClubFunds() {
   return useQuery({
-    queryKey: ["club_funds_contributions", "active"], // no need to specify the identifier cause it selects all data
+    queryKey: ["club_funds_contributions"], // no need to specify the identifier cause it selects all data
     queryFn: fetchClubFunds,
     staleTime: 1000 * 60 * 1, // for 1 min before it is going to stale and "refetch" data
     // cacheTime: 1000 * 60 * 5, // keep in cache or keep the data for 5 minutes

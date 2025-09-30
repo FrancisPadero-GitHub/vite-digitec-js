@@ -20,7 +20,7 @@ async function fetchExpenses({ page = 1, limit = 10 }) {
 
 export function useFetchExpenses(page, limit) {
   return useQuery({
-    queryKey: ["club_funds_expenses", "active", page, limit],
+    queryKey: ["club_funds_expenses", page, limit],
     queryFn: () => fetchExpenses({ page, limit }),
     keepPreviousData: true, // smooth pagination
     staleTime: 1000 * 60 * 1,

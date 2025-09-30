@@ -36,7 +36,8 @@ export const useAddExpenses = () => {
     mutationFn: insertExpenses,
     onSuccess: (data) => {
       console.log("Expenses Added!: ", data);
-      queryClient.invalidateQueries(["club_funds_expenses", "active"]);
+      queryClient.invalidateQueries(["club_funds_expenses"]);
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("Adding expenses failed", error.message);

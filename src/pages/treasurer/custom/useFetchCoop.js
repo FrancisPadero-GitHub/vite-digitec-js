@@ -20,7 +20,7 @@ async function fetchCoop({ page = 1, limit = 10 }) {
 
 export function useFetchCoopContributions(page, limit) {
   return useQuery({
-    queryKey: ["coop_cbu_contributions", "active", page, limit],
+    queryKey: ["coop_cbu_contributions", page, limit],
     queryFn: () => fetchCoop({ page, limit }),
     keepPreviousData: true, // smooth pagination
     staleTime: 1000 * 60 * 1,

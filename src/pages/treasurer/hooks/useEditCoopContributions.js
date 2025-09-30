@@ -43,7 +43,8 @@ export const useEditCoopContributions = () => {
     mutationFn: updateCoopContributions,
     onSuccess: (data) => {
       console.log(" Coop contribution Updated!", data);
-      queryClient.invalidateQueries(["coop_cbu_contributions", "active"]); // to reflect the change instantly
+      queryClient.invalidateQueries(["coop_cbu_contributions"]); // to reflect the change instantly
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("Updating coop contribution failed!", error.message);

@@ -33,7 +33,8 @@ export const useAddCoopContributions = () => {
     mutationFn: insertCoopContributions,
     onSuccess: (data) => {
       console.log("Successfully insert data: ", data);
-      queryClient.invalidateQueries(["coop_cbu_contributions", "active"]);
+      queryClient.invalidateQueries(["coop_cbu_contributions"]);
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("Something went wrong: ", error.message);

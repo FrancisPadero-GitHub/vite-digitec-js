@@ -18,7 +18,7 @@ async function fetchIncome() {
 
 export function useFetchIncome() {
   return useQuery({
-    queryKey: ["club_income", "active"], // Experimental might remove later
+    queryKey: ["club_income"], // Experimental might remove later
     queryFn: fetchIncome,
     staleTime: 1000 * 60 * 1,
   });

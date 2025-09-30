@@ -48,7 +48,8 @@ export const useAddClubFunds = () => {
     onSuccess: (data) => {
       console.log("✅ Contribution added:", data);
       // Refresh the list automatically
-      queryClient.invalidateQueries(["club_funds_contributions", "active"]); // to reflect the change instantly
+      queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("❌ Add club fund contribution failed:", error.message);

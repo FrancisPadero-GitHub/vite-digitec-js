@@ -29,13 +29,12 @@ function Dashboard() {
   const { data: clubFunds, isLoading: clubFundsIsLoading } = useFetchClubFunds();
   const { data: coopFunds, isLoading: coopIsloading } = useFetchCoopContributions();
 
-
-
   // Filters for the cards
   const subText = "All Time";
   const [filters, setFilters] = useState({
     income: { month: null, year: null, subtitle: subText },
     funds: { month: null, year: null, subtitle: subText },
+    fundsBalance: { month: null, year: null, subtitle: subText },
     coop: { month: null, year: null, subtitle: subText },
     expenses: { month: null, year: null, subtitle: subText },
   });
@@ -52,10 +51,16 @@ function Dashboard() {
     month: filters.income.month,
   });
 
-  const { data: clubFundsTotal, isLoading: cbftLoading, isError: cbftIsError, error: cbftError } = useFetchTotal({
-    rpcFn: "get_club_funds_total",
-    year: filters.funds.year,
-    month: filters.funds.month,
+  const { data: clubFundsBalance, isLoading: cfBalLoading, isError: cfBalIsError, error: cfBalError } = useFetchTotal({
+    rpcFn: "get_club_funds_balance",
+    year: filters.fundsBalance.year,
+    month: filters.fundsBalance.month,
+  });
+
+  const { data: expensesTotal, isLoading: expensesLoading, isError: expensesIsError, error: expensesError } = useFetchTotal({
+    rpcFn: "get_club_expenses_total",
+    year: filters.expenses.year,
+    month: filters.expenses.month,
   });
 
   const { data: coopTotal, isLoading: coopLoading, isError: coopIsError, error: coopError } = useFetchTotal({
@@ -64,11 +69,7 @@ function Dashboard() {
     month: filters.coop.month,
   });
 
-  const { data: expensesTotal, isLoading: expensesLoading, isError: expensesIsError, error: expensesError } = useFetchTotal({
-    rpcFn: "get_club_expenses_total",
-    year: filters.expenses.year,
-    month: filters.expenses.month,
-  });
+
 
   /**
    * 
@@ -78,7 +79,7 @@ function Dashboard() {
     {
       icon: <Wallet />,
       iconBgColor: "bg-purple-400",
-      statName: "Total Income",
+      statName: "Club Income",
       growthPercent: 12, // Will be changed later on
       amount: incomeTotal ?? 0,
       subtitle: filters.income.subtitle,
@@ -96,27 +97,53 @@ function Dashboard() {
       error: incomeIsError,
       errorMessage: incomeError?.message,
     },
+
+    // Balance Version
     {
       icon: <Savings />,
       iconBgColor: "bg-lime-400",
-      statName: "Total Funds",
+      statName: "Club Fund Balance",
       growthPercent: 8, // Will be changed later on
-      amount: clubFundsTotal ?? 0,
-      subtitle: filters.funds.subtitle,
+      amount: clubFundsBalance ?? 0,
+      subtitle: filters.fundsBalance.subtitle,
       onSubtitleChange: (date_label) => {
         setFilters((prev) => ({
           ...prev,
-          funds: {
+          fundsBalance: {
             subtitle: date_label,
             month: date_label === "This Month" ? new Date().getMonth() + 1 : null,
             year: date_label !== "All Time" ? new Date().getFullYear() : null,
           },
         }));
       },
-      loading: cbftLoading,
-      error: cbftIsError,
-      errorMessage: cbftError?.message,
+      loading: cfBalLoading,
+      error: cfBalIsError,
+      errorMessage: cfBalError?.message,
     },
+
+    {
+      icon: <ReceiptLong />,
+      iconBgColor: "bg-red-400",
+      statName: "Club Fund Expenses",
+      growthPercent: 2, // Will be changed later on
+
+      amount: expensesTotal ?? 0,
+      subtitle: filters.expenses.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          expenses: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+      loading: expensesLoading,
+      error: expensesIsError,
+      errorMessage: expensesError?.message,
+    },
+
     {
       icon: <AccountBalance />,
       iconBgColor: "bg-sky-400",
@@ -139,29 +166,7 @@ function Dashboard() {
       errorMessage: coopError?.message,
     },
 
-    {
-      icon: <ReceiptLong />,
-      iconBgColor: "bg-red-400",
-      statName: "Total Expenses",
-      growthPercent: 2, // Will be changed later on
-
-      amount: expensesTotal ?? 0,
-      subtitle: filters.expenses.subtitle,
-      onSubtitleChange: (label) => {
-        setFilters((prev) => ({
-          ...prev,
-          expenses: {
-            subtitle: label,
-            month: label === "This Month" ? new Date().getMonth() + 1 : null,
-            year: label !== "All Time" ? new Date().getFullYear() : null,
-          },
-        }));
-      },
-      loading: expensesLoading,
-      error: expensesIsError,
-      errorMessage: expensesError?.message,
-    },
-
+  
   ];
 
  
@@ -358,10 +363,10 @@ function Dashboard() {
           <div className="w-full lg:w-[30%] flex flex-col gap-6">
 
             {/* CLUB EXPENSES DONUT CHART */}
-            <section className="card bg-base-100 shadow-md min-h-[480px] p-8 rounded-3xl">
-              <div className="flex flex-col h-full gap-6">
+            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+              <div className="flex flex-col h-full">
                 <div>
-                  <span className="text-2xl font-bold tracking-tight">Club Expenses Breakdown</span>
+                  <span className="text-2xl font-semibold">Club Expenses Breakdown</span>
                   <span className="text-gray-400"> | All Time</span>
                   <p className="mt-1 text-sm text-base-content/70">
                     Distribution of club expenses by category
@@ -373,22 +378,25 @@ function Dashboard() {
               </div>
             </section>
 
+
             {/* CLUB FUNDS VS EXPENSES DUAL LINE CHART */}
-            <section className="card bg-base-100/90 shadow-md h-[400px] p-6 sm:p-6 rounded-2xl">
+            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
               <div className="flex flex-col h-full">
                 <div>
                   <span className="text-2xl font-semibold">Club Funds vs. Expenses</span>
                   <span className="text-gray-400"> | This Year</span>
-                  <p className="text-base-content/60 mb-6">Track the yearly trends between club fund contributions and expenses.</p>
+                  <p className="mt-1 text-sm text-base-content/70">Track the yearly trends between club fund contributions and expenses.</p>
                 </div>
-                <ComparisonChart />
+                <div className="flex-grow">
+                  <ComparisonChart />
+                </div>
               </div>
             </section>
 
 
             {/* Share Capital Area Chart */}
             <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
-              <div className="p-6 flex flex-col">
+              <div className="p-6 flex flex-col h-full">
                 <h2 className="text-xl font-semibold">Share Capital Activity</h2>
                 <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
                 <div className="w-full min-w-0">

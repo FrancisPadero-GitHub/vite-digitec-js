@@ -23,7 +23,7 @@ async function fetchClubFunds({ page = 1, limit = 10 }) {
 
 export function useFetchClubFunds(page, limit) {
   return useQuery({
-    queryKey: ["club_funds_contributions", "active", page, limit], // no need to specify the identifier cause it selects all data
+    queryKey: ["club_funds_contributions", page, limit], // no need to specify the identifier cause it selects all data
     queryFn: () => fetchClubFunds({ page, limit }),
     keepPreviousData: true, // smooth pagination
     staleTime: 1000 * 60 * 1, // for 1 min before it is going to stale and "refetch" data

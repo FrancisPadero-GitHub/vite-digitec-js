@@ -176,10 +176,11 @@ export const useAddMember = () => {
     mutationFn: insertMember,
     onSuccess: (member) => {
       console.log("New member created:", member);
-      queryClient.invalidateQueries(["members", "active"]); // refreshes UI
-      queryClient.invalidateQueries(["initial_payments", "active"]);
-      queryClient.invalidateQueries(["club_funds_contributions", "active"]);
-      queryClient.invalidateQueries(["coop_cbu_contributions", "active"]);
+      queryClient.invalidateQueries(["members"]); // refreshes UI
+      queryClient.invalidateQueries(["initial_payments"]);
+      queryClient.invalidateQueries(["club_funds_contributions"]);
+      queryClient.invalidateQueries(["coop_cbu_contributions"]);
+      queryClient.invalidateQueries(["rpc_totals"]);
     },
     onError: (error) => {
       console.error("Something went wrong:", error.message);
