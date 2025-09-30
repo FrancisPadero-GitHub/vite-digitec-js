@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAddMember } from "../../backend/hooks/useAddMembers";
 import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
 
 function AddMember (){
   const navigate = useNavigate();
@@ -10,235 +11,131 @@ function AddMember (){
   const [activeTab, setActiveTab] = useState(0);
 
   const today = new Date().toISOString().split("T")[0];
-  const [formData, setFormData] = useState({
-    // MEMBER INFO
-    f_name: "",
-    m_name: "",
-    l_name: "",
-    account_type: "",
-    account_status: "",
-    address: "",
-    application_date: today,
-    email: "",
-    sex: "",
-    contact_number: 0,
-    employment_status: "",
-    birthday: today,           
 
-    // PAYMENT INITIAL
-    membership_fee: 0,
-    initial_share_capital: 0,
-    fee_status: "",
-    payment_date: today,
-    payment_method: "",   
-    remarks: "",
-
-    // Login Account
-    loginEmail: "",
-    password: "",
-    cpassword: "",
-
-    // Avatar
-    avatar: "",
+  // used react hook form instead of manual usestate and onchange handlers
+  //register links input fields to useForm; trigger validates specific fields; formState.errors track validation errors
+  const {register, handleSubmit, trigger, formState: { errors, isSubmitting }} = useForm({
+    defaultValues: {
+      f_name: "",
+      m_name: "",
+      l_name: "",
+      civil_status: "",
+      birthday: today,
+      place_of_birth: "",
+      street_no: "",
+      barangay: "",
+      city_municipality: "",
+      province: "",
+      zip_code: "",
+      contact_number: 0,
+      email: "",
+      spouse_name: "",
+      number_of_children: "0",
+      office_name: "",
+      title_and_position: "",
+      office_address: "",
+      office_contact_number: 0,
+      account_type: "",
+      account_status: "",
+      application_date: today,
+      membership_fee: 0,
+      initial_share_capital: 0,
+      fee_status: "",
+      payment_date: today,
+      payment_method: "",
+      remarks: "",
+      avatar: ""
+    }
   });
-
-
-  const [formErrors, setFormErrors] = useState({});
-
-  const handleChange = (e) => {
-    const { name, value, type } = e.target;
-
-    /**
-    * Sets the form data but it checks first if the value correctly corresponds to the value like
-    * if membership_fee is indeed a value which is a number then proceeds to assign that value to
-    * formData
-    */
-   
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        // Convert empty strings from <input type="date"> into null
-        type === "date" && value === ""
-          ? null
-          : ["membership_fee", "initial_share_capital", "contact_number"].includes(name)
-            ? Number(value)
-            : value,
-    }));
-  };
 
   const handleAvatarUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        setPreviewAvatar(result);
-        setFormData((prev) => ({ ...prev, avatar: result }));
-      };
-      reader.readAsDataURL(file);
+      setPreviewAvatar(URL.createObjectURL(file)); // preview
+      setValue("avatarFile", file, { shouldValidate: true }); // keep the file
     }
   };
 
-  // --- VALIDATION FUNCTIONS ---
-  const validatePersonal = () => {
-    let errors = {};
-    if (!formData.f_name) errors.f_name = "First name is required";
-    // if (!formData.m_name) errors.m_name = "Middle name is required"; // ge comment out nako kay ang uban walay middle name
-    if (!formData.l_name) errors.l_name = "Last name is required";
-    if (!formData.email) errors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      errors.email = "Invalid email format";
-    if (!formData.account_type) errors.account_type = "Select account type";
-    if (!formData.account_status)
-      errors.account_status = "Select account status";
-    if (!formData.application_date) errors.application_date = "Application date is required";
-    if (!formData.contact_number)
-      errors.contact_number = "Contact number required";
-    if (!formData.sex) errors.sex = "sex is required";
-    if (!formData.employment_status) errors.employment_status = "Employment status is required";
-    if (!formData.address) errors.address = "Address is required";
-    if (!formData.birthday) errors.birthday = "Birthday required";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+  // tab navigation with validation
+  const handleNext = async (fields) => {
+    const valid = await trigger(fields); //only validate fields in current tab
+    if (valid) setActiveTab((prev) => prev + 1); //only move on to next tab if all fields are okey
   };
 
-  const validateMembership = () => {
-    const errors = {};
-    if (!formData.membership_fee || formData.membership_fee <= 0)
-      errors.membership_fee = "Membership fee must be greater than 0";
-    if (!formData.payment_date) errors.payment_date = "Payment date is required";
-    if (!formData.payment_method) errors.payment_method = "Payment method is required";
-    if (!formData.initial_share_capital || formData.initial_share_capital <= 0)
-      errors.initial_share_capital =
-        "Initial share capital must be greater than 0";
-    if (!formData.fee_status) errors.fee_status = "Select fee status";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // form submission
+  const onSubmit = (data) => {
+    const normalized = { //normalize date fields before sending it to backend
+      ...data,
+      birthday: data.birthday ? new Date(data.birthday).toISOString() : null,
+      application_date: data.application_date ? new Date(data.application_date).toISOString() : null,
+      payment_date: data.payment_date ? new Date(data.payment_date).toISOString() : null,
+    };
 
-  // const validateLogin = () => {
-  //   const errors = {};
-  //   if (!formData.loginEmail) errors.loginEmail = "Login email required";
-  //   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail))
-  //     errors.loginEmail = "Invalid email format";
-  //   if (!formData.password || formData.password.length < 6)
-  //     errors.password = "Password must be at least 6 characters";
-  //   if (formData.password !== formData.cpassword)
-  //     errors.cpassword = "Passwords do not match";
-  //   setFormErrors(errors);
-  //   return Object.keys(errors).length === 0;
-  // };
-
-  // --- TAB NAVIGATION ---
-  const handleNext = () => {
-    if (activeTab === 0) validatePersonal() && setActiveTab(1)  ; // 
-    else if (activeTab === 1) validateMembership() &&  setActiveTab(2) ; // 
-  };
-
-  // const handleNext = () => {
-  //   if (activeTab === 0)  setActiveTab(1); // 
-  //   else if (activeTab === 1) setActiveTab(2); // 
-  // };
-
-
-  // OLD might use later
-  // const handleSubmit = (e) => {
-  //   e.preventDefault(); // stop the page refresh that html normally does after form submission
-  //   // if (validateLogin()) {
-  //   //   console.log("Submitting:", formData);
-  //   //   mutate(formData); // execute the custom hook
-  //   // }
-  //   mutate(formData); // execute the custom hook
-  //   setTimeout(() => {
-  //     navigate("/admin");
-  //   }, 1500);
-  // };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    mutate(formData, {
-      onSuccess: () => {
-        navigate("/admin");
-      },
-      onError: (err) => {
-        console.error("Failed to submit:", err.message);
-      },
+    mutate(normalized, {
+      onSuccess: () => navigate("/admin"),
+      onError: (err) => console.error("Failed to submit:", err.message),
     });
   };
 
-  // Fields
+  // Personal fields
   const personalFields = [
-    { label: "First Name", name: "f_name", type: "text" },
+    { label: "First Name", name: "f_name", type: "text", required: true },
     { label: "Middle Name", name: "m_name", type: "text" },
-    { label: "Last Name", name: "l_name", type: "text" },
-    {
-      label: "Account Type",
-      name: "account_type",
-      type: "select",
-      options: ["Regular", "Associate", "Treasurer", "Board"],
-    },
-    {
-      label: "Account Status",
-      name: "account_status",
-      type: "select",
-      options: ["Active", "Inactive", "Pending"],
-    },
-    { label: "Application Date", name: "application_date", type: "date" },
-    { label: "Email Address", name: "email", type: "email" },
-    {
-      label: "Sex",
-      name: "sex",
-      type: "select",
-      options: ["Female", "Male"],
-    },
-    { label: "Contact Number", name: "contact_number", type: "number" },
-    {
-      label: "Employment Status",
-      name: "employment_status",
-      type: "select",
-      options: ["Employed", "Unemployed", "Student"],
-    },
-    { label: "Birthday", name: "birthday", type: "date" },
-    { label: "Home Address", name: "address", type: "text" },
+    { label: "Last Name", name: "l_name", type: "text", required: true },
+
+    { label: "Civil Status", name: "civil_status", type: "select",
+      options: ["Single", "Married", "Widowed", "Separated"], required: true },
+
+    { label: "Birthday", name: "birthday", type: "date", required: true },
+    { label: "Place of Birth", name: "place_of_birth", type: "text" },
+
+    { label: "Contact Number", name: "contact_number", type: "number", required: true, pattern: /^[0-9+()\-.\s]+$/ },
+    { label: "Email Address", name: "email", type: "email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+
+    // Address grouped together
+    { label: "Block No., Lot No., Phase No.", name: "block_no", type: "text", required: true, group: "Address" },
+    { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address" },
+    { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address" },
+    { label: "Province", name: "province", type: "text", required: true, group: "Address" },
+    { label: "ZIP Code", name: "zip_code", type: "text", required: true, pattern: /^\d{4}$/ },
+
+    // Dependents grouped together
+    { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents" },
+    { label: "Number of Children", name: "number_of_children", type: "select", group: "Dependents", 
+      options: Array.from({ length: 11 }, (_, i) => i) }
+    ];
+
+  // Employment fields
+  const employmentFields = [
+    { label: "Name of Office/Line of Business", name: "office_name", type: "text" },
+    { label: "Title & Position", name: "title_and_position", type: "text" },
+    { label: "Office Address", name: "office_address", type: "text" },
+    { label: "Office Contact Number", name: "office_contact_number", type: "number", pattern: /^[0-9+()\-.\s]+$/ }
   ];
 
+  // Membership fields
   const membershipFields = [
-    { label: "Membership Fee", name: "membership_fee", type: "number" },
-    {
-      label: "Initial Share Capital",
-      name: "initial_share_capital",
-      type: "number",
-    },
-    {
-      label: "Fee Status",
-      name: "fee_status",
-      type: "select",
-      options: ["Paid", "Unpaid", "Partial"],
-    },
-    {
-      label: "Payment Method",
-      name: "payment_method",
-      type: "select",
-      options: ["Cash", "GCash"],
-    },
-    { label: "Payment Date", name: "payment_date", type: "date" },
-    { label: "Remarks", name: "remarks", type: "text" },
-  ];
+    { label: "Account Type", name: "account_type", type: "select",
+      options: ["Regular", "Associate", "Treasurer", "Board"], required: true },
+    { label: "Account Status", name: "account_status", type: "select",
+      options: ["Active", "Inactive", "Pending"], required: true },
+    { label: "Application Date", name: "application_date", type: "date", required: true },
 
-  // const loginCredentials = [
-  //   { label: "Email Address", name: "loginEmail", type: "text" },
-  //   { label: "Password", name: "password", type: "password" },
-  //   { label: "Confirm Password", name: "cpassword", type: "password" },
-  // ];
+    { label: "Membership Fee", name: "membership_fee", type: "number"},
+    { label: "Initial Share Capital", name: "initial_share_capital", type: "number"},
+    { label: "Fee Status", name: "fee_status", type: "select", options: ["Paid", "Unpaid", "Partial"]},
+
+    { label: "Payment Method", name: "payment_method", type: "select", options: ["Cash", "GCash", "Bank"]},
+    { label: "Payment Date", name: "payment_date", type: "date"},
+    { label: "Remarks", name: "remarks", type: "text" }
+  ];
 
   return (
     <div className="min-h-screen py-5">
       <div className="max-w-4xl mx-auto bg-base-100 shadow-lg rounded-xl p-6 space-y-6">
         <header>
           <h1 className="text-3xl font-bold">Register New Member</h1>
-          <p className="text-base-content/70">
-            Fill out the fields below to register a new member.
-          </p>
+          <p className="text-base-content/70">Fill out the fields below to register a new member.</p>
         </header>
 
         <div className="tabs tabs-border mb-6">
@@ -246,18 +143,16 @@ function AddMember (){
             1. Personal Info
           </div>
           <div className={`tab ${activeTab === 1 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
-            2. Membership
+            2. Employment/Profession
           </div>
-          {/* <div className={`tab ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
-            2. Login Credentials
-          </div> */}
+          <div className={`tab ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+            3. Membership
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {isError && <p className="text-red-500">{error.message}</p>}
-          {isSuccess && (
-            <p className="text-green-600">Member registered successfully!</p>
-          )}
+          {isSuccess && (<p className="text-green-600">Member registered successfully!</p>)}
           {isPending && <p>Saving member...</p>}
 
           {/* PERSONAL DETAILS TAB */}
@@ -287,52 +182,57 @@ function AddMember (){
 
               {/* Inputs */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {personalFields.map(({ label, name, type, options }) => (
-                  <div key={name} className="form-control w-full">
-                    <label htmlFor={name} className="label">
-                      <span className="label-text font-medium">{label}</span>
-                    </label>
-                    {type === "select" ? (
-                      <select
-                        id={name}
-                        name={name}
-                        value={formData[name] || ""}
-                        onChange={handleChange}
-                        className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
-                          }`}
+                {personalFields.map(({ label, name, type, options, group }, idx) => {
+                const prevGroup = idx > 0 ? personalFields[idx - 1].group : null;
 
-                      >
-                        <option value="" className="label" disabled>Select {label}</option>
-                        {options?.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        id={name}
-                        type={type}
-                        name={name}
-                        value={formData[name] || ""}
-                        onChange={handleChange}
-                        className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
-                          }`}
+                return (
+                  <Fragment key={name}>
+                    {/* Section header: full width */}
+                    {group && group !== prevGroup && (
+                      <div className="col-span-1 md:col-span-2">
+                        <h3 className="text-lg font-semibold mt-4 mb-2">{group}</h3>
+                        <hr className="border-gray-300 mb-4" />
+                      </div>
+                    )}
 
-                      />
-                    )}
-                    {formErrors[name] && (
-                      <p className="text-red-500 text-sm">{formErrors[name]}</p>
-                    )}
-                  </div>
-                ))}
+                    {/* Field itself */}
+                    <div className="form-control w-full col-span-1">
+                      <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
+
+                      {type === "select" ? (
+                        <select
+                          id={name}
+                          {...register(name, { required: `${label} is required` })}
+                          className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
+                        >
+                          <option value="" disabled>Select {label}</option>
+                          {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                        </select>
+                      ) : (
+                        <input
+                          id={name}
+                          type={type}
+                          {...register(name, { required: `${label} is required` })} //validation rules directly on input
+                          className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                        />
+                      )}
+                      {/* tracks invalid fields */}
+                      {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)} 
+                    </div>
+                  </Fragment>
+                );
+              })}
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="button"
-                  className="btn btn-primary px-8"
-                  onClick={handleNext}
+                  onClick={() => handleNext([
+                    "f_name", "l_name", "civil_status", "birthday", "place_of_birth",
+                    "block_no", "barangay", "city_municipality", "province", "zip_code",
+                    "contact_number", "email"
+                  ])}
+                  className="btn btn-primary"
                 >
                   Next
                 </button>
@@ -340,47 +240,22 @@ function AddMember (){
             </>
           )}
 
-          {/* MEMBERSHIP DETAILS TAB */}
+          {/* EMPLOYMENT TAB */}
           {activeTab === 1 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {membershipFields.map(({ label, name, type, options }) => (
+                {employmentFields.map(({ label, name, type, options }) => (
                   <div key={name} className="form-control w-full">
-                    <label htmlFor={name} className="label">
-                      <span className="label-text font-medium">{label}</span>
-                    </label>
-                    {type === "select" ? (
-                      <select
-                        id={name}
-                        name={name}
-                        value={formData[name] || ""}
-                        onChange={handleChange}
-                        className={`select select-bordered w-full ${formErrors[name] ? "select-error" : ""
-                          }`}
+                    <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
 
-                      >
-                        <option value="" className="label" disabled>Select {label}</option>
-                        {options?.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        id={name}
-                        type={type}
-                        name={name}
-                        value={formData[name] || ""}
-                        onChange={handleChange}
-                        className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
-                          }`}
-
-                      />
-                    )}
-                    {formErrors[name] && (
-                      <p className="text-red-500 text-sm">{formErrors[name]}</p>
-                    )}
+                    <input
+                      id={name}
+                      type={type}
+                      {...register(name, { required: `${label} is required` })}
+                      className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                    />
+                   
+                    {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
                   </div>
                 ))}
               </div>
@@ -392,67 +267,63 @@ function AddMember (){
                 >
                   Back
                 </button>
-                {/* <button
+                <button
                   type="button"
-                  className="btn btn-success px-8"
-                  onClick={handleNext}
+                  onClick={() =>
+                    handleNext([
+                      "office_name",
+                      "title_and_position",
+                      "office_address",
+                      "office_contact_number"
+                    ])
+                  }
+                  className="btn btn-primary"
                 >
                   Next
-                </button> */}
-                <button
-                  type="submit"
-                  className="btn btn-success px-8"
-                  disabled={isPending}
-                >
-                  {isPending ? "Processing..." : "Register"}
                 </button>
               </div>
             </>
           )}
 
-          {/* LOGIN CREDENTIALS TAB  */}
-          {/* {activeTab === 2 && (
+          {/* MEMBERSHIP DETAILS TAB */}
+          {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {loginCredentials.map(({ label, name, type }) => (
+                {membershipFields.map(({ label, name, type, options }) => (
                   <div key={name} className="form-control w-full">
-                    <label htmlFor={name} className="label">
-                      <span className="label-text font-medium">{label}</span>
-                    </label>
-                    <input
-                      id={name}
-                      type={type}
-                      name={name}
-                      value={formData[name] || ""}
-                      onChange={handleChange}
-                      className={`input input-bordered w-full ${formErrors[name] ? "input-error" : ""
-                        }`}
-                      
-                    />
-                    {formErrors[name] && (
-                      <p className="text-red-500 text-sm">{formErrors[name]}</p>
+                    <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
+
+                    {type === "select" ? (
+                      <select
+                        id={name}
+                        {...register(name, { required: `${label} is required` })}
+                        className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
+                      >
+                        <option value="" disabled>Select {label}</option>
+                        {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                      </select>
+                    ) : (
+                      <input
+                        id={name}
+                        type={type}
+                        {...register(name, { required: `${label} is required` })}
+                        className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                      />
                     )}
+                    {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
                   </div>
                 ))}
               </div>
               <div className="flex justify-between">
-                <button
-                  type="button"
-                  className="btn btn-soft"
-                  onClick={() => setActiveTab(1)}
-                >
+                <button type="button" className="btn btn-soft" onClick={() => setActiveTab(1)}>
                   Back
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-success px-8"
-                  disabled={isPending}
-                >
-                  {isPending ? "Processing..." : "Register"}
+                <button type="submit" disabled={isSubmitting} className="btn btn-success">
+                  {isSubmitting ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </>
-          )} */}
+          )}
         </form>
       </div>
     </div>

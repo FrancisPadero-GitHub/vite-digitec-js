@@ -12,31 +12,50 @@ import { supabase } from "../supabase";
  */
 const insertMember = async (formData) => {
   // --- Build structured payload ---
-// 1. Destructure all fields from formData with null fallbacks
-const {
-  // members
-  f_name = null,
-  m_name = null,
-  l_name = null,
-  account_type = null,
-  account_status = null,
-  address = null,
-  application_date = null,
-  email = null,
-  sex = null,
-  contact_number = null,
-  employment_status = null,
-  birthday = null,
-  // Initial
-  membership_fee = null,
-  initial_share_capital = null,
-  fee_status = null,
-  payment_method = null,
-  payment_date = null,
-  remarks = null,
-} = formData;
+  // 1. Destructure all fields from formData with null fallbacks
+  const {
+    // Personal
+      f_name = null,
+      m_name = null,
+      l_name = null,
+      civil_status = null,
+      birthday = null,
+      place_of_birth = null,
+      street_no = null,
+      barangay = null,
+      city_municipality = null,
+      province = null,
+      zip_code = null,
+      contact_number = null,
+      email = null,
+      spouse_name = null,
+      number_of_children = null,
+      avatarFile = null,
 
-// 2. Build the nested payload using the destructured variables
+      // Employment
+      office_name = null,
+      title_and_position = null,
+      office_address = null,
+      office_contact_number = null,
+
+      // Membership & payment
+      account_type = null,
+      account_status = null,
+      application_date = null,
+      membership_fee = null,
+      initial_share_capital = null,
+      fee_status = null,
+      payment_method = null,
+      payment_date = null,
+      remarks = null,
+  } = formData;
+
+// 2. Combine address fields
+const address = [street_no, barangay, city_municipality, province, zip_code]
+  .filter(Boolean)
+  .join(", ");
+
+// 3. Build the nested payload using the destructured variables
 const payload = {
   member: {
     // Note: login_id remains null as it doesn't come from formData
@@ -44,15 +63,21 @@ const payload = {
     f_name,
     m_name,
     l_name,
+    civil_status,
+    birthday,
+    place_of_birth,
+    address,
+    email,
+    contact_number,
+    spouse_name,
+    number_of_children,
+    office_name,
+    title_and_position,
+    office_address,
+    office_contact_number,
     account_type,
     account_status,
-    address,
     application_date,
-    email,
-    sex,
-    contact_number,
-    employment_status,
-    birthday,
   },
   payment: {
     membership_fee,
@@ -72,7 +97,6 @@ const payload = {
     payment_method: payment_method,
     remarks: "Membership Initial"
   },
-
   coop: {
     source: "member contribution",
     amount: initial_share_capital,
@@ -80,7 +104,6 @@ const payload = {
     contribution_date: payment_date,
     remarks: "Membership Initial"
   }
-
 };
 
 // --- 1. Create Auth user via Edge Function ---
@@ -113,7 +136,7 @@ const payload = {
   
 //   const authUser = result.user; // contains Supabase Auth user info
 
-  // --- 2. Insert into "members" table, linking login_id = authUser.id ---
+  // --- 1. Insert into "members" table, linking login_id = authUser.id ---
   const { data: member, error: memberError } = await supabase
     .from("members")
     .insert([{ ...payload.member }]) //  login_id: authUser.id
@@ -125,6 +148,34 @@ const payload = {
   }
   if (!member?.member_id) {
     throw new Error("Member insertion returned no member_id.");
+  }
+
+  // --- 2. Handle avatar upload if file exists
+  let avatarUrl = null;
+  if (avatarFile) {
+    const fileExt = avatarFile.name.split(".").pop();
+    const filePath = `${member.member_id}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("profile_pic")
+      .upload(filePath, avatarFile, { upsert: true });
+
+    if (uploadError)
+      throw new Error(`Avatar upload failed: ${uploadError.message}`);
+
+    const { data: publicUrlData } = supabase.storage
+      .from("profile_pic")
+      .getPublicUrl(filePath);
+    avatarUrl = publicUrlData.publicUrl;
+
+    // Update member row with avatar_url
+    const { error: updateError } = await supabase
+      .from("members")
+      .update({ avatar_url: avatarUrl })
+      .eq("member_id", member.member_id);
+
+    if (updateError)
+      throw new Error(`Failed to update member avatar: ${updateError.message}`);
   }
 
   // --- 3. Insert into "initial_payments" table ---
@@ -139,19 +190,19 @@ const payload = {
   }
 
   // 4. Insert into "club funds" tabl for the initial payments
-  const {data: clubFundsContri, error: clubFundsError} = await supabase
-  .from("club_funds_contributions")
-  .insert([{...payload.clubFunds, member_id: member.member_id}])
-  .select()
-  .single();
+  const { data: clubFundsContri, error: clubFundsError} = await supabase
+    .from("club_funds_contributions")
+    .insert([{ ...payload.clubFunds, member_id: member.member_id}])
+    .select()
+    .single();
 
-    if (clubFundsError) {
-      throw new Error(`Failed to insert club funds: ${clubFundsError.message}`); // Let React Query handle it
-    }
+  if (clubFundsError) {
+    throw new Error(`Failed to insert club funds: ${clubFundsError.message}`); // Let React Query handle it
+  }
 
-  const {data: coopContri, error: coopError } = await supabase
+  const { data: coopContri, error: coopError } = await supabase
     .from("coop_cbu_contributions")
-    .insert([{...payload.coop, member_id: member.member_id}])
+    .insert([{ ...payload.coop, member_id: member.member_id }])
     .select()
     .single();
 
@@ -160,7 +211,7 @@ const payload = {
   }
   
   // --- Final success ---
-  return { member, initPayments, clubFundsContri, coopContri}; // returns all data in one single array
+  return { member, initPayments, clubFundsContri, coopContri }; // returns all data in one single array
 };
 
 
