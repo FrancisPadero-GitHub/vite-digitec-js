@@ -21,7 +21,6 @@ import ComparisonChart from './components/ComparisonChart';
 import DataTable from './components/DataTable';
 
 function Dashboard() {
-
   // Supabase Hooks
   const { data: members } = useMembers();
   const { data: income, isLoading: incomeIsLoading } = useFetchIncome();
@@ -33,54 +32,99 @@ function Dashboard() {
   const subText = "All Time";
   const [filters, setFilters] = useState({
     income: { month: null, year: null, subtitle: subText },
-    funds: { month: null, year: null, subtitle: subText },
     fundsBalance: { month: null, year: null, subtitle: subText },
-    coop: { month: null, year: null, subtitle: subText },
     expenses: { month: null, year: null, subtitle: subText },
+    coop: { month: null, year: null, subtitle: subText },
   });
 
-  /**
-   * Fetches totals for specific tables using RPC functions
-   * rpc code can be viewed on supabase functions
-   * 
-   * Filter here are accomodated base on the RPC function on supabase
-   */
+  // Helper to compute previous period filter
+  const getPrevPeriod = (subtitle) => {
+    if (subtitle === "This Month") {
+      const now = new Date();
+      const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return { month: prev.getMonth() + 1, year: prev.getFullYear() };
+    }
+    if (subtitle === "This Year") {
+      return { month: null, year: new Date().getFullYear() - 1 };
+    }
+    return { month: null, year: null }; // All Time → no comparison
+  };
+
+  // Helper to compute growth percent
+  const calcGrowth = (current, previous, asString = false) => {
+    if (previous == null || previous === 0 || current == null) return null;
+
+    const growth = ((current - previous) / previous) * 100;
+    const rounded = Math.round(growth); // ✅ no decimals
+
+    return asString ? `${rounded}%` : rounded;
+  };
+
+  // =========================
+  // Income
+  // =========================
   const { data: incomeTotal, isLoading: incomeLoading, isError: incomeIsError, error: incomeError } = useFetchTotal({
     rpcFn: "get_club_income_total",
     year: filters.income.year,
     month: filters.income.month,
   });
+  const { data: incomePrevTotal } = useFetchTotal({
+    rpcFn: "get_club_income_total",
+    ...getPrevPeriod(filters.income.subtitle),
+  });
+  const incomeGrowth = calcGrowth(incomeTotal, incomePrevTotal);
 
+  // =========================
+  // Club Fund Balance
+  // =========================
   const { data: clubFundsBalance, isLoading: cfBalLoading, isError: cfBalIsError, error: cfBalError } = useFetchTotal({
     rpcFn: "get_club_funds_balance",
     year: filters.fundsBalance.year,
     month: filters.fundsBalance.month,
   });
+  const { data: cfPrevBal } = useFetchTotal({
+    rpcFn: "get_club_funds_balance",
+    ...getPrevPeriod(filters.fundsBalance.subtitle),
+  });
+  const cfGrowth = calcGrowth(clubFundsBalance, cfPrevBal);
 
+  // =========================
+  // Expenses
+  // =========================
   const { data: expensesTotal, isLoading: expensesLoading, isError: expensesIsError, error: expensesError } = useFetchTotal({
     rpcFn: "get_club_expenses_total",
     year: filters.expenses.year,
     month: filters.expenses.month,
   });
+  const { data: expensesPrevTotal } = useFetchTotal({
+    rpcFn: "get_club_expenses_total",
+    ...getPrevPeriod(filters.expenses.subtitle),
+  });
+  const expensesGrowth = calcGrowth(expensesTotal, expensesPrevTotal);
 
+  // =========================
+  // Coop Contributions
+  // =========================
   const { data: coopTotal, isLoading: coopLoading, isError: coopIsError, error: coopError } = useFetchTotal({
     rpcFn: "get_coop_contributions_total",
     year: filters.coop.year,
     month: filters.coop.month,
   });
-
-
+  const { data: coopPrevTotal } = useFetchTotal({
+    rpcFn: "get_coop_contributions_total",
+    ...getPrevPeriod(filters.coop.subtitle),
+  });
+  const coopGrowth = calcGrowth(coopTotal, coopPrevTotal);
 
   /**
-   * 
-   * This will be looped through and rendered below as StatCards props arguments
+   * Stat Cards
    */
   const stats = [
     {
       icon: <Wallet />,
       iconBgColor: "bg-purple-400",
       statName: "Club Income",
-      growthPercent: 12, // Will be changed later on
+      growthPercent: incomeGrowth,
       amount: incomeTotal ?? 0,
       subtitle: filters.income.subtitle,
       onSubtitleChange: (label) => {
@@ -97,22 +141,20 @@ function Dashboard() {
       error: incomeIsError,
       errorMessage: incomeError?.message,
     },
-
-    // Balance Version
     {
       icon: <Savings />,
       iconBgColor: "bg-lime-400",
       statName: "Club Fund Balance",
-      growthPercent: 8, // Will be changed later on
+      growthPercent: cfGrowth,
       amount: clubFundsBalance ?? 0,
       subtitle: filters.fundsBalance.subtitle,
-      onSubtitleChange: (date_label) => {
+      onSubtitleChange: (label) => {
         setFilters((prev) => ({
           ...prev,
           fundsBalance: {
-            subtitle: date_label,
-            month: date_label === "This Month" ? new Date().getMonth() + 1 : null,
-            year: date_label !== "All Time" ? new Date().getFullYear() : null,
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
           },
         }));
       },
@@ -120,13 +162,11 @@ function Dashboard() {
       error: cfBalIsError,
       errorMessage: cfBalError?.message,
     },
-
     {
       icon: <ReceiptLong />,
       iconBgColor: "bg-red-400",
       statName: "Club Fund Expenses",
-      growthPercent: 2, // Will be changed later on
-
+      growthPercent: expensesGrowth,
       amount: expensesTotal ?? 0,
       subtitle: filters.expenses.subtitle,
       onSubtitleChange: (label) => {
@@ -143,12 +183,11 @@ function Dashboard() {
       error: expensesIsError,
       errorMessage: expensesError?.message,
     },
-
     {
       icon: <AccountBalance />,
       iconBgColor: "bg-sky-400",
       statName: "Coop Total Contribution",
-      growthPercent: 6, // Will be changed later on
+      growthPercent: coopGrowth,
       amount: coopTotal ?? 0,
       subtitle: filters.coop.subtitle,
       onSubtitleChange: (label) => {
@@ -165,24 +204,36 @@ function Dashboard() {
       error: coopIsError,
       errorMessage: coopError?.message,
     },
-
-  
   ];
-
  
   return (
     <div>
       <div className="mb-6 space-y-4">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-3">
           {/* LEFT SIDE */}
-          <div className="flex-1 flex flex-col gap-8">
+          <div className="flex-1 flex flex-col gap-3">
 
             {/* Total Card Stats  */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {stats.map((stats_items, stat_id) => (
                 <StatCard key={stat_id} {...stats_items} />
               ))}
+            </section>
+
+            {/* Share Capital Area Chart */}
+            <section className="border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
+              <div className="p-6 flex flex-col h-full">
+                <div>
+                  <span className="text-xl font-semibold">Share Capital Activity</span>
+                  <span className="text-gray-400"> | This Year</span>
+                  <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
+                </div>
+
+                <div className="w-full min-w-0">
+                  <CoopContributionChart />
+                </div>
+              </div>
             </section>
 
             {/** 
@@ -360,7 +411,7 @@ function Dashboard() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-6">
+          <div className="w-full lg:w-[30%] flex flex-col gap-3">
 
             {/* CLUB EXPENSES DONUT CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
@@ -394,16 +445,7 @@ function Dashboard() {
             </section>
 
 
-            {/* Share Capital Area Chart */}
-            <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
-              <div className="p-6 flex flex-col h-full">
-                <h2 className="text-xl font-semibold">Share Capital Activity</h2>
-                <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
-                <div className="w-full min-w-0">
-                  <CoopContributionChart />
-                </div>
-              </div>
-            </section>
+
           </div>
         </div>
       </div>

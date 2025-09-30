@@ -23,15 +23,35 @@ function StatCard({
   error,
   errorMessage,
 }) {
-  const resolvedType =
-    typeof growthPercent === "number"
-      ? growthPercent >= 0
-        ? "increase"
-        : "decrease"
-      : growthType ?? "increase";
 
-  const colorClass =
-    resolvedType === "increase" ? "text-primary" : "text-error";
+
+  // Determine growth type (increase, decrease, neutral)
+  let resolvedType;
+  if (typeof growthPercent === "number") {
+    if (growthPercent > 0) {
+      resolvedType = "increase";
+    } else if (growthPercent < 0) {
+      resolvedType = "decrease";
+    } else {
+      resolvedType = "neutral";
+    }
+  } else {
+    resolvedType = growthType ?? "increase";
+  }
+
+  // Handle color logic
+  let colorClass;
+  if (resolvedType === "neutral") {
+    colorClass = "text-gray-400"; // ✅ neutral gray
+  } else if (statName?.toLowerCase().includes("expenses")) {
+    // ✅ Flip the logic for expenses
+    colorClass =
+      resolvedType === "decrease" ? "text-success" : "text-error";
+  } else {
+    colorClass =
+      resolvedType === "increase" ? "text-primary" : "text-error";
+  }
+
 
   return (
     <div className="card bg-base-100 shadow-md rounded-2xl px-6 py-4">
@@ -68,11 +88,21 @@ function StatCard({
             ) : error ? (
               <span className="text-error text-lg">{errorMessage}</span>
             ) : (
-              Number(amount ?? 0).toLocaleString()
+              <span
+                className={
+                  amount < 0
+                    ? "text-error" // red if negative
+                    : amount === 0
+                      ? "text-gray-400" // gray if zero
+                      : "text-success" // green (or keep default)
+                }
+              >
+               ₱ {Number(amount ?? 0).toLocaleString()}
+              </span>
             )}
           </div>
 
-          <div className={`text-sm font-semibold ${colorClass}`} title="Hard Coded Temporarily">
+          <div className={`text-sm font-semibold ${colorClass}`}>
             {typeof growthPercent === "number"
               ? `${Math.abs(growthPercent)}% ${resolvedType}`
               : growthPercent}

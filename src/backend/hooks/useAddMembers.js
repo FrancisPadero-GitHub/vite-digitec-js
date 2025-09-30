@@ -106,36 +106,37 @@ const payload = {
   }
 };
 
-// --- 1. Create Auth user via Edge Function ---
-/**
- * 
- * ISSUE: Email can't be confirmed therefore it can't be used to login
- * 
- */
-// const session = await supabase.auth.getSession(); // gets the session key for the logged in admin account
+  // --- 1. Create Auth user via Edge Function ---
+  /**
+   *
+   * ISSUE: Email can't be confirmed therefore it can't be used to login
+   *
+   */
+  // const session = await supabase.auth.getSession(); // gets the session key for the logged in admin account
 
-// const response = await fetch(
-//   "https://kvsyknteyxhyjbogbaya.supabase.co/functions/v1/create-user",
-//   {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${session.data.session?.access_token}`,
-//     },
-//     body: JSON.stringify({
-//       email: formData.loginEmail,
-//       password: formData.password,
-//       full_name: `${formData.f_name} ${formData.l_name}`,
-//     }),
-//   }
-// );
-//   const result = await response.json();
-//   console.log("User Created: ", result.user)
-//   await supabase.inviteUserByEmail(formData.loginEm); // so far this is not working 
-//   if (result.error) throw new Error(result.error);
-  
-//   const authUser = result.user; // contains Supabase Auth user info
+  // const response = await fetch(
+  //   "https://kvsyknteyxhyjbogbaya.supabase.co/functions/v1/create-user",
+  //   {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: `Bearer ${session.data.session?.access_token}`,
+  //     },
+  //     body: JSON.stringify({
+  //       email: formData.loginEmail,
+  //       password: formData.password,
+  //       full_name: `${formData.f_name} ${formData.l_name}`,
+  //     }),
+  //   }
+  // );
+  //   const result = await response.json();
+  //   console.log("User Created: ", result.user)
+  //   await supabase.inviteUserByEmail(formData.loginEm); // so far this is not working
+  //   if (result.error) throw new Error(result.error);
 
+  //   const authUser = result.user; // contains Supabase Auth user info
+
+  // --- 1. Insert into "members" table, linking login_id = authUser.id ---
   // --- 1. Insert into "members" table, linking login_id = authUser.id ---
   const { data: member, error: memberError } = await supabase
     .from("members")
@@ -148,6 +149,34 @@ const payload = {
   }
   if (!member?.member_id) {
     throw new Error("Member insertion returned no member_id.");
+  }
+
+  // --- 2. Handle avatar upload if file exists
+  let avatarUrl = null;
+  if (avatarFile) {
+    const fileExt = avatarFile.name.split(".").pop();
+    const filePath = `${member.member_id}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("profile_pic")
+      .upload(filePath, avatarFile, { upsert: true });
+
+    if (uploadError)
+      throw new Error(`Avatar upload failed: ${uploadError.message}`);
+
+    const { data: publicUrlData } = supabase.storage
+      .from("profile_pic")
+      .getPublicUrl(filePath);
+    avatarUrl = publicUrlData.publicUrl;
+
+    // Update member row with avatar_url
+    const { error: updateError } = await supabase
+      .from("members")
+      .update({ avatar_url: avatarUrl })
+      .eq("member_id", member.member_id);
+
+    if (updateError)
+      throw new Error(`Failed to update member avatar: ${updateError.message}`);
   }
 
   // --- 2. Handle avatar upload if file exists
@@ -199,9 +228,14 @@ const payload = {
   if (clubFundsError) {
     throw new Error(`Failed to insert club funds: ${clubFundsError.message}`); // Let React Query handle it
   }
+  if (clubFundsError) {
+    throw new Error(`Failed to insert club funds: ${clubFundsError.message}`); // Let React Query handle it
+  }
 
   const { data: coopContri, error: coopError } = await supabase
+  const { data: coopContri, error: coopError } = await supabase
     .from("coop_cbu_contributions")
+    .insert([{ ...payload.coop, member_id: member.member_id }])
     .insert([{ ...payload.coop, member_id: member.member_id }])
     .select()
     .single();
@@ -209,8 +243,9 @@ const payload = {
   if (coopError) {
     throw new Error(coopError.message);
   }
-  
+
   // --- Final success ---
+  return { member, initPayments, clubFundsContri, coopContri }; // returns all data in one single array
   return { member, initPayments, clubFundsContri, coopContri }; // returns all data in one single array
 };
 

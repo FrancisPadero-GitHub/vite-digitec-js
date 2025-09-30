@@ -16,32 +16,46 @@ function CoopContributionChart() {
     );
   }
 
-  // Aggregate contributions by month
+  const currentYear = new Date().getFullYear();
   const monthlyTotals = {};
+
+  // Aggregate contributions only for current year
   contributions?.forEach((item) => {
     if (!item.contribution_date) return;
 
     const date = new Date(item.contribution_date);
     const year = date.getFullYear();
-    const month = date.toLocaleString("default", { month: "short" }); // Jan, Feb, etc.
 
-    const key = `${month} ${year}`; // e.g., "Jan 2024"
+    if (year !== currentYear) return; // skip anything not this year
+
+    const monthIndex = date.getMonth(); // 0 = Jan, 11 = Dec
+    const key = `${year}-${monthIndex}`;
+
     monthlyTotals[key] = (monthlyTotals[key] || 0) + (item.amount || 0);
   });
 
-  // Convert aggregated object into array for recharts
-  const data = Object.entries(monthlyTotals).map(([month, value]) => ({
-    month,
-    value,
-  }));
+  // Convert into chart-friendly array
+  const data = Object.entries(monthlyTotals)
+    .map(([key, value]) => {
+      const [year, monthIndex] = key.split("-").map(Number);
+      const label = new Date(year, monthIndex).toLocaleString("default", {
+        month: "short",
+      });
+      return { month: label, value, year, monthIndex };
+    })
+    .sort((a, b) => a.monthIndex - b.monthIndex); // Jan → Dec
+
+  // Final clean array for Recharts
+  const finalData = data.map(({ month, value }) => ({ month, value }));
+
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <AreaChart data={data} margin={{ top: 20, right: 0, left: -10, bottom: 0 }}>
+    <ResponsiveContainer width="100%" height={400}>
+      <AreaChart data={finalData} margin={{ top: 20, right:25, left: -15, bottom: 10 }}>
         <defs>
           <linearGradient id="colorCapital" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+            <stop offset="50%" stopColor="#82ca9d" stopOpacity={0.8} />
+            <stop offset="90%" stopColor="#82ca9d" stopOpacity={0} />
           </linearGradient>
         </defs>
         <XAxis dataKey="month" fontSize={11} />

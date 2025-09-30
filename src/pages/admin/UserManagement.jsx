@@ -8,7 +8,7 @@ export default function UserManagement() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20); // determines how many rows to render per page
 
-  const { data: members, isLoading, isError, error } = useMembers();
+  const { data: members, isLoading, isError, error } = useMembers(page, limit);
 
   // Get total count and raw data
   const total = members?.count || 0;
@@ -31,6 +31,7 @@ export default function UserManagement() {
       searchKey: `${displayName} ${row.email ?? ""}`.toLowerCase(),
       role: row.account_type,
       status: row.account_status,
+      avatar: row.avatar_url
     };
   })
   .filter((row) => {
@@ -126,7 +127,7 @@ export default function UserManagement() {
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={`https://i.pravatar.cc/40?u=${row.generatedId}`}
+                          src={row.avatar ||`https://i.pravatar.cc/40?u=${row.generatedId}` }
                           alt={row.displayName}
                         />
                       </div>
