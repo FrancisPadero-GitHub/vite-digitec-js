@@ -174,15 +174,30 @@ function Dashboard() {
     <div>
       <div className="mb-6 space-y-4">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-3">
           {/* LEFT SIDE */}
-          <div className="flex-1 flex flex-col gap-8">
+          <div className="flex-1 flex flex-col gap-3">
 
             {/* Total Card Stats  */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {stats.map((stats_items, stat_id) => (
                 <StatCard key={stat_id} {...stats_items} />
               ))}
+            </section>
+
+            {/* Share Capital Area Chart */}
+            <section className="border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
+              <div className="p-6 flex flex-col h-full">
+                <div>
+                  <span className="text-xl font-semibold">Share Capital Activity</span>
+                  <span className="text-gray-400"> | This Year</span>
+                  <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
+                </div>
+
+                <div className="w-full min-w-0">
+                  <CoopContributionChart />
+                </div>
+              </div>
             </section>
 
             {/** 
@@ -360,7 +375,7 @@ function Dashboard() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-6">
+          <div className="w-full lg:w-[30%] flex flex-col gap-3">
 
             {/* CLUB EXPENSES DONUT CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
@@ -394,16 +409,7 @@ function Dashboard() {
             </section>
 
 
-            {/* Share Capital Area Chart */}
-            <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
-              <div className="p-6 flex flex-col h-full">
-                <h2 className="text-xl font-semibold">Share Capital Activity</h2>
-                <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
-                <div className="w-full min-w-0">
-                  <CoopContributionChart />
-                </div>
-              </div>
-            </section>
+
           </div>
         </div>
       </div>
