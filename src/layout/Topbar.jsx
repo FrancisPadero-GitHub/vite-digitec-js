@@ -23,10 +23,12 @@ const Topbar = ({ role }) => {
 
   // to fetch member name for the logged in id
   const { user } = useAuth();
-  const { data: members } = useMembers();
+  const { data: membersData } = useMembers();
 
   // Find member linked to this user
-  const member = members?.find((m) => m.login_id === user?.id);
+  const member = membersData?.find((m) => m.login_id === user?.id);
+
+  const profile_pic = member?.avatar_url;
   
   // Renders fetched name and shortend the last name to single char
   const matchedMember = member
@@ -102,7 +104,7 @@ const Topbar = ({ role }) => {
             <div className="avatar">
               <div className="w-10 rounded-full">
                 <img
-                  src="https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"
+                  src={profile_pic ||"https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"}
                   alt="Profile"
                 />
               </div>
@@ -124,7 +126,7 @@ const Topbar = ({ role }) => {
               <div className="avatar">
                 <div className="w-10 rounded-full">
                   <img
-                    src="https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"
+                    src={profile_pic || "https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"}
                     alt="Profile"
                   />
                 </div>

@@ -69,13 +69,8 @@ function AddMember (){
   const handleAvatarUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        setPreviewAvatar(result);
-        setFormData((prev) => ({ ...prev, avatar: result }));
-      };
-      reader.readAsDataURL(file);
+      setPreviewAvatar(URL.createObjectURL(file)); // preview
+      setFormData((prev) => ({ ...prev, avatarFile: file })); // keep the File
     }
   };
 
