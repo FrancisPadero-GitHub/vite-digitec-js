@@ -3,6 +3,7 @@ import { useMembers } from "./hooks/useFetchMembers.js";
 import MainDataTable from "../treasurer/components/MainDataTable.jsx";
 import FilterToolbar from "../shared/components/FilterToolbar.jsx";
 import { Link } from "react-router-dom";
+import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
 export default function UserManagement() {
   const [page, setPage] = useState(1);
@@ -54,6 +55,50 @@ export default function UserManagement() {
     setSelectedMember(member);
     setEditModalOpen(true);
   };
+
+  // Fields to display in the modal, grouped by category
+  const memberGroups = [
+  {
+    title: "Personal Info",
+    fields: [
+      { label: "Full Name", value: selectedMember ? `${selectedMember.f_name} ${selectedMember.m_name} ${selectedMember.l_name}` : "N/A" },
+      { label: "Civil Status", value: selectedMember?.civil_status || "N/A" },
+      { label: "Birthday", value: selectedMember?.birthday || "N/A" },
+      { label: "Place of Birth", value: selectedMember?.place_of_birth || "N/A" },
+      { label: "Contact Number", value: selectedMember?.contact_number || "N/A" },
+      { label: "Email", value: selectedMember?.email || "N/A" }
+    ]
+  },
+  {
+    title: "Address",
+    fields: [
+      { label: "Address", value: selectedMember?.address || "N/A" }
+    ]
+  },
+  {
+    title: "Dependents",
+    fields: [
+      { label: "Spouse Name", value: selectedMember?.spouse_name || "N/A" },
+      { label: "Number of Children", value: selectedMember?.number_of_children || "N/A" }
+    ]
+  },
+  {
+    title: "Employment",
+    fields: [
+      { label: "Office Name", value: selectedMember?.office_name || "N/A" },
+      { label: "Title & Position", value: selectedMember?.title_and_position || "N/A" },
+      { label: "Office Address", value: selectedMember?.office_address || "N/A" },
+      { label: "Office Contact Number", value: selectedMember?.office_contact_number || "N/A" }
+    ]
+  },
+    {
+      title: "Membership Details",
+      fields: [
+        { label: "Account Type", value: selectedMember?.account_type || "N/A" },
+        { label: "Account Status", value: selectedMember?.account_status || "N/A" },
+      ]
+    }
+  ];
 
   if (isLoading) return <div>Loading users...</div>;
   if (isError) return <div>Error: {error.message}</div>;
@@ -171,78 +216,45 @@ export default function UserManagement() {
 
       {/* This MODAL should render if editModalOpen is true */}
       {editModalOpen && selectedMember && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              User Information
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-              <div>
-                <p className="text-gray-500">Full Name</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.f_name} {selectedMember.m_name} {selectedMember.l_name}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Email</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.email || "Not provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Address</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.address || "Not provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Birthday</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.birthday
-                    ? new Date(selectedMember.birthday).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Employment Status</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.employment_status || "N/A"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Joined Date</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.joined_date
-                    ? new Date(selectedMember.joined_date).toLocaleDateString()
-                    : "Pending"}
-                </p>
-              </div>
-
-              <div className="md:col-span-2">
-                <p className="text-gray-500">Description</p>
-                <p className="font-medium text-gray-900">
-                  {selectedMember.description || "N/A"}
-                </p>
-              </div>
+        <div className="modal modal-open" onClick={() => setEditModalOpen(false)}> {/* edited so modal closes when u click outside it*/}
+          <div className="modal-box max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center mb-4">
+              <h2 className="text-2xl font-bold flex-1">User Information</h2>
+              <img
+                src={selectedMember?.avatar_url || placeholderAvatar}
+                alt="Avatar"
+                className="w-14 h-14 rounded-full object-cover ml-4 border-3 border-primary"
+              />
             </div>
 
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm text-gray-700">
+            {memberGroups.map((group) => (
+              <div key={group.title} className="mb-6">
+                <h3 className="font-semibold text-lg mb-2">{group.title}</h3>
+                <hr className="border-gray-300 mb-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {group.fields.map((field) => (
+                    <div key={field.label}>
+                      <p className="text-gray-500">{field.label}</p>
+                      <p className="font-medium text-gray-900">{field.value || "N/A"}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() => setEditModalOpen(false)}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
-      )}
+      </div>
+)}
     </div>
   )
 }

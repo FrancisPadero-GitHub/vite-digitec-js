@@ -21,7 +21,7 @@ const insertMember = async (formData) => {
       civil_status = null,
       birthday = null,
       place_of_birth = null,
-      street_no = null,
+      block_no = null,
       barangay = null,
       city_municipality = null,
       province = null,
@@ -51,7 +51,7 @@ const insertMember = async (formData) => {
   } = formData;
 
 // 2. Combine address fields
-const address = [street_no, barangay, city_municipality, province, zip_code]
+const address = [block_no, barangay, city_municipality, province, zip_code]
   .filter(Boolean)
   .join(", ");
 

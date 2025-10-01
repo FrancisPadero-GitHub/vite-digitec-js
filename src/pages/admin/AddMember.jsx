@@ -27,14 +27,14 @@ function AddMember (){
       city_municipality: "",
       province: "",
       zip_code: "",
-      contact_number: 0,
+      contact_number: "",
       email: "",
       spouse_name: "",
       number_of_children: "0",
       office_name: "",
       title_and_position: "",
       office_address: "",
-      office_contact_number: 0,
+      office_contact_number: "",
       account_type: "",
       account_status: "",
       application_date: today,
@@ -89,11 +89,11 @@ function AddMember (){
     { label: "Birthday", name: "birthday", type: "date", required: true },
     { label: "Place of Birth", name: "place_of_birth", type: "text" },
 
-    { label: "Contact Number", name: "contact_number", type: "number", required: true, pattern: /^[0-9+()\-.\s]+$/ },
+    { label: "Contact Number", name: "contact_number", type: "text", required: true, pattern: /^[0-9+()\-.\s]+$/ },
     { label: "Email Address", name: "email", type: "email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
 
     // Address grouped together
-    { label: "Block No., Lot No., Phase No.", name: "block_no", type: "text", required: true, group: "Address" },
+    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "text", required: true, group: "Address" },
     { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address" },
     { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address" },
     { label: "Province", name: "province", type: "text", required: true, group: "Address" },
@@ -110,7 +110,7 @@ function AddMember (){
     { label: "Name of Office/Line of Business", name: "office_name", type: "text" },
     { label: "Title & Position", name: "title_and_position", type: "text" },
     { label: "Office Address", name: "office_address", type: "text" },
-    { label: "Office Contact Number", name: "office_contact_number", type: "number", pattern: /^[0-9+()\-.\s]+$/ }
+    { label: "Office Contact Number", name: "office_contact_number", type: "text", pattern: /^[0-9+()\-.\s]+$/ }
   ];
 
   // Membership fields
@@ -212,7 +212,16 @@ function AddMember (){
                         <input
                           id={name}
                           type={type}
-                          {...register(name, { required: `${label} is required` })} //validation rules directly on input
+                          {...register(name, {
+                            required: `${label} is required`,
+                            pattern: name === "contact_number" ? {
+                              value: /^[0-9+()\-.\s]+$/,
+                              message: "Only numbers and symbols like +, -, (, ) allowed",
+                            } : undefined
+                          })}
+                          onInput={name === "contact_number" ? (e) => {
+                            e.target.value = e.target.value.replace(/[^0-9+()\-.\s]/g, "");
+                          } : undefined}
                           className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
                         />
                       )}
@@ -251,7 +260,16 @@ function AddMember (){
                     <input
                       id={name}
                       type={type}
-                      {...register(name, { required: `${label} is required` })}
+                      {...register(name, {
+                        required: `${label} is required`,
+                        pattern: name === "office_contact_number" ? {
+                          value: /^[0-9+()\-.\s]+$/,
+                          message: "Only numbers and symbols like +, -, (, ) allowed",
+                        } : undefined
+                      })}
+                      onInput={name === "office_contact_number" ? (e) => {
+                        e.target.value = e.target.value.replace(/[^0-9+()\-.\s]/g, "");
+                      } : undefined}
                       className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
                     />
                    
