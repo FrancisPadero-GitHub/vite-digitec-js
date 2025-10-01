@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 function AddMember (){
   const navigate = useNavigate();
   const { mutate, isPending, isError, error, isSuccess } = useAddMember();
+  const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -44,16 +45,16 @@ function AddMember (){
       payment_date: today,
       payment_method: "",
       remarks: "",
-      avatar: ""
+      avatarFile: null
     }
   });
 
+  // handle avatar upload/preview outside rhf since it handles file input
   const handleAvatarUpload = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setPreviewAvatar(URL.createObjectURL(file)); // preview
-      setValue("avatarFile", file, { shouldValidate: true }); // keep the file
-    }
+    if (!file) return;
+    setPreviewAvatar(URL.createObjectURL(file));
+    setAvatarFile(file);
   };
 
   // tab navigation with validation
@@ -69,6 +70,7 @@ function AddMember (){
       birthday: data.birthday ? new Date(data.birthday).toISOString() : null,
       application_date: data.application_date ? new Date(data.application_date).toISOString() : null,
       payment_date: data.payment_date ? new Date(data.payment_date).toISOString() : null,
+      avatarFile,
     };
 
     mutate(normalized, {
