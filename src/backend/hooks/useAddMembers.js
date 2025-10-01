@@ -21,11 +21,13 @@ const insertMember = async (formData) => {
       civil_status = null,
       birthday = null,
       place_of_birth = null,
+      // Address 
       block_no = null,
       barangay = null,
       city_municipality = null,
       province = null,
       zip_code = null,
+      
       contact_number = null,
       email = null,
       spouse_name = null,
@@ -50,10 +52,7 @@ const insertMember = async (formData) => {
       remarks = null,
   } = formData;
 
-// 2. Combine address fields
-const address = [block_no, barangay, city_municipality, province, zip_code]
-  .filter(Boolean)
-  .join(", ");
+
 
 // 3. Build the nested payload using the destructured variables
 const payload = {
@@ -66,7 +65,13 @@ const payload = {
     civil_status,
     birthday,
     place_of_birth,
-    address,
+
+    block_no,
+    barangay,
+    city_municipality,
+    province,
+    zip_code,
+    
     email,
     contact_number,
     spouse_name,
@@ -154,7 +159,10 @@ const payload = {
   let avatarUrl = null;
   if (avatarFile) {
     const fileExt = avatarFile.name.split(".").pop();
-    const filePath = `${member.member_id}/avatar.${fileExt}`;
+    
+    // ✅ Use timestamp for uniqueness
+    const uniqueSuffix = Date.now();
+    const filePath = `${member.member_id}/avatar-${uniqueSuffix}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("profile_pic")

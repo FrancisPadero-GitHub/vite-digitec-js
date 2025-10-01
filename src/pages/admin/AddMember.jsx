@@ -95,11 +95,20 @@ function AddMember (){
     { label: "Email Address", name: "email", type: "email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
 
     // Address grouped together
-    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "text", required: true, group: "Address" },
+    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "number", required: true, group: "Address" },
     { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address" },
     { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address" },
     { label: "Province", name: "province", type: "text", required: true, group: "Address" },
-    { label: "ZIP Code", name: "zip_code", type: "text", required: true, pattern: /^\d{4}$/ },
+
+    {
+      label: "ZIP Code",
+      name: "zip_code",
+      type: "text",
+      inputMode: "numeric",
+      required: true,
+      pattern: "^[0-9]{4}$"
+    },
+
 
     // Dependents grouped together
     { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents" },

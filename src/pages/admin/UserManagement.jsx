@@ -69,12 +69,23 @@ export default function UserManagement() {
       { label: "Email", value: selectedMember?.email || "N/A" }
     ]
   },
-  {
-    title: "Address",
-    fields: [
-      { label: "Address", value: selectedMember?.address || "N/A" }
-    ]
-  },
+    {
+      title: "Address",
+      fields: [
+        {
+          label: "Complete Address",
+          value: [
+            selectedMember?.block_no,
+            selectedMember?.barangay,
+            selectedMember?.city_municipality,
+            selectedMember?.province,
+            selectedMember?.zip_code,
+          ]
+            .filter(Boolean)
+            .join(", ") || "N/A"
+        }
+      ]
+    },
   {
     title: "Dependents",
     fields: [
