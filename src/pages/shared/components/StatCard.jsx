@@ -15,9 +15,9 @@ function StatCard({
   statName,
   amount,
   subtitle,
-  onSubtitleChange,  // callback passed from parent
-  growthPercent, // will be logically implemented soon
-  growthType, // will be logically implemented soon
+  onSubtitleChange, 
+  growthPercent,
+  growthType, 
 
   loading,
   error,

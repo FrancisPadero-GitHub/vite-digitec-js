@@ -18,14 +18,14 @@ import React from 'react'
  * 
  */
 
-function FormModal({ open, close, action, children, onSubmit, deleteAction }) {
+function FormModal({ table, open, close, action, children, onSubmit, deleteAction }) {
 
   // if open is false, don't render anything
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
-        <h2 className="text-2xl font-semibold">{action ? "Edit Expenses" : "Add Expenses"}</h2>
+        <h2 className="text-2xl font-semibold" >{action ? `Edit ${table}` : `Add ${table}`}</h2>
         <form onSubmit={onSubmit}>
           {children}
 

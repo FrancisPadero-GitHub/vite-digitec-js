@@ -36,7 +36,7 @@ import LoanApplications from "./pages/board/LoanApplications.jsx";
 // REGULAR AND ASSOCIATE PAGES
 import MemberDashboard from "./pages/members/MemberDashboard.jsx";
 import MemberShareCapital from "./pages/members/MemberShareCapital.jsx";
-import MemberCoopLoans from "./pages/members/MemberCoopLoans.jsx";
+import MemberLoanApp from "./pages/members/MemberLoanApp.jsx";
 import MemberReports from "./pages/members/MemberReports.jsx";
 import MemberHelp from "./pages/members/MemberHelp.jsx";
 import MemberSettings from "./pages/members/MemberSettings.jsx";
@@ -44,7 +44,7 @@ import MemberSettings from "./pages/members/MemberSettings.jsx";
 // REGULAR MEMBERS Pages
 import RegularMemberClubFunds from "./pages/members/RegularMemberClubFunds.jsx";
 import Profile from "./pages/members/Profile.jsx";
-import MemberLoanApp from "./pages/members/MemberLoanApp.jsx";
+
 
 
 
@@ -146,7 +146,7 @@ function AppRoutes() {
       children: [
         { index: true, element: <MemberDashboard /> },
         { path: "associate-member-share-capital", element: <MemberShareCapital /> },
-        { path: "associate-member-coop-loans", element: <MemberCoopLoans /> },
+        { path: "associate-member-coop-loans", element: <MemberLoanApp /> },
         { path: "associate-member-reports", element: <MemberReports /> },
         { path: "associate-member-help", element: <MemberHelp /> },
         { path: "associate-member-settings", element: <MemberSettings /> },

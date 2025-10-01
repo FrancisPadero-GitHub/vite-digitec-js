@@ -358,6 +358,7 @@ function CoopShareCapital() {
       </div>
 
       <FormModal
+        table={"Share Capital"}
         open={modalType !== null}
         close={closeModal}
         action={modalType === "edit"}

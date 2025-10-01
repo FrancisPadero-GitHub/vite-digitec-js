@@ -288,6 +288,7 @@ function ClubExpenses() {
        * */}
 
       <FormModal
+        table={"Expenses"}
         open={modalType !== null} // which will be set to true if value is present
         close={closeModal}
         action={modalType === "edit"}

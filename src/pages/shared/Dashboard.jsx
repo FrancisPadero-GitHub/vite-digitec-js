@@ -19,6 +19,7 @@ import CoopContributionChart from './components/CoopContributionChart';
 import ComparisonChart from './components/ComparisonChart';
 
 import DataTable from './components/DataTable';
+import { Tab } from '@headlessui/react';
 
 function Dashboard() {
   // Supabase Hooks
@@ -236,10 +237,6 @@ function Dashboard() {
               </div>
             </section>
 
-            {/** 
-             * 
-             * Club Funds Recent Table
-              */}
             <DataTable
               title={"Club Funds"}
               linkPath={"/treasurer/club-funds"}
@@ -247,10 +244,11 @@ function Dashboard() {
               data={clubFunds}
               isLoading={clubFundsIsLoading}
               renderRow={(row) => {
+                const TABLE_PREFIX = "CFC";
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
                 return (
-                  <tr key={row.contribution_id} className="text-center cursor-pointer hover:bg-base-200/50">
-                    <td>CFC_{row.contribution_id?.toLocaleString() || "ID"}</td>
+                  <tr key={`${TABLE_PREFIX}_${row.contribution_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
+                    <td>{TABLE_PREFIX}_{row.contribution_id?.toLocaleString() || "ID"}</td>
 
                     {/* Member Render from members table */}
                     <td>
@@ -282,14 +280,10 @@ function Dashboard() {
 
                   </tr>
                 )
-              }
-              }
+              }}
             />
 
-            {/** 
-             * 
-             * Share Capital Contribution Recent Table
-              */}
+
             <DataTable
               title={"Share Capital / Coop"}
               linkPath={"/treasurer/coop-share-capital"}
@@ -297,11 +291,12 @@ function Dashboard() {
               data={coopFunds}
               isLoading={coopIsloading}
               renderRow={(row) => {
+                const TABLE_PREFIX = "SCC"; 
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
                 const isDisabled = !matchedMember; // condition (you can adjust logic)
                 return (
-                  <tr key={row.coop_contri_id} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
-                    <td>SCC_{row.coop_contri_id.toLocaleString() || "ID"}</td>
+                  <tr key={`${TABLE_PREFIX}_${row.coop_contri_id}`} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
+                    <td>{TABLE_PREFIX}_{row.coop_contri_id.toLocaleString() || "ID"}</td>
                     <td>
                       <span
                         className={`gap-2`}
@@ -343,37 +338,36 @@ function Dashboard() {
 
                   </tr>
                 )
-              }
-              } /> 
+              }} 
+              /> 
 
-
-            {/** 
-             * 
-             * Expenses Recent Table
-              */}
             <DataTable
               title={"Expenses"}
               linkPath={"/treasurer/club-expenses"}
               headers={["Ref No.", "Title", "Amount", "Category", "Date", "Description"]}
               data={fundExpenses}
               isLoading={expensesIsLoading}
-              renderRow={(row) => (
-                <tr key={row.transaction_id} className="text-center cursor-pointer hover:bg-base-200/50">
-                  <td>EXP_{row.transaction_id?.toLocaleString() || "ID"}</td>
-                  <td>{row.title}</td>
-                  <td className="px-4 py-2 font-semibold text-success">
-                    ₱ {row.amount?.toLocaleString() || "0"}
-                  </td>
-                  <td>
-                    <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
-                      {row.category || "Not Provided"}
-                    </span>
-                  </td>
-                  <td>{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
-                  <td>{row.description}</td>
-                </tr>
-
-              )}
+              renderRow={(row) => 
+                {
+                  const TABLE_PREFIX = "EXP";
+                  return (
+                  <tr key={`${TABLE_PREFIX}_${row.transaction_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
+                    <td>{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
+                    <td>{row.title}</td>
+                    <td className="px-4 py-2 font-semibold text-success">
+                      ₱ {row.amount?.toLocaleString() || "0"}
+                    </td>
+                    <td>
+                      <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
+                        {row.category || "Not Provided"}
+                      </span>
+                    </td>
+                    <td>{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString() : "Not Provided"}</td>
+                    <td>{row.description}</td>
+                  </tr>
+                  )
+                }
+              }
             />
 
             {/** 

@@ -28,14 +28,15 @@ async function fetchCoopByMember(memberId, page = 1, limit = 10) {
 }
 
 export function useFetchCoopByMember(page, limit) {
+  // default values are these page = 1, limit = 10 if I don't pass an arguments here
 
-    const { data: memberId, isLoading: memberLoading } = useMemberId(); //fetch memberId
+  const { data: memberId, isLoading: memberLoading } = useMemberId(); //fetch memberId
 
-    return useQuery({
-      queryFn: () => fetchCoopByMember(memberId, page, limit),
-      queryKey: ["coop_cbu_contributions", "member", memberId, page, limit],
-      enabled: !!memberId && !memberLoading, //only run if there's memberId, and auth + memberId are done loading
-      keepPreviousData: true, // keeps the pagination smoother the preserving older data on pagination
-      staleTime: 1000 * 60 * 1,
-    });
+  return useQuery({
+    queryFn: () => fetchCoopByMember(memberId, page, limit),
+    queryKey: ["coop_cbu_contributions", "member", memberId, page, limit],
+    enabled: !!memberId && !memberLoading, //only run if there's memberId, and auth + memberId are done loading
+    keepPreviousData: true, // keeps the pagination smoother the preserving older data on pagination
+    staleTime: 1000 * 60 * 1,
+  });
 }

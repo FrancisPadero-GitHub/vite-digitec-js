@@ -405,6 +405,7 @@ function ClubFunds() {
 
       </div>
       <FormModal
+        table={"Club Funds"}
         open={modalType !== null} // which will be set to true if value is present
         close={closeModal}
         action={modalType === "edit"}

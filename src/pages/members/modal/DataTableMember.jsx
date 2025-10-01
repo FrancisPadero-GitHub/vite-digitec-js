@@ -10,8 +10,8 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
     <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md">
       <div className="flex flex-row justify-between items-center">
         <h2 className="p-4">
-          <span className="text-xl font-semibold">{title}</span>
-          <span className="text-gray-400"> | Recent</span>
+          <span className="text-lg">{title}</span>
+          {/* <span className="text-gray-400"> | Recent</span> */}
         </h2>
         <Link to={linkPath} className="btn btn-link no-underline text-primary hover:underline p-4">
           See More ➜
@@ -33,11 +33,11 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
          </table>
           
           
-        <div className="max-h-80 overflow-y-auto overflow-x-auto">
+        <div className="max-h-80 min-h-[200px] overflow-y-auto overflow-x-auto">
           <table className="table table-fixed w-full">
             {/* Scrollable body */}
-              <tbody>
-                 {isLoading ? (
+            <tbody>
+              {isLoading ? (
                 <tr>
                   <td colSpan={headers.length} className="py-10">
                     <div className="flex justify-center items-center">
@@ -52,10 +52,10 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
                   </td>
                 </tr>
               ) : (
-                // instead of pagination we slice it
-                data.slice(0,5).map((item) => renderRow(item))
+                data.map((item) => renderRow(item))
               )}
-              </tbody>
+            </tbody>
+
             </table>
         </div>
         </div>
