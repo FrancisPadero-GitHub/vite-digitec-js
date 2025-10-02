@@ -1,19 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-
 import logo from "../assets/digitec-logo.png";
-import hero1 from "../assets/hero1.jpg";
-import hero2 from "../assets/hero2.jpg";
-import hero3 from "../assets/hero3.jpg";
-import hero4 from "../assets/hero4.jpg";
-
-import gallery1 from "../assets/gallery1.jpg";
-import gallery2 from "../assets/gallery2.jpg";
-import gallery3 from "../assets/gallery3.jpg";
-import gallery4 from "../assets/gallery4.jpg";
-import gallery5 from "../assets/gallery5.jpg";
-import gallery6 from "../assets/gallery6.jpg";
-
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import PhoneAndroidOutlinedIcon from '@mui/icons-material/PhoneAndroidOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -27,12 +14,12 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 
 // Images for carousel; will add more/change later on 
 const gallery = [
-  gallery1,
-  gallery2,
-  gallery3,
-  gallery4,
-  gallery5,
-  gallery6,
+  "/src/assets/gallery1.jpg",
+  "/src/assets/gallery2.jpg",
+  "/src/assets/gallery3.jpg",
+  "/src/assets/gallery4.jpg",
+  "/src/assets/gallery5.jpg",
+  "/src/assets/gallery6.jpg",
 ];
 
 const Landing = () => {
@@ -124,28 +111,28 @@ const scrollToContact = () => {
             <div className="lg:w-1/2 relative grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0">
               {/* Images in Hero Section */}
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
-                <img src={hero1}
+                <img src="/src/assets/hero1.jpg"
                   className="w-full h-full object-cover rounded-[40px_4px_40px_4px] md:rounded-[60px_4px_60px_4px]"
                 />
               </div>
 
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
                 <img
-                  src={hero2}
+                  src="/src/assets/hero2.jpg"
                   className="w-full h-full object-cover rounded-[60px_60px_60px_4px] md:rounded-[100px_100px_100px_4px]"
                 />
               </div>
 
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
                 <img
-                  src={hero3}
+                  src="/src/assets/hero3.jpg"
                   className="w-full h-full object-cover rounded-full md:rounded-full"
                 />
               </div>
 
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
                 <img
-                  src={hero4}
+                  src="/src/assets/hero4.jpg"
                   className="w-full h-full object-cover rounded-[40px_4px_30px_4px] md:rounded-[60px_4px_48px_4px]"
                 />
               </div>

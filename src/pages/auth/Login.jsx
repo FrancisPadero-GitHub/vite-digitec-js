@@ -1,5 +1,6 @@
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import auth from "../../assets/auth-bg.jpg";
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useState } from "react";
@@ -93,7 +94,7 @@ const Login = () => {
       <section className="min-h-screen flex justify-center items-center px-4">
         <div className="card card-side w-[900px] h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
           <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden">
-            <img src="/src/assets/auth-bg.jpg" className="w-full h-full object-cover"/>
+            <img src={auth} className="w-full h-full object-cover"/>
           </figure>
 
           <div className="card-body w-full md:w-1/2 justify-center">
