@@ -4,6 +4,7 @@ import MainDataTable from "../treasurer/components/MainDataTable.jsx";
 import FilterToolbar from "../shared/components/FilterToolbar.jsx";
 import { Link } from "react-router-dom";
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
+import { ROLE_COLORS } from "../../constants/Color.js";
 
 export default function UserManagement() {
   const [page, setPage] = useState(1);
@@ -196,14 +197,18 @@ export default function UserManagement() {
                   </div>
                 </td>
                 <td className="px-4 py-2 font-bold">
-                  {row.role || (
+                  {row.role ? (
+                    <span className={`badge badge-soft font-semibold ${ROLE_COLORS[row.role] || "badge-ghost text-gray-400"}`}>
+                      {row.role}
+                    </span>
+                  ) : (
                     <span className="text-gray-400 italic">Not Provided</span>
                   )}
                 </td>
                 <td className="px-5 py-2">
                   {row.status ? (
                     <span
-                      className={`badge badge-soft font-semibold ${
+                      className={`badge font-semibold ${
                         row.status === "Active"
                           ? "badge-success"
                           : row.status === "Inactive"
