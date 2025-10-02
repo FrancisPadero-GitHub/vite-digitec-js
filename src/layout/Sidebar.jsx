@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import logo from "../assets/digitec-logo.png"
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import AssessmentIcon from '@mui/icons-material/Assessment';
@@ -162,7 +163,7 @@ const Sidebar = ({ role }) => {
       <div className="h-full w-65 bg-neutral text-white shadow-lg overflow-hidden flex flex-col">
         <div className="avatar mt-4 mb-2 flex justify-center">
           <div className="w-20">
-            <img src="/src/assets/digitec-logo.png" alt="DigiTEC Logo" />
+            <img src={logo} alt="DigiTEC Logo" />
           </div>
         </div>
 
