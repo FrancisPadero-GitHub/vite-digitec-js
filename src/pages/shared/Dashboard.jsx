@@ -19,7 +19,6 @@ import CoopContributionChart from './components/CoopContributionChart';
 import ComparisonChart from './components/ComparisonChart';
 
 import DataTable from './components/DataTable';
-import { Tab } from '@headlessui/react';
 
 function Dashboard() {
   // Supabase Hooks

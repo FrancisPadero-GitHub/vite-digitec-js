@@ -65,26 +65,30 @@ const Topbar = ({ role }) => {
 
   return (
     <header className="navbar bg-neutral text-white px-4 py-3 flex justify-between items-center">
-      {/* SIDEBAR TOGGLE FOR MOBILE */}
-      <label htmlFor="my-drawer" className="md:hidden lg:hidden cursor-pointer">
-        <MenuOutlinedIcon className="w-6 h-6" />
-      </label>
+      
+      <div className="flex justify-between items-center">
 
-      {/* SEARCH */}
-      <div className="hidden sm:flex relative w-72 max-w-md">
-        <input
-          type="text"
-          placeholder="Search"
-          className="w-full rounded-full py-2 px-3 pr-10 border border-white focus:outline-none"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white text-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md"
-        >
-          <SearchIcon />
-        </button>
+        {/* SIDEBAR TOGGLE FOR MOBILE */}
+        <label htmlFor="my-drawer" className="lg:hidden ml-5 mr-10 drawer-button cursor-pointer">
+          <MenuOutlinedIcon className="w-6 h-6" />
+        </label>
+        
+        {/* SEARCH */}
+        <div className="hidden sm:flex relative w-72 max-w-md">
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-full rounded-full py-2 px-3 pr-10 border border-white focus:outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white text-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md"
+          >
+            <SearchIcon />
+          </button>
+        </div>
       </div>
 
       {/* DATE, NOTIFS, PROFILE */}

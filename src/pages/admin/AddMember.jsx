@@ -264,7 +264,7 @@ function AddMember (){
           {activeTab === 1 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {employmentFields.map(({ label, name, type, options }) => (
+                {employmentFields.map(({ label, name, type }) => (
                   <div key={name} className="form-control w-full">
                     <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
 
