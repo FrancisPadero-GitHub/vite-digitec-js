@@ -8,8 +8,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const updateLoanApp = async (formData) => {
   const {
     application_id,
-    amount_req = null,
-    term = null,
+    amount = null,
     status = null,
   } = formData;
 
@@ -18,8 +17,7 @@ const updateLoanApp = async (formData) => {
   }
 
   const payload = {
-    amount_req,
-    term,
+    amount,
     status,
   };
 

@@ -299,7 +299,7 @@ function CoopShareCapital() {
             const matchedMember = members?.find(
               (member) => member.member_id === row.member_id
             );
-            const isDisabled = !matchedMember;
+            const isDisabled = !matchedMember; // this is for the modifier if the system is the one that made the transactions
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.coop_contri_id}`}

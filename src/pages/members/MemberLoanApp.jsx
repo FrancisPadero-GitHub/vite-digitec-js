@@ -28,10 +28,10 @@ function MemberLoanApp() {
 
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");
-  const [termFilter, settermFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
-  const TABLE_PREFIX = "APP_";
+  const TABLE_PREFIX = "LA_";
 
   const memberLoanApplications = loanDataRaw.filter((row) => {
     const generatedId = `${TABLE_PREFIX}${row.application_id}`;
@@ -39,11 +39,10 @@ function MemberLoanApp() {
     const matchesSearch =
       searchTerm === "" ||
       row.amount?.toString().includes(searchTerm) ||
-      row.term_months?.toString().includes(searchTerm) ||
-      row.purpose?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = termFilter === "" || row.term_months.toString() === termFilter;
+    const matchesStatus = statusFilter === "" || row.status === statusFilter;
    
     const date = row.application_date ? new Date(row.application_date) : null;
     const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
@@ -168,14 +167,16 @@ function MemberLoanApp() {
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Term",
-              value: termFilter,
-              onChange: settermFilter,
+              label: "Status",
+              value: statusFilter,
+              onChange: setStatusFilter,
               options: [
                 { label: "All", value: "" },
-                { label: "6 months", value: "6"},
-                { label: "12 months", value: "12" },
-                { label: "24 months", value: "24" },
+                { label: "Pending", value: "Pending"},
+                { label: "On Review", value: "On Review" },
+                { label: "Approved", value: "Approved" },
+                { label: "Denied", value: "Denied" },
+                
               ],
             },
             {
@@ -217,7 +218,6 @@ function MemberLoanApp() {
             "Ref No.",
             "Loan Product",
             "Amount",
-            "Purpose",
             "Term",
             "Application Date",
             "Status",
@@ -245,7 +245,7 @@ function MemberLoanApp() {
                 <td className="font-semibold text-success">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
-                <td>{row.purpose}</td>
+                
                 <td>{row.term_months} Months</td>
                 <td>
                   {row.application_date
@@ -269,6 +269,13 @@ function MemberLoanApp() {
             handleDelete(watch("application_id"))
           }
         >
+          {/** 
+           * disabled and readOnly seems to have different style
+           * 
+            */}
+
+
+
           {/* Form Fields */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
@@ -320,6 +327,7 @@ function MemberLoanApp() {
             )}
           </div>
 
+          {/* Term */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
               <span className="label-text font-medium text-gray-700">Term</span>
@@ -341,6 +349,7 @@ function MemberLoanApp() {
             )}
           </div>
 
+          {/* Application Date */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
               <span className="label-text font-medium text-gray-700">
@@ -350,18 +359,19 @@ function MemberLoanApp() {
             <input
               type="date"
               {...register("application_date", { required: true })}
-              disabled={!isEditable}
+              readOnly={!isEditable}
               className="input input-bordered w-full"
             />
           </div>
 
+          {/* Purpose */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
               <span className="label-text font-medium text-gray-700">Purpose</span>
             </label>
             <textarea
               {...register("purpose", { required: true })}
-              disabled={!isEditable}
+              readOnly={!isEditable}
               rows={3}
               placeholder="Enter a very persuasive reason..."
               className="textarea textarea-bordered w-full"
