@@ -3,6 +3,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAddMember } from "../../backend/hooks/useAddMembers";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
 function AddMember (){
   const navigate = useNavigate();
@@ -174,7 +175,7 @@ function AddMember (){
                 <div className="avatar cursor-pointer relative group">
                   <div className="w-24 h-24 rounded-full ring ring-neutral ring-offset-base-100 ring-offset-2 overflow-hidden">
                     <img
-                      src={previewAvatar || "/src/assets/placeholder-avatar.png"}
+                      src={previewAvatar || placeholderAvatar}
                       alt="User avatar"
                       className="object-cover w-full h-full"
                     />

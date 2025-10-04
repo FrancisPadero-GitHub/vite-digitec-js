@@ -3,8 +3,11 @@ import { useMembers } from "../admin/hooks/useFetchMembers.js";
 import MainDataTable from "../treasurer/components/MainDataTable.jsx";
 import FilterToolbar from "./components/FilterToolbar.jsx";
 import { ROLE_COLORS } from "../../constants/Color.js";
+import { useNavigate } from "react-router";
 
 export default function MemberRecords() {
+  const navigate = useNavigate();
+
   const [page, setPage] = useState(1);
   const [limit] = useState(20); // determines how many rows to render per page
 
@@ -49,9 +52,14 @@ export default function MemberRecords() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  // Go to a member's profile 
+  const handleClick = (row) => {
+    navigate(`../member-profile/${row.member_id}`);
+  };
+
   if (isLoading) return <div>Loading users...</div>;
   if (isError) return <div>Error: {error.message}</div>;
-
+  
   return (
     <div>
       <div className="mb-6 space-y-4">
@@ -103,7 +111,7 @@ export default function MemberRecords() {
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.member_id}`}
-                // onClick={() => openModal(row)}
+                onClick={() => handleClick(row)}
                 className="cursor-pointer hover:bg-base-200/70 transition-colors"
               >
                 <td className="px-4 py-2 text-center font-medium">{row.generatedId}</td>
@@ -167,4 +175,3 @@ export default function MemberRecords() {
     </div>
   )
 }
-

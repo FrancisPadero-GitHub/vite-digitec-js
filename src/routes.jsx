@@ -100,7 +100,7 @@ function AppRoutes() {
       children: [
         { index: true, element: <Dashboard /> },
         { path: "member-records", element: <MemberRecords /> },
-        { path: "member-profile", element: <MemberProfile /> },
+        { path: "member-profile/:memberId", element: <MemberProfile /> },
         { path: "activity-logs", element: <ActivityLogs /> },
         { path: "loan-applications", element: <LoanApplications /> },
         { path: "reports", element: <Reports /> },
@@ -167,7 +167,7 @@ function AppRoutes() {
       children: [
         { index: true, element: <Dashboard /> },
         { path: "member-records", element: <MemberRecords /> },
-        { path: "member-profile", element: <MemberProfile /> },
+        { path: "member-profile/:memberId", element: <MemberProfile /> },
         { path: "activity-logs", element: <ActivityLogs /> },
         { path: "coop-share-capital", element: <CoopShareCapital /> },
         { path: "club-funds", element: <ClubFunds /> },
