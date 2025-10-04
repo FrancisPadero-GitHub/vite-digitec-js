@@ -288,91 +288,114 @@ function MemberLoanApp() {
           deleteAction={() => handleDelete(formData.application_id)}
         >
           
-          {fields.map(({ label, name, type, options }) => (
-            <div key={name} className="form-control w-full mt-2">
-              <label htmlFor={name} className="label mb-1">
-                <span className="label-text font-medium text-gray-700">{label}</span>
-              </label>
+          {fields.map(({ label, name, type, options }) => {
+            // find the selected product (if any)
+            const selectedProduct = loanProducts?.find(
+              (p) => p.name === formData.loan_product
+            );
 
-              {type === "select" ? (
-                <select
-                  id={name}
-                  name={name}
-                  value={formData[name] || ""}
-                  onChange={handleChange}
-                  disabled={!isEditable}
-                  className="select select-bordered w-full"
-                  required
-                >
-                  <option value="" disabled>
-                    Select {label}
-                  </option>
+            // extract min and max amount limits
+            const minAmount = selectedProduct?.min_amount || 0;
+            const maxAmount = selectedProduct?.max_amount || "";
 
-                  {/** LOAN PRODUCTS 
-                   * Dynamically rendered from db
-                   * */ }
-                  {name === "loan_product" ? (
-                    isLoading ? (
-                      <option disabled>Loading loan products...</option>
-                    ) : loanProducts && loanProducts.length > 0 ? (
-                      loanProducts.map((product) => (
-                        <option key={product.product_id} value={product.name}>
-                          {product.name}
-                        </option>
-                      ))
-                    ) : (
-                      <option disabled>No loan products available</option>
-                    )
-                  ) : name === "term_months" ? (
-                    formData.loan_product ? (
+            return (
+              <div key={name} className="form-control w-full mt-2">
+                <label htmlFor={name} className="label mb-1">
+                  <span className="label-text font-medium text-gray-700">{label}</span>
+                </label>
+
+                {type === "select" ? (
+                  <select
+                    id={name}
+                    name={name}
+                    value={formData[name] || ""}
+                    onChange={handleChange}
+                    disabled={!isEditable}
+                    className="select select-bordered w-full"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select {label}
+                    </option>
+
+                    {name === "loan_product" ? (
                       isLoading ? (
-                        <option disabled>Loading terms...</option>
+                        <option disabled>Loading loan products...</option>
+                      ) : loanProducts && loanProducts.length > 0 ? (
+                        loanProducts.map((product) => (
+                          <option key={product.product_id} value={product.name}>
+                            {product.name}
+                          </option>
+                        ))
                       ) : (
-                        loanProducts
-                          .filter((product) => product.name === formData.loan_product)
-                          .map((product) => (
-                            <option key={product.product_id} value={product.max_term_months}>
-                              {product.max_term_months} months
-                            </option>
-                          ))
+                        <option disabled>No loan products available</option>
+                      )
+                    ) : name === "term_months" ? (
+                      formData.loan_product ? (
+                        isLoading ? (
+                          <option disabled>Loading terms...</option>
+                        ) : (
+                          loanProducts
+                            .filter((product) => product.name === formData.loan_product)
+                            .map((product) => (
+                              <option key={product.product_id} value={product.max_term_months}>
+                                {product.max_term_months} months
+                              </option>
+                            ))
+                        )
+                      ) : (
+                        <option disabled className="text-warning">Select a loan product first</option>
                       )
                     ) : (
-                      <option disabled>Select a loan product first</option>
-                    )
-                  ) : (
-                    options?.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))
-                  )}
+                      options?.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                ) : name === "purpose" ? (
+                  <textarea
+                    id={name}
+                    name={name}
+                    value={formData[name] || ""}
+                    disabled={!isEditable}
+                    onChange={handleChange}
+                    placeholder="Enter a very persuasive reason why we should lend you a loan..."
+                    rows={3}
+                    className="textarea textarea-bordered w-full"
+                  />
+                ) : (
+                  <input
+                    id={name}
+                    type={type}
+                    name={name}
+                    value={formData[name] || ""}
+                    onChange={handleChange}
+                    disabled={
+                      !isEditable || (name === "amount" && !formData.loan_product)
+                    }
+                    className={`input input-bordered w-full 
+                      ${!isEditable ? "opacity-60 cursor-not-allowed" : ""} 
+                      ${name === "amount" && !formData.loan_product ? "text-warning" : ""}
+                    `}
+                    required
+                    {...(name === "amount"
+                      ? {
+                        min: minAmount,
+                        max: maxAmount,
+                        placeholder: selectedProduct
+                          ? `Enter between ${minAmount} - ${maxAmount}`
+                          : "Select a loan product first",
+                      }
+                      : {})}
+                  />
 
-                </select>
-              ) : name === "purpose" ? (
-                <textarea
-                  id={name}
-                  name={name}
-                  value={formData[name] || ""}
-                  disabled={!isEditable}
-                  onChange={handleChange}
-                  placeholder="Enter a very persuasive reason why we should lend you a loan..."
-                  rows={3}
-                  className="textarea textarea-bordered w-full"
-                />
-              ) : (
-                <input
-                  id={name}
-                  type={type}
-                  name={name}
-                  disabled={!isEditable}
-                  value={formData[name] || ""}
-                  onChange={handleChange}
-                  className="input input-bordered w-full"
-                  required
-                />
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
+
 
 
         </MembersFormModal>
