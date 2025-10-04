@@ -25,30 +25,6 @@ const LoadingContainer = ({ children }) => (
   </Box>
 );
 
-/**
- * Converts account_type from the DB to route/sidebar role keys
- * Temporary should be removed and replaced with better design and handling on the user registration or from the database 
- * or anywhere just remove this on future code changes
- * 
- * 
- */
-const normalizeRole = (accountType) => {
-  switch (accountType) {
-    case "Admin":
-      return "admin";
-    case "Treasurer":
-      return "treasurer";
-    case "Board":
-      return "board";
-    case "Regular":
-      return "regular-member";
-    case "Associate":
-      return "associate-member";
-    default:
-      return accountType.toLowerCase().replace(/\s+/g, "-"); // fallback
-  }
-};
-
 const ProtectedRoute = ({ children, roleAllowed }) => {
   const { user, loading: authLoading } = useAuth();
   const { data: members, isLoading: membersLoading } = useMembers();
@@ -57,8 +33,8 @@ const ProtectedRoute = ({ children, roleAllowed }) => {
   if (authLoading || membersLoading) {
     return (
       <LoadingContainer>
-        <CircularProgress size={60} thickness={4} />
-        <Typography variant="h6" color="text.secondary">
+        <CircularProgress size={80} thickness={5} />
+        <Typography variant="h5" color="text.secondary">
           For a while...
         </Typography>
       </LoadingContainer>
@@ -76,8 +52,30 @@ const ProtectedRoute = ({ children, roleAllowed }) => {
     return <Navigate to="/login" replace />;
   }
 
+  /**
+   * Converts account_type from the DB to route/sidebar role keys
+   * Temporary should be removed and replaced with better design and handling on the user registration or from the database 
+   * or anywhere just remove this on future code changes
+   */
+  const normalizeRole = (accountType) => {
+    switch (accountType) {
+      case "Admin":
+        return "admin";
+      case "Treasurer":
+        return "treasurer";
+      case "Board":
+        return "board";
+      case "Regular":
+        return "regular-member";
+      case "Associate":
+        return "associate-member";
+      default:
+        return accountType.toLowerCase().replace(/\s+/g, "-"); // fallback
+    }
+  };
+
   // Normalize the member role
-  const memberRole = normalizeRole(memberRecord.account_type);
+  const memberRole = normalizeRole(memberRecord?.account_type);
 
   // Normalize allowed roles to an array
   const allowedRoles = Array.isArray(roleAllowed) ? roleAllowed : [roleAllowed];

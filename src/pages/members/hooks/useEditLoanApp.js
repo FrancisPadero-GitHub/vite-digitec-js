@@ -4,11 +4,10 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const updateLoanApp = async (formData) => {
   const {
     application_id,
-    amount_req = null,
+    amount = null,
     purpose = null,
-    term = null,
+    term_months = null,
     application_date = null,
-    remarks = null,
   } = formData;
 
     if (!application_id) {
@@ -16,11 +15,10 @@ const updateLoanApp = async (formData) => {
     }
 
   const payload = {
-    amount_req,
+    amount,
     purpose,
-    term,
+    term_months,
     application_date,
-    remarks,
   };
 
   const { data, error } = await supabase

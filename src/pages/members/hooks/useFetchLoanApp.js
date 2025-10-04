@@ -19,7 +19,7 @@ async function fetchCoopLoans(memberId, page = 1, limit = 10) {
     const { data, error, count } = await supabase
       .from("loan_applications")
       .select("*", { count: "exact" })
-      .eq("member_id", memberId)
+      .eq("applicant_id", memberId)
       .is("deleted_at", null)
       .order("application_id", { ascending: false })
       .range(from, to);

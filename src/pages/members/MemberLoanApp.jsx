@@ -1,7 +1,7 @@
 import {useState} from "react"
-import { Link } from 'react-router';
 
 // custom hooks
+import { useFetchLoanProducts } from "./hooks/useFetchLoanProduct";
 import { useFetchLoanApp } from "./hooks/useFetchLoanApp";
 import { useAddLoanApp } from "./hooks/useAddLoanApp"
 import { useEditLoanApp } from "./hooks/useEditLoanApp";
@@ -16,8 +16,9 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 import { LOAN_APPLICATION_STATUS_COLORS } from "../../constants/Color";
 
 function MemberLoanApp() {
+  const {data: loanProducts} = useFetchLoanProducts();
 
-  // Data fetch and pagination control
+  // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20); 
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp(page, limit);
@@ -35,8 +36,8 @@ function MemberLoanApp() {
     
     const matchesSearch =
       searchTerm === "" ||
-      row.amount_req?.toString().includes(searchTerm) ||
-      row.term?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.amount?.toString().includes(searchTerm) ||
+      row.term_months?.toString().includes(searchTerm) ||
       row.purpose?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -57,29 +58,29 @@ function MemberLoanApp() {
 
   const { mutate: mutateAdd } = useAddLoanApp();
   const { mutate: mutateEdit } = useEditLoanApp();
-  const { mutate: mutateDelete } = useDelete('loan_applications');
-
+  const { mutate: mutateDelete } = useDelete();
+  
+  const [isEditable, setIsEditable] = useState(true);
   const [modalType, setModalType] = useState(null); 
 
   const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData]= useState({
     application_id: null,
-    loan_type: "Regular", // fixed for now cause of the ectec policy
-    amount_req: "",
+    loan_product: "",
+    amount: "",
     purpose: "",
-    term: "",
+    term_months: "",
     application_date: today,
-    remarks: "",
   })
 
   const fields = [
-    { label: "Loan Type", name: "loan_type", type: "text" },
-    { label: "Amount", name: "amount_req", type: "number" },
-    { label: "Term", name: "term", type: "select", options: ["6 months", "12 months","24 months"] },
+    { label: "Loan Product", name: "loan_product", type: "select" },
+    { label: "Amount", name: "amount", type: "number" },
+    { label: "Term", name: "term_months", type: "select" },
     { label: "Date", name: "application_date", type: "date" },
     { label: "Purpose", name: "purpose", type: "text" },
-    { label: "Remarks", name: "remarks", type: "text" },
-  ]
+  ];
+
 
   /**
    * Modal Handlers
@@ -88,20 +89,39 @@ function MemberLoanApp() {
     // resets form if it was previously used for editing
     setFormData({
       application_id: null,
-      loan_type: "Regular",
-      amount_req: "",
+      loan_product: "",
+      amount: "",
       purpose: "",
-      term: "",
+      term_months: "",
       application_date: today,
-      remarks: "",
+
     });
     setModalType("add");
   };
 
-  const openEditModal = (selectedRowData) => {
-    setFormData(selectedRowData); // preload form with row data
+  const openEditModal = (row) => {
+
+    console.log(row)
+    const matchedProduct = loanProducts?.find(
+      (product) => product.product_id === row.product_id
+    );
+
+    setFormData({
+      application_id: row.application_id,
+      loan_product: matchedProduct?.name || "",
+      amount: row.amount || "",
+      purpose: row.purpose || "",
+      term_months: row.term_months || "",
+      application_date: row.application_date || today,
+      status: row.status || "Pending",
+    });
+
+    // NEW: determine if editing should be disabled
+    setIsEditable(row.status === "Pending");
+
     setModalType("edit");
   };
+
 
   const closeModal = () => {
     setModalType(null);
@@ -114,26 +134,40 @@ function MemberLoanApp() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "amount_req" ? Number(value) : value,
+      [name]: name === "amount" ? Number(value) : value,
     }));
   };
 
-  const handleDelete = (selectedRowID) => {
-    mutateDelete({ table: "loan_applications", column_name: "application_id", id: selectedRowID }); // hard coded base on what file the modal is imported
+  const handleDelete = (application_id) => {
+    mutateDelete({ table: "loan_applications", column_name: "application_id", id: Number(application_id) }); // hard coded base on what file the modal is imported
     closeModal();
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const selectedProduct = loanProducts?.find(
+      (product) => product.name === formData.loan_product
+    );
+
+    const payload = {
+      ...formData,
+      product_id: selectedProduct?.product_id || null,
+    };
+
+    console.log("Payloand",  payload)
+
     if (modalType === "add") {
-      mutateAdd(formData);
-      console.log("Adding Loan App:", formData);
+      mutateAdd(payload);
+      console.log("Adding Loan App:", payload);
     } else if (modalType === "edit") {
-      mutateEdit(formData);
-      console.log("Updating Loan App:", formData);
+      mutateEdit(payload);
+      console.log("Updating Loan App:", payload);
     }
+
     closeModal();
   };
+
 
   if (isLoading) return <div>Loading Member Loan...</div>;
   if (isError) return <div>Error: {error.message}</div>;
@@ -211,44 +245,53 @@ function MemberLoanApp() {
         />
 
         <MainDataTable
-          headers={["Ref No.", "Amount Requested", "Purpose", "Term", "Application Date", "Remarks"]}
+          headers={["Ref No.","Loan Product", "Amount", "Purpose", "Term", "Application Date", "Status", ]}
           data={memberLoanApplications}
           isLoading={isLoading}
           page={page}
           limit={limit}
           total={total}
           setPage={setPage}
-          renderRow={(row) => (
-            <tr key={`${TABLE_PREFIX}${row.application_id}`} className=" cursor-pointer hover:bg-base-200/50"
-              onClick={() => openEditModal(row)}
-            >
-              <td className="text-center">{TABLE_PREFIX}_{row.application_id?.toLocaleString() || "ID"}</td>
-              <td className="px-4 py-2 font-semibold text-success">
-                ₱ {row.amount_req?.toLocaleString() || "0"}
-              </td>
-              <td className="px-4 py-2">{row.purpose}</td>
-              <td className="px-4 py-2">
-                {row.term}
-              </td>
-              <td className="px-4 py-2">{row.application_date ? new Date(row.application_date).toLocaleDateString() : "Not Provided"}</td>
-              <td className="px-4 py-2">{row.remarks}</td>
-            </tr>    
-          )}
+          renderRow={(row) => {
+
+            const matchedLoanProduct = loanProducts?.find(
+              (product_id) => product_id.product_id === row.product_id
+            );
+            return (
+              <tr key={`${TABLE_PREFIX}${row.application_id}`} className=" cursor-pointer hover:bg-base-200/50"
+                onClick={() => openEditModal(row)}
+              >
+                <td className="text-center">{TABLE_PREFIX}_{row.application_id?.toLocaleString() || "ID"}</td>
+                <td className="text-px-4 py-2">{matchedLoanProduct?.name || "Not Found"}</td>
+
+                <td className="px-4 py-2 font-semibold text-success">
+                  ₱ {row.amount?.toLocaleString() || "0"}
+                </td>
+
+                <td className="px-4 py-2">{row.purpose}</td>
+                <td className="px-4 py-2">
+                  {row.term_months} Months
+                </td>
+                <td className="px-4 py-2">{row.application_date ? new Date(row.application_date).toLocaleDateString() : "Not Provided"}</td>
+                <td className="px-4 py-2">{row.status}</td>
+              </tr>
+            )}}
         />
 
         <MembersFormModal 
+          title={"Loan Application"}
           open={modalType !== null}
           close={closeModal}
           action={modalType === "edit"}
           onSubmit={handleSubmit}
+          status={!isEditable}
           deleteAction={() => handleDelete(formData.application_id)}
         >
+          
           {fields.map(({ label, name, type, options }) => (
             <div key={name} className="form-control w-full mt-2">
               <label htmlFor={name} className="label mb-1">
-                <span className="label-text font-medium text-gray-700">
-                  {label}
-                </span>
+                <span className="label-text font-medium text-gray-700">{label}</span>
               </label>
 
               {type === "select" ? (
@@ -257,41 +300,71 @@ function MemberLoanApp() {
                   name={name}
                   value={formData[name] || ""}
                   onChange={handleChange}
+                  disabled={!isEditable}
                   className="select select-bordered w-full"
                   required
                 >
-                  <option value="" className="label" disabled>Select {label}</option>
-                  {options?.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
+                  <option value="" disabled>
+                    Select {label}
+                  </option>
+
+                  {/** LOAN PRODUCTS 
+                   * Dynamically rendered from db
+                   * */ }
+                  {name === "loan_product" ? (
+                    isLoading ? (
+                      <option disabled>Loading loan products...</option>
+                    ) : loanProducts && loanProducts.length > 0 ? (
+                      loanProducts.map((product) => (
+                        <option key={product.product_id} value={product.name}>
+                          {product.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>No loan products available</option>
+                    )
+                  ) : name === "term_months" ? (
+                    formData.loan_product ? (
+                      isLoading ? (
+                        <option disabled>Loading terms...</option>
+                      ) : (
+                        loanProducts
+                          .filter((product) => product.name === formData.loan_product)
+                          .map((product) => (
+                            <option key={product.product_id} value={product.max_term_months}>
+                              {product.max_term_months} months
+                            </option>
+                          ))
+                      )
+                    ) : (
+                      <option disabled>Select a loan product first</option>
+                    )
+                  ) : (
+                    options?.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))
+                  )}
+
                 </select>
               ) : name === "purpose" ? (
-                  <textarea
-                    id={name}
-                    name={name}
-                    value={formData[name] || ""}
-                    onChange={handleChange}
-                    placeholder="Enter a very persuasive reason why should we lend you a loan..."
-                    rows={3}
-                    className="textarea textarea-bordered w-full"
-                  />
-              ) : name === "loan_type" ? (
-                  <input
-                    id={name}
-                    type={type}
-                    name={name}
-                    value={formData[name] || ""}
-                    onChange={handleChange}
-                    className="input input-bordered w-full bg-base-200 text-base-content"
-                    readOnly
-                  />
+                <textarea
+                  id={name}
+                  name={name}
+                  value={formData[name] || ""}
+                  disabled={!isEditable}
+                  onChange={handleChange}
+                  placeholder="Enter a very persuasive reason why we should lend you a loan..."
+                  rows={3}
+                  className="textarea textarea-bordered w-full"
+                />
               ) : (
                 <input
                   id={name}
                   type={type}
                   name={name}
+                  disabled={!isEditable}
                   value={formData[name] || ""}
                   onChange={handleChange}
                   className="input input-bordered w-full"
@@ -300,6 +373,8 @@ function MemberLoanApp() {
               )}
             </div>
           ))}
+
+
         </MembersFormModal>
 
       </div>

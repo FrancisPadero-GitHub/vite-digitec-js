@@ -3,24 +3,27 @@ import { useMemberId } from "./useFetchMemberId.js";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 const insertLoanApp = async (formData, memberId) => {
-  const {
-    amount_req = null,
-    purpose = null,
-    term = null,
-    application_date = null,
-    remarks = null,
-  } = formData;
+const {
+  product_id = null,
+  amount = null,
+  purpose = null,
+  term_months = null,
+  application_date = null,
+} = formData;
 
-  const payload = {
-    amount_req,
-    purpose,
-    term,
-    application_date,
-    remarks,
-    loan_type: "Regular", // defaults
-    status: "Pending",  // defaults
-    member_id: memberId,
-  };
+// Convert to number safely — handle null, empty string, or invalid cases
+const termMonths = term_months ? Number(term_months) : null;
+
+// Construct final payload
+const payload = {
+  product_id: product_id ? Number(product_id) : null,
+  amount: amount ? Number(amount) : null, // also normalize if needed
+  purpose,
+  term_months: termMonths, // keep same field name as in DB
+  application_date,
+  status: "Pending", // default
+  applicant_id: memberId,
+};
 
   const { data, error } = await supabase
     .from("loan_applications")

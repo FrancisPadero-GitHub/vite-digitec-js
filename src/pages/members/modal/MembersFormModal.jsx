@@ -18,14 +18,14 @@ import React from 'react'
  * 
  */
 
-function MembersFormModal({ open, close, action, children, onSubmit, }) { // deleteAction
+function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction }) { 
 
   // if open is false, don't render anything
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
-        <h2 className="text-2xl font-semibold">{action ? "Edit Expenses" : "Add Expenses"}</h2>
+        <h2 className="text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
         <form onSubmit={onSubmit}>
           {children}
 
@@ -34,7 +34,8 @@ function MembersFormModal({ open, close, action, children, onSubmit, }) { // del
               <button
                 type="button"
                 className="btn btn-error"
-                // onClick={deleteAction}
+                disabled={status}
+                onClick={deleteAction}
               >
                 Delete
               </button>
@@ -42,7 +43,7 @@ function MembersFormModal({ open, close, action, children, onSubmit, }) { // del
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={status}>
                   Submit
                 </button>
               )}
