@@ -264,162 +264,162 @@ function LoanApplications() {
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
         deleteAction={() => handleDelete(watch("application_id"))}
-      > 
-        {/* Ref No. */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Ref No.</span>
-          </label>
-          <input
-            value={`LA_${watch("application_id") || ""}`}
-            // {...register("application_id")}
-            readOnly
-            className="input input-bordered w-full bg-gray-100 text-gray-700"
-          />
-        </div>
+      >
+        {/* Use grid layout for 2 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Ref No. */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Ref No.</span>
+            </label>
+            <input
+              value={`LA_${watch("application_id") || ""}`}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+          </div>
 
-        {/* Loan Status */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">
-              Application Status
-            </span>
-          </label>
-          <select
-            {...register("status", { required: true })}
-            className="select select-bordered w-full"
-          >
-            {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-            
-          </select>
-
-          {errors.status && (
-            <p className="text-error text-sm mt-1">Required</p>
-          )}
-        </div>
-
-        
-
-        {/* Matched Member Section */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Applicant</span>
-          </label>
-          <input
-            type="text"
-            {...register("applicant_name")}
-            readOnly
-            className="input input-bordered w-full bg-gray-100 text-gray-700"
-          />
-        </div>
-
-
-        {/* Loan Product */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">
-              Loan Product
-            </span>
-          </label>
-          <select
-            {...register("loan_product", { required: true })}
-            disabled
-            className="select select-bordered w-full"
-          >
-            <option value="">Select Loan Product</option>
-            {loanProducts?.map((product) => (
-              <option key={product.product_id} value={product.name}>
-                {product.name}
-              </option>
-            ))}
-          </select>
-          {errors.loan_product && (
-            <p className="text-error text-sm mt-1">Required</p>
-          )}
-        </div>
-
-        {/* Amount */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Amount</span>
-          </label>
-          <input
-            type="number"
-            {...register("amount", {
-              required: true,
-              min: selectedProduct?.min_amount || 0,
-              max: selectedProduct?.max_amount || 9999999,
-            })}
-            disabled={!selectedLoanProduct}
-            placeholder={
-              selectedProduct
-                ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
-                : "Select a loan product first"
-            }
-            className={`input input-bordered w-full ${!selectedLoanProduct ? "text-warning" : ""
-              }`}
-          />
-          {errors.amount && (
-            <p className="text-error text-sm mt-1">Invalid amount range</p>
-          )}
-        </div>
-
-        {/* Term */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Term</span>
-          </label>
-          <select
-            {...register("term_months", { required: true })}
-            disabled
-            className="select select-bordered w-full "
-          >
-            <option value="">Select Term</option>
-            {selectedProduct && (
-              <option value={selectedProduct.max_term_months}>
-                {selectedProduct.max_term_months} months
-              </option>
+          {/* Loan Status */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Application Status
+              </span>
+            </label>
+            <select
+              {...register("status", { required: true })}
+              className="select select-bordered w-full"
+            >
+              {STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+            {errors.status && (
+              <p className="text-error text-sm mt-1">Required</p>
             )}
-          </select>
-          {errors.term_months && (
-            <p className="text-error text-sm mt-1">Required</p>
-          )}
-        </div>
+          </div>
 
-        {/* Application Date */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">
-              Application Date
-            </span>
-          </label>
-          <input
-            type="date"
-            {...register("application_date", { required: true })}
-            readOnly
-            className="input input-bordered w-full"
-          />
-        </div>
+          {/* Applicant */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Applicant</span>
+            </label>
+            <input
+              type="text"
+              {...register("applicant_name")}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+          </div>
 
-        {/* Purpose */}
-        <div className="form-control w-full mt-2">
-          <label className="label mb-1">
-            <span className="label-text font-medium text-gray-700">Purpose</span>
-          </label>
-          <textarea
-            {...register("purpose", { required: true })}
-            readOnly
-            rows={3}
-            placeholder="Enter a very persuasive reason..."
-            className="textarea textarea-bordered w-full"
-          />
-          {errors.purpose && (
-            <p className="text-error text-sm mt-1">Required</p>
-          )}
+          {/* Loan Product */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Loan Product
+              </span>
+            </label>
+            <select
+              {...register("loan_product", { required: true })}
+              disabled
+              className="select select-bordered w-full"
+            >
+              <option value="">Select Loan Product</option>
+              {loanProducts?.map((product) => (
+                <option key={product.product_id} value={product.name}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
+            {errors.loan_product && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Amount */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Amount</span>
+            </label>
+            <input
+              type="number"
+              {...register("amount", {
+                required: true,
+                min: selectedProduct?.min_amount || 0,
+                max: selectedProduct?.max_amount || 9999999,
+              })}
+              disabled={!selectedLoanProduct}
+              placeholder={
+                selectedProduct
+                  ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
+                  : "Select a loan product first"
+              }
+              className={`input input-bordered w-full ${!selectedLoanProduct ? "text-warning" : ""
+                }`}
+            />
+            {errors.amount && (
+              <p className="text-error text-sm mt-1">Invalid amount range</p>
+            )}
+          </div>
+
+          {/* Term */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Term</span>
+            </label>
+            <select
+              {...register("term_months", { required: true })}
+              disabled
+              className="select select-bordered w-full"
+            >
+              <option value="">Select Term</option>
+              {selectedProduct && (
+                <option value={selectedProduct.max_term_months}>
+                  {selectedProduct.max_term_months} months
+                </option>
+              )}
+            </select>
+            {errors.term_months && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Application Date */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Application Date
+              </span>
+            </label>
+            <input
+              type="date"
+              {...register("application_date", { required: true })}
+              readOnly
+              className="input input-bordered w-full"
+            />
+          </div>
+
+          {/* Purpose (make this span both columns) */}
+          <div className="form-control w-full mt-2 md:col-span-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Purpose</span>
+            </label>
+            <textarea
+              {...register("purpose", { required: true })}
+              readOnly
+              rows={3}
+              placeholder="Enter a very persuasive reason..."
+              className="textarea textarea-bordered w-full"
+            />
+            {errors.purpose && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
         </div>
       </MembersFormModal>
+
 
       </div>
     </div>

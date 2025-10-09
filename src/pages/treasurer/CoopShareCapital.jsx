@@ -288,7 +288,7 @@ function CoopShareCapital() {
         />
 
         <MainDataTable
-          headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
+          headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date"]}
           data={coop}
           isLoading={isLoading}
           page={page}
@@ -344,11 +344,11 @@ function CoopShareCapital() {
                     ? new Date(row.contribution_date).toLocaleDateString()
                     : <span className="text-gray-400 italic">Not Provided</span>}
                 </td>
-                <td className="px-4 py-2">
+                {/* <td className="px-4 py-2">
                   {row.remarks || (
                     <span className="text-gray-400 italic">Not Provided</span>
                   )}
-                </td>
+                </td> */}
               </tr>
             );
           }}

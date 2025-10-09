@@ -111,8 +111,7 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (formData) =>
-      updateProfile({ ...formData, member_id: memberId }),
+    mutationFn: (formData) => updateProfile({ ...formData, member_id: memberId }),
     enabled: !!memberId && !memberLoading,
     onSuccess: (updatedMember) => {
       queryClient.setQueryData(

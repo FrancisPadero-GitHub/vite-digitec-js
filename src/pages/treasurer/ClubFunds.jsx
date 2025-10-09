@@ -313,7 +313,7 @@ function ClubFunds() {
 
 
         <MainDataTable
-          headers={["Ref No.", "Name", "Amount", "Category", "Date", "Method", "Period Covered", "Remarks"]}
+          headers={["Ref No.", "Name", "Amount", "Category", "Date", "Method", "Period Covered"]}
           data={clubFunds}
           isLoading={isLoading}
           page={page}
@@ -375,19 +375,22 @@ function ClubFunds() {
                 </td>
 
                 {/* Period Covered */}
-                <td className="text-center px-4 py-2 w-50">
+                <td className="px-1 py-2">
                   {row.period_start && row.period_end ? (
-                    <span className="px-3 py-1 text-xs">
+                    <span className="text-xs">
                       {new Date(row.period_start).toLocaleDateString("en-US", {
-                        month: "long",   // "January"
+                        month: "long",
                         day: "numeric",
                         year: "numeric",
-                      })} - {" "}
+                      })} - 
+                      <br />
+
                       {new Date(row.period_end).toLocaleDateString("en-US", {
-                        month: "long",   // "January"
+                        month: "long",
                         day: "numeric",
                         year: "numeric",
                       })}
+
                     </span>
                   ) : (
                     <span className="italic">Not Provided</span>
@@ -395,8 +398,9 @@ function ClubFunds() {
                 </td>
 
 
-                {/* Remarks */}
-                <td className="px-4 py-2">{row.remarks || "Not Provided"}</td>
+
+                {/* Remarks
+                <td className="px-4 py-2">{row.remarks || "Not Provided"}</td> */}
 
               </tr>
             )
