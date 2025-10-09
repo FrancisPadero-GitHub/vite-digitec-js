@@ -14,6 +14,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { CreditCardIcon } from "lucide-react";
 
 // SIDEBAR CONFIG BASED ON ROLE
 const sidebarConfig = {
@@ -68,6 +69,7 @@ const sidebarConfig = {
       section: "Applications",
       items: [
         { label: "Loan Applications", icon: StickyNote2Icon, path: "/board/loan-applications" },
+        { label: "Loan Accounts", icon: CreditCardIcon, path: "/board/loan-accounts" },
       ],
     },
   ],
@@ -94,8 +96,8 @@ const sidebarConfig = {
           children: [
             // { label: "Loan Information", path: "/regular-member/coop-loans/my-information" },
             // { label: "View Loan Payment History", path: "/regular-member/coop-loans/payments" },
-            // { label: "View Currently Active Loans", path: "/regular-member/coop-loans/active" },
             { label: "Applications", path: "/regular-member/coop-loans/my-applications" },
+            { label: "Loan Accounts", path: "/regular-member/coop-loans/accounts" },
             // { label: "View Approved Loans (History)", path: "/regular-member/coop-loans/approved" },
           ],
         },

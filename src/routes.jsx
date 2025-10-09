@@ -32,6 +32,7 @@ import CoopLoans from "./pages/treasurer/CoopLoans.jsx";
 
 // BOD Pages
 import LoanApplications from "./pages/board/LoanApplications.jsx";
+import LoanAccounts from "./pages/board/LoanAccounts.jsx";
 
 // REGULAR AND ASSOCIATE PAGES
 import MemberDashboard from "./pages/members/MemberDashboard.jsx";
@@ -44,6 +45,7 @@ import MemberSettings from "./pages/members/MemberSettings.jsx";
 // REGULAR MEMBERS Pages
 import RegularMemberClubFunds from "./pages/members/RegularMemberClubFunds.jsx";
 import Profile from "./pages/members/Profile.jsx";
+import MemberLoanAcc from "./pages/members/MemberLoanAcc.jsx";
 
 
 
@@ -103,6 +105,7 @@ function AppRoutes() {
         { path: "member-profile/:memberId", element: <MemberProfile /> },
         { path: "activity-logs", element: <ActivityLogs /> },
         { path: "loan-applications", element: <LoanApplications /> },
+        { path: "loan-accounts", element: <LoanAccounts /> },
         { path: "reports", element: <Reports /> },
       ],
     },
@@ -123,7 +126,7 @@ function AppRoutes() {
         // Coop Loans collapsible sub-routes
         // { path: "coop-loans/my-information", element: <MemberCoopLoans type="information" /> },
         // { path: "coop-loans/payments", element: <MemberCoopLoans type="payments" /> },
-        // { path: "coop-loans/active", element: <MemberCoopLoans type="active" /> },
+        { path: "coop-loans/accounts", element: <MemberLoanAcc/> },
         { path: "coop-loans/my-applications", element: <MemberLoanApp /> },
         // { path: "coop-loans/approved", element: <MemberCoopLoans type="approved" /> },
         

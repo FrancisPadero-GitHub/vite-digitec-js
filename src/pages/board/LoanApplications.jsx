@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 
 // custom hooks
 import { useFetchLoanProducts } from "../members/hooks/useFetchLoanProduct";
@@ -7,10 +8,11 @@ import { useFetchLoanApp } from "./hooks/useFetchLoanApps";
 import { useEditLoanApp } from "./hooks/useEditLoanApp";
 import { useMembers } from "../../backend/hooks/useFetchMembers";
 import { useDelete } from "../treasurer/hooks/useDelete";
-
+import { useAddLoanApp } from "./hooks/useAddLoanAcc";
 
 // components
 import MembersFormModal from "../members/modal/MembersFormModal";
+import LoanAccModal from "./modal/LoanAccModal";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
@@ -18,8 +20,10 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 
 
 function LoanApplications() {
-   const { data: members } = useMembers();
+  const navigate = useNavigate();
+  const { data: members } = useMembers();
   const { data: loanProducts } = useFetchLoanProducts();
+  const {mutate: addLoanApp } = useAddLoanApp();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -33,7 +37,7 @@ function LoanApplications() {
   const [statusFilter, setStatusFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
-  const TABLE_PREFIX = "LA_";
+  const TABLE_PREFIX = "LAPP_";
 
   const memberLoanApplications = loanDataRaw.filter((row) => {
 
@@ -65,12 +69,15 @@ function LoanApplications() {
   const { mutate: mutateEdit } = useEditLoanApp();
   const { mutate: mutateDelete } = useDelete();
 
+  const [showLoanAccModal, setShowLoanAccModal] = useState(false);
+  const [selectedApplicationId, setSelectedApplicationId] = useState(null);
+
 
   const [modalType, setModalType] = useState(null);
   const STATUS_OPTIONS = ["Pending", "On Review", "Approved", "Denied"];
   const today = new Date().toISOString().split("T")[0];
 
-  // React Hook Form setup
+  // React Hook Form setup for loan applications 
   const {
     register,
     handleSubmit,
@@ -90,11 +97,34 @@ function LoanApplications() {
     },
   });
 
+  // React Hook Form setup for Loan Accounts
+  const {
+    register: registerLoanAcc,
+    handleSubmit: handleSubmitLoanAcc,
+    reset: resetLoanAcc,
+    watch: watchLoanAcc,
+    formState: { errors: errorsLoanAcc },
+  } = useForm({
+    defaultValues: {
+      loan_id: null,
+      application_id: null,
+      applicant_id: null,
+      account_number: "",
+      principal: "",
+      outstanding_balance: "",
+      interest_rate: "",
+      interest_method: "",
+      status: "Active",
+      release_date: null, // will be configured by treasurer
+      maturity_date: "",
+    },
+  });
+
   const selectedLoanProduct = watch("loan_product");
   const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct);
 
   const openEditModal = (row) => {
-
+    // console.log("eid", row)
     const matchedMember = members?.find(
       (member) => member.member_id === row.applicant_id
     );
@@ -108,6 +138,7 @@ function LoanApplications() {
 
     reset({
       application_id: row.application_id,
+      applicant_id: row.applicant_id,
       applicant_name: fullName,
       loan_product: matchedProduct?.name || "",
       amount: row.amount || "",
@@ -133,13 +164,73 @@ function LoanApplications() {
     closeModal();
   };
 
+
   // Submit handler (add/edit)
   const onSubmit = (data) => {
-
     mutateEdit(data);
+    
+    const generateAccountNumber = (appId) => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const paddedId = String(appId).padStart(6, "0");
+      const randomSuffix = Math.floor(10 + Math.random() * 90);
+      return `ACCT-${year}${month}${day}-${paddedId}${randomSuffix}`;
+    };
+
+    // ✅ When status is Approved — create loan account, do NOT mutateEdit
+    if (data.status === "Approved") {
+
+      // temporary for the product id, will provide a dynamic shiz for this later if more product loan is provided
+      const row = loanDataRaw.find(
+        (item) => item.application_id === data.application_id
+      );
+
+      const matchedProduct = loanProducts?.find(
+        (product) => product.product_id === row.product_id
+      );
+      resetLoanAcc({
+        loan_id: null,
+        application_id: data.application_id,
+        applicant_id: data.applicant_id,
+        account_number: generateAccountNumber(data.application_id),
+        principal: data.amount,
+        outstanding_balance: data.amount,
+        interest_rate: Number(matchedProduct?.interest_rate) || 0,
+        interest_method: matchedProduct?.interest_method ?? "",
+        status: "Active",
+        release_date: null,
+        maturity_date: (() => {
+          const date = new Date();
+          date.setMonth(date.getMonth() + 12);
+          return date.toISOString().split("T")[0];
+        })(),
+
+      });
+
+      setSelectedApplicationId(data.application_id);
+      setShowLoanAccModal(true);
+    }
+
+    // ✅ Otherwise — just mutate
+    // else {
+    //   mutateEdit(data);
+    //   closeModal();
+    // }
 
     closeModal();
   };
+
+
+  // Loan Acounts handlers 
+  const onSubmitLoanAcc = (data) => {
+    console.log("loan account data: ",data)
+    addLoanApp(data)
+    setShowLoanAccModal(false);
+    closeModal();
+    navigate("/board/loan-accounts")
+  }
 
   if (isLoading) return <div>Loading Member Loan...</div>;
   if (isError) return <div>Error: {error.message}</div>;
@@ -223,7 +314,7 @@ function LoanApplications() {
             );
 
             const matchedLoanProduct = loanProducts?.find(
-              (product_id) => product_id.product_id === row.product_id
+              (product) => product.product_id === row.product_id
             );
             return (
               <tr
@@ -420,6 +511,156 @@ function LoanApplications() {
         </div>
       </MembersFormModal>
 
+      <LoanAccModal
+        title={"Loan Account"}
+        open={showLoanAccModal}
+        close={() => {
+          // Go back to edit modal
+          const row = loanDataRaw.find(
+            (item) => item.application_id === selectedApplicationId
+          );
+          if (row) {
+            openEditModal(row);
+          }
+          setShowLoanAccModal(false);
+        }}
+        action={"add"}
+        onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)}
+      >
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Loan ID (hidden or read-only) */}
+          <input type="hidden" {...registerLoanAcc("loan_id")} />
+
+          {/* Ref No. */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Ref No.</span>
+            </label>
+            <input
+              value={`LA_${watchLoanAcc("application_id") || ""}`}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+          </div>
+
+          {/* Account Number */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Account Number
+              </span>
+            </label>
+            <input
+              type="text"
+              {...registerLoanAcc("account_number", { required: true })}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+            {errorsLoanAcc.account_number && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Principal */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Principal</span>
+            </label>
+            <input
+              type="number"
+              {...registerLoanAcc("principal", { required: true })}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+            {errorsLoanAcc.principal && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Outstanding Balance */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Outstanding Balance
+              </span>
+            </label>
+            <input
+              type="number"
+              {...registerLoanAcc("outstanding_balance", { required: true })}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+            {errorsLoanAcc.outstanding_balance && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Interest Rate */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Interest Rate (%)
+              </span>
+            </label>
+            <input
+              type="number"
+              {...registerLoanAcc("interest_rate", { required: true })}
+              readOnly
+              className="input input-bordered w-full"
+            />
+            {errorsLoanAcc.interest_rate && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Interest Method */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Interest Method
+              </span>
+            </label>
+            <input
+              {...registerLoanAcc("interest_method", { required: true })}
+              readOnly
+              className="input input-bordered w-full"
+            />
+            
+            {errorsLoanAcc.interest_method && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Status */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Status</span>
+            </label>
+            <input
+              {...registerLoanAcc("status")}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+          </div>
+
+          {/* Maturity Date */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Maturity Date</span>
+            </label>
+            <input
+              type="date"
+              {...registerLoanAcc("maturity_date", { required: false })}
+              readOnly
+              className="input input-bordered w-full"
+            />
+            {errorsLoanAcc.maturity_date && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+        </div>
+      </LoanAccModal>
 
       </div>
     </div>
@@ -427,3 +668,5 @@ function LoanApplications() {
 }
 
 export default LoanApplications;
+
+
