@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { useFetchLoanProducts } from "../members/hooks/useFetchLoanProduct";
 import { useFetchLoanApp } from "./hooks/useFetchLoanApps";
 import { useEditLoanApp } from "./hooks/useEditLoanApp";
+import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
 import { useMembers } from "../../backend/hooks/useFetchMembers";
 import { useDelete } from "../treasurer/hooks/useDelete";
 import { useAddLoanApp } from "./hooks/useAddLoanAcc";
@@ -22,6 +23,9 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 function LoanApplications() {
   const navigate = useNavigate();
   const { data: members } = useMembers();
+  const { data: loanAccRaw} = useFetchLoanAcc();
+  const loanAcc = loanAccRaw?.data || [];
+  
   const { data: loanProducts } = useFetchLoanProducts();
   const {mutate: addLoanApp } = useAddLoanApp();
 
@@ -67,11 +71,10 @@ function LoanApplications() {
 
   // mutations
   const { mutate: mutateEdit } = useEditLoanApp();
-  const { mutate: mutateDelete } = useDelete();
+  const { mutate: mutateDelete } = useDelete("loan_applications"); 
 
   const [showLoanAccModal, setShowLoanAccModal] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
-
 
   const [modalType, setModalType] = useState(null);
   const STATUS_OPTIONS = ["Pending", "On Review", "Approved", "Denied"];
@@ -123,8 +126,15 @@ function LoanApplications() {
   const selectedLoanProduct = watch("loan_product");
   const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct);
 
+  /**
+   * Grab the application_id in loan application then checks it if it exists on loan accounts
+   * used to conditionally render disabled inputs and selects and status on form modal
+   */
+  const [loanStatus, setLoanStatus] = useState(false);
+  
   const openEditModal = (row) => {
     // console.log("eid", row)
+    
     const matchedMember = members?.find(
       (member) => member.member_id === row.applicant_id
     );
@@ -148,11 +158,15 @@ function LoanApplications() {
       status: row.status,
     });
 
-    
+    setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
+
     setModalType("edit");
   };
 
-  const closeModal = () => setModalType(null);
+  const closeModal = () => {
+    setLoanStatus(false);
+    setModalType(null)
+  }
 
   // Delete handler
   const handleDelete = (application_id) => {
@@ -165,10 +179,12 @@ function LoanApplications() {
   };
 
 
+  // State to hold the edit application data temporarily
+  const [pendingAppData, setPendingAppData] = useState(null);
+
+
   // Submit handler (add/edit)
   const onSubmit = (data) => {
-    mutateEdit(data);
-    
     const generateAccountNumber = (appId) => {
       const now = new Date();
       const year = now.getFullYear();
@@ -179,10 +195,7 @@ function LoanApplications() {
       return `ACCT-${year}${month}${day}-${paddedId}${randomSuffix}`;
     };
 
-    // ✅ When status is Approved — create loan account, do NOT mutateEdit
     if (data.status === "Approved") {
-
-      // temporary for the product id, will provide a dynamic shiz for this later if more product loan is provided
       const row = loanDataRaw.find(
         (item) => item.application_id === data.application_id
       );
@@ -190,6 +203,7 @@ function LoanApplications() {
       const matchedProduct = loanProducts?.find(
         (product) => product.product_id === row.product_id
       );
+
       resetLoanAcc({
         loan_id: null,
         application_id: data.application_id,
@@ -206,31 +220,38 @@ function LoanApplications() {
           date.setMonth(date.getMonth() + 12);
           return date.toISOString().split("T")[0];
         })(),
-
       });
+
+      // store the application data for later mutation
+      setPendingAppData(data);
 
       setSelectedApplicationId(data.application_id);
       setShowLoanAccModal(true);
+    } else {
+      mutateEdit(data);
+      closeModal();
     }
-
-    // ✅ Otherwise — just mutate
-    // else {
-    //   mutateEdit(data);
-    //   closeModal();
-    // }
-
-    closeModal();
   };
 
 
-  // Loan Acounts handlers 
-  const onSubmitLoanAcc = (data) => {
-    console.log("loan account data: ",data)
-    addLoanApp(data)
+  // Loan Accounts handler
+  const onSubmitLoanAcc = (loanAccData) => {
+    // 1. Create the loan account
+    addLoanApp(loanAccData);
+
+    // 2. Mutate the original application too (if it's pending)
+    if (pendingAppData) {
+      mutateEdit(pendingAppData);
+      setPendingAppData(null); // clear it after use
+    }
+
+    // 3. Finalize UI
     setShowLoanAccModal(false);
     closeModal();
-    navigate("/board/loan-accounts")
-  }
+    navigate("/board/loan-accounts");
+  };
+
+
 
   if (isLoading) return <div>Loading Member Loan...</div>;
   if (isError) return <div>Error: {error.message}</div>;
@@ -352,6 +373,7 @@ function LoanApplications() {
         title={"Loan Application"}
         open={modalType !== null}
         close={closeModal}
+        status={loanStatus}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
         deleteAction={() => handleDelete(watch("application_id"))}
@@ -370,7 +392,7 @@ function LoanApplications() {
             />
           </div>
 
-          {/* Loan Status */}
+          {/* Loan Application Status */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
               <span className="label-text font-medium text-gray-700">
@@ -380,6 +402,7 @@ function LoanApplications() {
             <select
               {...register("status", { required: true })}
               className="select select-bordered w-full"
+              disabled={loanStatus}
             >
               {STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>
@@ -430,30 +453,33 @@ function LoanApplications() {
           </div>
 
           {/* Amount */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Amount</span>
-            </label>
-            <input
-              type="number"
-              {...register("amount", {
-                required: true,
-                min: selectedProduct?.min_amount || 0,
-                max: selectedProduct?.max_amount || 9999999,
-              })}
-              disabled={!selectedLoanProduct}
-              placeholder={
-                selectedProduct
-                  ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
-                  : "Select a loan product first"
-              }
-              className={`input input-bordered w-full ${!selectedLoanProduct ? "text-warning" : ""
-                }`}
-            />
-            {errors.amount && (
-              <p className="text-error text-sm mt-1">Invalid amount range</p>
-            )}
-          </div>
+            <div className="form-control w-full mt-2">
+              <label className="label mb-1">
+                <span className="label-text font-medium text-gray-700">Amount</span>
+              </label>
+              <input
+                type="number"
+                {...register("amount", {
+                  required: true,
+                  min: selectedProduct?.min_amount || 0,
+                  max: selectedProduct?.max_amount || 9999999,
+                })}
+                disabled={
+                  !selectedLoanProduct || loanStatus
+                }
+                placeholder={
+                  selectedProduct
+                    ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
+                    : "Select a loan product first"
+                }
+                className={`input input-bordered w-full ${!selectedLoanProduct ? "text-warning" : ""
+                  }`}
+              />
+              {errors.amount && (
+                <p className="text-error text-sm mt-1">Invalid amount range</p>
+              )}
+            </div>
+
 
           {/* Term */}
           <div className="form-control w-full mt-2">

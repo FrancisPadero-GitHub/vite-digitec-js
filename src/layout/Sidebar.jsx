@@ -14,7 +14,9 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { CreditCardIcon } from "lucide-react";
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
+
+
 
 // SIDEBAR CONFIG BASED ON ROLE
 const sidebarConfig = {
@@ -66,10 +68,10 @@ const sidebarConfig = {
       ],
     },
     {
-      section: "Applications",
+      section: "Loans",
       items: [
-        { label: "Loan Applications", icon: StickyNote2Icon, path: "/board/loan-applications" },
-        { label: "Loan Accounts", icon: CreditCardIcon, path: "/board/loan-accounts" },
+        { label: "Applications", icon: StickyNote2Icon, path: "/board/loan-applications" },
+        { label: "Accounts", icon: RequestQuoteIcon, path: "/board/loan-accounts" },
       ],
     },
   ],
