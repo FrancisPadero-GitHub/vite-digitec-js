@@ -61,12 +61,13 @@ export const MEMBER_TYPE_COLORS = {
 };
 
 // LOAN APPLICATION STATUSES
-export const LOAN_APPLICATION_STATUSES = ["Pending", "Approved", "Rejected"];
+export const LOAN_APPLICATION_STATUSES = ["Pending", "On Review", "Approved", "Denied"];
 
 export const LOAN_APPLICATION_STATUS_COLORS = {
   Pending: "badge-warning",
+  "On Review": "badge-info",
   Approved: "badge-success",
-  Rejected: "badge-error",
+  Denied: "badge-error",
 };
 
 // SORT DIRECTION OPTIONS

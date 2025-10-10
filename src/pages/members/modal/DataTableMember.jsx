@@ -52,7 +52,7 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
                   </td>
                 </tr>
               ) : (
-                data.map((item) => renderRow(item))
+                data.slice(0,5).map((item) => renderRow(item))
               )}
             </tbody>
 

@@ -181,7 +181,7 @@ export default function UserManagement() {
               onClick={() => openModal(row)}
               className="cursor-pointer hover:bg-base-200/70 transition-colors"
             >
-              <td className="px-4 py-2 text-center font-medium">{row.generatedId}</td>
+              <td className="px-4 py-2 text-center text-info font-medium">{row.generatedId}</td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-3">
                   <div className="avatar">

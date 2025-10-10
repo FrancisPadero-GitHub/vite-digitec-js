@@ -44,12 +44,17 @@ const insertMember = async (formData) => {
       account_type = null,
       account_status = null,
       application_date = null,
+
       membership_fee = null,
+      membership_fee_status = null,
+      membership_payment_method = null,
+      membership_payment_date = null,
+      membership_remarks = null,
+
       initial_share_capital = null,
-      fee_status = null,
-      payment_method = null,
-      payment_date = null,
-      remarks = null,
+      share_capital_payment_method = null,
+      share_capital_payment_date = null,
+      share_capital_remarks = null,
   } = formData;
 
 
@@ -85,30 +90,35 @@ const payload = {
     application_date,
   },
   payment: {
-    membership_fee,
-    initial_share_capital,
-    fee_status,
-    payment_method,
-    payment_date,
-    remarks,
+      membership_fee,
+      membership_fee_status,
+      membership_payment_method,
+      membership_payment_date,
+      membership_remarks,
+
+      initial_share_capital,
+      share_capital_payment_method,
+      share_capital_payment_date,
+      share_capital_remarks,
   },
   // So I just took some of the formData in the payment and pass it through clubFunds since identical ramn sila
   clubFunds: {
     amount: membership_fee,
     category: "Monthly Dues",
-    payment_date: payment_date,
-    period_start: payment_date,
-    period_end: payment_date,
-    payment_method: payment_method,
-    remarks: "Membership Initial"
+    payment_date: membership_payment_date,
+    period_start: membership_payment_date,
+    period_end: membership_payment_date,
+    payment_method: membership_payment_method,
+    remarks: "Membership Initial",
   },
   coop: {
-    source: "member contribution",
+    source: "Member Contribution",
     amount: initial_share_capital,
     category: "Initial",
-    contribution_date: payment_date,
-    remarks: "Membership Initial"
-  }
+    payment_method: share_capital_payment_method,
+    contribution_date: share_capital_payment_date,
+    remarks: "Membership Initial",
+  },
 };
 
 // --- 1. Create Auth user via Edge Function ---

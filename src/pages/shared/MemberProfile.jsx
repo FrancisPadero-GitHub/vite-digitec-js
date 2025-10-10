@@ -59,7 +59,6 @@ function MemberProfile() {
 
   if (isLoading) return <div>Loading user data...</div>;
   if (isError) return <div>Error: {error.message}</div>;
-  if (!memberInfo) return <div>No member found.</div>;
 
   // Handle case where member id does not exist
   if (!data?.memberInfo) {

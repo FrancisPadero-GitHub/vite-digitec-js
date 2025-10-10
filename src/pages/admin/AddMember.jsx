@@ -22,7 +22,7 @@ function AddMember (){
       m_name: "",
       l_name: "",
       civil_status: "",
-      birthday: today,
+      birthday: "",
       place_of_birth: "",
       street_no: "",
       barangay: "",
@@ -40,12 +40,15 @@ function AddMember (){
       account_type: "",
       account_status: "",
       application_date: today,
-      membership_fee: 0,
-      initial_share_capital: 0,
-      fee_status: "",
-      payment_date: today,
-      payment_method: "",
-      remarks: "",
+      membership_fee: "",
+      membership_fee_status: "",
+      membership_payment_method: "",
+      membership_payment_date: today,
+      membership_remarks: "Membership Initial",
+      initial_share_capital: "",
+      share_capital_payment_method: "",
+      share_capital_payment_date: today,
+      share_capital_remarks: "Membership Initial",
       avatarFile: null
     }
   });
@@ -70,7 +73,8 @@ function AddMember (){
       ...data,
       birthday: data.birthday ? new Date(data.birthday).toISOString() : null,
       application_date: data.application_date ? new Date(data.application_date).toISOString() : null,
-      payment_date: data.payment_date ? new Date(data.payment_date).toISOString() : null,
+      membership_payment_date: data.membership_payment_date ? new Date(data.membership_payment_date).toISOString() : null,
+      share_capital_payment_date: data.share_capital_payment_date ? new Date(data.share_capital_payment_date).toISOString() : null,
       avatarFile,
     };
 
@@ -83,7 +87,7 @@ function AddMember (){
   // Personal fields
   const personalFields = [
     { label: "First Name", name: "f_name", type: "text", required: true },
-    { label: "Middle Name", name: "m_name", type: "text" },
+    { label: "Middle Name", name: "m_name", type: "text", required: false },
     { label: "Last Name", name: "l_name", type: "text", required: true },
 
     { label: "Civil Status", name: "civil_status", type: "select",
@@ -96,7 +100,7 @@ function AddMember (){
     { label: "Email Address", name: "email", type: "email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
 
     // Address grouped together
-    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "number", required: true, group: "Address" },
+    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "text", required: true, group: "Address" },
     { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address" },
     { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address" },
     { label: "Province", name: "province", type: "text", required: true, group: "Address" },
@@ -110,36 +114,40 @@ function AddMember (){
       pattern: "^[0-9]{4}$"
     },
 
-
     // Dependents grouped together
-    { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents" },
-    { label: "Number of Children", name: "number_of_children", type: "select", group: "Dependents", 
+    { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents", required: false },
+    { label: "Number of Children", name: "number_of_children", type: "select", group: "Dependents", required: false,
       options: Array.from({ length: 11 }, (_, i) => i) }
     ];
 
   // Employment fields
   const employmentFields = [
-    { label: "Name of Office/Line of Business", name: "office_name", type: "text" },
-    { label: "Title & Position", name: "title_and_position", type: "text" },
-    { label: "Office Address", name: "office_address", type: "text" },
-    { label: "Office Contact Number", name: "office_contact_number", type: "text", pattern: /^[0-9+()\-.\s]+$/ }
+    { label: "Name of Office/Line of Business", name: "office_name", type: "text", required: true },
+    { label: "Title & Position", name: "title_and_position", type: "text", required: true },
+    { label: "Office Address", name: "office_address", type: "text", required: true },
+    { label: "Office Contact Number", name: "office_contact_number", type: "text", pattern: /^[0-9+()\-.\s]+$/, required: true }
   ];
 
   // Membership fields
   const membershipFields = [
     { label: "Account Type", name: "account_type", type: "select",
-      options: ["Regular", "Associate", "Treasurer", "Board"], required: true },
+      options: ["Regular", "Associate", "Treasurer", "Board"], required: true, group: "Account Info" },
     { label: "Account Status", name: "account_status", type: "select",
-      options: ["Active", "Inactive", "Pending"], required: true },
-    { label: "Application Date", name: "application_date", type: "date", required: true },
+      options: ["Active", "Inactive", "Pending"], required: true, group: "Account Info" },
+    { label: "Application Date", name: "application_date", type: "date", required: true, group: "Account Info" },
 
-    { label: "Membership Fee", name: "membership_fee", type: "number"},
-    { label: "Initial Share Capital", name: "initial_share_capital", type: "number"},
-    { label: "Fee Status", name: "fee_status", type: "select", options: ["Paid", "Unpaid", "Partial"]},
+    // Membership Fee
+    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: true },
+    { label: "Fee Status", name: "membership_fee_status", type: "select", options: ["Paid", "Unpaid", "Partial"], group: "Membership Fee", required: true },
+    { label: "Payment Method", name: "membership_payment_method", type: "select", options: ["Cash", "GCash", "Bank"], group: "Membership Fee", required: true },
+    { label: "Payment Date", name: "membership_payment_date", type: "date", group: "Membership Fee", required: true },
+    { label: "Remarks", name: "membership_remarks", type: "text", group: "Membership Fee", required: false },
 
-    { label: "Payment Method", name: "payment_method", type: "select", options: ["Cash", "GCash", "Bank"]},
-    { label: "Payment Date", name: "payment_date", type: "date"},
-    { label: "Remarks", name: "remarks", type: "text" }
+    // Initial Share Capital
+    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: true },
+    { label: "Payment Method", name: "share_capital_payment_method", type: "select", options: ["Cash", "GCash", "Bank"], group: "Share Capital", required: true },
+    { label: "Payment Date", name: "share_capital_payment_date", type: "date", group: "Share Capital", required: true },
+    { label: "Remarks", name: "share_capital_remarks", type: "text", group: "Share Capital", required: false },
   ];
 
   return (
@@ -214,7 +222,7 @@ function AddMember (){
                       {type === "select" ? (
                         <select
                           id={name}
-                          {...register(name, { required: `${label} is required` })}
+                          {...register(name, {required: personalFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
                           className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
                         >
                           <option value="" disabled>Select {label}</option>
@@ -319,35 +327,49 @@ function AddMember (){
           {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {membershipFields.map(({ label, name, type, options }) => (
-                  <div key={name} className="form-control w-full">
-                    <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
+                {membershipFields.map(({ label, name, type, options, group }, idx) => {
+                  const prevGroup = idx > 0 ? membershipFields[idx - 1].group : null;
 
-                    {type === "select" ? (
-                      <select
-                        id={name}
-                        {...register(name, { required: `${label} is required` })}
-                        className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
-                      >
-                        <option value="" disabled>Select {label}</option>
-                        {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                      </select>
-                    ) : (
-                      <input
-                        id={name}
-                        type={type}
-                        {...register(name, { required: `${label} is required` })}
-                        className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
-                      />
-                    )}
-                    {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
-                  </div>
-                ))}
+                  // Divided into subsections (account info, membership fee, share capital)
+                  return (
+                    <Fragment key={name}>
+                      {group && group !== prevGroup && (
+                        <div className="col-span-1 md:col-span-2">
+                          <h3 className="text-lg font-semibold mt-4 mb-2">{group}</h3>
+                          <hr className="border-gray-300 mb-4" />
+                        </div>
+                      )}
+
+                      {/* Field itself */}
+                      <div className="form-control w-full col-span-1">
+                        <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
+                          {type === "select" ? (
+                            <select
+                              id={name}
+                              {...register(name, {required: membershipFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
+                              className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
+                            >
+                              <option value="" disabled> Select {label}</option>
+                              {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                            </select>
+                          ) : (
+                            <input
+                              id={name}
+                              type={type}
+                              {...register(name, {required: membershipFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
+                              className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                            />
+                          )}
+
+                          {/* Validation message */}
+                          {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
+                      </div>
+                    </Fragment>
+                  );
+                })}
               </div>
               <div className="flex justify-between">
-                <button type="button" className="btn btn-soft" onClick={() => setActiveTab(1)}>
-                  Back
-                </button>
+                <button type="button" className="btn btn-soft" onClick={() => setActiveTab(1)}>Back</button>
                 <button type="submit" disabled={isSubmitting} className="btn btn-success">
                   {isSubmitting ? "Submitting..." : "Submit"}
                 </button>
