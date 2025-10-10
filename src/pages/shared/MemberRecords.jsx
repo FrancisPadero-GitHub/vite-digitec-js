@@ -129,17 +129,17 @@ export default function MemberRecords() {
                     <div>{row.displayName || (<span className="text-gray-400 italic">Not Provided</span>)}</div>
                   </div>
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.email || (
                     <span className="text-gray-400 italic">Not Provided</span>
                   )}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.contact_number || (
                     <span className="text-gray-400 italic">Not Provided</span>
                   )}
                 </td>
-                <td className="px-4 py-2 font-bold">
+                <td className="px-4 py-2 font-bold text-center">
                   {row.role ? (
                     <span className={`badge badge-soft font-semibold ${ROLE_COLORS[row.role] || "badge-ghost text-gray-400"}`}>
                       {row.role}
@@ -148,7 +148,7 @@ export default function MemberRecords() {
                     <span className="text-gray-400 italic">Not Provided</span>
                   )}
                 </td>
-                <td className="px-5 py-2">
+                <td className="px-5 py-2 text-center">
                   {row.status ? (
                     <span
                       className={`badge font-semibold ${

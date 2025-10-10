@@ -36,7 +36,7 @@ function MainDataTable({
               {headers.map((header, key) => (
                   <th
                     key={key}
-                    className={key === 0 ? "text-center" : ""} // contains quick fix to center align first column (ref)
+                    className="text-center" // contains quick fix to center align first column (ref)
                   >
                     {header}
                   </th>

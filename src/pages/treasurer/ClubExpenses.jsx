@@ -106,7 +106,7 @@ function ClubExpenses() {
   const fields = [
     { label: "Title", name: "title", type: "text" },
     { label: "Amount", name: "amount", type: "number" },
-    { label: "Category", name: "category", type: "select", options: ["GMM", "Monthly Dues", "Activities", "Alalayang Agila", "Community Service", "Others"] },
+    { label: "Category", name: "category", type: "select", options: ["GMM", "Activities", "Alalayang Agila", "Community Service", "Others"] },
     { label: "Description", name: "description", type: "text" },
     { label: "Date", name: "transaction_date", type: "date" },
   ];
@@ -181,7 +181,6 @@ function ClubExpenses() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Club Expenses</h1>
           <div className="flex flex-row items-center gap-3">
-            <button className="btn btn-outline">Export as CSV</button>
             <Link
               className="btn btn-neutral whitespace-nowrap"
               onClick={openAddModal}
@@ -201,7 +200,7 @@ function ClubExpenses() {
               onChange: setCategoryFilter,
               options: [
                 { label: "All", value: "" },
-                { label: "Monthly Dues", value: "Monthly Dues" },
+                { label: "GMM", value: "GMM" },
                 { label: "Activities", value: "Activities" },
                 { label: "Alalayang Agila", value: "Alalayang Agila" },
                 { label: "Community Service", value: "Community Service" },
@@ -263,18 +262,22 @@ function ClubExpenses() {
             <tr key={`${TABLE_PREFIX}_${row.transaction_id}`} className=" cursor-pointer hover:bg-base-200/50"
               onClick={() => openEditModal(row)}
             >
-              <td className="text-center">{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
-              <td className="px-4 py-2">{row.title}</td>
-              <td className="px-4 py-2 font-semibold text-success">
+              <td className="text-center text-xs">{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
+              <td className="px-4 py-4 text-center font-semibold">{row.title}</td>
+              <td className="px-4 py-2 font-semibold text-success text-center">
                 ₱ {row.amount?.toLocaleString() || "0"}
               </td>
-              <td className="px-4 py-2">
+              <td className="px-4 py-2 text-center">
                 <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
                   {row.category || "Not Provided"}
                 </span>
               </td>
-              <td className="px-4 py-2">{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
-              <td className="px-4 py-2">{row.description}</td>
+              <td className="px-4 py-2 text-center">{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString(): "Not Provided"}</td>
+              <td className="px-4 py-2 text-center break-words max-w-[150px]">
+                <div title={row.description}>
+                  {row.description}
+                </div>
+              </td>
             </tr>
             
           )}

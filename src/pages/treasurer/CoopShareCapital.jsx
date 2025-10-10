@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import SearchIcon from "@mui/icons-material/Search";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { Link } from 'react-router';
 
 // Hooks
 import { useMembers } from '../../backend/hooks/useFetchMembers';
-// import { useFetchCoopContributions } from './hooks/useFetchCoopContributions'; // Old Fetch contributions with
 import { useFetchCoopContributions } from './custom/useFetchCoop'; // implemented pagination
 
 import { useAddCoopContributions } from './hooks/useAddCoopContributions';
@@ -18,7 +16,7 @@ import MainDataTable from './components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
 
 // constants
-import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
+import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 /**
  * 
@@ -27,7 +25,6 @@ import { CAPITAL_CATEGORY_COLORS } from '../../constants/Color';
  */
 
 function CoopShareCapital() {
-
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
   const [page, setPage] = useState(1);
@@ -68,6 +65,7 @@ function CoopShareCapital() {
   const [searchTerm, setSearchTerm] = useState(""); // for the search bar
   const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
   const [sourceFilter, setSourceFilter] = useState("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
@@ -93,13 +91,16 @@ function CoopShareCapital() {
     const matchesSource =
       sourceFilter === "" || row.source === sourceFilter;
 
+    const matchesPaymentMethod =
+      paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
+
     const date = row.contribution_date ? new Date(row.contribution_date) : null;
     const matchesYear =
       yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
     const matchesMonth =
       monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
-    return matchesSearch && matchesCategory && matchesYear && matchesMonth && matchesSource;
+    return matchesSearch && matchesCategory && matchesYear && matchesMonth && matchesSource && matchesPaymentMethod;
   });
 
   // mutation hooks for adding and editing funds
@@ -115,6 +116,7 @@ function CoopShareCapital() {
     category: "",
     amount: 0,
     contribution_date: "",
+    payment_method: "",
     remarks: "",
   })
 
@@ -138,6 +140,7 @@ function CoopShareCapital() {
     { label: "Amount", name: "amount", type: "number" },
     { label: "Payment Category", name: "category", type: "select", options: ['Initial', 'Monthly'] },
     { label: "Date", name: "contribution_date", type: "date" },
+    { label: "Payment Method", name: "payment_method", type: "select", options: ['Cash', 'Gcash', 'Bank'] },
     { label: "Remarks", name: "remarks", type: "text" },
   ]
 
@@ -154,6 +157,7 @@ function CoopShareCapital() {
       category: "",
       amount: 0,
       contribution_date: "",
+      payment_method: "",
       remarks: "",
     })
     setModalType("add");
@@ -234,7 +238,7 @@ function CoopShareCapital() {
               onChange: setSourceFilter,
               options: [
                 { label: "All", value: "" },  // will be used also for the disabled label of the dropdown
-                { label: "Member Contribution", value: "member contribution" },
+                { label: "Member Contribution", value: "Member Contribution" },
                 { label: "System", value: "system" },
 
               ],
@@ -248,6 +252,17 @@ function CoopShareCapital() {
                 { label: "Initial", value: "Initial" },
                 { label: "Monthly", value: "Monthly" },
                 { label: "System", value: "System" },
+              ],
+            },
+            {
+              label: "Method",
+              value: paymentMethodFilter,
+              onChange: setPaymentMethodFilter,
+              options: [
+                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
+                { label: "Cash", value: "Cash" },
+                { label: "GCash", value: "GCash" },
+                { label: "Bank", value: "Bank" },
               ],
             },
             {
@@ -288,7 +303,7 @@ function CoopShareCapital() {
         />
 
         <MainDataTable
-          headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date"]}
+          headers={["Ref No.", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
           data={coop}
           isLoading={isLoading}
           page={page}
@@ -300,6 +315,8 @@ function CoopShareCapital() {
               (member) => member.member_id === row.member_id
             );
             const isDisabled = !matchedMember; // this is for the modifier if the system is the one that made the transactions
+
+            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System";
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.coop_contri_id}`}
@@ -309,28 +326,41 @@ function CoopShareCapital() {
                     : "cursor-not-allowed opacity-80 bg-base-100/70"
                   }`}
               >
-                <td className="px-4 py-2 text-center font-medium">SCC_{row.coop_contri_id}</td>
-                <td className="px-4 py-2">
-                  <span className="flex items-center gap-2">
-                    {matchedMember
-                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                      : "System"}
-                    {isDisabled && (
-                      <div className="tooltip tooltip-top" data-tip="System Generated">
-                        <span className="badge badge-sm badge-ghost">?</span>
-                      </div>
+                <td className="px-4 py-2 text-center font-medium text-xs">SCC_{row.coop_contri_id}</td>
+                <td className="px-4 py-4">
+                  <span className="flex items-center gap-3">
+                    {matchedMember ? (
+                      <>
+                        {/* avatar for members */}
+                        <div className="avatar">
+                          <div className="mask mask-circle w-10 h-10">
+                            <img
+                              src={
+                                matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                              }
+                              alt={fullName}
+                            />
+                          </div>
+                        </div>
+                        <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
+                      </>
+                    ) : (
+                      <>
+                        {/* system-generated row */}
+                        <div className="text-gray-800 italic">{fullName}</div>
+                      </>
                     )}
                   </span>
                 </td>
-                <td className="px-4 py-2 font-semibold text-success">
+                <td className="px-4 py-2 font-semibold text-success text-center">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
-                <td className="px-4 py-2">
+                {/* <td className="px-4 py-2">
                   {row.source || (
                     <span className="text-gray-400 italic">Not Provided</span>
                   )}
-                </td>
-                <td className="px-4 py-2">
+                </td> */}
+                <td className="px-4 py-2 text-center">
                   {row.category ? (
                     <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
                       {row.category} 
@@ -339,10 +369,19 @@ function CoopShareCapital() {
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.contribution_date
                     ? new Date(row.contribution_date).toLocaleDateString()
                     : <span className="text-gray-400 italic">Not Provided</span>}
+                </td>
+                <td className="px-4 py-2 text-center">
+                  {row.payment_method ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                      {row.payment_method}
+                    </span>
+                  ) : (
+                    <span> — </span>
+                  )}
                 </td>
                 {/* <td className="px-4 py-2">
                   {row.remarks || (
@@ -353,8 +392,6 @@ function CoopShareCapital() {
             );
           }}
        />
-
-      
       </div>
 
       <FormModal

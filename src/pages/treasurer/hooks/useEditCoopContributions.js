@@ -9,6 +9,7 @@ const updateCoopContributions = async (formData) => {
     amount = null,
     category = null,
     contribution_date = null,
+    payment_method = null,
     remarks = null,
   } = formData;
 
@@ -19,6 +20,7 @@ const updateCoopContributions = async (formData) => {
     amount,
     category,
     contribution_date,
+    payment_method,
     remarks,
   };
 

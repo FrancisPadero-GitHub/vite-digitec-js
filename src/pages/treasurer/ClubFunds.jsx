@@ -324,27 +324,37 @@ function ClubFunds() {
             const matchedMember = members?.find(
               (member) => member.member_id === row.member_id
             );
+
+            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.contribution_id}`}
                 onClick={() => openEditModal(row)}
                 className="transition-colors  cursor-pointer hover:bg-base-200/70"
               >
-                <td className="px-4 py-2 text-center font-medium">{TABLE_PREFIX}_{row.contribution_id}</td>
-                <td className="px-4 py-2">
-                  <span className="flex items-center gap-2">
-                    {matchedMember
-                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                      : "System"}
-                  </span>
+                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row.contribution_id}</td>
+                <td className="px-4 py-4 text-center">
+                    <span className="flex items-center gap-3">
+                      <div className="avatar">
+                        <div className="mask mask-circle w-10 h-10">
+                          <img
+                            src={
+                              matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                            }
+                            alt={fullName}
+                          />
+                        </div>
+                      </div>
+                      <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
+                    </span>
                 </td>
                 {/* Amount */}
-                <td className="px-4 py-2 font-semibold text-success">
+                <td className="px-4 py-2 font-semibold text-success text-center">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
 
                 {/* Category */}
-                <td className='px-4 py-2'>
+                <td className='px-4 py-2 text-center'>
                   <span
                     className={` font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}
                   >
@@ -353,7 +363,7 @@ function ClubFunds() {
                 </td>
 
                 {/* Payment Date */}
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.payment_date ? (
                     <span>{new Date(row.payment_date).toLocaleDateString()}</span>
                   ) : (
@@ -362,7 +372,7 @@ function ClubFunds() {
                 </td>
 
                 {/* Payment Method */}
-                <td className='px-4 py-2' >
+                <td className='px-4 py-2 text-center' >
 
                   {row.payment_date ? 
                     <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
@@ -375,7 +385,7 @@ function ClubFunds() {
                 </td>
 
                 {/* Period Covered */}
-                <td className="px-1 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.period_start && row.period_end ? (
                     <span className="text-xs">
                       {new Date(row.period_start).toLocaleDateString("en-US", {
@@ -396,12 +406,8 @@ function ClubFunds() {
                     <span className="italic">Not Provided</span>
                   )}
                 </td>
-
-
-
                 {/* Remarks
                 <td className="px-4 py-2">{row.remarks || "Not Provided"}</td> */}
-
               </tr>
             )
           }}
