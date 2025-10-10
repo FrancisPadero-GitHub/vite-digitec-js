@@ -17,7 +17,6 @@ import StatCard from './components/StatCard';
 import ExpensesChart from './components/ExpensesChart';
 import CoopContributionChart from './components/CoopContributionChart';
 import ComparisonChart from './components/ComparisonChart';
-
 import DataTable from './components/DataTable';
 
 function Dashboard() {
@@ -121,25 +120,25 @@ function Dashboard() {
    */
   const stats = [
     {
-      icon: <Wallet />,
-      iconBgColor: "bg-purple-400",
-      statName: "Club Income",
-      growthPercent: incomeGrowth,
-      amount: incomeTotal ?? 0,
-      subtitle: filters.income.subtitle,
+      icon: <AccountBalance />,
+      iconBgColor: "bg-sky-400",
+      statName: "Coop Share Capital",
+      growthPercent: coopGrowth,
+      amount: coopTotal ?? 0,
+      subtitle: filters.coop.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
           ...prev,
-          income: {
+          coop: {
             subtitle: label,
             month: label === "This Month" ? new Date().getMonth() + 1 : null,
             year: label !== "All Time" ? new Date().getFullYear() : null,
           },
         }));
       },
-      loading: incomeLoading,
-      error: incomeIsError,
-      errorMessage: incomeError?.message,
+      loading: coopLoading,
+      error: coopIsError,
+      errorMessage: coopError?.message,
     },
     {
       icon: <Savings />,
@@ -165,7 +164,7 @@ function Dashboard() {
     {
       icon: <ReceiptLong />,
       iconBgColor: "bg-red-400",
-      statName: "Club Fund Expenses",
+      statName: "Club Expenses",
       growthPercent: expensesGrowth,
       amount: expensesTotal ?? 0,
       subtitle: filters.expenses.subtitle,
@@ -184,31 +183,31 @@ function Dashboard() {
       errorMessage: expensesError?.message,
     },
     {
-      icon: <AccountBalance />,
-      iconBgColor: "bg-sky-400",
-      statName: "Coop Total Contribution",
-      growthPercent: coopGrowth,
-      amount: coopTotal ?? 0,
-      subtitle: filters.coop.subtitle,
+      icon: <Wallet />,
+      iconBgColor: "bg-purple-400",
+      statName: "Club Income",
+      growthPercent: incomeGrowth,
+      amount: incomeTotal ?? 0,
+      subtitle: filters.income.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
           ...prev,
-          coop: {
+          income: {
             subtitle: label,
             month: label === "This Month" ? new Date().getMonth() + 1 : null,
             year: label !== "All Time" ? new Date().getFullYear() : null,
           },
         }));
       },
-      loading: coopLoading,
-      error: coopIsError,
-      errorMessage: coopError?.message,
+      loading: incomeLoading,
+      error: incomeIsError,
+      errorMessage: incomeError?.message,
     },
   ];
  
   return (
     <div>
-      <div className="mb-6 space-y-4">
+      <div className="mb-6 space-y-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex flex-col lg:flex-row gap-3">
           {/* LEFT SIDE */}
@@ -237,9 +236,62 @@ function Dashboard() {
             </section>
 
             <DataTable
+              title={"Share Capital / Coop"}
+              linkPath={"/treasurer/coop-share-capital"}
+              headers={["Ref No.", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
+              data={coopFunds}
+              isLoading={coopIsloading}
+              renderRow={(row) => {
+                const TABLE_PREFIX = "SCC"; 
+                const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
+                const isDisabled = !matchedMember; // condition (you can adjust logic)
+                return (
+                  <tr key={`${TABLE_PREFIX}_${row.coop_contri_id}`} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
+                    <td className='text-xs'>{TABLE_PREFIX}_{row.coop_contri_id.toLocaleString() || "ID"}</td>
+                    <td>
+                      <span className={`gap-2`}>
+                        {matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System"}
+
+                        {isDisabled && (
+                          <div className="tooltip tooltip-top" data-tip="System Generated">
+                            <span className="badge badge-sm badge-ghost">?</span>
+                          </div>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 font-semibold text-success">
+                      ₱ {row.amount?.toLocaleString() || "0"}
+                    </td>
+                    <td>
+                      {row.category ? (
+                        <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
+                          {row.category}
+                        </span>
+                      ) : (
+                        <span className="badge font-semibold badge-error">Not Provided</span>
+                      )}
+                    </td>
+                    <td className='px-4 py-2'>
+                      {row.contribution_date ? new Date(row.contribution_date).toLocaleDateString() : "Not Provided"}
+                    </td>
+                    <td>
+                      {row.payment_method ? (
+                        <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                          {row.payment_method}
+                        </span>
+                      ) : (
+                        <span className="badge font-semibold badge-error">Not Provided</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              }} 
+            />
+
+            <DataTable
               title={"Club Funds"}
               linkPath={"/treasurer/club-funds"}
-              headers={["Ref No.", "Name", "Amount", "Category", "Date", "Payment Method", "Remarks"]}
+              headers={["Ref No.", "Name", "Amount", "Category", "Date", "Payment Method"]}
               data={clubFunds}
               isLoading={clubFundsIsLoading}
               renderRow={(row) => {
@@ -247,13 +299,13 @@ function Dashboard() {
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
                 return (
                   <tr key={`${TABLE_PREFIX}_${row.contribution_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
-                    <td>{TABLE_PREFIX}_{row.contribution_id?.toLocaleString() || "ID"}</td>
+                    <td className='text-xs'>{TABLE_PREFIX}_{row.contribution_id?.toLocaleString() || "ID"}</td>
 
                     {/* Member Render from members table */}
                     <td>
                       <span className="gap-2">
                         {matchedMember
-                          ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+                          ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
                           : "System"}
                       </span>
                     </td>
@@ -275,75 +327,15 @@ function Dashboard() {
                         {row.payment_method}
                       </span>
                     </td>
-                    <td>{row.remarks}</td>
-
                   </tr>
                 )
               }}
             />
 
-
             <DataTable
-              title={"Share Capital / Coop"}
-              linkPath={"/treasurer/coop-share-capital"}
-              headers={["Ref No.", "Name", "Amount", "Source", "Payment Category", "Date", "Remarks"]}
-              data={coopFunds}
-              isLoading={coopIsloading}
-              renderRow={(row) => {
-                const TABLE_PREFIX = "SCC"; 
-                const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
-                const isDisabled = !matchedMember; // condition (you can adjust logic)
-                return (
-                  <tr key={`${TABLE_PREFIX}_${row.coop_contri_id}`} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
-                    <td>{TABLE_PREFIX}_{row.coop_contri_id.toLocaleString() || "ID"}</td>
-                    <td>
-                      <span
-                        className={`gap-2`}
-                      >
-                        {matchedMember
-                          ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""
-                            }`.trim()
-                          : "System"}
-
-                        {isDisabled && (
-                          <div className="tooltip tooltip-top" data-tip="System Generated">
-                            <span className="badge badge-sm badge-ghost">?</span>
-                          </div>
-                        )}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 font-semibold text-success">
-                      ₱ {row.amount?.toLocaleString() || "0"}
-                    </td>
-                    <td>
-                      {row.source}</td>
-
-                    <td>
-                      {row.category ? (
-                        <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
-                          {row.category}
-                        </span>
-                      ) : (
-                        <span className="badge font-semibold badge-error">Not Provided</span>
-                      )}
-                    </td>
-
-                    <td>
-                      {row.contribution_date ? new Date(row.contribution_date).toLocaleDateString() : "Not Provided"}
-                    </td>
-                    <td>
-                      {row.remarks}
-                    </td>
-
-                  </tr>
-                )
-              }} 
-              /> 
-
-            <DataTable
-              title={"Expenses"}
+              title={"Club Expenses"}
               linkPath={"/treasurer/club-expenses"}
-              headers={["Ref No.", "Title", "Amount", "Category", "Date", "Description"]}
+              headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
               data={fundExpenses}
               isLoading={expensesIsLoading}
               renderRow={(row) => 
@@ -351,7 +343,7 @@ function Dashboard() {
                   const TABLE_PREFIX = "EXP";
                   return (
                   <tr key={`${TABLE_PREFIX}_${row.transaction_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
-                    <td>{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
+                    <td className='text-xs'>{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
                     <td>{row.title}</td>
                     <td className="px-4 py-2 font-semibold text-success">
                       ₱ {row.amount?.toLocaleString() || "0"}
@@ -362,7 +354,6 @@ function Dashboard() {
                       </span>
                     </td>
                     <td>{row.transaction_date ? new Date(row.transaction_date).toLocaleDateString() : "Not Provided"}</td>
-                    <td>{row.description}</td>
                   </tr>
                   )
                 }
@@ -376,12 +367,12 @@ function Dashboard() {
             <DataTable
               title={"Income"}
               linkPath={"/treasurer"} // will provide later on
-              headers={["Ref No.", "Title", "Amount", "Source", "Date", "Remarks"]}
+              headers={["Ref No.", "Title", "Amount", "Source", "Date"]}
               data={income}
               isLoading={incomeIsLoading}
               renderRow={(row) => (
                 <tr key={row.income_id} className="text-center cursor-pointer hover:bg-base-200/50">
-                  <td >IC_{row.income_id?.toLocaleString() || "ID"}</td>
+                  <td className='text-xs'>IC_{row.income_id?.toLocaleString() || "ID"}</td>
                   <td>
                     {row.title}
                   </td>
@@ -389,18 +380,14 @@ function Dashboard() {
                     ₱ {row.amount?.toLocaleString() || "0"}
                   </td>
                   <td >
-                    <span className={`badge badge-soft font-semibold ${INCOME_SOURCE_COLORS[row.source] || "badge-ghost"}`}>
+                    <span className={`badge badge-soft font-semibold ${INCOME_SOURCE_COLORS[row.source]}`}>
                       {row.source}
                     </span>
                   </td>
                   <td>{row.date ? new Date(row.date).toLocaleDateString() : "Not Provided"}</td>
-                  <td>{row.remarks}</td>
                 </tr>
               )}
             />
-
-
-             
           </div>
 
           {/* RIGHT SIDE */}
@@ -422,7 +409,6 @@ function Dashboard() {
               </div>
             </section>
 
-
             {/* CLUB FUNDS VS EXPENSES DUAL LINE CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
               <div className="flex flex-col h-full">
@@ -436,9 +422,6 @@ function Dashboard() {
                 </div>
               </div>
             </section>
-
-
-
           </div>
         </div>
       </div>

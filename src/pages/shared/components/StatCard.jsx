@@ -1,4 +1,4 @@
-
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 
 /**
  * 
@@ -54,25 +54,29 @@ function StatCard({
 
 
   return (
-    <div className="card bg-base-100 shadow-md rounded-2xl px-6 py-4">
-      <h3 className="mb-2">
-        <span className="text-lg font-semibold">{statName}</span>
+    <div className="card bg-base-100 shadow-md rounded-2xl px-3 py-6">
+        <span className="mb-2 flex justify-between items-center">
+          <h3 className="text-lg font-semibold">{statName}</h3>
 
-      </h3>
-      <div className="flex justify-center mb-1 flex-wrap gap-1">
-        {filter.map((date_label) => (
-          <button
-            key={date_label}
-            className={`join-item btn btn-xs 
-        whitespace-nowrap text-[10px] sm:text-xs md:text-sm 
-        ${subtitle === date_label ? "btn-primary" : "btn-ghost text-gray-400"}`}
-            onClick={() => onSubtitleChange?.(date_label)}
-          >
-            {date_label}
-          </button>
-        ))}
-      </div>
-
+          {/* Dropdown for filters */}
+          <div className="dropdown dropdown-right">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-xs text-gray-400">
+              <MoreHorizOutlinedIcon fontSize="small" />
+            </div>
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-sm">
+              {filter.map((date_label) => (
+                <li key={date_label}>
+                  <button
+                    onClick={() => onSubtitleChange?.(date_label)}
+                    className={`text-sm ${subtitle === date_label? "text-primary font-semibold" : "text-gray-500"}`}
+                  >
+                    {date_label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </span>
 
       <div className="flex items-center gap-4">
         <div className={`rounded-full ${iconBgColor} flex items-center justify-center 

@@ -17,10 +17,10 @@ export const INCOME_SOURCE = [
 ];
 
 export const INCOME_SOURCE_COLORS = {
-  "Loan Retention": "bg-[#6366F1] text-white", // Indigo
-  "Renewal Fee": "bg-[#22C55E] text-white", // Green
-  Penalties: "bg-[#F97316] text-white", // Orange
-  "Initial Membership Fee": "bg-[#EC4899] text-white", // Pink
+  "Loan Retention": "badge-primary",
+  "Renewal Fee": "badge-neutral",
+  Penalties: "badge-accent",
+  Interest: "badge-info",
 };
 
 
