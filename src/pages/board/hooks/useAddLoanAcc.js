@@ -5,6 +5,7 @@ const addLoanAcc = async (formData) => {
   const {
     application_id = null,
     applicant_id = null,
+    product_id = null,
     account_number = null,
     principal = null,
     outstanding_balance = null,
@@ -18,6 +19,7 @@ const addLoanAcc = async (formData) => {
   const payload = {
     application_id,
     applicant_id,
+    product_id,
     account_number, 
     principal,
     outstanding_balance,
@@ -39,7 +41,7 @@ const addLoanAcc = async (formData) => {
   return data;
 };
 
-export const useAddLoanApp = () => {
+export const useAddLoanAcc = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addLoanAcc,

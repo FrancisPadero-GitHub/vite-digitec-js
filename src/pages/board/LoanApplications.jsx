@@ -4,12 +4,16 @@ import { useNavigate } from "react-router";
 
 // custom hooks
 import { useFetchLoanProducts } from "../members/hooks/useFetchLoanProduct";
+
 import { useFetchLoanApp } from "./hooks/useFetchLoanApps";
 import { useEditLoanApp } from "./hooks/useEditLoanApp";
-import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
+
 import { useMembers } from "../../backend/hooks/useFetchMembers";
+
+import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
+import { useAddLoanAcc } from "./hooks/useAddLoanAcc";
+
 import { useDelete } from "../treasurer/hooks/useDelete";
-import { useAddLoanApp } from "./hooks/useAddLoanAcc";
 
 // components
 import MembersFormModal from "../members/modal/MembersFormModal";
@@ -19,7 +23,6 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 
-
 function LoanApplications() {
   const navigate = useNavigate();
   const { data: members } = useMembers();
@@ -27,7 +30,7 @@ function LoanApplications() {
   const loanAcc = loanAccRaw?.data || [];
   
   const { data: loanProducts } = useFetchLoanProducts();
-  const {mutate: addLoanApp } = useAddLoanApp();
+  const { mutate: addLoanApp } = useAddLoanAcc();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -112,6 +115,7 @@ function LoanApplications() {
       loan_id: null,
       application_id: null,
       applicant_id: null,
+      product_id: null,
       account_number: "",
       principal: "",
       outstanding_balance: "",
@@ -133,7 +137,7 @@ function LoanApplications() {
   const [loanStatus, setLoanStatus] = useState(false);
   
   const openEditModal = (row) => {
-    // console.log("eid", row)
+    // console.log("eid", row.product_id)
     
     const matchedMember = members?.find(
       (member) => member.member_id === row.applicant_id
@@ -208,6 +212,7 @@ function LoanApplications() {
         loan_id: null,
         application_id: data.application_id,
         applicant_id: data.applicant_id,
+        product_id: matchedProduct?.product_id ?? null,
         account_number: generateAccountNumber(data.application_id),
         principal: data.amount,
         outstanding_balance: data.amount,
@@ -222,7 +227,7 @@ function LoanApplications() {
         })(),
       });
 
-      // store the application data for later mutation
+      // store the application data for later mutation for the edit on loan application
       setPendingAppData(data);
 
       setSelectedApplicationId(data.application_id);
