@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 // custom hooks
 import { useFetchLoanProducts } from "./hooks/useFetchLoanProduct";
 import { useFetchLoanApp } from "./hooks/useFetchLoanApp";
+import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
 import { useAddLoanApp } from "./hooks/useAddLoanApp";
 import { useEditLoanApp } from "./hooks/useEditLoanApp";
 import { useDelete } from "../treasurer/hooks/useDelete";
@@ -18,6 +19,8 @@ import { LOAN_APPLICATION_STATUS_COLORS } from "../../constants/Color";
 
 function MemberLoanApp() {
   const { data: loanProducts } = useFetchLoanProducts();
+  const { data: loanAccRaw} = useFetchLoanAcc();
+  const loanAcc = loanAccRaw?.data || [];
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -57,7 +60,7 @@ function MemberLoanApp() {
   const { mutate: mutateEdit } = useEditLoanApp();
   const { mutate: mutateDelete } = useDelete();
 
-  const [isEditable, setIsEditable] = useState(true);
+
   const [modalType, setModalType] = useState(null);
 
   const today = new Date().toISOString().split("T")[0];
@@ -72,7 +75,11 @@ function MemberLoanApp() {
   } = useForm({
     defaultValues: {
       application_id: null,
-      loan_product: "",
+      /** loan_product 
+       * This does not exists in DB but used for the modal to show the name of the loan product
+       * also used to find the name that matches it to assign the product_id
+       *   */
+      loan_product: "", 
       amount: "",
       purpose: "",
       term_months: "",
@@ -81,7 +88,13 @@ function MemberLoanApp() {
   });
 
   const selectedLoanProduct = watch("loan_product");
-  const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct);
+  const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct); // fetches the loan product info base on the selectedProduct
+
+    /**
+     * Grab the application_id in loan application then checks it if it exists on loan accounts
+     * used to conditionally render disabled inputs and selects and status on form modal
+     */
+    const [loanStatus, setLoanStatus] = useState(false);
 
   // Modal Handlers
   const openAddModal = () => {
@@ -90,10 +103,8 @@ function MemberLoanApp() {
       loan_product: "",
       amount: "",
       purpose: "",
-      term_months: "",
       application_date: today,
     });
-    setIsEditable(true);
     setModalType("add");
   };
 
@@ -107,16 +118,17 @@ function MemberLoanApp() {
       loan_product: matchedProduct?.name || "",
       amount: row.amount || "",
       purpose: row.purpose || "",
-      term_months: row.term_months || "",
       application_date: row.application_date || today,
       status: row.status || "Pending",
     });
-
-    setIsEditable(row.status === "Pending");
+    setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
     setModalType("edit");
   };
 
-  const closeModal = () => setModalType(null);
+  const closeModal = () => {
+    setLoanStatus(false);
+    setModalType(null)
+  };
 
   // Delete handler
   const handleDelete = (application_id) => {
@@ -130,10 +142,16 @@ function MemberLoanApp() {
 
   // Submit handler (add/edit)
   const onSubmit = (data) => {
+    /**
+     * Matches the name of the data.loan_product TO THE NAME of the product.name 
+     * this is very inefficient in so many ways
+     * 
+     * Might do a fix later but this one will do for now
+     */
     const selectedProduct = loanProducts?.find(
       (product) => product.name === data.loan_product
     );
-
+    // custom payload because of this shit above lol
     const payload = {
       ...data,
       product_id: selectedProduct?.product_id || null,
@@ -232,6 +250,8 @@ function MemberLoanApp() {
             const matchedLoanProduct = loanProducts?.find(
               (product_id) => product_id.product_id === row.product_id
             );
+            const loanProductName = matchedLoanProduct?.name;
+            const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.application_id}`}
@@ -241,16 +261,16 @@ function MemberLoanApp() {
                 <td className="text-center">
                   {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
                 </td>
-                <td>{matchedLoanProduct?.name || "Not Found"}</td>
+                <td>{loanProductName || "Not Found"}</td>
                 <td className="font-semibold text-success">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
                 
-                <td>{row.term_months} Months</td>
+                <td>{loanTerm  || "Not Found"} Months</td>
                 <td>
                   {row.application_date
                     ? new Date(row.application_date).toLocaleDateString()
-                    : "Not Provided"}
+                    : "Not Found"}
                 </td>
                 <td>{row.status}</td>
               </tr>
@@ -262,9 +282,9 @@ function MemberLoanApp() {
           title={"Loan Application"}
           open={modalType !== null}
           close={closeModal}
+          status={loanStatus}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
-          status={!isEditable}
           deleteAction={() =>
             handleDelete(watch("application_id"))
           }
@@ -277,6 +297,8 @@ function MemberLoanApp() {
 
 
           {/* Form Fields */}
+
+          {/* Loan Product Name */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
               <span className="label-text font-medium text-gray-700">
@@ -285,10 +307,10 @@ function MemberLoanApp() {
             </label>
             <select
               {...register("loan_product", { required: true })}
-              disabled={!isEditable}
+              disabled={loanStatus}
               className="select select-bordered w-full"
             >
-              <option value="">Select Loan Product</option>
+              <option value="" disabled>Select Loan Product</option>
               {loanProducts?.map((product) => (
                 <option key={product.product_id} value={product.name}>
                   {product.name}
@@ -311,7 +333,7 @@ function MemberLoanApp() {
                 min: selectedProduct?.min_amount || 0,
                 max: selectedProduct?.max_amount || 9999999,
               })}
-              disabled={!isEditable || !selectedLoanProduct}
+              disabled={loanStatus || !selectedLoanProduct}
               placeholder={
                 selectedProduct
                   ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
@@ -334,10 +356,10 @@ function MemberLoanApp() {
             </label>
             <select
               {...register("term_months", { required: true })}
-              disabled={!isEditable}
+              disabled={loanStatus}
               className="select select-bordered w-full"
             >
-              <option value="">Select Term</option>
+              <option value="" disabled>Select Term</option>
               {selectedProduct && (
                 <option value={selectedProduct.max_term_months}>
                   {selectedProduct.max_term_months} months
@@ -359,7 +381,7 @@ function MemberLoanApp() {
             <input
               type="date"
               {...register("application_date", { required: true })}
-              readOnly={!isEditable}
+              readOnly={loanStatus}
               className="input input-bordered w-full"
             />
           </div>
@@ -371,7 +393,7 @@ function MemberLoanApp() {
             </label>
             <textarea
               {...register("purpose", { required: true })}
-              readOnly={!isEditable}
+              readOnly={loanStatus}
               rows={3}
               placeholder="Enter a very persuasive reason..."
               className="textarea textarea-bordered w-full"

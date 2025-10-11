@@ -9,8 +9,7 @@ const addLoanAcc = async (formData) => {
     account_number = null,
     principal = null,
     outstanding_balance = null,
-    interest_rate = null,
-    interest_method = null,
+
     status = null,
     release_date = null,
     maturity_date = null,
@@ -23,8 +22,7 @@ const addLoanAcc = async (formData) => {
     account_number, 
     principal,
     outstanding_balance,
-    interest_method,
-    interest_rate,
+
     status,
     release_date,
     maturity_date

@@ -7,19 +7,15 @@ const {
   product_id = null,
   amount = null,
   purpose = null,
-  term_months = null,
   application_date = null,
 } = formData;
 
-// Convert to number safely — handle null, empty string, or invalid cases
-const termMonths = term_months ? Number(term_months) : null;
 
 // Construct final payload
 const payload = {
   product_id: product_id ? Number(product_id) : null,
   amount: amount ? Number(amount) : null, // also normalize if needed
   purpose,
-  term_months: termMonths, // keep same field name as in DB
   application_date,
   status: "Pending", // default
   applicant_id: memberId,

@@ -12,7 +12,7 @@ import LoanAccModal from './modal/LoanAccModal';
 function LoanAccounts() {
 
    const { data: members } = useMembers();
-     const { data: loanProducts } = useFetchLoanProducts();
+   const { data: loanProducts } = useFetchLoanProducts();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -69,7 +69,7 @@ function LoanAccounts() {
   const openModal = (row) => {
 
     console.log("Opened modal data name check", row )
-    const matchedProduct = loanProducts?.find(
+    const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
 
@@ -79,8 +79,8 @@ function LoanAccounts() {
       account_number: row.account_number,
       principal: row.amount,
       outstanding_balance: row.amount,
-      interest_rate: Number(matchedProduct?.interest_rate) || 0,
-      interest_method: matchedProduct?.interest_method ?? "",
+      interest_rate: Number(matchedLoanProduct?.interest_rate) || 0,
+      interest_method: matchedLoanProduct?.interest_method ?? "",
       status: row.status,
       release_date: row.release_date,
       maturity_date: row.release_date,
@@ -124,10 +124,11 @@ function LoanAccounts() {
             "Account No.",
             "Name",
             "Principal",
-            "Balance",
+            "Total Amount Due",
             "Loan Type",
             "Interest rate",
-            "Interest method",
+            "Method",
+            "Term",
             "Maturity Date",
             "Status",
           ]}
@@ -142,9 +143,13 @@ function LoanAccounts() {
               (member) => member.member_id === row.applicant_id
             );
 
-            const matchedProduct = loanProducts?.find(
+            const matchedLoanProduct = loanProducts?.find(
               (product) => product.product_id === row.product_id
             );
+            const loanProductName = matchedLoanProduct?.name;
+            const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
+            const interestMethod = matchedLoanProduct?.interest_method;
+            const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
 
             return (
               <tr
@@ -175,21 +180,22 @@ function LoanAccounts() {
                 </td>
                 {/* Loan Product */}
                 <td>
-                  {matchedProduct?.name || "Not Provided"}
+                  {loanProductName || "Not Found"}
                 </td>
 
                 {/* Interest Rate */}
                 <td className="font-semibold text-success">
-                  {row.interest_rate?.toLocaleString() || "0"} %
+                  {interestRate || "0"} %
                 </td>
                 {/* Interest Method */}
-                <td>{row.interest_method}</td>
+                <td>{interestMethod || "Not Found"}</td>
+                <td>{loanTerm || "Not Found"}</td>
 
                 {/* Maturity Date */}
                 <td>
                   {row.maturity_date
                     ? new Date(row.maturity_date).toLocaleDateString()
-                    : "Not Provided"}
+                    : "Not Found"}
                 </td>
                 <td>{row.status}</td>
               </tr>

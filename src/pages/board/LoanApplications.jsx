@@ -22,20 +22,24 @@ import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
+import Calculation from "../../constants/Calculation";
 
 function LoanApplications() {
   const navigate = useNavigate();
-  const { data: members } = useMembers();
-  const { data: loanAccRaw} = useFetchLoanAcc();
-  const loanAcc = loanAccRaw?.data || [];
-  
-  const { data: loanProducts } = useFetchLoanProducts();
-  const { mutate: addLoanApp } = useAddLoanAcc();
-
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
+
+  // Fetches data 
+  const { data: members } = useMembers();
+  const { data: loanAccRaw} = useFetchLoanAcc();
+  const { data: loanProducts } = useFetchLoanProducts();
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp(page, limit);
+
+  // Data manipulation 
+  const { mutate: addLoanApp } = useAddLoanAcc();
+
+  const loanAcc = loanAccRaw?.data || [];
   const loanDataRaw = memberLoanAppData?.data || [];
   const total = loanDataRaw?.count || 0;
 
@@ -146,24 +150,25 @@ function LoanApplications() {
       ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
       : "";
 
-    const matchedProduct = loanProducts?.find(
+    const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
+
+    const loanTerm = Number(matchedLoanProduct?.max_term_months) || 0;
 
     reset({
       application_id: row.application_id,
       applicant_id: row.applicant_id,
       applicant_name: fullName,
-      loan_product: matchedProduct?.name || "",
+      loan_product: matchedLoanProduct?.name || "",
       amount: row.amount || "",
       purpose: row.purpose || "",
-      term_months: row.term_months || "",
+      term_months: loanTerm,
       application_date: row.application_date || today,
       status: row.status,
     });
 
     setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
-
     setModalType("edit");
   };
 
@@ -188,6 +193,13 @@ function LoanApplications() {
 
 
   // Submit handler (add/edit)
+
+  /**
+   * NOTE: When you submit as a "APPROVED" it will go to loan acc form modal and the values of it is not submitted yet but stored to
+   * pendingAppData ot be later submitted on below
+   * 
+   * now the values here in resetLoanAcc will be set to the loanAccFormModal
+   */
   const onSubmit = (data) => {
     const generateAccountNumber = (appId) => {
       const now = new Date();
@@ -204,27 +216,51 @@ function LoanApplications() {
         (item) => item.application_id === data.application_id
       );
 
-      const matchedProduct = loanProducts?.find(
+      const matchedLoanProduct = loanProducts?.find(
         (product) => product.product_id === row.product_id
       );
+       // get the term months of the specific loan product to calculate the maturity automatically
+      const monthsMaturity = Number(matchedLoanProduct?.max_term_months) || null;
+
+      const interestRate = Number(matchedLoanProduct?.interest_rate) || 0;
+      const interestMethod = matchedLoanProduct?.interest_method ?? "";
+      const loanTerm = Number(matchedLoanProduct?.max_term_months);
+
+ 
+      const {
+        // totalInterest,
+        totalPayable,
+        // monthlyPayment,
+        // monthlyPrincipal,
+        // monthlyInterest
+      } = Calculation(interestRate, data.amount, loanTerm);
+
+      console.log("Total Interest", totalPayable)
 
       resetLoanAcc({
         loan_id: null,
         application_id: data.application_id,
         applicant_id: data.applicant_id,
-        product_id: matchedProduct?.product_id ?? null,
+        product_id: matchedLoanProduct?.product_id ?? null,
         account_number: generateAccountNumber(data.application_id),
         principal: data.amount,
-        outstanding_balance: data.amount,
-        interest_rate: Number(matchedProduct?.interest_rate) || 0,
-        interest_method: matchedProduct?.interest_method ?? "",
+        outstanding_balance: totalPayable,
+        interest_rate: interestRate,
+        interest_method: interestMethod,
         status: "Active",
         release_date: null,
         maturity_date: (() => {
           const date = new Date();
-          date.setMonth(date.getMonth() + 12);
+          // normalize to avoid edge cases like Jan 31 -> Mar 3 (Feb months is kulang)
+          const day = date.getDate();
+          date.setDate(1);
+          date.setMonth(date.getMonth() + monthsMaturity);
+          // restore closest possible day of month
+          const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+          date.setDate(Math.min(day, lastDayOfMonth));
           return date.toISOString().split("T")[0];
         })(),
+
       });
 
       // store the application data for later mutation for the edit on loan application
@@ -335,13 +371,20 @@ function LoanApplications() {
           total={total}
           setPage={setPage}
           renderRow={(row) => {
+
+            // This is dynamic to query columns from foreign keys 
             const matchedMember = members?.find(
               (member) => member.member_id === row.applicant_id
             );
-
+            
+            // 
             const matchedLoanProduct = loanProducts?.find(
               (product) => product.product_id === row.product_id
             );
+
+            const loanProductName = matchedLoanProduct?.name;
+            const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
+
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.application_id}`}
@@ -358,15 +401,15 @@ function LoanApplications() {
                       : "System"}
                   </span>
                 </td>
-                <td>{matchedLoanProduct?.name || "Not Found"}</td>
+                <td>{loanProductName || "Not Found"}</td>
                 <td className="font-semibold text-success">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
-                <td>{row.term_months} Months</td>
+                <td>{loanTerm || "Not Found"} Months</td>
                 <td>
                   {row.application_date
                     ? new Date(row.application_date).toLocaleDateString()
-                    : "Not Provided"}
+                    : "Not Found"}
                 </td>
                 <td>{row.status}</td>
               </tr>
@@ -609,24 +652,6 @@ function LoanApplications() {
             )}
           </div>
 
-          {/* Outstanding Balance */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Outstanding Balance
-              </span>
-            </label>
-            <input
-              type="number"
-              {...registerLoanAcc("outstanding_balance", { required: true })}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-            {errorsLoanAcc.outstanding_balance && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
           {/* Interest Rate */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
@@ -645,6 +670,24 @@ function LoanApplications() {
             )}
           </div>
 
+            {/* Total To Pay */}
+            <div className="form-control w-full mt-2">
+              <label className="label mb-1">
+                <span className="label-text font-medium text-gray-700">
+                  Total Amount Due
+                </span>
+              </label>
+              <input
+                type="number"
+                {...registerLoanAcc("outstanding_balance", { required: true })}
+                readOnly
+                className="input input-bordered w-full bg-gray-100 text-gray-700"
+              />
+              {errorsLoanAcc.outstanding_balance && (
+                <p className="text-error text-sm mt-1">Required</p>
+              )}
+            </div>
+
           {/* Interest Method */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
@@ -662,6 +705,9 @@ function LoanApplications() {
               <p className="text-error text-sm mt-1">Required</p>
             )}
           </div>
+
+
+
 
           {/* Status */}
           <div className="form-control w-full mt-2">
