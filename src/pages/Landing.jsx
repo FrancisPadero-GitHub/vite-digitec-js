@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import { useAuth } from "../backend/context/AuthProvider";
+import { useMembers } from "../backend/hooks/useFetchMembers";
+
 import logo from "../assets/digitec-logo.png";
 import hero1 from "../assets/hero1.jpg";
 import hero2 from "../assets/hero2.jpg";
@@ -34,25 +37,54 @@ const gallery = [
   gallery5,
   gallery6,
 ];
+// This is for the landing page to scan a logged in user account type to set the memberRole Link path 
+const normalizeRole = (accountType) => {
+  if (!accountType) return "login"; 
+  switch (accountType) {
+    case "Admin":
+      return "admin";
+    case "Treasurer":
+      return "treasurer";
+    case "Board":
+      return "board";
+    case "Regular":
+      return "regular-member";
+    case "Associate":
+      return "associate-member";
+    default:
+      return accountType.toLowerCase().replace(/\s+/g, "-");
+  }
+};
+
 
 const Landing = () => {
+  // This is for the landing page to scan a logged in user account type to set the memberRole Link path 
+  const { user } = useAuth();
+  const { data: members} = useMembers();
+  const memberRecord = user
+    ? members?.find((m) => m.login_id === user.id)
+    : null;
+  // Normalize the member role and set default path if null or undefined
+  const rawRole = memberRecord?.account_type;
+  const memberRole = rawRole ? normalizeRole(rawRole) : "login";
 
-// Smooth scrolling for header links
-const scrollToAbout = () => {
-  const element = document.getElementById('about-section');
-  if (element) {
-    const offsetTop = element.offsetTop;
-    window.scrollTo({ top: offsetTop - 80, behavior: 'smooth' });
-  }
-};
 
-const scrollToContact = () => {
-  const element = document.getElementById('contact-section');
-  if (element) {
-    const offsetTop = element.offsetTop;
-    window.scrollTo({top: offsetTop, behavior: 'smooth'});
-  }
-};
+  // Smooth scrolling for header links
+  const scrollToAbout = () => {
+    const element = document.getElementById('about-section');
+    if (element) {
+      const offsetTop = element.offsetTop;
+      window.scrollTo({ top: offsetTop - 80, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToContact = () => {
+    const element = document.getElementById('contact-section');
+    if (element) {
+      const offsetTop = element.offsetTop;
+      window.scrollTo({top: offsetTop, behavior: 'smooth'});
+    }
+  };
   const [index, setIndex] = useState(0);
 
   // Animation for carousel
@@ -72,7 +104,7 @@ const scrollToContact = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 navbar bg-base-100 px-4 py-4 md:py-5 shadow-lg">
         <div className="flex-1">
-          <Link to="/" className="flex items-center normal-case text-lg md:text-xl">
+          <Link to={`/${memberRole || "/"}`} className="flex items-center normal-case text-lg md:text-xl">
             <div className="w-10 h-10 md:w-12 md:h-12 mr-2 md:mr-3">
               <img src={logo} alt="Digitec Logo" className="w-full h-full object-contain"/>
             </div>
@@ -85,7 +117,8 @@ const scrollToContact = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex flex-none">
           <ul className="menu menu-horizontal px-1 gap-1 md:gap-2">
-            <li><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-sm md:text-base">Home</button></li>
+            {/* <li><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-sm md:text-base">Home</button></li> */}
+            <li><Link to={`/${memberRole || "/"}`} className="text-sm md:text-base">Home</Link></li>
             <li><button onClick={scrollToAbout} className="text-sm md:text-base">About ECTEC</button></li>
             <li><button onClick={scrollToContact} className="text-sm md:text-base">Contact Info</button></li>
             <li>

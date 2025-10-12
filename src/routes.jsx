@@ -29,6 +29,8 @@ import CoopShareCapital from "./pages/treasurer/CoopShareCapital.jsx";
 import ClubFunds from "./pages/treasurer/ClubFunds.jsx";
 import ClubExpenses from "./pages/treasurer/ClubExpenses.jsx";
 import CoopLoans from "./pages/treasurer/CoopLoans.jsx";
+import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases.jsx";
+import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments.jsx";
 
 // BOD Pages
 import LoanApplications from "./pages/board/LoanApplications.jsx";
@@ -175,7 +177,10 @@ function AppRoutes() {
         { path: "coop-share-capital", element: <CoopShareCapital /> },
         { path: "club-funds", element: <ClubFunds /> },
         { path: "club-expenses", element: <ClubExpenses /> },
-        { path: "coop-loans", element: <CoopLoans /> },
+
+        { path: "coop-loans/releases", element: <CoopLoansReleases /> },
+        { path: "coop-loans/payments", element: <CoopLoansPayments /> },
+
         { path: "reports", element: <Reports /> },
       ],
     },

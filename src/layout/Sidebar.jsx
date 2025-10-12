@@ -51,7 +51,13 @@ const sidebarConfig = {
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/treasurer/coop-share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/treasurer/club-funds" },
         { label: "Club Expenses", icon: ReceiptLongIcon, path: "/treasurer/club-expenses" },
-        { label: "Coop Loans", icon: HandshakeIcon, path: "/treasurer/coop-loans" },
+        { label: "Coop Loans", icon: HandshakeIcon, 
+          children:[
+            { label: "Releases", path: "/treasurer/coop-loans/releases" },
+            { label: "Payments", path: "/treasurer/coop-loans/payments" },
+            
+          ]
+         },
       ],
     },
   ],
