@@ -234,7 +234,7 @@ function LoanAccounts() {
           close={closeModal}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
-         
+          status={!watch("release_date")} // disables if the value is null 
         >
           <div className="space-y-4">
             {/* Application ID */}
