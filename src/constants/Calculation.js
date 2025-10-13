@@ -41,6 +41,7 @@ function Calculation(interest, principal, term) {
   return {
     totalInterest: parseFloat(totalInterest.toFixed(2)),
     totalPayable: parseFloat(totalPayable.toFixed(2)),
+    monthlyInterestRate: parseFloat(monthlyInterestRate.toFixed(2)),
     monthlyPayment: parseFloat(monthlyPayment.toFixed(2)),
     monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(2)),
     monthlyInterest: parseFloat(monthlyInterest.toFixed(2)),

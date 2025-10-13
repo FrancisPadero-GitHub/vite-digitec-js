@@ -1,5 +1,6 @@
 import {useState} from 'react'
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 import {useFetchLoanAcc} from "./hooks/useFetchLoanAcc";
 import { useMembers } from "../../backend/hooks/useFetchMembers";
@@ -10,7 +11,7 @@ import FilterToolbar from '../shared/components/FilterToolbar';
 import LoanAccModal from './modal/LoanAccModal';
 
 function LoanAccounts() {
-
+   const navigate = useNavigate();
    const { data: members } = useMembers();
    const { data: loanProducts } = useFetchLoanProducts();
 
@@ -30,7 +31,7 @@ function LoanAccounts() {
 
     const member = members?.find((m) => m.member_id === row.applicant_id);
     const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
+      ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
 
     const matchesSearch =
@@ -68,7 +69,7 @@ function LoanAccounts() {
 
   const openModal = (row) => {
 
-    console.log("Opened modal data name check", row )
+    // console.log("Opened modal data name check", row )
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
@@ -85,6 +86,9 @@ function LoanAccounts() {
       release_date: row.release_date,
       maturity_date: row.release_date,
     });
+    
+    navigate(`../loan-account/details/${row.loan_id}`);
+
     setModalType("edit");
   }
 

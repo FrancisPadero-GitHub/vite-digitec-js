@@ -35,6 +35,7 @@ import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments.jsx";
 // BOD Pages
 import LoanApplications from "./pages/board/LoanApplications.jsx";
 import LoanAccounts from "./pages/board/LoanAccounts.jsx";
+import LoanAccountDetails from "./pages/board/LoanAccountDetails.jsx";
 
 // REGULAR AND ASSOCIATE PAGES
 import MemberDashboard from "./pages/members/MemberDashboard.jsx";
@@ -108,6 +109,7 @@ function AppRoutes() {
         { path: "activity-logs", element: <ActivityLogs /> },
         { path: "loan-applications", element: <LoanApplications /> },
         { path: "loan-accounts", element: <LoanAccounts /> },
+        { path: "loan-account/details/:loan_id", element: <LoanAccountDetails />},
         { path: "reports", element: <Reports /> },
       ],
     },

@@ -21,8 +21,10 @@ import LoanAccModal from "./modal/LoanAccModal";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
+
 // constants
 import Calculation from "../../constants/Calculation";
+
 
 function LoanApplications() {
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ function LoanApplications() {
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp(page, limit);
 
   // Data manipulation 
-  const { mutate: addLoanApp } = useAddLoanAcc();
+  const { mutate: addLoanAcc } = useAddLoanAcc();
 
   const loanAcc = loanAccRaw?.data || [];
   const loanDataRaw = memberLoanAppData?.data || [];
@@ -54,7 +56,7 @@ function LoanApplications() {
 
     const member = members?.find((m) => m.member_id === row.applicant_id);
     const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
+      ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
 
     const generatedId = `${TABLE_PREFIX}${row.application_id}`;
@@ -123,10 +125,12 @@ function LoanApplications() {
       account_number: "",
       principal: "",
       outstanding_balance: "",
-      interest_rate: "",
-      interest_method: "",
+      interest_rate: "", // front_end only
+      loan_term: "", // front_end only
+      interest_method: "", // front_end only
       status: "Active",
       release_date: null, // will be configured by treasurer
+      approved_date: today,
       maturity_date: "",
     },
   });
@@ -189,8 +193,8 @@ function LoanApplications() {
 
 
   // State to hold the edit application data temporarily
+  // this is for the edit loan applications where the status is not "Approved"
   const [pendingAppData, setPendingAppData] = useState(null);
-
 
   // Submit handler (add/edit)
 
@@ -210,6 +214,7 @@ function LoanApplications() {
       const randomSuffix = Math.floor(10 + Math.random() * 90);
       return `ACCT-${year}${month}${day}-${paddedId}${randomSuffix}`;
     };
+
 
     if (data.status === "Approved") {
       const row = loanDataRaw.find(
@@ -235,7 +240,7 @@ function LoanApplications() {
         // monthlyInterest
       } = Calculation(interestRate, data.amount, loanTerm);
 
-      console.log("Total Interest", totalPayable)
+      // console.log("Loan Term", loanTerm)
 
       resetLoanAcc({
         loan_id: null,
@@ -247,8 +252,10 @@ function LoanApplications() {
         outstanding_balance: totalPayable,
         interest_rate: interestRate,
         interest_method: interestMethod,
+        loan_term: loanTerm,
         status: "Active",
         release_date: null,
+        approved_date: today,
         maturity_date: (() => {
           const date = new Date();
           // normalize to avoid edge cases like Jan 31 -> Mar 3 (Feb months is kulang)
@@ -263,8 +270,11 @@ function LoanApplications() {
 
       });
 
+
+
+
       // store the application data for later mutation for the edit on loan application
-      setPendingAppData(data);
+      setPendingAppData(data); // loan_acc data
 
       setSelectedApplicationId(data.application_id);
       setShowLoanAccModal(true);
@@ -276,9 +286,10 @@ function LoanApplications() {
 
 
   // Loan Accounts handler
+  // This is the last one to be submitted if the status is for approval
   const onSubmitLoanAcc = (loanAccData) => {
     // 1. Create the loan account
-    addLoanApp(loanAccData);
+    addLoanAcc(loanAccData); // this is the first mutation add on success here then 
 
     // 2. Mutate the original application too (if it's pending)
     if (pendingAppData) {
@@ -425,6 +436,7 @@ function LoanApplications() {
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
         deleteAction={() => handleDelete(watch("application_id"))}
+        type={watch("status") === "Approved"} // this one will watch the status changes to set either "next" or "submit" status on the form modal
       >
         {/* Use grid layout for 2 columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -705,9 +717,6 @@ function LoanApplications() {
               <p className="text-error text-sm mt-1">Required</p>
             )}
           </div>
-
-
-
 
           {/* Status */}
           <div className="form-control w-full mt-2">

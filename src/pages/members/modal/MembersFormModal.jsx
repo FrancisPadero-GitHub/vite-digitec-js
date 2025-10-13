@@ -15,10 +15,10 @@ import React from 'react'
  * @param {React.ReactNode} children - the form fields to be rendered inside the modal
  * @param {function} onSubmit - function to call when the form is submitted
  * @param {function} deleteAction - function to call when the delete button is clicked
- * 
+ * @param {boolean} type - shows if next or submit depending on the status (approved or not)
  */
 
-function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction }) { 
+function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction, type }) { 
 
   // if open is false, don't render anything
   if (!open) return null
@@ -44,7 +44,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
                 <button type="submit" className="btn btn-primary" disabled={status}>
-                  Submit
+                  {type ? "Next" : "Submit"}
                 </button>
               )}
             </div>

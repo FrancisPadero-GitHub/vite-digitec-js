@@ -73,7 +73,7 @@ function CoopShareCapital() {
   const coop = coopRaw.filter((row) => {
     const member = members?.find((m) => m.member_id === row.member_id);
     const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
+      ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
 
     const generatedId = `${TABLE_PREFIX}_${row.coop_contri_id}`;
