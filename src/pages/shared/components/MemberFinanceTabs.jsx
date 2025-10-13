@@ -2,6 +2,10 @@
 // 3 TABS; CONTAINS SHARE CAPITAL, CLUB FUND, AND LOANS (ONGOING/PAST AND THEIR PAYMENT SCHEDS)
 
 import { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import dayjs from "dayjs";
+
+import { useFetchLoanAcc } from "../../board/hooks/useFetchLoanAcc";
 
 export const FinanceTab = ({
   headers = [],
@@ -23,6 +27,22 @@ export const FinanceTab = ({
   const totalPages = Math.ceil((data?.length || 0) / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+
+
+  const { memberId } = useParams();
+  const parsedId = Number(memberId);
+
+  const { data: loanAcc } = useFetchLoanAcc();
+  const loanAccRaw = loanAcc?.data || [];
+  const activeLoans = loanAccRaw?.filter(
+    (row) => row.applicant_id === parsedId && row.status === "Active"
+  );
+
+  // Past (Closed) loans — could be multiple
+  const pastLoans = loanAccRaw?.filter(
+    (row) => row.applicant_id === parsedId && row.status === "Closed"
+  );
+
 
   return (
     <>
@@ -85,12 +105,113 @@ export const FinanceTab = ({
         {label === "Loans" && (
           <>
             <h2 className="text-lg font-semibold mb-2 text-primary">Ongoing Loans</h2>
-            <p className="text-sm text-gray-500">No ongoing loans.</p>
+            {activeLoans && activeLoans.length > 0 ? (
+              <div className="space-y-4">
+                {activeLoans.map((loan) => (
+                  <div
+                    key={loan.loan_id}
+                    className="p-4 border border-base-content/10 rounded-xl shadow-sm"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-base-content/60 uppercase tracking-wide">Account Number</p>
+                        <p className="text-base font-semibold">{loan.account_number}</p>
+                      </div>
+
+                      <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                        {loan.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-2 text-sm text-base-content/80 border-t border-base-content/10 pt-3">
+                      <div>
+                        <p className="text-xs text-base-content/60">Principal</p>
+                        <p>₱{Number(loan.principal || 0).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-base-content/60">Outstanding Balance</p>
+                        <p>₱{Number(loan.outstanding_balance || 0).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-base-content/60">Release Date</p>
+                        <p>
+                          {loan.release_date
+                            ? dayjs(loan.release_date).format("MMM D, YYYY")
+                            : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-base-content/60">Maturity Date</p>
+                        <p>
+                          {loan.maturity_date
+                            ? dayjs(loan.maturity_date).format("MMM D, YYYY")
+                            : "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No Ongoing loans.</p>
+            )}
+
 
             <div className="divider p-4"></div>
 
             <h2 className="text-lg font-semibold mb-2 text-primary">Past Loans</h2>
-            <p className="text-sm text-gray-500">No past loans.</p>
+
+            {pastLoans && pastLoans.length > 0 ? (
+              <div className="space-y-4">
+                {pastLoans.map((loan) => (
+                  <div
+                    key={loan.loan_id}
+                    className="p-4 border border-base-content/10 rounded-xl shadow-sm"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-base-content/60 uppercase tracking-wide">Account Number</p>
+                        <p className="text-base font-semibold">{loan.account_number}</p>
+                      </div>
+
+                      <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                        {loan.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-2 text-sm text-base-content/80 border-t border-base-content/10 pt-3">
+                      <div>
+                        <p className="text-xs text-base-content/60">Principal</p>
+                        <p>₱{Number(loan.principal || 0).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-base-content/60">Outstanding Balance</p>
+                        <p>₱{Number(loan.outstanding_balance || 0).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-base-content/60">Release Date</p>
+                        <p>
+                          {loan.release_date
+                            ? dayjs(loan.release_date).format("MMM D, YYYY")
+                            : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-base-content/60">Maturity Date</p>
+                        <p>
+                          {loan.maturity_date
+                            ? dayjs(loan.maturity_date).format("MMM D, YYYY")
+                            : "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No past loans.</p>
+            )}
+
           </>
         )}
       </div>
