@@ -2,13 +2,12 @@ import {useState} from 'react'
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import {useFetchLoanAcc} from "./hooks/useFetchLoanAcc";
+import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
 import { useMembers } from "../../backend/hooks/useFetchMembers";
 import { useFetchLoanProducts } from '../members/hooks/useFetchLoanProduct';
 
 import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
-import LoanAccModal from './modal/LoanAccModal';
 
 function LoanAccounts() {
    const navigate = useNavigate();
@@ -43,15 +42,10 @@ function LoanAccounts() {
     const matchesStatus = statusFilter === "" || row.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-  const [modalType, setModalType] = useState(null);
 
   // React Hook Form setup for Loan Accounts
   const {
-    register: registerLoanAcc,
-    handleSubmit: handleSubmitLoanAcc,
     reset: resetLoanAcc,
-    watch: watchLoanAcc,
-    formState: { errors: errorsLoanAcc },
   } = useForm({
     defaultValues: {
       application_id: null,
@@ -88,8 +82,6 @@ function LoanAccounts() {
     });
     
     navigate(`../loan-account/details/${row.loan_id}`);
-
-    setModalType("edit");
   }
 
    

@@ -610,7 +610,6 @@ function LoanApplications() {
           }
           setShowLoanAccModal(false);
         }}
-        action={"add"}
         onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)}
       >
 

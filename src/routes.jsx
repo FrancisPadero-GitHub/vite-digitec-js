@@ -131,6 +131,9 @@ function AppRoutes() {
         // { path: "coop-loans/my-information", element: <MemberCoopLoans type="information" /> },
         // { path: "coop-loans/payments", element: <MemberCoopLoans type="payments" /> },
         { path: "coop-loans/accounts", element: <MemberLoanAcc/> },
+        
+        { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
+
         { path: "coop-loans/my-applications", element: <MemberLoanApp /> },
         // { path: "coop-loans/approved", element: <MemberCoopLoans type="approved" /> },
         

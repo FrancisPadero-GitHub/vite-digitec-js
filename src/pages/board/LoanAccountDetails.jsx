@@ -16,7 +16,7 @@ function LoanAccountDetails() {
 
   // Payment Schedules
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit] = useState(20);
   const { data: loanSchedules, isLoading} = useFetchMemberPaySched(page, limit, parsedId);
   const loanSchedRaw = loanSchedules?.data || [];
   const total = loanSchedules?.count || 0;

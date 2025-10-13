@@ -1,5 +1,5 @@
 import {useState} from 'react'
-
+import { useNavigate } from 'react-router-dom';
 import {useFetchLoanAcc} from "./hooks/useFetchLoanAcc";
 import { useMembers } from "../../backend/hooks/useFetchMembers";
 import { useFetchLoanProducts } from '../members/hooks/useFetchLoanProduct';
@@ -8,7 +8,7 @@ import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
 
 function MemberLoanAcc() {
-
+  const navigate = useNavigate();
   const { data: members } = useMembers();
   const { data: loanProducts } = useFetchLoanProducts();
 
@@ -43,6 +43,10 @@ function MemberLoanAcc() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const openModal = (row) => {
+    navigate(`../loan-account/details/${row.loan_id}`);
+  }
 
 
   if (isLoading) return <div>Loading Loan Accounts...</div>;

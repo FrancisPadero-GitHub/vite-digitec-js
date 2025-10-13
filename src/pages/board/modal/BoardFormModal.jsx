@@ -11,30 +11,31 @@ import React from 'react'
  * 
  * @param {boolean} open - whether the modal is open or not
  * @param {function} close - function to call when the modal is closed
+ * @param {boolean} action - whether the modal is for editing or adding
  * @param {React.ReactNode} children - the form fields to be rendered inside the modal
  * @param {function} onSubmit - function to call when the form is submitted
  * @param {function} deleteAction - function to call when the delete button is clicked
- * 
+ * @param {boolean} type - shows if next or submit depending on the status (approved or not)
  */
 
-function LoanAccModal({ title, open, close, children, onSubmit, status, }) { // deleteAction
-
+function BoardFormModal({title, open, close, children, onSubmit, status }) { 
 
   // if open is false, don't render anything
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
-        <h2 className="text-2xl font-semibold">{`${title} (Approved)`}</h2>
+        <h2 className="text-2xl font-semibold">{ `Release ${title}`}</h2>
         <form onSubmit={onSubmit}>
           {children}
 
           <div className="flex justify-between items-center gap-2 mt-6">
+
             <div className="flex gap-2 ml-auto">
-              <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Back" : "Close"}</button>
+              <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status}>
-                  Submit
+                <button type="submit" disabled={status} className="btn btn-primary">
+                  Release
                 </button>
               )}
             </div>
@@ -45,4 +46,4 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, }) { // 
   )
 }
 
-export default LoanAccModal
+export default BoardFormModal

@@ -16,11 +16,16 @@ import { useState } from "react";
 import { useFetchCoopByMember } from "../members/hooks/useFetchCoopByMember";
 import { useFetchClubFundsByMember } from "./hooks/useFetchClubFundsByMember";
 import { useFetchMemberTotal } from "./hooks/useFetchMemberTotals";
+// import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
+
 import { useFetchTotal } from "../shared/hooks/useFetchTotal";
+
+// import { useFetchMemberPaySched } from "../board/hooks/useFetchMemberPaySched";
 
 // Components
 import StatCardMember from "./modal/StatCardMember";
 import DataTableMember from "./modal/DataTableMember";
+import LoanScheduleCardList from "../board/components/LoanScheduleCardList";
 
 // Constant Colors
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS} from "../../constants/Color";
@@ -29,6 +34,20 @@ function MemberDashboard() {
   const { data: coopData, coopIsLoading } = useFetchCoopByMember();
   const { data: clubFundData, clubIsLoading } = useFetchClubFundsByMember();
 
+  // const {data: loanAcc} = useFetchLoanAcc();
+  // const loanAccRaw = loanAcc?.data || [];
+
+  // const targetLoan = loanAccRaw.find(item => item.status === "Active"); // allows only 1 row to return with this policy
+  // const loanId = targetLoan ? targetLoan.loan_id : null;
+
+  // const [page, setPage] = useState(1);
+  // const [limit] = useState(20);
+  // const { data: loanSchedules, isLoading } = useFetchMemberPaySched(page, limit, loanId); // 1 and 12 since only 12 months is the max on this one
+  // const loanSchedRaw = loanSchedules?.data || [];
+  // const total = loanSchedules?.count || 0;
+  
+ 
+  
   // Filters for the cards
   const subText = "All Time";
   const [filters, setFilters] = useState({
@@ -258,6 +277,7 @@ function MemberDashboard() {
           </div>
         </div>
       </div>
+
       {/* Transaction History */}
       <div className="card bg-base-100 shadow">
         <div className="card-body p-4">
@@ -268,7 +288,6 @@ function MemberDashboard() {
             </h2>
 
             {/* FilterToolbar here */}
-
           </div>
           <DataTableMember
             title={"Share Capital / Coop"}
