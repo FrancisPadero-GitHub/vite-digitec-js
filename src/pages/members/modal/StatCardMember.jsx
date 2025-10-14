@@ -1,3 +1,4 @@
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 /**
  * Reusable personal stat card for members
  *
@@ -49,27 +50,32 @@ function StatCardMember({
   }
 
   return (
-    <div className="flex flex-col card bg-base-100/20 shadow-md rounded-2xl px-6 py-4">
+    <div className="flex flex-col card bg-base-100/20 shadow-md rounded-2xl px-4 py-4">
+      {/* Dropdown for filters */}
+        <div className="dropdown dropdown-right text-right">
+          <div tabIndex={0} role="button" className="btn btn-ghost btn-xs text-gray-400">
+            <MoreHorizOutlinedIcon fontSize="small" />
+          </div>
+          <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-sm">
+            {filters.map((label) => (
+              <li key={label}>
+                <button
+                  onClick={() => onSubtitleChange?.(label)}
+                  className={`text-sm ${subtitle === label ? "text-primary font-semibold" : "text-gray-500"}`}
+                >
+                  {label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
       {/* Icon + Title (dead center) */}
       <div className="flex flex-col items-center justify-center mb-2">
         <div className={`w-16 h-16 rounded-full ${iconBgColor} flex items-center justify-center`}>
           <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white">{icon}</span>
         </div>
         <span className="text-lg font-semibold mt-1">{title}</span>
-      </div>
-
-      {/* Filters (left aligned) */}
-      <div className="flex justify-center mb-2 flex-wrap gap-1">
-        {filters.map((label) => (
-          <button
-            key={label}
-            className={`join-item btn btn-xs whitespace-nowrap 
-          ${subtitle === label ? "btn-primary" : "btn-ghost text-gray-400"}`}
-            onClick={() => onSubtitleChange?.(label)}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       {/* Stats + Growth (left aligned) */}

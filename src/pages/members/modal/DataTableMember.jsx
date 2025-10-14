@@ -7,10 +7,10 @@ import { Link } from "react-router-dom";
 function DataTable({ title, linkPath, headers = [], data = [], isLoading, renderRow  }) {
 
   return (
-    <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md">
+    <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md mb-4">
       <div className="flex flex-row justify-between items-center">
         <h2 className="p-4">
-          <span className="text-lg">{title}</span>
+          <span className="text-lg font-semibold">{title}</span>
           {/* <span className="text-gray-400"> | Recent</span> */}
         </h2>
         <Link to={linkPath} className="btn btn-link no-underline text-primary hover:underline p-4">

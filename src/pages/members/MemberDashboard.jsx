@@ -1,15 +1,5 @@
 // icons
-import { 
-  AccountBalance,
-  MonetizationOn,
-  CreditScore,
-  EventNote,
-  Savings,
-  Wallet, 
-  ReceiptLong,
-  AttachMoney
-
-} from "@mui/icons-material";
+import {AccountBalance, MonetizationOn, CreditScore, EventNote, Savings, Wallet, ReceiptLong, AttachMoney, Payments} from "@mui/icons-material";
 
 // Hooks
 import { useState } from "react";
@@ -28,7 +18,7 @@ import DataTableMember from "./modal/DataTableMember";
 import LoanScheduleCardList from "../board/components/LoanScheduleCardList";
 
 // Constant Colors
-import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS} from "../../constants/Color";
+import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS } from "../../constants/Color";
 
 function MemberDashboard() {
   const { data: coopData, coopIsLoading } = useFetchCoopByMember();
@@ -144,36 +134,11 @@ function MemberDashboard() {
    */
 
 
-
-
   const personalStats = [
     {
-      icon: <AccountBalance />,
-      iconBgColor: "bg-lime-400",
-      title: "Club Fund",
-      amount: pcfData ?? 0,
-      growthPercent: pcfGrowth,
-      subtitle: filters.personalFunds.subtitle,
-      onSubtitleChange: (label) => {
-        setFilters((prev) => ({
-          ...prev,
-          personalFunds: {
-            subtitle: label,
-            month: label === "This Month" ? new Date().getMonth() + 1 : null,
-            year: label !== "All Time" ? new Date().getFullYear() : null,
-          },
-        }));
-      },
-
-      loading: pcfLoading,
-      error: pcfIsError,
-      errorMessage: pcfError?.message,
-    },
-
-    {
       icon: <Wallet />,
-      iconBgColor: "bg-sky-400",
-      title: "Share / Coop Capital",
+      iconBgColor: "bg-blue-400",
+      title: "My Share Capital",
       amount: pscData ?? 0,
       growthPercent: pscGrowth,
       subtitle: filters.personalCoop.subtitle,
@@ -192,21 +157,17 @@ function MemberDashboard() {
       error: pscIsError,
       errorMessage: pscError?.message,
     },
-  ]
-
-
-  const clubStats = [
     {
-      icon: <AttachMoney />,
-      iconBgColor: "bg-lime-300",
-      title: "Club Fund Money",
-      amount: clubFundsBalance ?? 0,
-      growthPercent: cfGrowth,
-      subtitle: filters.clubFunds.subtitle,
+      icon: <Payments />,
+      iconBgColor: "bg-green-400",
+      title: "My Club Funds",
+      amount: pcfData ?? 0,
+      growthPercent: pcfGrowth,
+      subtitle: filters.personalFunds.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
           ...prev,
-          clubFunds: {
+          personalFunds: {
             subtitle: label,
             month: label === "This Month" ? new Date().getMonth() + 1 : null,
             year: label !== "All Time" ? new Date().getFullYear() : null,
@@ -214,15 +175,18 @@ function MemberDashboard() {
         }));
       },
 
-      loading: cfBalLoading,
-      error: cfBalIsError,
-      errorMessage: cfBalError?.message,
+      loading: pcfLoading,
+      error: pcfIsError,
+      errorMessage: pcfError?.message,
     },
+  ]
 
+
+  const clubStats = [
     {
-      icon: <Savings />,
-      iconBgColor: "bg-sky-300",
-      title: "Coop Total Money",
+      icon: <AccountBalance />,
+      iconBgColor: "bg-sky-400",
+      title: "Total Coop Share Capital",
       amount: coopTotal ?? 0,
       growthPercent: coopGrowth,
       subtitle: filters.coopFunds.subtitle,
@@ -240,6 +204,28 @@ function MemberDashboard() {
       loading: coopLoading,
       error: coopIsError,
       errorMessage: coopError?.message,
+    },
+    {
+      icon: <Savings />,
+      iconBgColor: "bg-lime-400",
+      title: "Total Club Funds",
+      amount: clubFundsBalance ?? 0,
+      growthPercent: cfGrowth,
+      subtitle: filters.clubFunds.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          clubFunds: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+
+      loading: cfBalLoading,
+      error: cfBalIsError,
+      errorMessage: cfBalError?.message,
     },
   ]
 
@@ -278,6 +264,7 @@ function MemberDashboard() {
         </div>
       </div>
 
+      
       {/* Transaction History */}
       <div className="card bg-base-100 shadow">
         <div className="card-body p-4">
@@ -287,12 +274,11 @@ function MemberDashboard() {
               <span className="text-sm text-base-content/60">| Latest First</span>
             </h2>
 
-            {/* FilterToolbar here */}
           </div>
           <DataTableMember
-            title={"Share Capital / Coop"}
+            title={"My Share Capital / Coop Contributions"}
             linkPath={"/regular-member/regular-member-share-capital"}
-            headers={["Ref No.", "Amount", "Payment Category", "Date", "Remarks"]}
+            headers={["Ref No.", "Amount", "Payment Category", "Date", "Payment Method"]}
 
             data={coopData?.data ?? []}
             isLoading={coopIsLoading}
@@ -316,11 +302,15 @@ function MemberDashboard() {
                     )}
                   </td>
 
+                  <td>{row.contribution_date ? new Date(row.contribution_date).toLocaleDateString() : "Not Provided"}</td>
                   <td>
-                    {row.contribution_date ? new Date(row.contribution_date).toLocaleDateString() : "Not Provided"}
-                  </td>
-                  <td>
-                    {row.remarks}
+                    {row.payment_method ? (
+                      <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                        {row.payment_method}
+                      </span>
+                    ) : (
+                      <span className="badge font-semibold badge-error">Not Provided</span>
+                    )}
                   </td>
 
                 </tr>
@@ -329,7 +319,7 @@ function MemberDashboard() {
           /> 
 
           <DataTableMember
-            title={"Club Funds"}
+            title={"My Club Funds"}
             linkPath={"/regular-member/regular-member-club-funds"} // will provide later on
             headers={["Ref No.","Amount", "Category", "Date", "Payment Method"]}
             data={clubFundData?.data ?? []} // destructed it to get the data only not the count
@@ -341,39 +331,33 @@ function MemberDashboard() {
                 <tr key={`${TABLE_PREFIX}_${row.contribution_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
                   <td>{TABLE_PREFIX}_{row.contribution_id?.toLocaleString() || "ID"}</td>
 
-                  <td className="px-4 py-2 font-semibold text-success">
-                    ₱ {row.amount?.toLocaleString() || "0"}
-                  </td>
+                  <td className="px-4 py-2 font-semibold text-success">₱ {row.amount?.toLocaleString() || "0"}</td>
 
                   <td>
-                    <span
-                      className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}
-                    >
+                    <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
                       {row.category || "Not Provided"}
                     </span>
                   </td>
 
                   <td>{row.payment_date ? new Date(row.payment_date).toLocaleDateString() : "Not Provided"}</td>
+
                   <td>
                     <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
                       {row.payment_method}
                     </span>
                   </td>
-                
-
                 </tr>
               )
             }}
           />
 
           <DataTableMember
-            title={"Loan Payments"}
+            title={"My Loan Payments"}
             linkPath={"/regular-member"}
             headers={["Ref No.", "Amount", "Payment Method", "Date", "Remarks"]}
             data={[]}
             isLoading={coopIsLoading}
             renderRow={()=>("")}
-              
           /> 
 
         </div>
