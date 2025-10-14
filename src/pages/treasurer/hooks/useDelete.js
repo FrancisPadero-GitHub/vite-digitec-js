@@ -10,7 +10,6 @@ import { supabase } from "../../../backend/supabase";
  */
 
 const markAsDelete = async ({ table, column_name, id }) => {
-  console.log(id)
   const { data, error } = await supabase
     .from(table)
     .update({ deleted_at: new Date().toISOString() })

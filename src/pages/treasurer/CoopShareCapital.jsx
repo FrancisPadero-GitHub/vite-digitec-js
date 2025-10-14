@@ -326,7 +326,7 @@ function CoopShareCapital() {
                     : "cursor-not-allowed opacity-80 bg-base-100/70"
                   }`}
               >
-                <td className="px-4 py-2 text-center font-medium text-xs">SCC_{row.coop_contri_id}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row.coop_contri_id}</td>
                 <td className="px-4 py-4">
                   <span className="flex items-center gap-3">
                     {matchedMember ? (
