@@ -121,6 +121,20 @@ function Profile() {
       }
     );
   };
+
+  // calculate membership duration in months (APPLICATION DATE FOR NOW, CHANGE TO JOINED DATE LATER SINCE JOINED DATE IN DB IS NULL ATM)
+  const calculateMembershipMonths = (application_date) => {
+    if (!application_date) return 0;
+    const joined = new Date(application_date);
+    const now = new Date();
+    const years = now.getFullYear() - joined.getFullYear();
+    const months = now.getMonth() - joined.getMonth();
+    return years * 12 + months;
+  };
+  const membershipMonths = calculateMembershipMonths(myProfile?.application_date);
+
+
+
   return (
     <div className="min-h-screen p-3 md:p-1">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -159,10 +173,13 @@ function Profile() {
               <span className="badge badge-neutral">
                 {myProfile?.account_type} Member
               </span>
+              {/* change this to joined date later, right now joined_date in the db is all null. 
+                      application_date is used in the meantime
+                    */}
               <p className="text-sm mt-2">
                 Member Since:{" "}
-                {myProfile?.joined_date
-                  ? new Date(myProfile.joined_date).toLocaleDateString()
+                {myProfile?.application_date
+                  ? new Date(myProfile.application_date).toLocaleDateString()
                   : ""}
               </p>
             </div>
@@ -172,11 +189,11 @@ function Profile() {
                 <p className="text-sm text-gray-500">ID NO.</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold">₱ 30,000</h3>
+                <h3 className="text-lg font-bold">₱ 30,000</h3> {/* Hardcoded for now, might remove this entirely */}
                 <p className="text-sm text-gray-500">Share Capital</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold">30 mos</h3>
+                <h3 className="text-lg font-bold">{membershipMonths} mos</h3>
                 <p className="text-sm text-gray-500">Membership</p>
               </div>
             </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useFetchCoopByMember } from "../members/hooks/useFetchCoopByMember";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
-import { CAPITAL_CATEGORY_COLORS } from "../../constants/Color";
+import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 
 function MemberShareCapital() {
   const [page, setPage] = useState(1);
@@ -18,6 +18,7 @@ function MemberShareCapital() {
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState(""); // for the search bar
   const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState(""); //payment method filter
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
@@ -33,12 +34,13 @@ function MemberShareCapital() {
 
     // Match filters
     const matchesCategory = categoryFilter === "" || row.category === categoryFilter;
+    const matchesPaymentMethod = paymentMethodFilter == "" || row.payment_method == paymentMethodFilter;
 
     const date = row.contribution_date ? new Date(row.contribution_date) : null;
     const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
     const matchesMonth = monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
-    return matchesSearch && matchesCategory && matchesYear && matchesMonth;
+    return matchesSearch && matchesCategory && matchesPaymentMethod && matchesYear && matchesMonth;
   });
 
   if (isLoading) return <div>Loading Coop Contributions...</div>;
@@ -61,7 +63,17 @@ function MemberShareCapital() {
               options: [
                 { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
                 { label: "Initial", value: "Initial" },
-                { label: "Monthly", value: "Monthly" },
+                { label: "GCash", value: "Monthly" },
+              ],
+            },
+            {
+              label: "Method",
+              value: paymentMethodFilter,
+              onChange: setPaymentMethodFilter,
+              options: [
+                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
+                { label: "Cash", value: "Cash" },
+                { label: "GCash", value: "GCash" },
               ],
             },
             {
@@ -102,7 +114,7 @@ function MemberShareCapital() {
         />
 
         <MainDataTable
-          headers={["Ref No.", "Amount", "Payment Category", "Date"]}
+          headers={["Ref No.", "Amount", "Payment Category", "Date", "Payment Method"]}
           data={coop}
           isLoading={isLoading}
           page={page}
@@ -115,9 +127,9 @@ function MemberShareCapital() {
                 key={`${TABLE_PREFIX}${row.coop_contri_id}`}
                 className={`transition-colors hover:bg-base-200/70`}
               >
-                <td className="px-4 py-2 text-center font-medium">SCC_{row.coop_contri_id}</td>
-                <td className="px-4 py-2 font-semibold text-success">₱ {row.amount?.toLocaleString() || "0"}</td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center font-medium text-xs">SCC_{row.coop_contri_id}</td>
+                <td className="px-4 py-4 font-semibold text-success text-center">₱ {row.amount?.toLocaleString() || "0"}</td>
+                <td className="px-4 py-2 text-center">
                   {row.category ? (
                     <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
                       {row.category} 
@@ -126,10 +138,19 @@ function MemberShareCapital() {
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.contribution_date
                     ? new Date(row.contribution_date).toLocaleDateString()
                     : <span className="text-gray-400 italic">Not Provided</span>}
+                </td>
+                <td className="px-4 py-2 text-center">
+                  {row.payment_method ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
+                      {row.payment_method} 
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
                 </td>
               </tr>
             );

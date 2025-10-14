@@ -15,7 +15,7 @@ import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
-import { LOAN_APPLICATION_STATUS_COLORS } from "../../constants/Color";
+import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 function MemberLoanApp() {
   const { data: loanProducts } = useFetchLoanProducts();
@@ -258,21 +258,35 @@ function MemberLoanApp() {
                 className="cursor-pointer hover:bg-base-200/50"
                 onClick={() => openEditModal(row)}
               >
-                <td className="text-center">
-                  {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
+                <td className="text-center text-xs px-2 py-2">{TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}</td>
+                <td className="px-4 py-2 text-center">
+                  {loanProductName ? (
+                    <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
+                      {loanProductName}
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-error">Not Provided</span>
+                  )}
                 </td>
-                <td>{loanProductName || "Not Found"}</td>
-                <td className="font-semibold text-success">
+                <td className="font-semibold text-success text-center">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
                 
-                <td>{loanTerm  || "Not Found"} Months</td>
-                <td>
+                <td className="text-center">{loanTerm  || "Not Found"} Months</td>
+                <td className="text-center">
                   {row.application_date
                     ? new Date(row.application_date).toLocaleDateString()
                     : "Not Found"}
                 </td>
-                <td>{row.status}</td>
+                <td className="px-4 py-4 text-center">
+                  {row.status ? (
+                    <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[row.status]}`}>
+                      {row.status}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
               </tr>
             );
           }}

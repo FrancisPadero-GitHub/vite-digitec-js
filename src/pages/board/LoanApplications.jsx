@@ -24,6 +24,7 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 import Calculation from "../../constants/Calculation";
+import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 
 function LoanApplications() {
@@ -396,33 +397,62 @@ function LoanApplications() {
             const loanProductName = matchedLoanProduct?.name;
             const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
 
+            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
+
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.application_id}`}
                 className="cursor-pointer hover:bg-base-200/50"
                 onClick={() => openEditModal(row)}
               >
-                <td className="text-center">
+                <td className="text-center px-2 py-2 text-xs font-medium">
                   {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
                 </td>
-                <td className="px-4 py-2">
-                  <span className="flex items-center gap-2">
-                    {matchedMember
-                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                      : "System"}
-                  </span>
+
+                <td className="px-4 py-4">
+                    <span className="flex items-center gap-3">
+                      <div className="avatar">
+                        <div className="mask mask-circle w-10 h-10">
+                          <img
+                            src={
+                              matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                            }
+                            alt={fullName}
+                          />
+                        </div>
+                      </div>
+                      <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
+                    </span>
                 </td>
-                <td>{loanProductName || "Not Found"}</td>
-                <td className="font-semibold text-success">
-                  ₱ {row.amount?.toLocaleString() || "0"}
+
+                {/* Product Name*/}
+                <td className="px-4 py-2 text-center">
+                  {loanProductName ? (
+                    <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
+                      {loanProductName}
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-error">Not Provided</span>
+                  )}
                 </td>
-                <td>{loanTerm || "Not Found"} Months</td>
-                <td>
+
+                {/* Amount */}
+                <td className="font-semibold text-success px-4 py-2 text-center">₱ {row.amount?.toLocaleString() || "0"}</td>
+                <td className="px-4 py-2 text-center">{loanTerm || "Not Found"} Months</td>
+                <td className="px-4 py-2 text-center">
                   {row.application_date
                     ? new Date(row.application_date).toLocaleDateString()
                     : "Not Found"}
                 </td>
-                <td>{row.status}</td>
+                <td className="px-4 py-4 text-center">
+                  {row.status ? (
+                    <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[row.status]}`}>
+                      {row.status}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
               </tr>
             );
           }}

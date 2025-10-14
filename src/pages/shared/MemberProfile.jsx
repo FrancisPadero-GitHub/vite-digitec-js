@@ -18,16 +18,16 @@ function MemberProfile() {
   
   const totalShareCapital = coopContributions?.reduce((sum, item) => sum + (item.amount || 0), 0); //sum of coop contributions
 
-  // calculate membership duration in months
-  const calculateMembershipMonths = (joinedDate) => {
-    if (!joinedDate) return 0;
-    const joined = new Date(joinedDate);
+  // calculate membership duration in months (APPLICATION DATE FOR NOW, CHANGE TO JOINED DATE LATER SINCE JOINED DATE IN DB IS NULL)
+  const calculateMembershipMonths = (application_date) => {
+    if (!application_date) return 0;
+    const joined = new Date(application_date);
     const now = new Date();
     const years = now.getFullYear() - joined.getFullYear();
     const months = now.getMonth() - joined.getMonth();
     return years * 12 + months;
   };
-  const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
+  const membershipMonths = calculateMembershipMonths(memberInfo?.application_date);
 
   // mappings for top info and personal info sections in left column
   const topInfo = [

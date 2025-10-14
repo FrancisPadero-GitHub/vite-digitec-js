@@ -70,6 +70,13 @@ export const LOAN_APPLICATION_STATUS_COLORS = {
   Denied: "badge-error",
 };
 
+export const LOAN_PRODUCTS = ["Regular Loan", "Short Term Loan"]
+
+export const LOAN_PRODUCT_COLORS = {
+  "Regular Loan": "text-info",
+  "Short Term Loan": "text-secondary",
+};
+
 // SORT DIRECTION OPTIONS
 export const SORT_DIRECTION_OPTIONS = [
   { label: "Latest First", value: "desc" },

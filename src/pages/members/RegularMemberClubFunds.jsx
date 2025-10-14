@@ -130,21 +130,21 @@ function RegularMemberClubFunds() {
                 key={`${TABLE_PREFIX}_${row.contribution_id}`}
                 className="transition-colors hover:bg-base-200/70"
               >
-                <td className="px-4 py-2 text-center font-medium">{TABLE_PREFIX}_{row.contribution_id}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row.contribution_id}</td>
                 {/* Amount */}
-                <td className="px-4 py-2 font-semibold text-success">
+                <td className="px-4 py-2 font-semibold text-success text-center">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
 
                 {/* Category */}
-                <td className='px-4 py-2'>
+                <td className='px-4 py-2 text-center'>
                   <span className={` font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
                     {row.category || "Not Provided"}
                   </span>
                 </td>
 
                 {/* Payment Date */}
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">
                   {row.payment_date ? (
                     <span>{new Date(row.payment_date).toLocaleDateString()}</span>
                   ) : (
@@ -153,7 +153,7 @@ function RegularMemberClubFunds() {
                 </td>
 
                 {/* Payment Method */}
-                <td className='px-4 py-2' >
+                <td className='px-4 py-2 text-center'>
                   {row.payment_date ? 
                     <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
                       {row.payment_method}
