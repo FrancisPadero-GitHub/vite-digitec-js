@@ -5,6 +5,7 @@ import { Link } from "react-router";
 // hooks
 import { useAddExpenses } from "./hooks/useAddExpenses";
 import { useEditExpenses } from "./hooks/useEditExpenses";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 // import { useFetchExpenses } from "./hooks/useFetchExpenses";
 
 import { useFetchExpenses } from "./custom/useFetchExpenses";
@@ -18,7 +19,8 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 // constants
 import { CLUB_CATEGORY_COLORS } from '../../constants/Color';
 
-function ClubExpenses() {
+function ClubExpenses() { 
+    const { memberRole } = useMemberRole();
     // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
     const [page, setPage] = useState(1);
     // This renders how many rows is being rendered inside the table to avoid infinite renders of all data
@@ -181,12 +183,15 @@ function ClubExpenses() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Club Expenses</h1>
           <div className="flex flex-row items-center gap-3">
+
+            {memberRole !== "board" && (
             <Link
               className="btn btn-neutral whitespace-nowrap"
               onClick={openAddModal}
             >
               + Add Expenses
             </Link>
+            )}
           </div>
         </div>
 
@@ -260,7 +265,7 @@ function ClubExpenses() {
           setPage={setPage}
           renderRow = {(row) => (
             <tr key={`${TABLE_PREFIX}_${row.transaction_id}`} className=" cursor-pointer hover:bg-base-200/50"
-              onClick={() => openEditModal(row)}
+              onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
             >
               <td className="text-center text-xs">{TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}</td>
               <td className="px-4 py-4 text-center font-semibold">{row.title}</td>

@@ -70,8 +70,16 @@ function AppRoutes() {
     { path: "activity-logs", element: <ActivityLogs /> },
   ];
 
+  // TREASURER PAGES TO SHARE WITH BOARD
+  const boardSharedTreasurerPages = [
+    { path: "coop-share-capital", element: <CoopShareCapital /> },
+    { path: "club-funds", element: <ClubFunds /> },
+    { path: "club-expenses", element: <ClubExpenses /> },
+  ];
+
   const boardRoutes = [
     ...sharedRoutes,
+    ...boardSharedTreasurerPages,  // Add shared treasurer pages here
     { path: "loan-applications", element: <LoanApplications /> },
     { path: "loan-accounts", element: <LoanAccounts /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },

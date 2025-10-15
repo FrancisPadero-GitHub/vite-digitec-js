@@ -8,6 +8,7 @@ import { useMembers } from '../../backend/hooks/useFetchMembers';
 import { useFetchExpenses } from '../treasurer/hooks/useFetchExpenses';
 import { useFetchClubFunds } from '../treasurer/hooks/useFetchClubFunds';
 import { useFetchCoopContributions } from '../treasurer/hooks/useFetchCoopContributions';
+import { useMemberRole } from '../../backend/context/useMemberRole';
 
 // constants
 import { PAYMENT_METHOD_COLORS, CLUB_CATEGORY_COLORS, INCOME_SOURCE_COLORS, CAPITAL_CATEGORY_COLORS} from '../../constants/Color';
@@ -21,6 +22,9 @@ import DataTable from './components/DataTable';
 
 function Dashboard() {
   // Supabase Hooks
+
+  const {memberRole} = useMemberRole();
+
   const { data: members } = useMembers();
   const { data: income, isLoading: incomeIsLoading } = useFetchIncome();
   const { data: fundExpenses, isLoading: expensesIsLoading } = useFetchExpenses();
@@ -237,7 +241,7 @@ function Dashboard() {
 
             <DataTable
               title={"Share Capital / Coop"}
-              linkPath={"/treasurer/coop-share-capital"}
+              linkPath={`/${memberRole}/coop-share-capital`}
               headers={["Ref No.", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
               data={coopFunds}
               isLoading={coopIsloading}
@@ -290,7 +294,7 @@ function Dashboard() {
 
             <DataTable
               title={"Club Funds"}
-              linkPath={"/treasurer/club-funds"}
+              linkPath={`/${memberRole}/club-funds`}
               headers={["Ref No.", "Name", "Amount", "Category", "Date", "Payment Method"]}
               data={clubFunds}
               isLoading={clubFundsIsLoading}
@@ -334,7 +338,7 @@ function Dashboard() {
 
             <DataTable
               title={"Club Expenses"}
-              linkPath={"/treasurer/club-expenses"}
+              linkPath={`/${memberRole}/club-expenses`}
               headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
               data={fundExpenses}
               isLoading={expensesIsLoading}
@@ -366,7 +370,7 @@ function Dashboard() {
                */}
             <DataTable
               title={"Income"}
-              linkPath={"/treasurer"} // will provide later on
+              linkPath={`/${memberRole}`} // will provide later on
               headers={["Ref No.", "Title", "Amount", "Source", "Date"]}
               data={income}
               isLoading={incomeIsLoading}

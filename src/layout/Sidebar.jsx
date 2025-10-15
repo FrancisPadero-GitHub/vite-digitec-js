@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logo from "../assets/digitec-logo.png"
+import logo from "../assets/digitec-logo.png";
+
+// MUI Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import AssessmentIcon from '@mui/icons-material/Assessment';
@@ -17,24 +19,15 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 
 
+// 🧩 Dynamic Finance Items
+const financeBase = (role) => [
+  { label: "Coop Share Capital", icon: AccountBalanceIcon, path: `/${role}/coop-share-capital` },
+  { label: "Club Funds", icon: SavingsIcon, path: `/${role}/club-funds` },
+  { label: "Club Expenses", icon: ReceiptLongIcon, path: `/${role}/club-expenses` },
+];
 
-// SIDEBAR CONFIG BASED ON ROLE
+// 📌 Sidebar Config Based on Role
 const sidebarConfig = {
-  // TREASURER PATHS
-
- /**
-  * The path on these must be complete both parent and children path
-  * for example 
-  * 
-  * treasurer/member-records/ 
-  * 
-  * instead of just 
-  * 
-  * /member-records
-  * 
-  * because it inherits its leading path to the parent
-  * 
-  */
   treasurer: [
     {
       section: "Overview",
@@ -48,21 +41,19 @@ const sidebarConfig = {
     {
       section: "Finance",
       items: [
-        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/treasurer/coop-share-capital" },
-        { label: "Club Funds", icon: SavingsIcon, path: "/treasurer/club-funds" },
-        { label: "Club Expenses", icon: ReceiptLongIcon, path: "/treasurer/club-expenses" },
-        { label: "Coop Loans", icon: HandshakeIcon, 
-          children:[
+        ...financeBase("treasurer"),
+        {
+          label: "Coop Loans",
+          icon: HandshakeIcon,
+          children: [
             { label: "Releases", path: "/treasurer/coop-loans/releases" },
             { label: "Payments", path: "/treasurer/coop-loans/payments" },
-            
-          ]
-         },
+          ],
+        },
       ],
     },
   ],
 
-  // BOD PATHS
   board: [
     {
       section: "Overview",
@@ -74,15 +65,19 @@ const sidebarConfig = {
       ],
     },
     {
+      section: "Finance",
+      items: financeBase("board"), // ✅ shared dynamically with Treasurer
+    },
+    {
       section: "Loans",
       items: [
         { label: "Applications", icon: StickyNote2Icon, path: "/board/loan-applications" },
         { label: "Accounts", icon: RequestQuoteIcon, path: "/board/loan-accounts" },
       ],
     },
+
   ],
 
-  // MEMBER PATHS
   "regular-member": [
     {
       section: "Overview",
@@ -96,17 +91,12 @@ const sidebarConfig = {
       items: [
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
-        // { label: "Coop Loans", icon: HandshakeIcon, path: "/regular-member/regular-member-coop-loans" },
-   
         {
           label: "Coop Loans",
           icon: HandshakeIcon,
           children: [
-            // { label: "Loan Information", path: "/regular-member/coop-loans/my-information" },
-            // { label: "View Loan Payment History", path: "/regular-member/coop-loans/payments" },
             { label: "Applications", path: "/regular-member/coop-loans/my-applications" },
             { label: "Loan Accounts", path: "/regular-member/coop-loans/accounts" },
-            // { label: "View Approved Loans (History)", path: "/regular-member/coop-loans/approved" },
           ],
         },
       ],
@@ -130,14 +120,11 @@ const sidebarConfig = {
     },
   ],
 
-  // ADMIN PATHS
   admin: [
     {
       section: "Overview",
       items: [
         { label: "Users", icon: ManageAccountsIcon, path: "/admin" },
-        // REMOVED kay na balhin sa user management as button to invoke this path
-        //{ label: "Add Member", icon: AddCircleOutlineIcon, path: "/admin/add-member" },
         { label: "Activity Logs", icon: HistoryIcon, path: "/admin/activity-logs" },
       ],
     },
@@ -150,17 +137,11 @@ const sidebarConfig = {
   ],
 };
 
-/**
- * 
- * @param {string} role - takes a string parameter fetched from members account_type column in Layout.jsx
- * @returns rendered sidebar component with role specific navigations
- */
-
-// --- SIDEBAR COMPONENT ---
+// 🧭 Sidebar Component
 const Sidebar = ({ role }) => {
   const sections = sidebarConfig[role] || [];
   const location = useLocation();
-  const [openMenus, setOpenMenus] = useState({}); // Track collapses
+  const [openMenus, setOpenMenus] = useState({});
 
   const toggleMenu = (label) => {
     setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -177,7 +158,6 @@ const Sidebar = ({ role }) => {
           </div>
         </div>
 
-        {/* Navigation */}
         <ul className="menu flex-grow">
           {sections.map((section) => (
             <li key={section.section}>
@@ -214,7 +194,9 @@ const Sidebar = ({ role }) => {
                                 <li key={idx}>
                                   <Link
                                     to={child.path}
-                                    className={`flex items-center gap-2 py-1 px-3 rounded-md text-sm mb-1 ${isChildActive ? "bg-green-900 text-white" : "hover:bg-green-950/20"
+                                    className={`flex items-center gap-2 py-1 px-3 rounded-md text-sm mb-1 ${isChildActive
+                                        ? "bg-green-900 text-white"
+                                        : "hover:bg-green-950/20"
                                       }`}
                                   >
                                     <span>•</span>

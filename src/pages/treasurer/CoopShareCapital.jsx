@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 // Hooks
 import { useMembers } from '../../backend/hooks/useFetchMembers';
 import { useFetchCoopContributions } from './custom/useFetchCoop'; // implemented pagination
+import { useMemberRole } from '../../backend/context/useMemberRole';
 
 import { useAddCoopContributions } from './hooks/useAddCoopContributions';
 import { useEditCoopContributions } from './hooks/useEditCoopContributions';
@@ -25,6 +26,7 @@ import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from '../../constants/
  */
 
 function CoopShareCapital() {
+  const { memberRole } = useMemberRole();
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
   const [page, setPage] = useState(1);
@@ -218,13 +220,16 @@ function CoopShareCapital() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold" >Share Capital / Coop Contribution</h1>
           <div className="flex flex-row items-center gap-3">
-            <Link
-              className="btn btn-neutral whitespace-nowrap"
-              onClick={openAddModal}
+            {/* Do not display if the role is board */}
+            {memberRole !== "board" && (
+              <Link
+                className="btn btn-neutral whitespace-nowrap"
+                onClick={openAddModal}
+              >
+                + Add Contribution
+              </Link>
+            )}
 
-            >
-              + Add Contribution
-            </Link>
           </div>
         </div>
 
@@ -320,7 +325,7 @@ function CoopShareCapital() {
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.coop_contri_id}`}
-                onClick={!isDisabled ? () => openEditModal(row) : undefined}
+                onClick={!isDisabled && memberRole !== "board" ? () => openEditModal(row) : undefined}
                 className={`transition-colors ${!isDisabled
                     ? "cursor-pointer hover:bg-base-200/70"
                     : "cursor-not-allowed opacity-80 bg-base-100/70"
