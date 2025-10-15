@@ -77,6 +77,14 @@ export const LOAN_PRODUCT_COLORS = {
   "Short Term Loan": "text-secondary",
 };
 
+export const LOAN_ACCOUNTS_STATUSES = ["Active", "Defaulted", "Renewed"];
+
+export const LOAN_ACCOUNT_STATUS_COLORS = {
+  Active: "badge-success",
+  Defaulted: "badge-error",
+  Renewed: "badge-warning",
+};
+
 // SORT DIRECTION OPTIONS
 export const SORT_DIRECTION_OPTIONS = [
   { label: "Latest First", value: "desc" },

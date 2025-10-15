@@ -6,6 +6,7 @@ import { useFetchLoanProducts } from '../members/hooks/useFetchLoanProduct';
 
 import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
+import { LOAN_ACCOUNT_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 function MemberLoanAcc() {
   const navigate = useNavigate();
@@ -38,9 +39,6 @@ function MemberLoanAcc() {
       row.status?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === "" || row.status === statusFilter;
-
-
-
     return matchesSearch && matchesStatus;
   });
 
@@ -116,46 +114,72 @@ function MemberLoanAcc() {
                 onClick={() => openModal(row)}
               >
                  {/* Account number */}
-                <td className="text-center  ">
+                <td className="text-center px-2 py-2 text-xs">
                   {row.account_number || "ID"}
                 </td>
+
                 {/* Member name */}
-                <td className="py-2">
+                <td className="py-2 px-4">
                   <span className="flex items-center gap-2">
                     {matchedMember
                       ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
                       : "System"}
                   </span>
+
                 </td>
                 {/* Principal */}
-                <td className="font-semibold text-success">
+                <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.principal?.toLocaleString() || "0"}
                 </td>
 
                 {/* Balance */}
-                <td className="font-semibold text-success">
+                <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.outstanding_balance?.toLocaleString() || "0"}
                 </td>
+
                 {/* Loan Product */}
-                <td>
-                  {loanProductName || "Not Found"}
+                <td className="px-4 py-2 text-center">
+                  {loanProductName ? (
+                    <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
+                      {loanProductName}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
                 </td>
 
                 {/* Interest Rate */}
-                <td className="font-semibold text-success">
+                <td className="px-2 py-2 text-center font-semibold text-success">
                   {interestRate || "0"} %
                 </td>
+
                 {/* Interest Method */}
-                <td>{interestMethod || "Not Found"}</td>
-                <td>{loanTerm || "Not Found"}</td>
+                <td className="px-2 py-2 text-center">
+                  {interestMethod || "Not Found"}
+                </td>
+
+                {/* Loan Term */}
+                <td className="px-2 py-2 text-center">
+                  {loanTerm || "Not Found"} Months
+                </td>
 
                 {/* Maturity Date */}
-                <td>
+                <td className="px-2 py-2 text-center">
                   {row.maturity_date
                     ? new Date(row.maturity_date).toLocaleDateString()
                     : "Not Found"}
                 </td>
-                <td>{row.status}</td>
+
+                {/* Status */}
+                <td className="px-4 py-4 text-center">
+                  {row.status ? (
+                    <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status]}`}>
+                      {row.status}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
               </tr>
             );
           }}
