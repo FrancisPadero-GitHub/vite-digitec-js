@@ -45,7 +45,7 @@ const Layout = () => {
 
   return (
     <div className="drawer lg:drawer-open">
-      <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+      <input id="my-drawer" name="my-drawer" type="checkbox" className="drawer-toggle" aria-label="Toggle navigation menu" />
 
       {/* PAGE CONTENT, HEADER, FOOTER */}
       <div className="bg-base-200 drawer-content flex flex-col min-h-screen">

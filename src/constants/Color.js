@@ -93,9 +93,9 @@ export const SORT_DIRECTION_OPTIONS = [
 
 // ROLE COLORS
 export const ROLE_COLORS = {
-  Treasurer: "badge-info",
-  "Board": "badge-accent",
-  "Regular": "badge-primary",
-  "Associate": "badge-secondary",
+  "treasurer": "badge-info",
+  "board": "badge-accent",
+  "regular-member": "badge-primary",
+  "associate-member": "badge-secondary",
   "Admin": "badge-error",
 };

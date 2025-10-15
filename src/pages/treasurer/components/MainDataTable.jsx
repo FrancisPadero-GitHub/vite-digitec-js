@@ -18,11 +18,13 @@ function MainDataTable({
   headers = [],
   data = [],
   isLoading,
-  renderRow,
+  isError,       // new prop
+  error,         // optional error object or message
   page,
   limit,
   total,
   setPage,
+  renderRow,
 }) {
   const totalPages = Math.ceil(total / limit);
 
@@ -34,12 +36,9 @@ function MainDataTable({
           <thead>
             <tr className="bg-base-200/30">
               {headers.map((header, key) => (
-                  <th
-                    key={key}
-                    className="text-center" // contains quick fix to center align first column (ref)
-                  >
-                    {header}
-                  </th>
+                <th key={key} className="text-center">
+                  {header}
+                </th>
               ))}
             </tr>
           </thead>
@@ -55,6 +54,20 @@ function MainDataTable({
                     <div className="flex justify-center items-center">
                       <span className="loading loading-spinner loading-lg text-primary"></span>
                     </div>
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan={headers.length} className="py-10 text-center">
+                    <div className="text-red-500 font-semibold">
+                      {error?.message || "Something went wrong while loading data."}
+                    </div>
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={headers.length} className="py-10 text-center text-gray-500 italic">
+                    No data available.
                   </td>
                 </tr>
               ) : (
@@ -93,5 +106,6 @@ function MainDataTable({
     </section>
   );
 }
+
 
 export default MainDataTable;

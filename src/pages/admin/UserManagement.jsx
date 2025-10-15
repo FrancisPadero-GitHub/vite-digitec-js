@@ -1,29 +1,40 @@
 import { useState } from "react";
-import { useMembers } from "./hooks/useFetchMembers.js";
+import { Link } from "react-router-dom";
+
+// custom hooks
+import { useMembers } from "../../backend/hooks/admin/useFetchMembers.js";
+import { useUpdateMember } from "../../backend/hooks/admin/useEditMember.js";
+
+// components
 import MainDataTable from "../treasurer/components/MainDataTable.jsx";
 import FilterToolbar from "../shared/components/FilterToolbar.jsx";
-import { Link } from "react-router-dom";
-import placeholderAvatar from "../../assets/placeholder-avatar.png";
+import ViewMemberModal from "./modals/ViewMemberModal.jsx";
+
+// constants
 import { ROLE_COLORS } from "../../constants/Color.js";
-import { useUpdateMember } from "./hooks/useEditMember.js";
 
-export default function UserManagement() {
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
 
-  const { data: members, isLoading, isError, error } = useMembers(page, limit);
+
+function UserManagement() {
+
+  // custom states
   const { mutate: updateMemberRole, isPending } = useUpdateMember();
 
-  const total = members?.count || 0;
-  const usersRaw = members?.data || [];
+  // fetch all members with pagination
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const { data: members_data, isLoading, isError, error } = useMembers(page, limit);
+  const membersRaw = members_data?.data || [];
+  const total = members_data?.count || 0;
 
+  // filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
   const TABLE_PREFIX = "UID";
-
-  const users = usersRaw
+  // filters members
+  const members = membersRaw
     .map((row) => {
       const displayName = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
       return {
@@ -46,23 +57,34 @@ export default function UserManagement() {
       return matchesSearch && matchesRole && matchesStatus;
     });
 
+  
+  // modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // state for selected members to populate information
   const [selectedMember, setSelectedMember] = useState(null);
+   
+  // stores the new account type for the selected member
   const [newRole, setNewRole] = useState("");
 
   const openModal = (member) => {
     setSelectedMember(member);
-    setNewRole(member.account_type || "");
+    setNewRole(member.account_type);
     setEditModalOpen(true);
   };
 
-  const handleSaveRole = () => {
+  const save = () => {
     updateMemberRole({
       member_id: selectedMember.member_id,
       account_type: newRole,
     });
     setEditModalOpen(false);
   };
+
+  const closeModal  =  () => {
+    setEditModalOpen(false)
+    setNewRole("")
+  }
 
   const memberGroups = [
     {
@@ -121,14 +143,11 @@ export default function UserManagement() {
     },
   ];
 
-  if (isLoading) return <div>Loading users...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
-
   return (
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Users and Role Management</h1>
+          <h1 className="text-2xl font-bold">Members and Role Management</h1>
           <div className="flex flex-row items-center gap-3">
             <Link className="btn btn-neutral whitespace-nowrap" to="add-member">
               + Create User
@@ -145,12 +164,11 @@ export default function UserManagement() {
               value: roleFilter,
               onChange: setRoleFilter,
               options: [
-                { label: "All", value: "" },
-                { label: "Admin", value: "Admin" },
-                { label: "Treasurer", value: "Treasurer" },
-                { label: "Board of Director", value: "Board" },
-                { label: "Regular Member", value: "Regular" },
-                { label: "Associate Member", value: "Associate" },
+                { label: "Admin", value: "admin" },
+                { label: "Treasurer", value: "treasurer" },
+                { label: "Board of Director", value: "board" },
+                { label: "Regular Member", value: "regular-member" },
+                { label: "Associate Member", value: "associate-member" },
               ],
             },
             {
@@ -158,10 +176,9 @@ export default function UserManagement() {
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "All", value: "" },
-                { label: "Active", value: "Active" },
-                { label: "Inactive", value: "Inactive" },
-                { label: "Revoked", value: "Revoked" },
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+                { label: "Revoked", value: "revoked" },
               ],
             },
           ]}
@@ -169,22 +186,27 @@ export default function UserManagement() {
 
         <MainDataTable
           headers={["ID", "User", "Role", "Status"]}
-          data={users}
+          data={members}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}
           setPage={setPage}
           renderRow={(row) => (
+            
             <tr
               key={`${TABLE_PREFIX}${row.member_id}`}
               onClick={() => openModal(row)}
               className="cursor-pointer hover:bg-base-200/70 transition-colors"
             >
-              <td className="px-4 py-2 text-center text-info font-medium">{row.generatedId}</td>
+              <td className="px-4 py-2 text-center text-info font-medium">
+                {row.generatedId}
+              </td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="avatar">
+                  <div className="avatar shrink-0">
                     <div className="mask mask-circle w-10 h-10">
                       <img
                         src={row.avatar || `https://i.pravatar.cc/40?u=${row.generatedId}`}
@@ -192,13 +214,13 @@ export default function UserManagement() {
                       />
                     </div>
                   </div>
-                  <div>
+                  <div className="text-left">
                     <div className="font-bold">{row.displayName}</div>
                     <div className="text-sm text-gray-500">{row.email || "No email"}</div>
                   </div>
                 </div>
               </td>
-              <td className="px-4 py-2 font-bold">
+              <td className="px-4 py-2 text-center font-bold">
                 {row.role ? (
                   <span
                     className={`badge badge-soft font-semibold ${ROLE_COLORS[row.role] || "badge-ghost text-gray-400"}`}
@@ -209,14 +231,14 @@ export default function UserManagement() {
                   <span className="text-gray-400 italic">Not Provided</span>
                 )}
               </td>
-              <td className="px-5 py-2">
+              <td className="px-5 py-2 text-center">
                 {row.status ? (
                   <span
-                    className={`badge font-semibold ${row.status === "Active"
+                    className={`badge font-semibold ${row.status === "active"
                         ? "badge-success"
-                        : row.status === "Inactive"
+                        : row.status === "inactive"
                           ? "badge-ghost text-gray-500"
-                          : row.status === "Revoked"
+                          : row.status === "revoked"
                             ? "badge-error"
                             : "badge-soft"
                       }`}
@@ -230,81 +252,51 @@ export default function UserManagement() {
             </tr>
           )}
         />
+        
+        <ViewMemberModal
+          open={editModalOpen}
+          close={closeModal}
+          member={selectedMember}
+          onSave={save}
+          isSaving={isPending}
+        >
+          {memberGroups.map((group) => (
+            <div key={group.title} className="mb-6">
+              <h3 className="font-semibold text-lg mb-2">{group.title}</h3>
+              <hr className="border-gray-300 mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {group.fields.map((field) => {
+                  if (field.label === "Account Role / Type") {
+                    return (
+                      <div key={field.label}>
+                        <p className="text-gray-500">{field.label}</p>
+                        <select
+                          className="select select-bordered w-full mt-1"
+                          value={newRole}
+                          onChange={(e) => setNewRole(e.target.value)}
+                        >
+                          {["admin", "treasurer", "board", "regular-member", "associate-member"].map((acc_type) => (
+                            <option key={acc_type} value={acc_type}>
+                              {acc_type}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={field.label}>
+                      <p className="text-gray-500">{field.label}</p>
+                      <p className="font-medium text-gray-900">{field.value || "N/A"}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </ViewMemberModal>
       </div>
-
-      {editModalOpen && selectedMember && (
-        <div className="modal modal-open" onClick={() => setEditModalOpen(false)}>
-          <div
-            className="modal-box max-w-3xl max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center mb-4">
-              <h2 className="text-2xl font-bold flex-1">User Information</h2>
-              <img
-                src={selectedMember?.avatar_url || placeholderAvatar}
-                alt="Avatar"
-                className="w-14 h-14 rounded-full object-cover ml-4 border-3 border-primary"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm text-gray-700">
-              {memberGroups.map((group) => (
-                <div key={group.title} className="mb-6">
-                  <h3 className="font-semibold text-lg mb-2">{group.title}</h3>
-                  <hr className="border-gray-300 mb-4" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {group.fields.map((field) => {
-                      if (field.label === "Account Role / Type") {
-                        return (
-                          <div key={field.label}>
-                            <p className="text-gray-500">{field.label}</p>
-                            <select
-                              className="select select-bordered w-full mt-1"
-                              value={newRole}
-                              onChange={(e) => setNewRole(e.target.value)}
-                            >
-                              <option value="Admin">Admin</option>
-                              <option value="Treasurer">Treasurer</option>
-                              <option value="Board">Board of Director</option>
-                              <option value="Regular">Regular Member</option>
-                              <option value="Associate">Associate Member</option>
-                            </select>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div key={field.label}>
-                          <p className="text-gray-500">{field.label}</p>
-                          <p className="font-medium text-gray-900">{field.value || "N/A"}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex justify-end gap-2">
-              {newRole !== selectedMember.account_type && (
-                <button
-                  onClick={handleSaveRole}
-                  disabled={isPending}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  {isPending ? "Saving..." : "Save"}
-                </button>
-              )}
-              <button
-                onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+export default UserManagement;

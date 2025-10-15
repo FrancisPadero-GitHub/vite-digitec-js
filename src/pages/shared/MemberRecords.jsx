@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMembers } from "../admin/hooks/useFetchMembers.js";
+import { useMembers } from "../../backend/hooks/admin/useFetchMembers.js";
 import MainDataTable from "../treasurer/components/MainDataTable.jsx";
 import FilterToolbar from "./components/FilterToolbar.jsx";
 import { ROLE_COLORS } from "../../constants/Color.js";

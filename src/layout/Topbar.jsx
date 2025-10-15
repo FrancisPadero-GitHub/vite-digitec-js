@@ -76,6 +76,8 @@ const Topbar = ({ role }) => {
         {/* SEARCH */}
         <div className="hidden sm:flex relative w-72 max-w-md">
           <input
+            id="search_topbar"
+            name="search_topbar"
             type="text"
             placeholder="Search"
             className="w-full rounded-full py-2 px-3 pr-10 border border-white focus:outline-none"
@@ -84,8 +86,10 @@ const Topbar = ({ role }) => {
           />
           <button
             type="submit"
+            aria-label="Search"
             className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white text-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md"
           >
+            
             <SearchIcon />
           </button>
         </div>
@@ -101,7 +105,7 @@ const Topbar = ({ role }) => {
         </div>
 
         <div className="dropdown dropdown-end">
-          <label
+          <button
             tabIndex={0}
             className="btn btn-ghost flex items-center gap-2 px-4 h-14 cursor-pointer hover:bg-transparent hover:text-inherit"
           >
@@ -116,10 +120,8 @@ const Topbar = ({ role }) => {
 
 
             <span className="hidden sm:block font-medium">{matchedMember || "Error"}</span>
-
-
             <ExpandMoreIcon />
-          </label>
+          </button>
 
           <div
             tabIndex={0}
@@ -144,76 +146,81 @@ const Topbar = ({ role }) => {
             </div>
 
             {/* PROFILE, SETTINGS, DARK MODE, LOGOUT */}
-            {["regular-member", "associate-member"].includes(role) && (
+            <ul>
+              {["regular-member", "associate-member"].includes(role) && (
+                <li>
+                  <button
+                    title="Profile button"
+                    className="flex items-center gap-2 text-base-content"
+                    onClick={() => navigate(`/${getRolePath(role)}/profile`)}
+                  >
+                    <AccountCircleIcon
+                      className="text-base-content/60"
+                      fontSize="small"
+                    />
+                    Profile
+                  </button>
+                </li>
+              )}
               <li>
                 <button
+                  title="Settings button"
                   className="flex items-center gap-2 text-base-content"
-                  onClick={() => navigate(`/${getRolePath(role)}/profile`)}
+                  onClick={() => navigate(`/${getRolePath(role)}/settings`)}
                 >
-                  <AccountCircleIcon
+                  <SettingsIcon
                     className="text-base-content/60"
                     fontSize="small"
                   />
-                  Profile
+                  Settings
                 </button>
               </li>
-            )}
-
-            <li>
-              <button
-                className="flex items-center gap-2 text-base-content"
-                onClick={() => navigate(`/${getRolePath(role)}/settings`)}
-              >
-                <SettingsIcon
-                  className="text-base-content/60"
-                  fontSize="small"
-                />
-                Settings
-              </button>
-            </li>
-
-            <li>
-              <button
-                className="flex items-center gap-2 text-base-content"
-                onClick={() => navigate(`/${getRolePath(role)}/help`)}
-              >
-                <HelpIcon className="text-base-content/60" fontSize="small" />
-                Help
-              </button>
-            </li>
-
-            <li>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-base-content">
-                  <DarkModeIcon
-                    className="text-base-content/60"
-                    fontSize="small"
+              <li>
+                <button
+                  title="Help button"
+                  className="flex items-center gap-2 text-base-content"
+                  onClick={() => navigate(`/${getRolePath(role)}/help`)}
+                >
+                  <HelpIcon className="text-base-content/60" fontSize="small" />
+                  Help
+                </button>
+              </li>
+              <li>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-base-content">
+                    <DarkModeIcon
+                      className="text-base-content/60"
+                      fontSize="small"
+                    />
+                    Dark Mode
+                  </span>
+                  <input
+                    id="checkbox"
+                    name="checkbox"
+                    type="checkbox"
+                    aria-label="Toggle dark mode"
+                    className="toggle theme-controller"
+                    onChange={(e) =>
+                      document.documentElement.setAttribute(
+                        "data-theme",
+                        e.target.checked ? "digitec-dark" : "digitec-light"
+                      )
+                    }
                   />
-                  Dark Mode
-                </span>
-                <input
-                  type="checkbox"
-                  className="toggle theme-controller"
-                  onChange={(e) =>
-                    document.documentElement.setAttribute(
-                      "data-theme",
-                      e.target.checked ? "digitec-dark" : "digitec-light"
-                    )
-                  }
-                />
-              </div>
-            </li>
-
-            {/* LOGOUT */}
-            <li className="mt-2 pt-2">
-              <button
-                onClick={handleSignOut} disabled={isLoggingOut}
-                className="btn btn-error w-full flex items-center"
-              >
-                <LogoutIcon fontSize="small" />
-                Logout
-              </button>
-            </li>
+                </div>
+              </li>
+              {/* LOGOUT */}
+              <li className="mt-2 pt-2">
+                <button
+                  title="Logout button"
+                  onClick={handleSignOut} disabled={isLoggingOut}
+                  className="btn btn-error w-full flex items-center"
+                >
+                  <LogoutIcon fontSize="small" />
+                  Logout
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

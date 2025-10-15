@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "../../../backend/supabase";
+import { supabase } from "../../supabase";
 
 const updateMember = async ({ member_id, account_type }) => {
   const payload = { account_type };

@@ -40,25 +40,7 @@ const Login = () => {
     // Might remove the switch process in the future after I fix the admin user adding
     login(form_data, {
       onSuccess: ({role}) => { // {role} is destructered cause we returned {role: members.account_type} as object otherwise its default (data)
-        switch (role) {
-          case "Admin":
-            navigate("/admin");
-            break;
-          case "Board":
-            navigate("/board");
-            break;
-          case "Treasurer":
-            navigate("/treasurer");
-            break;
-          case "Associate":
-            navigate("/associate-member");
-            break;
-          case "Regular":
-            navigate("/regular-member");
-            break;
-          default:
-            setError("root", { message: "Unknown account type" });
-        }
+        navigate(`/${role}`);
       },
 
       onError: (err) => {
@@ -69,7 +51,7 @@ const Login = () => {
             uiMessage = "Invalid email or password.";
             break;
           case "DB_ERROR":
-            uiMessage = "Unable to load your account. Try again later.";
+            uiMessage = "Unable to load your account. Contact Administrator.";
             break;
           case "NO_ACCOUNT_TYPE":
             uiMessage = "Your account has no assigned role.";

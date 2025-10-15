@@ -43,7 +43,7 @@ const loginUser = async ({ email, password }) => {
     };
   }
 
-  return { role: members.account_type }; // will be used by the onSuccess, mind the destructuring
+  return { role: members.account_type, userId: auth.user.id }; // will be used by the onSuccess, do mind the destructuring
 };
 
 export function useLogin() {

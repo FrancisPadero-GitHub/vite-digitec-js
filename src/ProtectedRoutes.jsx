@@ -1,9 +1,18 @@
+// ProtectedRoute.jsx
 import { Navigate } from "react-router-dom";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { useAuth } from "./backend/context/AuthProvider";
 import { useMembers } from "./backend/hooks/useFetchMembers";
 
+/**
+ * Responsible for routing logged in user to not accidentally access pages they are not meant to see
+ * 
+ * ISSUE: it scans members table which could take long to finish to find appropriate account role
+ * 
+ */
+
+// Simple fade-in animation
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
@@ -29,7 +38,7 @@ const ProtectedRoute = ({ children, roleAllowed }) => {
   const { user, loading: authLoading } = useAuth();
   const { data: members, isLoading: membersLoading } = useMembers();
 
-  // Loading state for auth or members fetch
+  // Show loading screen while checking auth
   if (authLoading || membersLoading) {
     return (
       <LoadingContainer>
@@ -42,45 +51,24 @@ const ProtectedRoute = ({ children, roleAllowed }) => {
   }
 
   // Not logged in
-  if (!user) return <Navigate to="/login" replace />;
-
-  // Find the member record
-  const memberRecord = members?.find((m) => m.login_id === user.id);
-
-  if (!memberRecord) {
-    // No member record found for the user
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  /**
-   * Converts account_type from the DB to route/sidebar role keys
-   * Temporary should be removed and replaced with better design and handling on the user registration or from the database 
-   * or anywhere just remove this on future code changes
-   */
-  const normalizeRole = (accountType) => {
-    switch (accountType) {
-      case "Admin":
-        return "admin";
-      case "Treasurer":
-        return "treasurer";
-      case "Board":
-        return "board";
-      case "Regular":
-        return "regular-member";
-      case "Associate":
-        return "associate-member";
-      default:
-        return accountType.toLowerCase().replace(/\s+/g, "-"); // fallback
-    }
-  };
+  // Find member record associated with logged in user
+  const memberRecord = members?.find((m) => m.login_id === user.id); // this is gonna take a while to render since it will scan the entire shit members
+  if (!memberRecord) {
+    return <Navigate to="/login" replace />;
+  }
 
-  // Normalize the member role
-  const memberRole = normalizeRole(memberRecord?.account_type);
+  const memberRole = memberRecord.account_type;
 
-  // Normalize allowed roles to an array
-  const allowedRoles = Array.isArray(roleAllowed) ? roleAllowed : [roleAllowed];
+  // Support both single and multiple allowed roles
+  const allowedRoles = Array.isArray(roleAllowed)
+    ? roleAllowed
+    : [roleAllowed];
 
-  // Access control
+  // If the user role doesn't match, redirect them to their default dashboard
   if (!allowedRoles.includes(memberRole)) {
     return <Navigate to={`/${memberRole}`} replace />;
   }

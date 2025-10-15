@@ -1,17 +1,32 @@
 import { useState, Fragment } from "react";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import { useAddMember } from "../../backend/hooks/useAddMembers";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+
+// custom hooks
+import { useAddMember } from "../../backend/hooks/admin/useAddMembers";
+
+// icons
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+
+// assets
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
+
+
 function AddMember (){
+
+  // functions
   const navigate = useNavigate();
-  const { mutate, isPending, isError, error, isSuccess } = useAddMember();
+
+  // custom states
+  const { mutate: add_member, isPending, isError, error, isSuccess } = useAddMember();
+
+  // states
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
 
+  // variables
   const today = new Date().toISOString().split("T")[0];
 
   // used react hook form instead of manual usestate and onchange handlers
@@ -69,6 +84,7 @@ function AddMember (){
 
   // form submission
   const onSubmit = (data) => {
+    // console.log("data", data )
     const normalized = { //normalize date fields before sending it to backend
       ...data,
       birthday: data.birthday ? new Date(data.birthday).toISOString() : null,
@@ -78,7 +94,7 @@ function AddMember (){
       avatarFile,
     };
 
-    mutate(normalized, {
+    add_member(normalized, {
       onSuccess: () => navigate("/admin"),
       onError: (err) => console.error("Failed to submit:", err.message),
     });
@@ -86,68 +102,102 @@ function AddMember (){
 
   // Personal fields
   const personalFields = [
-    { label: "First Name", name: "f_name", type: "text", required: true },
-    { label: "Middle Name", name: "m_name", type: "text", required: false },
-    { label: "Last Name", name: "l_name", type: "text", required: true },
-
-    { label: "Civil Status", name: "civil_status", type: "select",
-      options: ["Single", "Married", "Widowed", "Separated"], required: true },
-
-    { label: "Birthday", name: "birthday", type: "date", required: true },
-    { label: "Place of Birth", name: "place_of_birth", type: "text" },
-
-    { label: "Contact Number", name: "contact_number", type: "text", required: true, pattern: /^[0-9+()\-.\s]+$/ },
-    { label: "Email Address", name: "email", type: "email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
-
-    // Address grouped together
-    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "text", required: true, group: "Address" },
-    { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address" },
-    { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address" },
-    { label: "Province", name: "province", type: "text", required: true, group: "Address" },
+    { label: "First Name", name: "f_name", type: "text", required: true, autoComplete: "given-name" },
+    { label: "Middle Name", name: "m_name", type: "text", required: false, autoComplete: "additional-name" },
+    { label: "Last Name", name: "l_name", type: "text", required: true, autoComplete: "family-name" },
 
     {
-      label: "ZIP Code",
-      name: "zip_code",
-      type: "text",
-      inputMode: "numeric",
-      required: true,
-      pattern: "^[0-9]{4}$"
+      label: "Civil Status", name: "civil_status", type: "select",
+      options: ["Single", "Married", "Widowed", "Separated"], required: true, autoComplete: "off"
     },
 
+    { label: "Birthday", name: "birthday", type: "date", required: true, autoComplete: "off" },
+    { label: "Place of Birth", name: "place_of_birth", type: "text", autoComplete: "address-level2" },
+
+    { label: "Contact Number", name: "contact_number", type: "text", required: true, pattern: /^[0-9+()\-.\s]+$/, autoComplete: "tel" },
+    { label: "Email Address", name: "email", type: "email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, autoComplete: "email" },
+
+    // Address grouped together
+    { label: "Block No., Lot No., Phase No., Subdivision", name: "block_no", type: "text", required: true, group: "Address", autoComplete: "address-line1" },
+    { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address", autoComplete: "address-line2" },
+    { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address", autoComplete: "address-level2" },
+    { label: "Province", name: "province", type: "text", required: true, group: "Address", autoComplete: "address-level1" },
+    { label: "ZIP Code", name: "zip_code", type: "text", inputMode: "numeric", required: true, pattern: "^[0-9]{4}$", autoComplete: "postal-code" },
+
     // Dependents grouped together
-    { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents", required: false },
-    { label: "Number of Children", name: "number_of_children", type: "select", group: "Dependents", required: false,
-      options: Array.from({ length: 11 }, (_, i) => i) }
+    { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents", autoComplete: "off" },
+    { label: "Number of Children", name: "number_of_children", type: "select", group: "Dependents", options: Array.from({ length: 11 }, (_, i) => i), autoComplete: "off" }
     ];
 
   // Employment fields
   const employmentFields = [
-    { label: "Name of Office/Line of Business", name: "office_name", type: "text", required: true },
-    { label: "Title & Position", name: "title_and_position", type: "text", required: true },
-    { label: "Office Address", name: "office_address", type: "text", required: true },
-    { label: "Office Contact Number", name: "office_contact_number", type: "text", pattern: /^[0-9+()\-.\s]+$/, required: true }
+    { label: "Name of Office/Line of Business", name: "office_name", type: "text", required: true, autoComplete: "organization" },
+    { label: "Title & Position", name: "title_and_position", type: "text", required: true, autoComplete: "organization-title" },
+    { label: "Office Address", name: "office_address", type: "text", required: true, autoComplete: "street-address" },
+    { label: "Office Contact Number", name: "office_contact_number", type: "text", required: true, pattern: /^[0-9+()\-.\s]+$/, autoComplete: "tel" }
   ];
 
   // Membership fields
   const membershipFields = [
-    { label: "Account Type", name: "account_type", type: "select",
-      options: ["Regular", "Associate", "Treasurer", "Board"], required: true, group: "Account Info" },
-    { label: "Account Status", name: "account_status", type: "select",
-      options: ["Active", "Inactive", "Pending"], required: true, group: "Account Info" },
+    { label: "Account Type", name: "account_type", type: "select", autoComplete: "off",
+      options: [
+        { label: "Regular", value: "regular-member" },
+        { label: "Associate", value: "associate-member" },
+        { label: "Treasurer", value: "treasurer" },
+        { label: "Board", value: "board" },
+      ], required: true, group: "Account Info" },
+      
+    {
+      label: "Account Status", name: "account_status", type: "select", autoComplete: "off",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+        { label: "Pending", value: "pending" },
+      ],
+      required: true, group: "Account Info"
+    },
+
     { label: "Application Date", name: "application_date", type: "date", required: true, group: "Account Info" },
 
     // Membership Fee
     { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: true },
-    { label: "Fee Status", name: "membership_fee_status", type: "select", options: ["Paid", "Unpaid", "Partial"], group: "Membership Fee", required: true },
-    { label: "Payment Method", name: "membership_payment_method", type: "select", options: ["Cash", "GCash", "Bank"], group: "Membership Fee", required: true },
+    {
+      label: "Fee Status", name: "membership_fee_status", type: "select", autoComplete: "off",
+      options: [
+        { label: "Paid", value: "paid" },
+        { label: "Unpaid", value: "unpaid" },
+        { label: "Partial", value: "partial" },
+      ],
+      group: "Membership Fee", required: true
+    },
+
+    {
+      label: "Payment Method", name: "membership_payment_method", type: "select", autoComplete: "off",
+      options: [
+        { label: "Cash", value: "cash" },
+        { label: "GCash", value: "gcash" },
+        { label: "Bank", value: "bank" },
+      ],
+      group: "Membership Fee", required: true
+    },
+
     { label: "Payment Date", name: "membership_payment_date", type: "date", group: "Membership Fee", required: true },
     { label: "Remarks", name: "membership_remarks", type: "text", group: "Membership Fee", required: false },
 
     // Initial Share Capital
     { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: true },
-    { label: "Payment Method", name: "share_capital_payment_method", type: "select", options: ["Cash", "GCash", "Bank"], group: "Share Capital", required: true },
-    { label: "Payment Date", name: "share_capital_payment_date", type: "date", group: "Share Capital", required: true },
-    { label: "Remarks", name: "share_capital_remarks", type: "text", group: "Share Capital", required: false },
+    {
+      label: "Payment Method", name: "share_capital_payment_method", type: "select", autoComplete: "off",
+      options: [
+        { label: "Cash", value: "cash" },
+        { label: "GCash", value: "gcash" },
+        { label: "Bank", value: "bank" },
+      ],
+      group: "Share Capital", required: true
+    },
+
+    { label: "Payment Date", name: "share_capital_payment_date", autoComplete: "off", type: "date", group: "Share Capital", required: true },
+    { label: "Remarks", name: "share_capital_remarks", autoComplete: "off", type: "text", group: "Share Capital", required: false },
   ];
 
   return (
@@ -194,6 +244,7 @@ function AddMember (){
                   <input
                     type="file"
                     accept="image/*"
+                    aria-label="Upload profile image"
                     onChange={handleAvatarUpload}
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
@@ -202,7 +253,7 @@ function AddMember (){
 
               {/* Inputs */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {personalFields.map(({ label, name, type, options, group }, idx) => {
+                {personalFields.map(({ label, name, type, options, group, autoComplete }, idx) => {
                 const prevGroup = idx > 0 ? personalFields[idx - 1].group : null;
 
                 return (
@@ -222,6 +273,7 @@ function AddMember (){
                       {type === "select" ? (
                         <select
                           id={name}
+                          autoComplete={autoComplete || "off"}
                           {...register(name, {required: personalFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
                           className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
                         >
@@ -232,6 +284,7 @@ function AddMember (){
                         <input
                           id={name}
                           type={type}
+                          autoComplete={autoComplete || "off"}
                           {...register(name, {
                             required: `${label} is required`,
                             pattern: name === "contact_number" ? {
@@ -255,6 +308,7 @@ function AddMember (){
 
               <div className="flex justify-end">
                 <button
+                  title="Next Button"
                   type="button"
                   onClick={() => handleNext([
                     "f_name", "l_name", "civil_status", "birthday", "place_of_birth",
@@ -273,13 +327,14 @@ function AddMember (){
           {activeTab === 1 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {employmentFields.map(({ label, name, type }) => (
+                {employmentFields.map(({ label, name, type, autoComplete }) => (
                   <div key={name} className="form-control w-full">
                     <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
 
                     <input
                       id={name}
                       type={type}
+                      autoComplete={autoComplete || "off"}
                       {...register(name, {
                         required: `${label} is required`,
                         pattern: name === "office_contact_number" ? {
@@ -299,6 +354,7 @@ function AddMember (){
               </div>
               <div className="flex justify-between">
                 <button
+                  title="Back Button"
                   type="button"
                   className="btn btn-soft"
                   onClick={() => setActiveTab(0)}
@@ -306,6 +362,7 @@ function AddMember (){
                   Back
                 </button>
                 <button
+                  title="Next Button"
                   type="button"
                   onClick={() =>
                     handleNext([
@@ -327,7 +384,7 @@ function AddMember (){
           {activeTab === 2 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {membershipFields.map(({ label, name, type, options, group }, idx) => {
+                {membershipFields.map(({ label, name, type, options, group, autoComplete }, idx) => {
                   const prevGroup = idx > 0 ? membershipFields[idx - 1].group : null;
 
                   // Divided into subsections (account info, membership fee, share capital)
@@ -343,24 +400,37 @@ function AddMember (){
                       {/* Field itself */}
                       <div className="form-control w-full col-span-1">
                         <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
-                          {type === "select" ? (
-                            <select
-                              id={name}
-                              {...register(name, {required: membershipFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
-                              className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
-                            >
-                              <option value="" disabled> Select {label}</option>
-                              {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                            </select>
-                          ) : (
-                            <input
-                              id={name}
-                              type={type}
-                              {...register(name, {required: membershipFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
-                              className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
-                            />
-                          )}
-
+                        {type === "select" ? (
+                          <select
+                            id={name}
+                            autoComplete={autoComplete || "off"}
+                            {...register(name, {
+                              required: membershipFields.find(f => f.name === name)?.required
+                                ? `${label} is required`
+                                : false
+                            })}
+                            className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
+                          >
+                            <option value="" disabled>Select {label}</option>
+                            {options?.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            id={name}
+                            type={type}
+                             autoComplete={autoComplete || "off"}
+                            {...register(name, {
+                              required: membershipFields.find(f => f.name === name)?.required
+                                ? `${label} is required`
+                                : false
+                            })}
+                            className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                          />
+                        )}
                           {/* Validation message */}
                           {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
                       </div>
@@ -369,8 +439,18 @@ function AddMember (){
                 })}
               </div>
               <div className="flex justify-between">
-                <button type="button" className="btn btn-soft" onClick={() => setActiveTab(1)}>Back</button>
-                <button type="submit" disabled={isSubmitting} className="btn btn-success">
+                <button 
+                  title="Back Button"
+                  type="button" 
+                  className="btn btn-soft" 
+                  onClick={() => setActiveTab(1)}
+                  >Back
+                </button>
+                <button
+                  title="Submit button"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn btn-success">
                   {isSubmitting ? "Submitting..." : "Submit"}
                 </button>
               </div>

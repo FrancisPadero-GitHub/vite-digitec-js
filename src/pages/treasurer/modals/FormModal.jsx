@@ -27,6 +27,7 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
         <h2 className="text-2xl font-semibold" >{action ? `Edit ${table}` : `Add ${table}`}</h2>
         <form onSubmit={onSubmit}>
+          
           {children}
 
           <div className="flex justify-between items-center gap-2 mt-6">

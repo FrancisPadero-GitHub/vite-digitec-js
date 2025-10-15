@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../../../backend/supabase";
+import { supabase } from "../../supabase";
 
 /**
  * Fetch members with pagination
