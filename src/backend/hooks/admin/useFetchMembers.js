@@ -8,16 +8,17 @@ import { supabase } from "../../supabase";
  * @param {number} limit - Number of records per page
  * @returns { data, count } - Members for that page and total count
  */
+
 async function fetchMembers(page = 1, limit = 20) {
   const from = (page - 1) * limit;
   const to = page * limit - 1;
 
   const { data, error, count } = await supabase
     .from("members")
-    .select("*", { count: "exact" }) // count all records
+    .select("*", { count: "exact" }) 
     .order("member_id", { ascending: false })
     .is("deleted_at", null)
-    .range(from, to); // paginate
+    .range(from, to); 
 
   if (error) throw new Error(error.message);
   return { data, count };
@@ -25,9 +26,9 @@ async function fetchMembers(page = 1, limit = 20) {
 
 export function useMembers(page, limit) {
   return useQuery({
-    queryKey: ["members", page, limit], // include pagination in cache key
+    queryKey: ["members", page, limit], 
     queryFn: () => fetchMembers(page, limit),
-    keepPreviousData: true, // useful for smooth pagination UX
-    staleTime: 1000 * 60 * 1, // 1 min stale
+    keepPreviousData: true,
+    staleTime: 1000 * 60 * 1, 
   });
 }

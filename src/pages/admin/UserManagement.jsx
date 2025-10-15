@@ -42,7 +42,7 @@ function UserManagement() {
         generatedId: `${TABLE_PREFIX}_${row.member_id}`,
         displayName,
         searchKey: `${displayName} ${row.email ?? ""}`.toLowerCase(),
-        role: row.account_type,
+        role: row.account_role,
         status: row.account_status,
         avatar: row.avatar_url
       };
@@ -69,14 +69,14 @@ function UserManagement() {
 
   const openModal = (member) => {
     setSelectedMember(member);
-    setNewRole(member.account_type);
+    setNewRole(member.account_role);
     setEditModalOpen(true);
   };
 
   const save = () => {
     updateMemberRole({
       member_id: selectedMember.member_id,
-      account_type: newRole,
+      account_role: newRole,
     });
     setEditModalOpen(false);
   };
@@ -137,7 +137,7 @@ function UserManagement() {
     {
       title: "Membership Details",
       fields: [
-        { label: "Account Role / Type", value: selectedMember?.account_type || "N/A" },
+        { label: "Account Role / Type", value: selectedMember?.account_role || "N/A" },
         { label: "Account Status", value: selectedMember?.account_status || "N/A" },
       ],
     },

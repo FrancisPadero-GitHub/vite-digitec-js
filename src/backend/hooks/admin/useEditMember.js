@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
-const updateMember = async ({ member_id, account_type }) => {
-  const payload = { account_type };
+const updateMember = async ({ member_id, account_role }) => {
+  const payload = { account_role };
 
   const { data, error } = await supabase
     .from("members")
@@ -24,7 +24,6 @@ export function useUpdateMember() {
   return useMutation({
     mutationFn: updateMember,
     onSuccess: () => {
-      // Refresh the users list to reflect the role change
       queryClient.invalidateQueries(["members"]);
     },
   });

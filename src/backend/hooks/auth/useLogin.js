@@ -23,7 +23,7 @@ const loginUser = async ({ email, password }) => {
   // Role Base Access query for the UI
   const { data: members, error: mem_error } = await supabase
     .from("members")
-    .select("account_type")
+    .select("account_role")
     .eq("login_id", auth.user.id)
     .single();
 
@@ -36,14 +36,14 @@ const loginUser = async ({ email, password }) => {
   }
 
   // custom error msg for specific column
-  if (!members?.account_type) {
+  if (!members?.account_role) {
     throw {
       code: "NO_ACCOUNT_TYPE",
       message: "User has no assigned account type.",
     };
   }
 
-  return { role: members.account_type, userId: auth.user.id }; // will be used by the onSuccess, do mind the destructuring
+  return { role: members.account_role, userId: auth.user.id }; // will be used by the onSuccess, do mind the destructuring
 };
 
 export function useLogin() {

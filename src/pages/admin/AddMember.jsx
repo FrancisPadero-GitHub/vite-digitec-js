@@ -52,7 +52,7 @@ function AddMember (){
       title_and_position: "",
       office_address: "",
       office_contact_number: "",
-      account_type: "",
+      account_role: "",
       account_status: "",
       application_date: today,
       membership_fee: "",
@@ -139,7 +139,7 @@ function AddMember (){
 
   // Membership fields
   const membershipFields = [
-    { label: "Account Type", name: "account_type", type: "select", autoComplete: "off",
+    { label: "Account Role", name: "account_role", type: "select", autoComplete: "off",
       options: [
         { label: "Regular", value: "regular-member" },
         { label: "Associate", value: "associate-member" },

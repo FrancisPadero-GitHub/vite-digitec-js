@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { useAuth } from "../backend/context/AuthProvider";
-import { useMembers } from "../backend/hooks/useFetchMembers";
+// custom hook
+import { useMemberRole } from "../backend/context/useMemberRole";
 
 import logo from "../assets/digitec-logo.png";
 import hero1 from "../assets/hero1.jpg";
@@ -37,38 +37,9 @@ const gallery = [
   gallery5,
   gallery6,
 ];
-// This is for the landing page to scan a logged in user account type to set the memberRole Link path 
-const normalizeRole = (accountType) => {
-  if (!accountType) return "login"; 
-  switch (accountType) {
-    case "Admin":
-      return "admin";
-    case "Treasurer":
-      return "treasurer";
-    case "Board":
-      return "board";
-    case "Regular":
-      return "regular-member";
-    case "Associate":
-      return "associate-member";
-    default:
-      return accountType.toLowerCase().replace(/\s+/g, "-");
-  }
-};
 
 
 const Landing = () => {
-  // This is for the landing page to scan a logged in user account type to set the memberRole Link path 
-  const { user } = useAuth();
-  const { data: members} = useMembers();
-  const memberRecord = user
-    ? members?.find((m) => m.login_id === user.id)
-    : null;
-  // Normalize the member role and set default path if null or undefined
-  const rawRole = memberRecord?.account_type;
-  const memberRole = rawRole ? normalizeRole(rawRole) : "login";
-
-
   // Smooth scrolling for header links
   const scrollToAbout = () => {
     const element = document.getElementById('about-section');
@@ -99,26 +70,27 @@ const Landing = () => {
   const prevSlide = () => { setIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1)); };
   const nextSlide = () => { setIndex((prev) => (prev + 1) % gallery.length); };
 
+  const {memberRole} = useMemberRole();
+
   return (
     <div className="min-h-screen text-base-content">
       {/* Header */}
       <header className="sticky top-0 z-50 navbar bg-base-100 px-4 py-4 md:py-5 shadow-lg">
         <div className="flex-1">
-          <Link to={`/${memberRole || "/"}`} className="flex items-center normal-case text-lg md:text-xl">
+          <Link to={`${memberRole || "/"}`} className="flex items-center normal-case text-lg md:text-xl">
             <div className="w-10 h-10 md:w-12 md:h-12 mr-2 md:mr-3">
-              <img src={logo} alt="Digitec Logo" className="w-full h-full object-contain"/>
+              <img src={logo} alt="Digitec Logo" className="w-full h-full object-contain" />
             </div>
             <span className="text-primary font-bold text-sm sm:text-base md:text-lg">
               DigiTEC – ECTEC Multi-Purpose Cooperative Portal
             </span>
           </Link>
         </div>
-
         {/* Desktop Navigation */}
         <div className="hidden md:flex flex-none">
           <ul className="menu menu-horizontal px-1 gap-1 md:gap-2">
             {/* <li><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-sm md:text-base">Home</button></li> */}
-            <li><Link to={`/${memberRole || "/"}`} className="text-sm md:text-base">Home</Link></li>
+            <li><Link to={`${memberRole || "/"}`} className="text-sm md:text-base">Home</Link></li>
             <li><button onClick={scrollToAbout} className="text-sm md:text-base">About ECTEC</button></li>
             <li><button onClick={scrollToContact} className="text-sm md:text-base">Contact Info</button></li>
             <li>
@@ -132,7 +104,6 @@ const Landing = () => {
           </ul>
         </div>
       </header>
-
       <main className="container mx-auto px-4">
         {/* Hero Section */}
         <section className="hero py-8 lg:py-12">
@@ -153,7 +124,6 @@ const Landing = () => {
                 </Link>
               </div>
             </div>
-
             <div className="lg:w-1/2 relative grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0">
               {/* Images in Hero Section */}
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
@@ -161,21 +131,18 @@ const Landing = () => {
                   className="w-full h-full object-cover rounded-[40px_4px_40px_4px] md:rounded-[60px_4px_60px_4px]"
                 />
               </div>
-
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
                 <img
                   src={hero2}
                   className="w-full h-full object-cover rounded-[60px_60px_60px_4px] md:rounded-[100px_100px_100px_4px]"
                 />
               </div>
-
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
                 <img
                   src={hero3}
                   className="w-full h-full object-cover rounded-full md:rounded-full"
                 />
               </div>
-
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
                 <img
                   src={hero4}
@@ -185,35 +152,32 @@ const Landing = () => {
             </div>
           </div>
         </section>
-
         {/* About Us Section */}
         <section id="about-section" className="py-12 md:py-16 lg:px-12 max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             {/* Text Column */}
             <div className="flex-1 order-2 lg:order-1 mt-8 lg:mt-20 max-w-lg">
               <h2 className="text-green-800 text-4xl md:text-5xl font-bold mb-6 relative pb-4
-                            before:absolute before:bottom-0 before:left-0 before:w-12 before:h-1 before:bg-green-700">
+                          before:absolute before:bottom-0 before:left-0 before:w-12 before:h-1 before:bg-green-700">
                 About ECTEC
               </h2>
               <p className="text-base md:text-lg leading-relaxed mb-6">
-                The East CDO Timbalo Eagles Club (ECTEC) is a chapter of the Philippine Eagles 
-                dedicated to unity, leadership, and service. Guided by strong brotherhood, the 
-                club fosters networking opportunities, supports personal and professional growth, 
+                The East CDO Timbalo Eagles Club (ECTEC) is a chapter of the Philippine Eagles
+                dedicated to unity, leadership, and service. Guided by strong brotherhood, the
+                club fosters networking opportunities, supports personal and professional growth,
                 and leads social initiatives that uplift the community.
               </p>
             </div>
-
             {/* Carousel */}
             <div className="flex-1 order-1 lg:order-2">
               <div className="relative w-full overflow-hidden rounded-2xl shadow-lg">
                 <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${index * 100}%)` }}>
                   {gallery.map((src, i) => (
                     <div key={i} className="w-full flex-shrink-0">
-                      <img src={src} alt={`Slide ${i}`} className="w-full aspect-video object-cover"/>
+                      <img src={src} alt={`Slide ${i}`} className="w-full aspect-video object-cover" />
                     </div>
                   ))}
                 </div>
-
                 {/* Controls */}
                 <button
                   onClick={prevSlide}
@@ -231,20 +195,18 @@ const Landing = () => {
             </div>
           </div>
         </section>
-
         {/* Contact Us Section */}
         <section id="contact-section" className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-base-100">
           <div className="max-w-2xl mx-auto">
             <div className="flex justify-center">
               <div className="bg-base-100 p-6 md:p-8 rounded-box shadow-lg border border-base-200 w-full">
                 <div className="mb-6 md:mb-8 text-center">
-                  <div className="inline-block mb-3 md:mb-4"><EmailOutlinedIcon fontSize="large" color="text-primary"/></div>
+                  <div className="inline-block mb-3 md:mb-4"><EmailOutlinedIcon fontSize="large" color="text-primary" /></div>
                   <p className="text-neutral text-sm md:text-base">
                     Have questions? Reach out through any channel below. Our
                     team is ready to assist you!
                   </p>
                 </div>
-
                 {/* Contact Details */}
                 <div className="space-y-6 md:space-y-8">
                   <div>
@@ -260,11 +222,10 @@ const Landing = () => {
                           <p className="text-neutral hover:text-primary text-base">09123456789</p>
                         </div>
                       </div>
-
                       {/* Email */}
                       <div className="flex items-start gap-3 md:gap-4 p-3 md:p-4 hover:bg-base-200 rounded-box duration-200">
                         <div className="p-2 bg-primary/10 rounded-full">
-                          <EmailOutlinedIcon className="h-5 md:h-6 w-5 md:w-6 text-primary"/>
+                          <EmailOutlinedIcon className="h-5 md:h-6 w-5 md:w-6 text-primary" />
                         </div>
                         <div>
                           <h4 className="font-bold text-base-content mb-1 text-base">Email</h4>

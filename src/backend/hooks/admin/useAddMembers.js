@@ -77,7 +77,7 @@ const insertMember = async (formData) => {
     "title_and_position",
     "office_address",
     "office_contact_number",
-    "account_type",
+    "account_role",
     "account_status",
     "application_date",
   ];
