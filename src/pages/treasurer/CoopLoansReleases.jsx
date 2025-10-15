@@ -11,7 +11,7 @@ import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
 import BoardFormModal from '../board/modal/BoardFormModal';
 
-function LoanAccounts() {
+function CoopLoansReleases() {
   const {mutate: releaseLoan } = useEditLoanAcc();
 
   //  const navigate = useNavigate();
@@ -332,4 +332,4 @@ function LoanAccounts() {
   )
 }
 
-export default LoanAccounts
+export default CoopLoansReleases

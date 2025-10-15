@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 // TanStack Query + Auth Provider for universal user ID retrieval
 import { AuthProvider } from "./backend/context/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ProtectedRoute from "./ProtectedRoutes.jsx";
+import ProtectedRoutes from "./ProtectedRoutes.jsx";
 
 
 // Pages
@@ -28,7 +28,6 @@ import UserManagement from "./pages/admin/UserManagement.jsx";
 import CoopShareCapital from "./pages/treasurer/CoopShareCapital.jsx";
 import ClubFunds from "./pages/treasurer/ClubFunds.jsx";
 import ClubExpenses from "./pages/treasurer/ClubExpenses.jsx";
-import CoopLoans from "./pages/treasurer/CoopLoans.jsx";
 import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases.jsx";
 import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments.jsx";
 
@@ -51,153 +50,123 @@ import Profile from "./pages/members/Profile.jsx";
 import MemberLoanAcc from "./pages/members/MemberLoanAcc.jsx";
 
 
-
-
 const queryClient = new QueryClient();
 
 function AppRoutes() {
+  // SHARED PAGES ROUTES
+  const sharedRoutes = [
+    { index: true, element: <Dashboard /> },
+    { path: "member-records", element: <MemberRecords /> },
+    { path: "member-profile/:memberId", element: <MemberProfile /> },
+    { path: "activity-logs", element: <ActivityLogs /> },
+    { path: "reports", element: <Reports /> },
+  ];
+
+  // Role-specific routes
+  const adminRoutes = [
+    { index: true, element: <UserManagement /> },
+    { path: "add-member", element: <AddMember /> },
+    { path: "system-settings", element: <SystemSettings /> },
+    { path: "activity-logs", element: <ActivityLogs /> },
+  ];
+
+  const boardRoutes = [
+    ...sharedRoutes,
+    { path: "loan-applications", element: <LoanApplications /> },
+    { path: "loan-accounts", element: <LoanAccounts /> },
+    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
+  ];
+
+  const treasurerRoutes = [
+    ...sharedRoutes,
+    { path: "coop-share-capital", element: <CoopShareCapital /> },
+    { path: "club-funds", element: <ClubFunds /> },
+    { path: "club-expenses", element: <ClubExpenses /> },
+    { path: "coop-loans/releases", element: <CoopLoansReleases /> },
+    { path: "coop-loans/payments", element: <CoopLoansPayments /> },
+  ];
+
+  const regularMemberRoutes = [
+    { index: true, element: <MemberDashboard /> },
+    { path: "regular-member-club-funds", element: <RegularMemberClubFunds /> },
+    { path: "regular-member-share-capital", element: <MemberShareCapital /> },
+    { path: "coop-loans/accounts", element: <MemberLoanAcc /> },
+    { path: "coop-loans/my-applications", element: <MemberLoanApp /> },
+    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
+    { path: "regular-member-reports", element: <MemberReports /> },
+    { path: "regular-member-help", element: <MemberHelp /> },
+    { path: "regular-member-settings", element: <MemberSettings /> },
+    { path: "profile", element: <Profile /> },
+  ];
+
+  const associateMemberRoutes = [
+    { index: true, element: <MemberDashboard /> },
+    { path: "associate-member-share-capital", element: <MemberShareCapital /> },
+    { path: "associate-member-coop-loans", element: <MemberLoanApp /> },
+    { path: "associate-member-reports", element: <MemberReports /> },
+    { path: "associate-member-help", element: <MemberHelp /> },
+    { path: "associate-member-settings", element: <MemberSettings /> },
+    { path: "profile", element: <Profile /> },
+  ];
+
+  // Then the router
   const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <Landing />,
-    },
-    {
-      path: "/login",
-      element: <Login />,
-    },
+    { path: "/", element: <Landing /> },
+    { path: "/login", element: <Login /> },
 
-
-
-    // ADMIN
-    /**
-     * So the idea on parent path and children is 
-     *  
-     * the children will inherit the parent path for example 
-     * 
-     * /admin/add-member
-     * 
-     * and also this will be used in sidebar to pinpoint where the Link path will be
-     * 
-     */
     {
       path: "/admin",
       element: (
-        <ProtectedRoute roleAllowed="admin">
+        <ProtectedRoutes roleAllowed="admin">
           <Layout />
-        </ProtectedRoute>
+        </ProtectedRoutes>
       ),
-      children: [
-        { index: true, element: <UserManagement /> },
-        { path: "add-member", element: <AddMember /> },
-        { path: "system-settings", element: <SystemSettings /> },
-        { path: "activity-logs", element: <ActivityLogs /> },
-      ],
+      children: adminRoutes,
     },
 
-    // BOD
     {
       path: "/board",
       element: (
-        <ProtectedRoute roleAllowed="board">
+        <ProtectedRoutes roleAllowed="board">
           <Layout />
-        </ProtectedRoute>
+        </ProtectedRoutes>
       ),
-      children: [
-        { index: true, element: <Dashboard /> },
-        { path: "member-records", element: <MemberRecords /> },
-        { path: "member-profile/:memberId", element: <MemberProfile /> },
-        { path: "activity-logs", element: <ActivityLogs /> },
-        { path: "loan-applications", element: <LoanApplications /> },
-        { path: "loan-accounts", element: <LoanAccounts /> },
-        { path: "loan-account/details/:loan_id", element: <LoanAccountDetails />},
-        { path: "reports", element: <Reports /> },
-      ],
+      children: boardRoutes,
     },
 
-    // REGULAR MEMBERS
+    {
+      path: "/treasurer",
+      element: (
+        <ProtectedRoutes roleAllowed="treasurer">
+          <Layout />
+        </ProtectedRoutes>
+      ),
+      children: treasurerRoutes,
+    },
+
     {
       path: "/regular-member",
       element: (
-        <ProtectedRoute roleAllowed="regular-member">
+        <ProtectedRoutes roleAllowed="regular-member">
           <Layout />
-        </ProtectedRoute>
+        </ProtectedRoutes>
       ),
-      children: [
-        { index: true, element: <MemberDashboard /> },
-        { path: "regular-member-club-funds", element: <RegularMemberClubFunds /> },
-        { path: "regular-member-share-capital", element: <MemberShareCapital /> },
-        
-        // Coop Loans collapsible sub-routes
-        // { path: "coop-loans/my-information", element: <MemberCoopLoans type="information" /> },
-        // { path: "coop-loans/payments", element: <MemberCoopLoans type="payments" /> },
-        { path: "coop-loans/accounts", element: <MemberLoanAcc/> },
-        
-        { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
-
-        { path: "coop-loans/my-applications", element: <MemberLoanApp /> },
-        // { path: "coop-loans/approved", element: <MemberCoopLoans type="approved" /> },
-        
-        { path: "regular-member-reports", element: <MemberReports /> },
-        { path: "regular-member-help", element: <MemberHelp /> },
-        { path: "regular-member-settings", element: <MemberSettings /> },
-        { path: "profile", element: <Profile /> },
-      ],
+      children: regularMemberRoutes,
     },
 
-
-    // ASSOCIATE MEMBERS
     {
       path: "/associate-member",
       element: (
-        <ProtectedRoute roleAllowed="associate-member">
+        <ProtectedRoutes roleAllowed="associate-member">
           <Layout />
-        </ProtectedRoute>
+        </ProtectedRoutes>
       ),
-      children: [
-        { index: true, element: <MemberDashboard /> },
-        { path: "associate-member-share-capital", element: <MemberShareCapital /> },
-        { path: "associate-member-coop-loans", element: <MemberLoanApp /> },
-        { path: "associate-member-reports", element: <MemberReports /> },
-        { path: "associate-member-help", element: <MemberHelp /> },
-        { path: "associate-member-settings", element: <MemberSettings /> },
-        { path: "profile", element: <Profile /> },
-
-      ],
+      children: associateMemberRoutes,
     },
 
-
-    // TREASURER
-    {
-      path:"/treasurer",
-      element: (
-        <ProtectedRoute roleAllowed="treasurer">
-          <Layout />
-        </ProtectedRoute>
-      ),
-      children: [
-        { index: true, element: <Dashboard /> },
-        { path: "member-records", element: <MemberRecords /> },
-        { path: "member-profile/:memberId", element: <MemberProfile /> },
-        { path: "activity-logs", element: <ActivityLogs /> },
-        { path: "coop-share-capital", element: <CoopShareCapital /> },
-        { path: "club-funds", element: <ClubFunds /> },
-        { path: "club-expenses", element: <ClubExpenses /> },
-
-        { path: "coop-loans/releases", element: <CoopLoansReleases /> },
-        { path: "coop-loans/payments", element: <CoopLoansPayments /> },
-
-        { path: "reports", element: <Reports /> },
-      ],
-    },
-
-    // NOT FOUND
-    {
-      path: "*",
-      element: <NotFound />,
-    },
-
-
+    { path: "*", element: <NotFound /> },
   ]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
