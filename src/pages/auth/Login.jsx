@@ -1,159 +1,176 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router";
+import { useNavigate } from "react-router-dom";
+
+// custom hooks
+import { useLogin } from "../../backend/hooks/auth/useLogin";
+
+// icons
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import { useState } from "react";
-import { useLogin } from "../../backend/hooks/useLogin";
+
+// assets
 import auth_bg from "../../assets/auth-bg.jpg";
 
 const Login = () => {
-  // Hook: returns mutation methods/states from React Query
-  const {
-    mutate,     // function to trigger login
-    isPending,  // true while request is in progress
-  } = useLogin();
-
-  // Local state for form inputs and UI
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // hooks
+  const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
 
-  // Local state for validation + server errors
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [error, setError] = useState(null);
+  // react hook form
+  const {
+    register,
+    handleSubmit,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm({
+    email: "",
+    password: "",
+    mode: "onChange",
+  });
 
-  // ------------------------------
-  //#region Input validation helpers
-  // ------------------------------
+  const navigate = useNavigate();
 
-  // Regex check for valid email
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const onSubmit = (form_data) => {
+    // Mutate and do the login process then navigate which role (account_type) returns
+    // Might remove the switch process in the future after I fix the admin user adding
+    login(form_data, {
+      onSuccess: ({role}) => { // {role} is destructered cause we returned {role: members.account_type} as object otherwise its default (data)
+        switch (role) {
+          case "Admin":
+            navigate("/admin");
+            break;
+          case "Board":
+            navigate("/board");
+            break;
+          case "Treasurer":
+            navigate("/treasurer");
+            break;
+          case "Associate":
+            navigate("/associate-member");
+            break;
+          case "Regular":
+            navigate("/regular-member");
+            break;
+          default:
+            setError("root", { message: "Unknown account type" });
+        }
+      },
+
+      onError: (err) => {
+        let uiMessage = "Unexpected error occurred.";
+
+        switch (err.code) {
+          case "AUTH_ERROR":
+            uiMessage = "Invalid email or password.";
+            break;
+          case "DB_ERROR":
+            uiMessage = "Unable to load your account. Try again later.";
+            break;
+          case "NO_ACCOUNT_TYPE":
+            uiMessage = "Your account has no assigned role.";
+            break;
+          default:
+            uiMessage = err.message || uiMessage;
+        }
+
+        setError("root", { message: uiMessage });
+      },
+    });
   };
 
-  // Validate email on change
-  const emailInputChange = (event) => {
-    const value = event.target.value;
-    setEmail(value);
-    setError(null); // clear server error when typing
-
-    if (!value) {
-      setEmailError("Email is required");
-    } else if (!validateEmail(value)) {
-      setEmailError("Please enter a valid email address");
-    } else {
-      setEmailError("");
-    }
-  };
-
-  // Validate password on change
-  const passwordInputChange = (event) => {
-    const value = event.target.value;
-    setPassword(value);
-    setError(null); // clear server error when typing
-
-    if (!value) {
-      setPasswordError("Password is required");
-    } else if (value.length < 6) {
-      setPasswordError("Password must have at least 6 characters");
-    } else {
-      setPasswordError("");
-    }
-  };
-  //#endregion
-
-  // ------------------------------
-  // Form submit handler
-  // ------------------------------
-  const submitForm = (event) => {
-    event.preventDefault();
-
-    // Block submission if validation fails
-    if (emailError || passwordError || !email || !password) return;
-
-    setError(null); // reset any previous server error
-
-    mutate(
-      { email, password },
-      {
-        // Capture errors from backend hook (e.g. invalid login)
-        onError: (err) => {
-          setError(err.message || "An unexpected error occurred");
-        },
-      }
-    );
-  };
-
-  // ------------------------------
-  // UI
-  // ------------------------------
   return (
     <div className="min-h-screen font-inter bg-base-200">
       <section className="min-h-screen flex justify-center items-center px-4">
         <div className="card card-side w-[900px] h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
           <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden">
-            <img src={auth_bg} className="w-full h-full object-cover"/>
+            <img 
+            src={auth_bg}
+            alt="Login background illustration"
+            className="w-full h-full object-cover" />
           </figure>
 
           <div className="card-body w-full md:w-1/2 justify-center">
             <h2 className="text-4xl font-bold text-center text-base-content mb-6">Login</h2>
 
-            <form onSubmit={submitForm} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Email Field */}
               <div className="relative w-full">
-                <EmailOutlinedIcon fontSize="small" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none" />
+                <EmailOutlinedIcon
+                  fontSize="small"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none"
+                />
                 <input
                   type="email"
                   placeholder="Your Email..."
-                  className={`input input-bordered w-full pl-10 ${
-                    emailError ? "input-error" : ""
-                  }`}
-                  value={email}
-                  onChange={emailInputChange}
-                  required
+                  autoComplete="email"
+                  className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""
+                    }`}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+                      message: "Email must be a valid email address",
+                    },
+                    onChange: () => clearErrors("root"),
+                  })}
                 />
               </div>
-              
-              {/* Error message */}
-              {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
 
               {/* Password Field */}
               <div className="relative w-full">
-                <LockOutlinedIcon fontSize="small" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none" />
+                <LockOutlinedIcon
+                  fontSize="small"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none"
+                />
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Your Password..."
-                  className={`input input-bordered w-full pl-10 pr-10 ${
-                    passwordError ? "input-error" : ""
-                  }`}
-                  value={password}
-                  onChange={passwordInputChange}
-                  required
+                  autoComplete="current-password"
+                  className={`input input-bordered w-full pl-10 pr-10 ${errors.password ? "input-error" : ""
+                    }`}
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must have at least 6 characters",
+                    },
+                    onChange: () => clearErrors("root"),
+                  })}
                 />
                 <button
+                  title="Show Password"
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={() => setShowPassword((prev) => !prev)} // (prev) => !prev is an arrow function, it’s the functional form of a state update.
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10"
                 >
                   {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
                 </button>
               </div>
-              {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password.message}</p>
+              )}
 
-              {/* Error message */}
-              {error && <p className="text-red-600 text-center">{error}</p>}
+              {/* Server error */}
+              {errors.root && (
+                <p className="text-red-600 text-center">{errors.root.message}</p>
+              )}
 
-              {/* Forgot password */}
               <p className="text-right text-xs text-gray-500">
-                <a href="/forgot-password" className="link">
+                <Link to="/forgot-password" className="link">
                   Forgot Password?
-                </a>
+                </Link>
               </p>
 
-              {/* Submit button */}
               <button
+                title="Sign In Button"
                 type="submit"
                 disabled={isPending}
                 className="btn btn-primary w-full"
@@ -164,13 +181,15 @@ const Login = () => {
                     Logging in...
                   </>
                 ) : (
-                  "Login"
+                  "Sign In"
                 )}
               </button>
             </form>
           </div>
         </div>
       </section>
+
+
     </div>
   );
 };
