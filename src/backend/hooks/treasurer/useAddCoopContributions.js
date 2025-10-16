@@ -3,7 +3,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 const insertCoopContributions = async (formData) => {
   const {
-    member_id = null,
+    account_number = null,
     source = null,
     amount = null,
     category = null,
@@ -12,7 +12,7 @@ const insertCoopContributions = async (formData) => {
     remarks = null,
   } = formData;
 
-  const payload = { member_id, source, amount, category, contribution_date, payment_method, remarks };
+  const payload = { account_number, source, amount, category, contribution_date, payment_method, remarks };
 
   const { data, error } = await supabase
     .from("coop_cbu_contributions")

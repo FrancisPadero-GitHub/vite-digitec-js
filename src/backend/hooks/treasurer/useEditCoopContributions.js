@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const updateCoopContributions = async (formData) => {
   const {
     coop_contri_id,
-    member_id = null,
+    account_number = null,
     source = null,
     amount = null,
     category = null,
@@ -15,7 +15,7 @@ const updateCoopContributions = async (formData) => {
 
   const payload = {
     coop_contri_id,
-    member_id,
+    account_number,
     source,
     amount,
     category,

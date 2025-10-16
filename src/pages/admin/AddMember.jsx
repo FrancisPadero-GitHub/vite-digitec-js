@@ -150,9 +150,9 @@ function AddMember (){
     {
       label: "Account Status", name: "account_status", type: "select", autoComplete: "off",
       options: [
-        { label: "Active", value: "active" },
-        { label: "Inactive", value: "inactive" },
-        { label: "Pending", value: "pending" },
+        { label: "Active", value: "Active" },
+        { label: "Inactive", value: "Inactive" },
+        { label: "Pending", value: "Pending" },
       ],
       required: true, group: "Account Info"
     },
@@ -164,9 +164,9 @@ function AddMember (){
     {
       label: "Fee Status", name: "membership_fee_status", type: "select", autoComplete: "off",
       options: [
-        { label: "Paid", value: "paid" },
-        { label: "Unpaid", value: "unpaid" },
-        { label: "Partial", value: "partial" },
+        { label: "Paid", value: "Paid" },
+        { label: "Unpaid", value: "Unpaid" },
+        { label: "Partial", value: "Partial" },
       ],
       group: "Membership Fee", required: true
     },
@@ -174,9 +174,9 @@ function AddMember (){
     {
       label: "Payment Method", name: "membership_payment_method", type: "select", autoComplete: "off",
       options: [
-        { label: "Cash", value: "cash" },
-        { label: "GCash", value: "gcash" },
-        { label: "Bank", value: "bank" },
+        { label: "Cash", value: "Cash" },
+        { label: "GCash", value: "GCash" },
+        { label: "Bank", value: "Bank" },
       ],
       group: "Membership Fee", required: true
     },
@@ -189,9 +189,9 @@ function AddMember (){
     {
       label: "Payment Method", name: "share_capital_payment_method", type: "select", autoComplete: "off",
       options: [
-        { label: "Cash", value: "cash" },
-        { label: "GCash", value: "gcash" },
-        { label: "Bank", value: "bank" },
+        { label: "Cash", value: "Cash" },
+        { label: "GCash", value: "GCash" },
+        { label: "Bank", value: "Bank" },
       ],
       group: "Share Capital", required: true
     },
