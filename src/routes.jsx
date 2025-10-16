@@ -3,51 +3,51 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 // TanStack Query + Auth Provider for universal user ID retrieval
 import { AuthProvider } from "./backend/context/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ProtectedRoutes from "./ProtectedRoutes.jsx";
+import ProtectedRoutes from "./ProtectedRoutes";
 
 
 // Pages
-import Layout from "./layout/Layout.jsx";
-import Landing from "./pages/Landing.jsx";
-import Login from "./pages/auth/Login.jsx";
-import NotFound from "./pages/NotFound.jsx";
+import Layout from "./layout/Layout";
+import Landing from "./pages/Landing";
+import Login from "./pages/auth/Login";
+import NotFound from "./pages/NotFound";
 
 // SHARED PAGES 
-import Dashboard from "./pages/shared/Dashboard.jsx";
-import MemberRecords from "./pages/shared/MemberRecords.jsx";
-import Reports from "./pages/shared/Reports.jsx";
-import MemberProfile from "./pages/shared/MemberProfile.jsx";
-import ActivityLogs from "./pages/shared/ActivityLogs.jsx";
+import Dashboard from "./pages/shared/Dashboard";
+import MemberRecords from "./pages/shared/MemberRecords";
+import Reports from "./pages/shared/Reports";
+import MemberProfile from "./pages/shared/MemberProfile";
+import ActivityLogs from "./pages/shared/ActivityLogs";
 
 // ADMIN
-import AddMember from "./pages/admin/AddMember.jsx";
-import SystemSettings from "./pages/admin/SystemSettings.jsx";
-import UserManagement from "./pages/admin/UserManagement.jsx";
+import AddMember from "./pages/admin/AddMember";
+import SystemSettings from "./pages/admin/SystemSettings";
+import UserManagement from "./pages/admin/UserManagement";
 
 // TREASURER PAGES
-import CoopShareCapital from "./pages/treasurer/CoopShareCapital.jsx";
-import ClubFunds from "./pages/treasurer/ClubFunds.jsx";
-import ClubExpenses from "./pages/treasurer/ClubExpenses.jsx";
-import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases.jsx";
-import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments.jsx";
+import CoopShareCapital from "./pages/treasurer/CoopShareCapital";
+import ClubFunds from "./pages/treasurer/ClubFunds";
+import ClubExpenses from "./pages/treasurer/ClubExpenses";
+import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases";
+import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
 
 // BOD Pages
-import LoanApplications from "./pages/board/LoanApplications.jsx";
-import LoanAccounts from "./pages/board/LoanAccounts.jsx";
-import LoanAccountDetails from "./pages/board/LoanAccountDetails.jsx";
+import LoanApplications from "./pages/board/LoanApplications";
+import LoanAccounts from "./pages/board/LoanAccounts";
+import LoanAccountDetails from "./pages/board/LoanAccountDetails";
 
 // REGULAR AND ASSOCIATE PAGES
-import MemberDashboard from "./pages/members/MemberDashboard.jsx";
-import MemberShareCapital from "./pages/members/MemberShareCapital.jsx";
-import MemberLoanApp from "./pages/members/MemberLoanApp.jsx";
-import MemberReports from "./pages/members/MemberReports.jsx";
-import MemberHelp from "./pages/members/MemberHelp.jsx";
-import MemberSettings from "./pages/members/MemberSettings.jsx";
+import MemberDashboard from "./pages/members/MemberDashboard";
+import MemberCoopShareCapital from "./pages/members/MemberCoopShareCapital";
+import MemberLoanApp from "./pages/members/MemberLoanApp";
+import MemberReports from "./pages/members/MemberReports";
+import MemberHelp from "./pages/members/MemberHelp";
+import MemberSettings from "./pages/members/MemberSettings";
 
 // REGULAR MEMBERS Pages
-import RegularMemberClubFunds from "./pages/members/RegularMemberClubFunds.jsx";
-import Profile from "./pages/members/Profile.jsx";
-import MemberLoanAcc from "./pages/members/MemberLoanAcc.jsx";
+import MemberClubFunds from "./pages/members/MemberClubFunds";
+import Profile from "./pages/members/Profile";
+import MemberLoanAcc from "./pages/members/MemberLoanAcc";
 
 
 const queryClient = new QueryClient();
@@ -96,8 +96,8 @@ function AppRoutes() {
 
   const regularMemberRoutes = [
     { index: true, element: <MemberDashboard /> },
-    { path: "regular-member-club-funds", element: <RegularMemberClubFunds /> },
-    { path: "regular-member-share-capital", element: <MemberShareCapital /> },
+    { path: "regular-member-club-funds", element: <MemberClubFunds /> },
+    { path: "regular-member-share-capital", element: <MemberCoopShareCapital /> },
     { path: "coop-loans/accounts", element: <MemberLoanAcc /> },
     { path: "coop-loans/my-applications", element: <MemberLoanApp /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
@@ -109,7 +109,7 @@ function AppRoutes() {
 
   const associateMemberRoutes = [
     { index: true, element: <MemberDashboard /> },
-    { path: "associate-member-share-capital", element: <MemberShareCapital /> },
+    { path: "associate-member-share-capital", element: <MemberCoopShareCapital /> },
     { path: "associate-member-coop-loans", element: <MemberLoanApp /> },
     { path: "associate-member-reports", element: <MemberReports /> },
     { path: "associate-member-help", element: <MemberHelp /> },

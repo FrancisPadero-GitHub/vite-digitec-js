@@ -7,7 +7,7 @@ import {
   Legend,
   Label,
 } from "recharts";
-import { useFetchExpenses } from "../../treasurer/hooks/useFetchExpenses";
+import { useFetchExpenses } from "../../../backend/hooks/shared/useFetchExpenses";
 
 const COLORS = [
   "#6366F1",
@@ -19,7 +19,8 @@ const COLORS = [
 ];
 
 function ExpensesChart() {
-  const { data: fundExpenses, isLoading, isError, error } = useFetchExpenses();
+  const { data: expenses_data, isLoading, isError, error } = useFetchExpenses();
+  const fundExpenses = expenses_data?.data || [];
 
   if (isLoading) {
     return (

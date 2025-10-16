@@ -1,9 +1,16 @@
 import { useState } from "react";
-import { useMembers } from "../../backend/hooks/admin/useFetchMembers.js";
+import { useNavigate } from "react-router";
+
+// fetch hooks
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers.js";
+
+// components
 import MainDataTable from "../treasurer/components/MainDataTable.jsx";
 import FilterToolbar from "./components/FilterToolbar.jsx";
+
+// constants
 import { ROLE_COLORS } from "../../constants/Color.js";
-import { useNavigate } from "react-router";
+
 
 export default function MemberRecords() {
   const navigate = useNavigate();

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Toaster, toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-// custom hooks
+// mutation hooks
 import { useLogin } from "../../backend/hooks/auth/useLogin";
 
 // icons
@@ -14,6 +14,8 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 
 // assets
 import auth_bg from "../../assets/auth-bg.jpg";
+
+
 
 const Login = () => {
   // hooks
@@ -34,6 +36,10 @@ const Login = () => {
   });
 
   const navigate = useNavigate();
+
+  const notify = () => {
+    toast.error("Please contact administrator")
+  }
 
   const onSubmit = (form_data) => {
     // Mutate and do the login process then navigate which role (account_type) returns
@@ -67,6 +73,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen font-inter bg-base-200">
+      <Toaster position="bottom-right"/>
       <section className="min-h-screen flex justify-center items-center px-4">
         <div className="card card-side w-[900px] h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
           <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden">
@@ -146,9 +153,13 @@ const Login = () => {
               )}
 
               <p className="text-right text-xs text-gray-500">
-                <Link to="/forgot-password" className="link">
+                <button
+                  title="Forgot password"
+                  type="button" 
+                  onClick={() => notify()}
+                  className="link">
                   Forgot Password?
-                </Link>
+                </button>
               </p>
 
               <button

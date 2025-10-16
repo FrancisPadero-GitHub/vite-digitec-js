@@ -3,13 +3,13 @@ import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headl
 import { Link } from 'react-router';
 
 // Hooks
-import { useMembers } from '../../backend/hooks/useFetchMembers';
-import { useFetchCoopContributions } from './custom/useFetchCoop'; // implemented pagination
+import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
+import { useFetchCoop } from '../../backend/hooks/shared/useFetchCoop'; // implemented pagination
 import { useMemberRole } from '../../backend/context/useMemberRole';
 
-import { useAddCoopContributions } from './hooks/useAddCoopContributions';
-import { useEditCoopContributions } from './hooks/useEditCoopContributions';
-import { useDelete } from './hooks/useDelete';
+import { useAddCoopContributions } from '../../backend/hooks/treasurer/useAddCoopContributions';
+import { useEditCoopContributions } from '../../backend/hooks/treasurer/useEditCoopContributions';
+import { useDelete } from '../../backend/hooks/shared/useDelete';
 
 // components
 import FormModal from './modals/FormModal';
@@ -44,8 +44,9 @@ function CoopShareCapital() {
    */
 
   // useQuery hook to fetch coop funds and members
-  const { data: members } = useMembers();
-  const { data: coopData, isLoading, isError, error } = useFetchCoopContributions(page, limit);
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
+  const { data: coopData, isLoading, isError, error } = useFetchCoop({page, limit});
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
  
@@ -73,7 +74,7 @@ function CoopShareCapital() {
 
   const TABLE_PREFIX = "SCC"; // You can change this per table, this for the the unique table ID but this is not included in the database
   const coop = coopRaw.filter((row) => {
-    const member = members?.find((m) => m.member_id === row.member_id);
+    const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
       ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
@@ -113,7 +114,7 @@ function CoopShareCapital() {
   // form data
   const [formData, setFormData] = useState({
     coop_contri_id: null,
-    member_id: null,
+    account_number: null,
     source: "Member Contribution", // given default value for it 
     category: "",
     amount: 0,
@@ -130,7 +131,7 @@ function CoopShareCapital() {
     query === ""
       ? members || []
       : members?.filter((m) =>
-        `${m.f_name} ${m.l_name} ${m.email}`
+        `${m.account_number} ${m.f_name} ${m.l_name} ${m.email}`
           .toLowerCase()
           .includes(query.toLowerCase())
       ) || [];
@@ -154,7 +155,7 @@ function CoopShareCapital() {
     // Reset form data to initial state
     setFormData({
       coop_contri_id: null,
-      member_id: null,
+      account_number: null,
       source: "Member Contribution", // given default value for it 
       category: "",
       amount: 0,
@@ -317,7 +318,7 @@ function CoopShareCapital() {
           setPage={setPage}
           renderRow={(row) => {
             const matchedMember = members?.find(
-              (member) => member.member_id === row.member_id
+              (member) => member.account_number === row.account_number
             );
             const isDisabled = !matchedMember; // this is for the modifier if the system is the one that made the transactions
 
@@ -410,45 +411,41 @@ function CoopShareCapital() {
 
 
         <div className="form-control w-full">
-          <label className="label text-sm font-semibold">Member</label>
+          <label className="label text-sm font-semibold">Member Account</label>
           <div className="relative">
             <Combobox
-              value={members.find((m) => m.member_id === formData.member_id) || null}
+              value={members.find((m) => m.account_number === formData.account_number) || null}
               onChange={(member) =>
-                handleChange({ target: { name: "member_id", value: member?.member_id } })
+                handleChange({ target: { name: "account_number", value: member?.account_number } })
               }
             >
               <ComboboxInput
                 required
                 className="input input-bordered w-full"
-                placeholder="Search or select member..."
+                placeholder="Search by Account Number or Name..."
                 displayValue={(member) =>
-                  member ? `${member.f_name} ${member.l_name} (${member.email})` : ""
+                  member ? `${member.account_number}` : ""
                 }
                 onChange={(e) => setQuery(e.target.value)}
               />
+
               <ComboboxOptions className="absolute z-[999] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
                 {filteredMembers.length === 0 ? (
                   <div className="px-4 py-2 text-base-content/60">No members found.</div>
                 ) : (
                   filteredMembers.map((member) => (
                     <ComboboxOption
-                      key={member.member_id}
+                      key={member.account_number}
                       value={member}
                       className={({ focus }) =>
                         `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
                         }`
                       }
                     >
-                      <div className="flex items-center gap-3">
-                        {/* AVATAR WILL BE IMPLMENTED LATER */}
-                        {/* <img
-                          src={member.avatar}
-                          className="w-7 h-7 rounded-full border border-base-300"
-                          alt="avatar"
-                        /> */}
-                        <span className="truncate">
-                          {member.f_name} {member.l_name} ({member.email})
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-sm">{member.account_number}</span>
+                        <span className="truncate text-sm">
+                          {member.f_name} {member.l_name}
                         </span>
                       </div>
                     </ComboboxOption>

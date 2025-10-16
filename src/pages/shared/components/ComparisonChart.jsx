@@ -1,5 +1,5 @@
-import { useFetchExpenses } from "../../treasurer/hooks/useFetchExpenses";
-import { useFetchClubFunds } from "../../treasurer/hooks/useFetchClubFunds";
+import { useFetchExpenses } from "../../../backend/hooks/shared/useFetchExpenses";
+import { useFetchClubFunds } from '../../../backend/hooks/shared/useFetchClubFunds';
 
 import {
   LineChart,
@@ -13,8 +13,11 @@ import {
 } from "recharts";
 
 function ComparisonChart() {
-  const { data: fundExpenses } = useFetchExpenses();
-  const { data: clubFunds } = useFetchClubFunds();
+  const { data: expenses_data } = useFetchExpenses();
+  const fundExpenses = expenses_data?.data || [];
+
+  const { data: club_fund_data } = useFetchClubFunds({});
+  const clubFunds = club_fund_data?.data || [];
 
   // Aggregate and normalize both datasets by date
   const mergedData = {};

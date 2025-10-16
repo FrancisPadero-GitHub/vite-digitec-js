@@ -1,8 +1,10 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { useFetchCoopContributions } from "../../treasurer/hooks/useFetchCoopContributions";
+
+import { useFetchCoop } from '../../../backend/hooks/shared/useFetchCoop';
 
 function CoopContributionChart() {
-  const { data: contributions, isLoading, isError, error } = useFetchCoopContributions();
+  const { data: coop_data, isLoading, isError, error } = useFetchCoop({}); // Fetch everything (no pagination)
+  const contributions = coop_data?.data || [];
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64">Loading contributions…</div>;

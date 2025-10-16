@@ -2,12 +2,20 @@ import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-materia
 
 // hooks
 import { useState } from 'react';
-import { useFetchTotal } from './hooks/useFetchTotal';
-import { useFetchIncome } from './hooks/useFetchIncome';
-import { useMembers } from '../../backend/hooks/useFetchMembers';
-import { useFetchExpenses } from '../treasurer/hooks/useFetchExpenses';
-import { useFetchClubFunds } from '../treasurer/hooks/useFetchClubFunds';
-import { useFetchCoopContributions } from '../treasurer/hooks/useFetchCoopContributions';
+// RPC FUNCTION ALL IN ONE (expenses, club funds, income, coop share capital)
+// rpc hook
+import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal'; 
+
+// Hooks for the four quick recent tables
+import { useFetchIncome } from '../../backend/hooks/shared/useFetchIncome';
+
+// Fetch hooks on main tables
+import { useFetchExpenses } from '../../backend/hooks/shared/useFetchExpenses';
+import { useFetchClubFunds } from '../../backend/hooks/shared/useFetchClubFunds';
+import { useFetchCoop } from '../../backend/hooks/shared/useFetchCoop';
+
+// helper 
+import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useMemberRole } from '../../backend/context/useMemberRole';
 
 // constants
@@ -20,16 +28,25 @@ import CoopContributionChart from './components/CoopContributionChart';
 import ComparisonChart from './components/ComparisonChart';
 import DataTable from './components/DataTable';
 
+
+
 function Dashboard() {
-  // Supabase Hooks
 
   const {memberRole} = useMemberRole();
 
-  const { data: members } = useMembers();
-  const { data: income, isLoading: incomeIsLoading } = useFetchIncome();
-  const { data: fundExpenses, isLoading: expensesIsLoading } = useFetchExpenses();
-  const { data: clubFunds, isLoading: clubFundsIsLoading } = useFetchClubFunds();
-  const { data: coopFunds, isLoading: coopIsloading } = useFetchCoopContributions();
+  const { data: income, isLoading: incomeIsLoading } = useFetchIncome();    // will add pagination to this later
+
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
+
+  const { data: expenses_data, isLoading: expensesIsLoading } = useFetchExpenses();
+  const expenses = expenses_data?.data || [];
+
+  const { data: club_funds_data, isLoading: clubFundsIsLoading } = useFetchClubFunds({ page: 1, limit: 20 });
+  const clubFunds = club_funds_data?.data || [];
+
+  const { data: coop_data, isLoading: coopIsloading } = useFetchCoop({ page: 1, limit: 20 });
+  const coopFunds = coop_data?.data || [];
 
   // Filters for the cards
   const subText = "All Time";
@@ -210,7 +227,6 @@ function Dashboard() {
   ];
  
   return (
-    <div>
       <div className="mb-6 space-y-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex flex-col lg:flex-row gap-3">
@@ -243,11 +259,11 @@ function Dashboard() {
               title={"Share Capital / Coop"}
               linkPath={`/${memberRole}/coop-share-capital`}
               headers={["Ref No.", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
-              data={coopFunds}
+              data={coopFunds} // share capital / coop
               isLoading={coopIsloading}
               renderRow={(row) => {
                 const TABLE_PREFIX = "SCC"; 
-                const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
+                const matchedMember = members.find((member_column) => member_column.account_number === row.account_number);
                 const isDisabled = !matchedMember; // condition (you can adjust logic)
                 return (
                   <tr key={`${TABLE_PREFIX}_${row.coop_contri_id}`} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
@@ -301,6 +317,7 @@ function Dashboard() {
               renderRow={(row) => {
                 const TABLE_PREFIX = "CFC";
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
+                const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System";
                 return (
                   <tr key={`${TABLE_PREFIX}_${row.contribution_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
                     <td className='text-xs'>{TABLE_PREFIX}_{row.contribution_id?.toLocaleString() || "ID"}</td>
@@ -308,9 +325,7 @@ function Dashboard() {
                     {/* Member Render from members table */}
                     <td>
                       <span className="gap-2">
-                        {matchedMember
-                          ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                          : "System"}
+                        {fullName}
                       </span>
                     </td>
                     <td className="px-4 py-2 font-semibold text-success">
@@ -340,7 +355,7 @@ function Dashboard() {
               title={"Club Expenses"}
               linkPath={`/${memberRole}/club-expenses`}
               headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
-              data={fundExpenses}
+              data={expenses}
               isLoading={expensesIsLoading}
               renderRow={(row) => 
                 {
@@ -429,7 +444,6 @@ function Dashboard() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 

@@ -4,15 +4,15 @@ import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headl
 import { Link } from 'react-router';
 
 // hooks
-import { useMembers } from '../../backend/hooks/useFetchMembers';
+import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useMemberRole } from '../../backend/context/useMemberRole';
 
 // import { useFetchClubFunds } from './hooks/useFetchClubFunds'
-import { useFetchClubFunds } from './custom/useFetchClubFunds';
+import { useFetchClubFunds } from '../../backend/hooks/shared/useFetchClubFunds';
 
-import { useAddClubFunds } from './hooks/useAddClubFunds';
-import { useEditClubFunds } from './hooks/useEditClubFunds';
-import { useDelete } from './hooks/useDelete';
+import { useAddClubFunds } from '../../backend/hooks/treasurer/useAddClubFunds';
+import { useEditClubFunds } from '../../backend/hooks/treasurer/useEditClubFunds';
+import { useDelete } from '../../backend/hooks/shared/useDelete';
 
 // components
 import FormModal from './modals/FormModal';
@@ -40,8 +40,9 @@ function ClubFunds() {
      */
   
   // useQuery hook to fetch club funds and members
-  const { data: members } = useMembers();
-  const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds(page, limit);
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
+  const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds({page, limit});
 
   // Pagination sets a limiter to be rendered to avoid infinite rendering of the whole table
   const clubFundsRaw = clubFundsData?.data || [];

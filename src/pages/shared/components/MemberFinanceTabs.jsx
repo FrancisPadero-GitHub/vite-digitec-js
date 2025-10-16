@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import dayjs from "dayjs";
 
-import { useFetchLoanAcc } from "../../board/hooks/useFetchLoanAcc";
+// fetch hooks
+import { useFetchLoanAcc } from "../../../backend/hooks/shared/useFetchLoanAcc";
+
+
 
 export const FinanceTab = ({
   headers = [],
@@ -32,7 +35,7 @@ export const FinanceTab = ({
   const { memberId } = useParams();
   const parsedId = Number(memberId);
 
-  const { data: loanAcc } = useFetchLoanAcc();
+  const { data: loanAcc } = useFetchLoanAcc({});
   const loanAccRaw = loanAcc?.data || [];
   const activeLoans = loanAccRaw?.filter(
     (row) => row.applicant_id === parsedId && row.status === "Active"

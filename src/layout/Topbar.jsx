@@ -13,7 +13,7 @@ import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for n
 import { format } from "date-fns";
 
 // hooks
-import { useMembers } from "../backend/hooks/useFetchMembers";
+import { useMembers } from "../backend/hooks/shared/useFetchMembers";
 import { useAuth } from "../backend/context/AuthProvider";
 
 import { supabase } from "../backend/supabase";
@@ -23,10 +23,11 @@ const Topbar = ({ role }) => {
 
   // to fetch member name for the logged in id
   const { user } = useAuth();
-  const { data: membersData } = useMembers();
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
 
   // Find member linked to this user
-  const member = membersData?.find((m) => m.login_id === user?.id);
+  const member = members?.find((m) => m.login_id === user?.id);
 
   const profile_pic = member?.avatar_url;
   

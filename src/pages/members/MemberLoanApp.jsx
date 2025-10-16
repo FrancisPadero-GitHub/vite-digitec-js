@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-// custom hooks
-import { useFetchLoanProducts } from "./hooks/useFetchLoanProduct";
-import { useFetchLoanApp } from "./hooks/useFetchLoanApp";
-import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
-import { useAddLoanApp } from "./hooks/useAddLoanApp";
-import { useEditLoanApp } from "./hooks/useEditLoanApp";
-import { useDelete } from "../treasurer/hooks/useDelete";
+// fetch hooks
+import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
+import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
+import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+
+// mutation hooks
+import { useAddLoanApp } from "../../backend/hooks/member/useAddLoanApp";
+import { useEditLoanApp } from "../../backend/hooks/member/useEditLoanApp";
+import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
 import MembersFormModal from "./modal/MembersFormModal";
@@ -17,17 +19,21 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 // constants
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
+
+
 function MemberLoanApp() {
   const { data: loanProducts } = useFetchLoanProducts();
-  const { data: loanAccRaw} = useFetchLoanAcc();
-  const loanAcc = loanAccRaw?.data || [];
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp(page, limit);
+
+  const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({ page, limit, useLoggedInMember: true});
   const loanDataRaw = memberLoanAppData?.data || [];
   const total = loanDataRaw?.count || 0;
+
+  const { data: loanAccRaw } = useFetchLoanAcc({ page, limit, useLoggedInMember: true });
+  const loanAcc = loanAccRaw?.data || [];
 
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");

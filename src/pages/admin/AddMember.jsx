@@ -2,7 +2,7 @@ import { useState, Fragment } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 
-// custom hooks
+// mutation hooks
 import { useAddMember } from "../../backend/hooks/admin/useAddMembers";
 
 // icons

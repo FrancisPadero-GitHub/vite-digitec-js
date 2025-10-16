@@ -1,28 +1,28 @@
 // icons
 import {AccountBalance, MonetizationOn, CreditScore, EventNote, Savings, Wallet, ReceiptLong, AttachMoney, Payments} from "@mui/icons-material";
-
-// Hooks
 import { useState } from "react";
-import { useFetchCoopByMember } from "../members/hooks/useFetchCoopByMember";
-import { useFetchClubFundsByMember } from "./hooks/useFetchClubFundsByMember";
-import { useFetchMemberTotal } from "./hooks/useFetchMemberTotals";
-// import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
 
-import { useFetchTotal } from "../shared/hooks/useFetchTotal";
+// Rpc Hooks
+import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";      // Club overview
+import { useFetchMemberTotal } from "../../backend/hooks/member/useFetchMemberTotals"; // Personal overview
 
+// Fetch Hooks
+import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop"
+import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds"
 // import { useFetchMemberPaySched } from "../board/hooks/useFetchMemberPaySched";
 
 // Components
 import StatCardMember from "./modal/StatCardMember";
 import DataTableMember from "./modal/DataTableMember";
-import LoanScheduleCardList from "../board/components/LoanScheduleCardList";
 
 // Constant Colors
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS } from "../../constants/Color";
 
 function MemberDashboard() {
-  const { data: coopData, coopIsLoading } = useFetchCoopByMember();
-  const { data: clubFundData, clubIsLoading } = useFetchClubFundsByMember();
+  
+  const { data: coopData, isLoading: coopIsLoading } = useFetchCoop({ page: 1, limit: 20, useLoggedInMember: true });
+  const { data: clubFundData, isLoading: clubIsLoading } = useFetchClubFunds({ page: 1, limit: 20, useLoggedInMember: true });
+
 
   // const {data: loanAcc} = useFetchLoanAcc();
   // const loanAccRaw = loanAcc?.data || [];
@@ -37,7 +37,6 @@ function MemberDashboard() {
   // const total = loanSchedules?.count || 0;
   
  
-  
   // Filters for the cards
   const subText = "All Time";
   const [filters, setFilters] = useState({

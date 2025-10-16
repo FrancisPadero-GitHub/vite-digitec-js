@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { useParams } from "react-router";
-import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
-import { useFetchMemberDetails } from "../shared/hooks/useFetchMemberDetails";
-import { useFetchMemberPaySched } from "./hooks/useFetchMemberPaySched";
 import dayjs from "dayjs";
+
+// fetch hooks
+import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useFetchPaySched } from "../../backend/hooks/shared/useFetchPaySched";
+import { useFetchMemberDetails } from "../../backend/hooks/member/useFetchMemberDetails";
 
 // components
 import LoanScheduleCardList from "./components/LoanScheduleCardList";
+
+
 
 function LoanAccountDetails() {
   // ID params Grabber 
@@ -17,13 +21,14 @@ function LoanAccountDetails() {
   // Payment Schedules
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: loanSchedules, isLoading} = useFetchMemberPaySched(page, limit, parsedId);
+  const { data: loanSchedules, isLoading } = useFetchPaySched({page, limit, parsedId});
   const loanSchedRaw = loanSchedules?.data || [];
   const total = loanSchedules?.count || 0;
 
   // Loan Account Data
   const { data: loanAcc } = useFetchLoanAcc();
   const loanAccRaw = loanAcc?.data || [];
+
   const accountData = loanAccRaw?.find((row) => row.loan_id === parsedId);
   const applicant_id = accountData?.applicant_id;
 

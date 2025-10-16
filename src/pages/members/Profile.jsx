@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { Edit, Check, VerifiedUserOutlined } from "@mui/icons-material";
-import { useFetchProfile } from "./hooks/useFetchProfile";
-import { useUpdateProfile } from "./hooks/useUpdateProfile";
-import { useChangePassword } from "./hooks/useChangePassword";
+
+// fetch hooks
+import { useFetchProfile } from "../../backend/hooks/member/useFetchProfile";
+
+// mutation hooks
+import { useUpdateProfile } from "../../backend/hooks/member/useUpdateProfile";
+import { useChangePassword } from "../../backend/hooks/member/useChangePassword";
+
+// assets 
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
 const tips = [

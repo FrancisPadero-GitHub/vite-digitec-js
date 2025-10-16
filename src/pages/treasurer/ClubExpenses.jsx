@@ -1,15 +1,14 @@
-import React, { useState } from "react";
-import SearchIcon from "@mui/icons-material/Search";
+import { useState } from "react";
 import { Link } from "react-router";
 
-// hooks
-import { useAddExpenses } from "./hooks/useAddExpenses";
-import { useEditExpenses } from "./hooks/useEditExpenses";
+// fetch hooks
 import { useMemberRole } from "../../backend/context/useMemberRole";
-// import { useFetchExpenses } from "./hooks/useFetchExpenses";
+import { useFetchExpenses } from "../../backend/hooks/shared/useFetchExpenses";
 
-import { useFetchExpenses } from "./custom/useFetchExpenses";
-import { useDelete } from "./hooks/useDelete";
+// mutation hooks
+import { useAddExpenses } from "../../backend/hooks/treasurer/useAddExpenses";
+import { useEditExpenses } from "../../backend/hooks/treasurer/useEditExpenses";
+import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
 import FormModal from './modals/FormModal';

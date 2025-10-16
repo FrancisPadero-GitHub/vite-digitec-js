@@ -4,13 +4,16 @@ import { Link } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headlessui/react";
 
+// fetch hooks
+import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
+import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
+import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
 
-// hooks
-import { useFetchLoanPayments } from './hooks/useFetchPayments';
-import { useMembers } from '../../backend/hooks/useFetchMembers';
-import { useAddLoanPayments } from './hooks/useAddPayments';
-import { useFetchLoanAcc } from './hooks/useFetchLoanAcc';
-import { useDelete } from './hooks/useDelete';
+
+// mutation hooks
+import { useDelete } from '../../backend/hooks/shared/useDelete';
+import { useAddLoanPayments } from '../../backend/hooks/treasurer/useAddPayments';
+
 
 // components
 import FilterToolbar from '../shared/components/FilterToolbar';
@@ -22,8 +25,11 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 
 function CoopLoansPayments() {
-  const { data: loanApps, } = useFetchLoanAcc();
-  const { data: members } = useMembers();
+  const { data: loan_acc_data, } = useFetchLoanAcc({});
+  const loanApps = loan_acc_data?.data || [];
+
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
   // Filter members based on query
   const [query, setQuery] = useState("");
   const filteredMembers =
@@ -160,8 +166,8 @@ function CoopLoansPayments() {
 
   // Handlers
   const handleDelete = (payment_id) => {
-    console.log("Deleting Coop contribution:", payment_id);
-    // mutateDelete({ table: "loan_payments", column_name: "payment_id", id: payment_id });
+    // console.log("Deleting Coop contribution:", payment_id);
+    mutateDelete({ table: "loan_payments", column_name: "payment_id", id: payment_id });
     closeModal();
   };
 

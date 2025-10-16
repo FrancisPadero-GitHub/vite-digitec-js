@@ -2,17 +2,22 @@ import {useState} from 'react'
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
-import { useMembers } from "../../backend/hooks/useFetchMembers";
-import { useFetchLoanProducts } from '../members/hooks/useFetchLoanProduct';
+// fetch hooks
+import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
+import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
 
+// components
 import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
-import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
+
+// constants
+import { LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 function LoanAccounts() {
    const navigate = useNavigate();
-   const { data: members } = useMembers();
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
    const { data: loanProducts } = useFetchLoanProducts();
 
   // Data fetch on loan applications and pagination control

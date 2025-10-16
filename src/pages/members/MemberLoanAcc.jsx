@@ -1,22 +1,28 @@
 import {useState} from 'react'
 import { useNavigate } from 'react-router-dom';
-import {useFetchLoanAcc} from "./hooks/useFetchLoanAcc";
-import { useMembers } from "../../backend/hooks/useFetchMembers";
-import { useFetchLoanProducts } from '../members/hooks/useFetchLoanProduct';
 
+// fetch hooks
+import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
+import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
+
+// components
 import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
+
+// constants
 import { LOAN_ACCOUNT_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 function MemberLoanAcc() {
   const navigate = useNavigate();
-  const { data: members } = useMembers();
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
   const { data: loanProducts } = useFetchLoanProducts();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: loanApps, isLoading, isError, error } = useFetchLoanAcc(page, limit);
+  const { data: loanApps, isLoading, isError, error } = useFetchLoanAcc({page, limit,useLoggedInMember: true});
   const loanAppRaw = loanApps?.data || [];
   const total = loanAppRaw?.count || 0;
 

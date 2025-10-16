@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-// custom hooks
-import { useMembers } from "../../backend/hooks/admin/useFetchMembers.js";
+// fetch hooks
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers.js";
+
+// mutation hooks
 import { useUpdateMember } from "../../backend/hooks/admin/useEditMember.js";
 
 // components

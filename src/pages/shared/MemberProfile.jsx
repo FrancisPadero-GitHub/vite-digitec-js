@@ -1,10 +1,18 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useFetchMemberDetails } from "./hooks/useFetchMemberDetails";
+
+// fetch hooks
+import { useFetchMemberDetails } from "../../backend/hooks/member/useFetchMemberDetails";
+
+// components
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import SavingsIcon from "@mui/icons-material/Savings";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import FinanceTab from "./components/MemberFinanceTabs";
+
+// constants
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS } from "../../constants/Color";
+
+
 
 function MemberProfile() {
   const navigate = useNavigate();

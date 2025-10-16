@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
 
 // custom hook
 import { useMemberRole } from "../backend/context/useMemberRole";
@@ -40,6 +41,11 @@ const gallery = [
 
 
 const Landing = () => {
+
+  const notify = () => {
+    toast.error("To access the dashboard, please log in.");
+  }
+
   // Smooth scrolling for header links
   const scrollToAbout = () => {
     const element = document.getElementById('about-section');
@@ -74,10 +80,15 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen text-base-content">
+      <Toaster position="bottom-right" />
       {/* Header */}
       <header className="sticky top-0 z-50 navbar bg-base-100 px-4 py-4 md:py-5 shadow-lg">
         <div className="flex-1">
-          <Link to={`${memberRole || "/"}`} className="flex items-center normal-case text-lg md:text-xl">
+          <Link 
+            to={`${memberRole || "/"}`} 
+            onClick={() => notify()} 
+            className="flex items-center normal-case text-lg md:text-xl"
+            >
             <div className="w-10 h-10 md:w-12 md:h-12 mr-2 md:mr-3">
               <img src={logo} alt="Digitec Logo" className="w-full h-full object-contain" />
             </div>

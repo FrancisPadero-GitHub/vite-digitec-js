@@ -2,18 +2,16 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-// custom hooks
-import { useFetchLoanProducts } from "../members/hooks/useFetchLoanProduct";
+// fetch hooks
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
+import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
+import { useFetchLoanApp } from "../../backend/hooks/_todelete/useFetchLoanApps";
 
-import { useFetchLoanApp } from "./hooks/useFetchLoanApps";
-import { useEditLoanApp } from "./hooks/useEditLoanApp";
-
-import { useMembers } from "../../backend/hooks/useFetchMembers";
-
-import { useFetchLoanAcc } from "./hooks/useFetchLoanAcc";
-import { useAddLoanAcc } from "./hooks/useAddLoanAcc";
-
-import { useDelete } from "../treasurer/hooks/useDelete";
+// mutation hooks
+import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
+import { useAddLoanAcc } from "../../backend/hooks/board/useAddLoanAcc";
+import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
 import MembersFormModal from "../members/modal/MembersFormModal";
@@ -21,10 +19,10 @@ import LoanAccModal from "./modal/LoanAccModal";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
-
 // constants
 import Calculation from "../../constants/Calculation";
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
+
 
 
 function LoanApplications() {
@@ -34,9 +32,13 @@ function LoanApplications() {
   const [limit] = useState(20);
 
   // Fetches data 
-  const { data: members } = useMembers();
-  const { data: loanAccRaw} = useFetchLoanAcc();
-  const { data: loanProducts } = useFetchLoanProducts();
+  const { data: members_data } = useMembers();
+  const members = members_data?.data || [];
+  
+  const { data: loan_acc_data } = useFetchLoanAcc({});
+  const loanAccRaw = loan_acc_data?.data || [];
+
+  const { data: loanProducts } = useFetchLoanProducts({});
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp(page, limit);
 
   // Data manipulation 

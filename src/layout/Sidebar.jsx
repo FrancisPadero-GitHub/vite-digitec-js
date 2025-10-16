@@ -148,7 +148,7 @@ const Sidebar = ({ role }) => {
   };
 
   return (
-    <div className="drawer-side z-40">
+    <aside className="drawer-side z-40">
       <label htmlFor="my-drawer" className="drawer-overlay lg:hidden"></label>
 
       <div className="h-full w-65 bg-neutral text-white shadow-lg overflow-hidden flex flex-col">
@@ -229,7 +229,7 @@ const Sidebar = ({ role }) => {
           ))}
         </ul>
       </div>
-    </div>
+    </aside>
   );
 };
 
