@@ -18,7 +18,7 @@ async function fetchIncome({ page, limit }) {
     .is("deleted_at", null)
     .order("income_id", { ascending: false });
 
-  // Only apply pagination if both page and limit are passed
+  // Optionals if values are null return all data no filters
   if (page && limit) {
     const from = (page - 1) * limit;
     const to = page * limit - 1;

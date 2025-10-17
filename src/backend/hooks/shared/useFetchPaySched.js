@@ -20,6 +20,11 @@ async function fetchPaySched({ page, limit, loanId }) {
     .is("deleted_at", null)
     .order("due_date", { ascending: true });
 
+  // Filter by loan ID if provided
+  if (loanId) {
+    query = query.eq("loan_id", loanId);
+  }
+
   // Apply pagination only when both page and limit are provided
   if (page && limit) {
     const from = (page - 1) * limit;
@@ -27,33 +32,14 @@ async function fetchPaySched({ page, limit, loanId }) {
     query = query.range(from, to);
   }
 
-  // Filter by loan ID if provided
-  if (loanId) {
-    query = query.eq("loan_id", loanId);
-  }
-
   const { data, error, count } = await query;
   if (error) throw new Error(error.message);
   return { data, count };
 }
-
-/**
- * Hook for fetching member loan payment schedules.
- *
- * @param {object} options
- * @param {number} [options.page] - optional page number
- * @param {number} [options.limit] - optional record limit
- * @param {string|null} [options.loanId] - optional loan ID
- */
-export function useFetchPaySched({ page, limit, loanId = null }) {
+export function useFetchPaySched({ page = null, limit = null, loanId = null } = {}) {
   return useQuery({
     queryFn: () => fetchPaySched({ page, limit, loanId }),
-    queryKey: [
-      "loan_payment_schedules",
-      loanId || "all",
-      page || "no-page",
-      limit || "no-limit",
-    ],
+    queryKey: ["loan_payment_schedules"],
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

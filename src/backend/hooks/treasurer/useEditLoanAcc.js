@@ -9,6 +9,9 @@ const updateLoanAcc = async (formData) => {
     release_date = null,
   } = formData;
 
+  if (!loan_id) {
+    throw new Error("Missing loan_id for update.");
+  }
 
   const payload = {
     release_date,

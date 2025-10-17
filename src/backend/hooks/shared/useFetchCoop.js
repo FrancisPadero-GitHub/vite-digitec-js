@@ -3,18 +3,13 @@ import { supabase } from "../../supabase.js";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 /**
- * Fetches coop CBU contributions.
+ * Fetches share coop capital contributions.
+ * 
  * If accountNumber is provided, filters by that account.
  * If useLoggedInMember is true, uses logged-in user's account_number.
  * If neither, fetches all contributions.
- *
- * @param {object} options
- * @param {number} options.page - pagination page number
- * @param {number} options.limit - number of records per page
- * @param {string|null} [options.accountNumber] - specific account_number (optional)
- * @param {boolean} [options.useLoggedInMember] - whether to automatically use logged-in account_number
- * @returns { data, count, ...queryStates }
  */
+
 async function fetchCoopContributions({ accountNumber, page, limit }) {
   let query = supabase
     .from("coop_cbu_contributions")
@@ -22,11 +17,11 @@ async function fetchCoopContributions({ accountNumber, page, limit }) {
     .is("deleted_at", null)
     .order("coop_contri_id", { ascending: false });
 
+  // Optionals if values are null return all data no filters
   if (accountNumber) {
     query = query.eq("account_number", accountNumber);
   }
 
-  // Only apply pagination if both page and limit are passed
   if (page && limit) {
     const from = (page - 1) * limit;
     const to = page * limit - 1;
@@ -38,27 +33,15 @@ async function fetchCoopContributions({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchCoop({ page = null, limit = null, accountNumber = null, useLoggedInMember = false} = {}) {
-  // This now returns account_number instead of member_id
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();
+export function useFetchCoop({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
 
-  const effectiveAccountNumber = useLoggedInMember
-    ? loggedInAccountNumber
-    : accountNumber;
+  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;     // if the useLoggedInMember = true
 
   return useQuery({
-    queryKey: [
-      "coop_cbu_contributions"
-    ],
-    queryFn: () =>
-      fetchCoopContributions({
-        accountNumber: effectiveAccountNumber,
-        page,
-        limit,
-      }),
-    enabled: useLoggedInMember
-      ? !!loggedInAccountNumber && !accountLoading
-      : true,
+    queryKey: ["coop_cbu_contributions"],
+    queryFn: () => fetchCoopContributions({ accountNumber: effectiveAccountNumber, page, limit }),
+    enabled: useLoggedInMember ? !!loggedInAccountNumber && !accountLoading : true,
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

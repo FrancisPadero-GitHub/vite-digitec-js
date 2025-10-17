@@ -4,16 +4,12 @@ import { useFetchAccountNumber } from "./useFetchAccountNumber.js";
 
 /**
  * Fetches club fund contributions.
+ * 
  * If memberId is provided, filters by that member.
  * If useLoggedInMember is true, uses logged-in member ID.
  * If neither, fetches all club fund contributions.
- *
- * @param {object} options
- * @param {number} [options.page] - pagination page number (optional)
- * @param {number} [options.limit] - number of records per page (optional)
- * @param {string|null} [options.memberId] - specific member ID (optional)
- * @returns { data, count }
  */
+
 async function fetchClubFunds({ accountNumber, page, limit }) {
   let query = supabase
     .from("club_funds_contributions")
@@ -21,12 +17,11 @@ async function fetchClubFunds({ accountNumber, page, limit }) {
     .is("deleted_at", null)
     .order("contribution_id", { ascending: false });
 
-  // Apply member filter if provided
+  // Optionals if values are null return all data no filters
   if (accountNumber) {
     query = query.eq("account_number", accountNumber);
   }
 
-  // Apply pagination only if both page and limit are provided
   if (page && limit) {
     const from = (page - 1) * limit;
     const to = page * limit - 1;
@@ -38,29 +33,15 @@ async function fetchClubFunds({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchClubFunds({
-  page = null,
-  limit = null,
-  accountNumber = null,
-  useLoggedInMember = false,
-} = {}) {
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();
+export function useFetchClubFunds({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
 
-  const effectiveAccountNumber = useLoggedInMember
-    ? loggedInAccountNumber
-    : accountNumber;
+  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();     // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;       // if the useLoggedInMember = true
 
   return useQuery({
     queryKey: ["club_funds_contributions"],
-    queryFn: () =>
-      fetchClubFunds({
-        account_number: effectiveAccountNumber,
-        page,
-        limit,
-      }),
-    enabled: useLoggedInMember
-      ? !!loggedInAccountNumber && !accountLoading
-      : true,
+    queryFn: () => fetchClubFunds({ account_number: effectiveAccountNumber, page, limit}),
+    enabled: useLoggedInMember ? !!loggedInAccountNumber && !accountLoading : true,
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

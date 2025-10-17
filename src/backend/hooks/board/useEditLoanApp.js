@@ -13,7 +13,7 @@ const updateLoanApp = async (formData) => {
   } = formData;
 
   if (!application_id) {
-    throw new Error("Missing application_id in loan_applications for update.");
+    throw new Error("Missing application_id for update.");
   }
 
   const payload = {

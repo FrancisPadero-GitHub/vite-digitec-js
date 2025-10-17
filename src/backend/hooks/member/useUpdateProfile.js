@@ -33,7 +33,10 @@ const updateProfile = async (formData) => {
     office_contact_number = null,
   } = formData;
 
- 
+  if (!member_id) {
+   throw new Error( "Missing member_id for update.");
+  }
+  
   const payload = {
     f_name,
     m_name,

@@ -14,6 +14,10 @@ const updateClubFunds = async (formData) => {
     remarks = null,
   } = formData; // if the form data is empty it will fallback to these null values
 
+  if (!contribution_id) {
+    throw new Error("Missing contribution_id for update.");
+  }
+
   const payload = {
     contribution_id,
     account_number,

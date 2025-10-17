@@ -13,6 +13,9 @@ const updateCoopContributions = async (formData) => {
     remarks = null,
   } = formData;
 
+  if (!coop_contri_id) {
+    throw new Error("Missing coop_contri_id for update.");
+  }
   const payload = {
     coop_contri_id,
     account_number,
