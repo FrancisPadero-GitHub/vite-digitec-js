@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const updateClubFunds = async (formData) => {
   const {
     contribution_id, // we need this to identify which row to update
-    member_id = null,
+    account_number = null,
     amount = null,
     category = null,
     payment_date = null,
@@ -16,7 +16,7 @@ const updateClubFunds = async (formData) => {
 
   const payload = {
     contribution_id,
-    member_id,
+    account_number,
     amount,
     category,
     payment_date,

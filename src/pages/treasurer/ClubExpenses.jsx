@@ -64,53 +64,33 @@ function ClubExpenses() {
 
   const [modalType, setModalType] = useState(null); // "add" | "edit" | null
 
+  const defaultValues = {
+    transaction_id: null,
+    title: "",
+    category: "",
+    description: "",
+    amount: 0,
+    transaction_date: "",
+  }
+
   // ✅ React Hook Form
   const {
     register,
     handleSubmit,
     reset,
-    setValue,
-  } = useForm({
-    defaultValues: {
-      transaction_id: null,
-      title: "",
-      category: "",
-      description: "",
-      amount: 0,
-      transaction_date: "",
-    },
-  });
 
-  const fields = [
-    { label: "Title", name: "title", type: "text" },
-    { label: "Amount", name: "amount", type: "number" },
-    {
-      label: "Category",
-      name: "category",
-      type: "select",
-      options: ["GMM", "Activities", "Alalayang Agila", "Community Service", "Others"],
-    },
-    { label: "Date", name: "transaction_date", type: "date" },
-    { label: "Description", name: "description", type: "text" },
-  ];
+  } = useForm({
+    defaultValues
+  });
 
   // ✅ Modal Handlers
   const openAddModal = () => {
-    reset({
-      transaction_id: null,
-      title: "",
-      category: "",
-      description: "",
-      amount: 0,
-      transaction_date: "",
-    });
+    reset(defaultValues);
     setModalType("add");
   };
 
   const openEditModal = (selectedRowData) => {
-    Object.keys(selectedRowData).forEach((key) => {
-      setValue(key, selectedRowData[key] ?? "");
-    });
+    reset(selectedRowData);
     setModalType("edit");
   };
 
@@ -156,12 +136,27 @@ function ClubExpenses() {
         }
       );
     }
-
-
   };
 
-  if (isLoading) return <div>Loading Club Expenses...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
+  const fields = [
+    { label: "Title", name: "title", type: "text" },
+    { label: "Amount", name: "amount", type: "number" },
+    {
+      label: "Category",
+      name: "category",
+      type: "select",
+      options: [
+        { label: "GMM", value: "GMM" },
+        { label: "Monthly Dues", value: "Monthly Dues" },
+        { label: "Activities", value: "Activities" },
+        { label: "Community Service", value: "Community Service" },
+        { label: "Alalayang Agila", value: "Alalayang Agila" },
+        { label: "Others", value: "Others" },
+      ]
+    },
+    { label: "Date", name: "transaction_date", type: "date" },
+    { label: "Description", name: "description", type: "text" },
+  ];
 
   return (
     <div>
@@ -236,6 +231,8 @@ function ClubExpenses() {
           headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
           data={fundExpenses}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}
@@ -289,13 +286,9 @@ function ClubExpenses() {
                 className="select select-bordered w-full"
                 required
               >
-                <option value="" disabled>
-                  Select {label}
-                </option>
+                <option value="" disabled>Select {label}</option>
                 {options?.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             ) : name === "description" ? (

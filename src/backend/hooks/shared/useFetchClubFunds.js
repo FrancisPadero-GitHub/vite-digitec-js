@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase.js";
-import { useMemberId } from "../shared/useFetchMemberId";
+import { useFetchAccountNumber } from "./useFetchAccountNumber.js";
 
 /**
  * Fetches club fund contributions.
@@ -14,12 +14,17 @@ import { useMemberId } from "../shared/useFetchMemberId";
  * @param {string|null} [options.memberId] - specific member ID (optional)
  * @returns { data, count }
  */
-async function fetchClubFunds({ memberId, page, limit }) {
+async function fetchClubFunds({ accountNumber, page, limit }) {
   let query = supabase
     .from("club_funds_contributions")
     .select("*", { count: "exact" })
     .is("deleted_at", null)
     .order("contribution_id", { ascending: false });
+
+  // Apply member filter if provided
+  if (accountNumber) {
+    query = query.eq("account_number", accountNumber);
+  }
 
   // Apply pagination only if both page and limit are provided
   if (page && limit) {
@@ -28,39 +33,34 @@ async function fetchClubFunds({ memberId, page, limit }) {
     query = query.range(from, to);
   }
 
-  // Apply member filter if provided
-  if (memberId) {
-    query = query.eq("member_id", memberId);
-  }
-
   const { data, error, count } = await query;
   if (error) throw new Error(error.message);
   return { data, count };
 }
 
 export function useFetchClubFunds({
-  page,
-  limit,
-  memberId = null,
+  page = null,
+  limit = null,
+  accountNumber = null,
   useLoggedInMember = false,
-}) {
-  const { data: loggedInMemberId, isLoading: memberLoading } = useMemberId();
-  const effectiveMemberId = useLoggedInMember ? loggedInMemberId : memberId;
+} = {}) {
+  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();
+
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber;
 
   return useQuery({
-    queryKey: [
-      "club_funds_contributions",
-      effectiveMemberId || "all",
-      page || "no-page",
-      limit || "no-limit",
-    ],
+    queryKey: ["club_funds_contributions"],
     queryFn: () =>
       fetchClubFunds({
-        memberId: effectiveMemberId,
+        account_number: effectiveAccountNumber,
         page,
         limit,
       }),
-    enabled: useLoggedInMember ? !!loggedInMemberId && !memberLoading : true,
+    enabled: useLoggedInMember
+      ? !!loggedInAccountNumber && !accountLoading
+      : true,
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

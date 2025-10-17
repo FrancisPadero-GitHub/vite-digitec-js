@@ -5,7 +5,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const insertClubfunds = async (formData) => {
   // Build payload safely with destructuring + null fallback
   const {
-    member_id = null,
+    account_number = null,
     amount = null,
     category = null,
     payment_date = null,
@@ -16,7 +16,7 @@ const insertClubfunds = async (formData) => {
   } = formData; // if the form data is empty it will fallback to these null values
 
   const payload = {
-    member_id,
+    account_number,
     amount,
     category,
     payment_date,

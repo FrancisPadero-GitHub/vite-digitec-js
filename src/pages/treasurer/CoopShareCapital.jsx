@@ -177,16 +177,80 @@ function CoopShareCapital() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           dropdowns={[
-            { label: "All Source", value: sourceFilter, onChange: setSourceFilter, options: [{ label: "Member", value: "Member Contribution" }, { label: "System", value: "system" }] },
-            { label: "All Category", value: categoryFilter, onChange: setCategoryFilter, options: [{ label: "Initial", value: "Initial" }, { label: "Monthly", value: "Monthly" }, { label: "System", value: "System" }] },
-            { label: "All Method", value: paymentMethodFilter, onChange: setPaymentMethodFilter, options: [{ label: "Cash", value: "Cash" }, { label: "GCash", value: "GCash" }, { label: "Bank", value: "Bank" }] },
-            { label: "All Year", value: yearFilter, onChange: setYearFilter, options: [{ label: "2025", value: "2025" }, { label: "2024", value: "2024" }, { label: "2023", value: "2023" }] },
-            { label: "All Month", value: monthFilter, onChange: setMonthFilter, options: [{ label: "January", value: "1" }, { label: "February", value: "2" }] },
+            { 
+              label: "All Source", 
+              value: sourceFilter, 
+              onChange: setSourceFilter, 
+              options: [
+                { label: "Member", value: "Member Contribution" }, 
+                { label: "System", value: "system" }
+              ]
+            },
+            { 
+              label: "All Category", 
+              value: categoryFilter, 
+              onChange: setCategoryFilter, 
+              options: [
+                { label: "Initial", value: "Initial" }, 
+                { label: "Monthly", value: "Monthly" }, 
+                { label: "System", value: "System" },
+              ]
+            },
+            {
+              label: "All Method", 
+              value: paymentMethodFilter, 
+              onChange: setPaymentMethodFilter, 
+              options: [
+                { label: "Cash", value: "Cash" }, 
+                { label: "GCash", value: "GCash" }, 
+                { label: "Bank", value: "Bank" }
+              ] 
+            },
+            { 
+              label: "All Year", 
+              value: yearFilter, 
+              onChange: setYearFilter, 
+              options: [
+                { label: "2025", value: "2025" },
+                { label: "2024", value: "2024" },
+                { label: "2023", value: "2023" },
+                { label: "2022", value: "2022" },
+                { label: "2021", value: "2021" },
+                { label: "2020", value: "2020" },
+              ] 
+            },
+            { 
+              label: "All Month", 
+              value: monthFilter, 
+              onChange: setMonthFilter, 
+              options: [
+                { label: "January", value: "1" },
+                { label: "February", value: "2" },
+                { label: "March", value: "3" },
+                { label: "April", value: "4" },
+                { label: "May", value: "5" },
+                { label: "June", value: "6" },
+                { label: "July", value: "7" },
+                { label: "August", value: "8" },
+                { label: "September", value: "9" },
+                { label: "October", value: "10" },
+                { label: "November", value: "11" },
+                { label: "December", value: "12" },
+               ], 
+             },
           ]}
         />
 
         <MainDataTable
-          headers={["Ref No.", "Account No.", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
+          headers={[
+            "Ref No.",
+            "Account No.", 
+            "Name",
+            "Amount", 
+            "Payment Category", 
+            "Date", 
+            "Payment Method"
+          ]}
           data={coop}
           isLoading={isLoading}
           isError={isError}
