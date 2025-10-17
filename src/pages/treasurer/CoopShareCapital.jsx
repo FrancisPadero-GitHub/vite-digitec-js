@@ -2,11 +2,14 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import { Link } from "react-router";
+import { Toaster, toast } from "react-hot-toast";
 
-// Hooks
+// Context
+import { useMemberRole } from "../../backend/context/useMemberRole";
+
+// Fetch Hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
-import { useMemberRole } from "../../backend/context/useMemberRole";
 import { useAddCoopContributions } from "../../backend/hooks/treasurer/useAddCoopContributions";
 import { useEditCoopContributions } from "../../backend/hooks/treasurer/useEditCoopContributions";
 import { useDelete } from "../../backend/hooks/shared/useDelete";
@@ -20,9 +23,9 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 
 function CoopShareCapital() {
-  const { memberRole } = useMemberRole();
+  const { memberRole } = useMemberRole();         // used to hide button to add transaction like a treasurer kay board rani sya view view langs 
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(1);                    
   const [limit] = useState(20);
 
   const { data: members_data } = useMembers();
@@ -115,11 +118,29 @@ function CoopShareCapital() {
 
   const onSubmit = (data) => {
     if (modalType === "add") {
-      mutateAdd(data);
+      mutateAdd(data,
+        {onSuccess: () => {
+            toast.success("Coop contribution added")
+            closeModal();
+        }, 
+          onError: () => {
+            toast.error("Something went wrong")
+          }
+        }
+      );
     } else if (modalType === "edit") {
-      mutateEdit(data);
+      mutateEdit(data,
+        {onSuccess: () => {
+          toast.success("Successfully updated")
+          closeModal();
+        },
+          onError: () => {
+            toast.error("Something went wrong");
+          }
+      }
+      );
     }
-    closeModal();
+
   };
 
   const fields = [
@@ -141,6 +162,7 @@ function CoopShareCapital() {
 
   return (
     <div>
+      <Toaster position="bottom-left"/>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Share Capital / Coop Contribution</h1>
