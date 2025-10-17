@@ -23,15 +23,16 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 
 function CoopShareCapital() {
-  const { memberRole } = useMemberRole();         // used to hide button to add transaction like a treasurer kay board rani sya view view langs 
+  const { memberRole } = useMemberRole();         // used to hide button to add transaction like a treasurer kay board rani sya view view langs
 
+  // front end pagination
   const [page, setPage] = useState(1);                    
   const [limit] = useState(20);
 
   const { data: members_data } = useMembers();
   const members = members_data?.data || [];
+  
   const { data: coopData, isLoading, isError, error } = useFetchCoop({ page, limit });
-
   const total = coopData?.count || 0;
   const coopRaw = coopData?.data || [];
 
@@ -140,7 +141,6 @@ function CoopShareCapital() {
       }
       );
     }
-
   };
 
   const fields = [
@@ -177,11 +177,11 @@ function CoopShareCapital() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           dropdowns={[
-            { label: "Source", value: sourceFilter, onChange: setSourceFilter, options: [{ label: "Member Contribution", value: "Member Contribution" }, { label: "System", value: "system" }] },
-            { label: "Category", value: categoryFilter, onChange: setCategoryFilter, options: [{ label: "Initial", value: "Initial" }, { label: "Monthly", value: "Monthly" }, { label: "System", value: "System" }] },
-            { label: "Method", value: paymentMethodFilter, onChange: setPaymentMethodFilter, options: [{ label: "Cash", value: "Cash" }, { label: "GCash", value: "GCash" }, { label: "Bank", value: "Bank" }] },
-            { label: "Year", value: yearFilter, onChange: setYearFilter, options: [{ label: "2025", value: "2025" }, { label: "2024", value: "2024" }, { label: "2023", value: "2023" }] },
-            { label: "Month", value: monthFilter, onChange: setMonthFilter, options: [{ label: "January", value: "1" }, { label: "February", value: "2" }] },
+            { label: "All Source", value: sourceFilter, onChange: setSourceFilter, options: [{ label: "Member", value: "Member Contribution" }, { label: "System", value: "system" }] },
+            { label: "All Category", value: categoryFilter, onChange: setCategoryFilter, options: [{ label: "Initial", value: "Initial" }, { label: "Monthly", value: "Monthly" }, { label: "System", value: "System" }] },
+            { label: "All Method", value: paymentMethodFilter, onChange: setPaymentMethodFilter, options: [{ label: "Cash", value: "Cash" }, { label: "GCash", value: "GCash" }, { label: "Bank", value: "Bank" }] },
+            { label: "All Year", value: yearFilter, onChange: setYearFilter, options: [{ label: "2025", value: "2025" }, { label: "2024", value: "2024" }, { label: "2023", value: "2023" }] },
+            { label: "All Month", value: monthFilter, onChange: setMonthFilter, options: [{ label: "January", value: "1" }, { label: "February", value: "2" }] },
           ]}
         />
 

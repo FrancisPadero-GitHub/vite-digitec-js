@@ -34,18 +34,19 @@ function Dashboard() {
 
   const {memberRole} = useMemberRole();
 
-  const { data: income, isLoading: incomeIsLoading } = useFetchIncome();    // will add pagination to this later
-
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
 
-  const { data: expenses_data, isLoading: expensesIsLoading } = useFetchExpenses();
+  const { data: income_data, isLoading: incomeIsLoading } = useFetchIncome({});
+  const income = income_data?.data || [];
+
+  const { data: expenses_data, isLoading: expensesIsLoading } = useFetchExpenses({});
   const expenses = expenses_data?.data || [];
 
-  const { data: club_funds_data, isLoading: clubFundsIsLoading } = useFetchClubFunds({ page: 1, limit: 20 });
+  const { data: club_funds_data, isLoading: clubFundsIsLoading } = useFetchClubFunds({});
   const clubFunds = club_funds_data?.data || [];
 
-  const { data: coop_data, isLoading: coopIsloading } = useFetchCoop({ page: 1, limit: 20 });
+  const { data: coop_data, isLoading: coopIsloading } = useFetchCoop({});
   const coopFunds = coop_data?.data || [];
 
   // Filters for the cards

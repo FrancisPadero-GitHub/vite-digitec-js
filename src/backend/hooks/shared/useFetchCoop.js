@@ -38,12 +38,7 @@ async function fetchCoopContributions({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchCoop({
-  page = 1,
-  limit = 10,
-  accountNumber = null,
-  useLoggedInMember = false,
-}) {
+export function useFetchCoop({ page = null, limit = null, accountNumber = null, useLoggedInMember = false} = {}) {
   // This now returns account_number instead of member_id
   const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();
 
