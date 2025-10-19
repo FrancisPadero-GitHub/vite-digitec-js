@@ -1,81 +1,146 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
-// -- Used in MemberProfile.jsx to fetch all related member data in one go --
+/**
+ * 
+ * ISSUE: Cannot pick spedific page due to shared pagination
+ * 
+ */
 
-// Individual fetch functions (memberId, club funds, coop contributions)
+// Fetch member info by memberId
 async function fetchMemberInfo(memberId) {
   const { data, error } = await supabase
     .from("members")
     .select("*")
     .eq("member_id", memberId)
-    .maybeSingle(); // using .single throws an error saying multiple/no rows returned; this just returns null
-    if (error) throw new Error(error.message);
-    return data;
+    .maybeSingle();
+
+  if (error) {
+    throw { code: "DB_ERROR", message: error.message };
+  }
+
+  if (!data) {
+    throw { code: "NO_MEMBER_FOUND", message: "No member found with this ID." };
+  }
+
+  return data;
 }
 
-async function fetchClubFunds(memberId, page = 1, limit = 10) {
-  const from = (page - 1) * limit;
-  const to = page * limit - 1;
-
-  const { data, error } = await supabase
+// Generic fetch for club funds with optional pagination
+async function fetchClubFunds({ accountNumber, page = null, limit = null }) {
+  let query = supabase
     .from("club_funds_contributions")
-    .select("*")
-    .eq("member_id", memberId)
+    .select("*", { count: "exact" })
+    .eq("account_number", accountNumber)
     .is("deleted_at", null)
-    .order("contribution_id", { ascending: false })
-    .range(from, to);
-  if (error) throw new Error(error.message);
-  return data;
+    .order("contribution_id", { ascending: false });
+
+  // Optionals if values are null return all data no filters
+  if (page && limit) {
+    const from = (page - 1) * limit;
+    const to = page * limit - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    throw { code: "CLUB_FUNDS_ERROR", message: error.message };
+  }
+
+  return { data, count };
 }
 
-async function fetchCoopContributions(memberId, page = 1, limit = 10) {
-  const from = (page - 1) * limit;
-  const to = page * limit - 1;
-
-  const { data, error } = await supabase
+// Generic fetch for coop contributions with optional pagination
+async function fetchCoopContributions({
+  accountNumber,
+  page = null,
+  limit = null,
+}) {
+  let query = supabase
     .from("coop_cbu_contributions")
-    .select("*")
-    .eq("member_id", memberId)
+    .select("*", { count: "exact" })
+    .eq("account_number", accountNumber)
     .is("deleted_at", null)
-    .order("coop_contri_id", { ascending: false })
-    .range(from, to);
-  if (error) throw new Error(error.message);
-  return data;
+    .order("coop_contri_id", { ascending: false });
+
+  // Optionals if values are null return all data no filters
+  if (page && limit) {
+    const from = (page - 1) * limit;
+    const to = page * limit - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    throw { code: "COOP_CONTRI_ERROR", message: error.message };
+  }
+
+  return { data, count };
 }
 
+async function fetchLoanAcc({
+  accountNumber,
+  page = null,
+  limit = null,
+}) {
+  let query = supabase
+    .from("loan_accounts")
+    .select("*", { count: "exact" })
+    .eq("account_number", accountNumber)
+    .is("deleted_at", null)
+    .order("loan_id", { ascending: false });
+
+  // Optionals if values are null return all data no filters
+  if (page && limit) {
+    const from = (page - 1) * limit;
+    const to = page * limit - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    throw { code: "LOAN_ACC_ERROR", message: error.message };
+  }
+
+  return { data, count };
+}
 
 /**
- * unified react query hook to fetch all related member data (profile, club funds, and coop contributions).
- *
- * @param {number} memberId - numeric ID of the member to fetch data for.
- *
- * @returns {object} contains:
- *  - `data` {object}:
- *      - `memberInfo` {object|null} Basic member info, or `null` if the member doesn't exist.
- *      - `clubFunds` {Array} List of their club fund contributions.
- *      - `coopContributions` {Array} List of their coope contributions.
+ * Unified hook to fetch member info + contributions
+ * Optional pagination like useFetchLoanAcc
  */
-
-
-// Unified hook to fetch all member details in one go
-export function useFetchMemberDetails(memberId) {
+export function useFetchMemberDetails({
+  memberId,
+  page = null,
+  limit = null,
+} = {}) {
   return useQuery({
-    queryKey: ["memberDetails", memberId],
+    queryKey: ["memberDetails", memberId, page, limit],
     enabled: !!memberId,
     queryFn: async () => {
-      // Fetch the memberId first
       const memberInfo = await fetchMemberInfo(memberId);
+      const accountNumber = memberInfo?.account_number;
+      if (!accountNumber) {
+        throw {
+          code: "NO_ACCOUNT_NUMBER",
+          message: "Member has no account number.",
+        };
+      }
 
-      // If not found, skip the others and return early
-      if (!memberInfo) {return { memberInfo: null, clubFunds: [], coopContributions: [] };}
-
-      const [clubFunds, coopContributions] = await Promise.all([
-        fetchClubFunds(memberId, 1, 10),
-        fetchCoopContributions(memberId, 1, 10),
+      const [clubFunds, coopContributions, loanAcc] = await Promise.all([
+        fetchClubFunds({ accountNumber, page, limit }),
+        fetchCoopContributions({ accountNumber, page, limit }),
+        fetchLoanAcc({accountNumber, page, limit})
       ]);
-      return { memberInfo, clubFunds, coopContributions };
+
+      return { memberInfo, clubFunds, coopContributions, loanAcc};
     },
     staleTime: 1000 * 60 * 5,
+    onError: (err) => {
+      console.warn("Member details error:", err);
+    },
   });
 }

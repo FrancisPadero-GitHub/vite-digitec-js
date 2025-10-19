@@ -10,6 +10,7 @@ import FilterToolbar from "./components/FilterToolbar.jsx";
 
 // constants
 import { ROLE_COLORS } from "../../constants/Color.js";
+const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
 
 
 export default function MemberRecords() {
@@ -18,7 +19,7 @@ export default function MemberRecords() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20); // determines how many rows to render per page
 
-  const { data: members, isLoading, isError, error } = useMembers(page, limit);
+  const { data: members, isLoading, isError, error } = useMembers({page, limit});
 
   // Get total count and raw data
   const total = members?.count || 0;
@@ -31,7 +32,7 @@ export default function MemberRecords() {
 
   const TABLE_PREFIX = "UID"; // unique ID prefix
   const users = usersRaw
-  .filter((row) => row.account_type?.toLowerCase() !== "admin") //placed in the meantime to exclude admin
+  .filter((row) => row.account_role?.toLowerCase() !== "admin") //placed in the meantime to exclude admin
   .map((row) => {
     const displayName = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
 
@@ -41,7 +42,7 @@ export default function MemberRecords() {
       displayName,
       email: row.email,
       contact_number: row.contact_number,
-      role: row.account_type,
+      role: row.account_role,
       status: row.account_status,
       avatar: row.avatar_url
     };
@@ -64,9 +65,6 @@ export default function MemberRecords() {
     navigate(`../member-profile/${row.member_id}`);
   };
 
-  if (isLoading) return <div>Loading users...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
-  
   return (
     <div>
       <div className="mb-6 space-y-4">
@@ -80,26 +78,24 @@ export default function MemberRecords() {
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Role",
+              label: "All Role",
               value: roleFilter,
               onChange: setRoleFilter,
               options: [
-                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
-                { label: "Treasurer", value: "Treasurer" },
-                { label: "Board of Director", value: "Board" },
-                { label: "Regular Member", value: "Regular" },
-                { label: "Associate Member", value: "Associate" },
+                { label: "Treasurer", value: "treasurer" },
+                { label: "Board of Director", value: "board" },
+                { label: "Regular Member", value: "regular-member" },
+                { label: "Associate Member", value: "associate-member" },
               ],
             },
             {
-              label: "Status",
+              label: "All Status",
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "All", value: "" },
-                { label: "Active", value: "Active" },
-                { label: "Inactive", value: "Inactive" },
-                { label: "Revoked", value: "Revoked" },
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+                { label: "Revoked", value: "revoked" },
               ],
             },
           ]}
@@ -107,9 +103,11 @@ export default function MemberRecords() {
 
         {/* Users Table */}
         <MainDataTable
-          headers={["ID", "Member", "Email", "Contact No.", "Role", "Status"]}
+          headers={["ID","Account No.", "Member", "Email", "Contact No.", "Role", "Status"]}
           data={users}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}
@@ -122,12 +120,13 @@ export default function MemberRecords() {
                 className="cursor-pointer hover:bg-base-200/70 transition-colors"
               >
                 <td className="px-4 py-2 text-center font-medium">{row.generatedId}</td>
+                <td className="px-4 py-2 text-center font-medium">{row?.account_number || "Something went wrong"}</td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={row.avatar ||`https://i.pravatar.cc/40?u=${row.generatedId}` }
+                          src={row.avatar || catGif ||`https://i.pravatar.cc/40?u=${row.generatedId}` }
                           alt={row.displayName}
                         />
                       </div>

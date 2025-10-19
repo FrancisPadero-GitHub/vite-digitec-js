@@ -10,6 +10,7 @@ import { useChangePassword } from "../../backend/hooks/member/useChangePassword"
 
 // assets 
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
+const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
 
 const tips = [
   "Use a strong, unique password",
@@ -151,7 +152,7 @@ function Profile() {
               <div className="flex justify-center mb-2">
                 <div className="relative w-28 h-28">
                   <img
-                    src={previewAvatar || myProfile?.avatar_url || placeholderAvatar}
+                    src={previewAvatar || myProfile?.avatar_url || catGif || placeholderAvatar}
                     className="rounded-full ring-4 ring-base-200 w-full h-full object-cover"
                   />
                   {isEditing && (

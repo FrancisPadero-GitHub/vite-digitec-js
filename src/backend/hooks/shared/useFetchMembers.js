@@ -18,7 +18,7 @@ async function fetchMembers({ page, limit }) {
     .is("deleted_at", null)
     .order("member_id", { ascending: false });
 
-  // Apply pagination only if both page and limit are provided
+  // Optionals if values are null return all data no filters
   if (page && limit) {
     const from = (page - 1) * limit;
     const to = page * limit - 1;
