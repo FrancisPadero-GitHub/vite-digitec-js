@@ -40,7 +40,7 @@ function LoanApplications() {
   const members = members_data?.data || [];
   
   const { data: loan_acc_data } = useFetchLoanAcc({page, limit});
-  const loanAccRaw = loan_acc_data?.data || [];
+  const loanAcc = loan_acc_data?.data || [];
 
   const { data: loanProducts } = useFetchLoanProducts();
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({page, limit});
@@ -48,7 +48,7 @@ function LoanApplications() {
   // Data manipulation 
   const { mutate: addLoanAcc } = useAddLoanAcc();
 
-  const loanAcc = loanAccRaw?.data || [];
+
   const loanDataRaw = memberLoanAppData?.data || [];
   const total = loanDataRaw?.count || 0;
 
@@ -150,6 +150,31 @@ function LoanApplications() {
     defaultValuesLoanAcc
   });
 
+  // for the total amount due input auto calculation
+  const [isCalculating, setIsCalculating] = useState(false);
+  const principalValue = watchLoanAcc("principal");
+  const interestRateValue = watchLoanAcc("interest_rate");
+  const loanTermValue = watchLoanAcc("loan_term");
+
+  // detect the changes of principal then calculate on the go
+  useEffect(() => {
+    if (!principalValue || principalValue <= 0) return;
+
+    setIsCalculating(true);
+    const timer = setTimeout(() => {
+      const { totalPayable } = Calculation(
+        Number(interestRateValue),
+        Number(principalValue),
+        Number(loanTermValue)
+      );
+
+      setLoanAccValue("total_amount_due", totalPayable);
+      setIsCalculating(false);
+    }, 600); // debounce delay (ms)
+
+    return () => clearTimeout(timer);
+  }, [principalValue, interestRateValue, loanTermValue, setLoanAccValue]);
+
   const selectedLoanProduct = watch("loan_product");
   const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct);
 
@@ -158,8 +183,7 @@ function LoanApplications() {
    * used to conditionally render disabled inputs and selects and status on form modal
    */
   const [loanStatus, setLoanStatus] = useState(false);
-  
-
+ 
 
 
 
@@ -194,6 +218,7 @@ function LoanApplications() {
     });
 
     setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
+    console.log(loanAcc?.some((loan) => loan.application_id === selectedRow.application_id))
     setModalType("edit");
   };
 
@@ -212,32 +237,6 @@ function LoanApplications() {
     closeModal();
   };
 
-
-
-
-  const [isCalculating, setIsCalculating] = useState(false);
-  const principalValue = watchLoanAcc("principal");
-  const interestRateValue = watchLoanAcc("interest_rate");
-  const loanTermValue = watchLoanAcc("loan_term");
-
-  // detect the changes of principal then calculate on the go
-  useEffect(() => {
-    if (!principalValue || principalValue <= 0) return;
-
-    setIsCalculating(true);
-    const timer = setTimeout(() => {
-      const { totalPayable } = Calculation(
-        Number(interestRateValue),
-        Number(principalValue),
-        Number(loanTermValue)
-      );
-
-      setLoanAccValue("total_amount_due", totalPayable);
-      setIsCalculating(false);
-    }, 600); // debounce delay (ms)
-
-    return () => clearTimeout(timer);
-  }, [principalValue, interestRateValue, loanTermValue, setLoanAccValue]);
 
   // State to hold the edit application data temporarily
   // this is for the edit loan applications where the status is not "Approved"
@@ -277,7 +276,7 @@ function LoanApplications() {
       const interestMethod = matchedLoanProduct?.interest_method ?? "";
       const loanTerm = Number(matchedLoanProduct?.max_term_months);
 
- 
+      // for the total amount due input auto calculation
       const {
         // totalInterest,
         totalPayable,
@@ -313,9 +312,6 @@ function LoanApplications() {
         })(),
 
       });
-
-
-
 
       // store the application data for later mutation for the edit on loan application
       setPendingAppData(data); // loan_acc data

@@ -27,7 +27,7 @@ function BoardFormModal({ title, open, close, children, onSubmit, status, action
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" disabled={status} className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={status} >
                   {type ? "Next" : "Submit"}
                 </button>
               )}
