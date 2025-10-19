@@ -1,11 +1,13 @@
 import { supabase } from "../../supabase.js";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { useMemberId } from "../shared/useFetchMemberId";
+import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
+
+
 
 const updateProfile = async (formData) => {
   const {
     // Personal
-    member_id,
+    account_number,
     f_name = null,
     m_name = null,
     l_name = null,
@@ -33,8 +35,8 @@ const updateProfile = async (formData) => {
     office_contact_number = null,
   } = formData;
 
-  if (!member_id) {
-   throw new Error( "Missing member_id for update.");
+  if (!account_number) {
+   throw new Error( "Missing account_number for update.");
   }
   
   const payload = {
@@ -65,7 +67,7 @@ const updateProfile = async (formData) => {
   const { data: updatedMember, error: updateError } = await supabase
     .from("members")
     .update(payload)
-    .eq("member_id", member_id)
+    .eq("account_number", account_number)
     .select()
     .single();
 
@@ -79,7 +81,7 @@ const updateProfile = async (formData) => {
     const fileExt = avatarFile.name.split(".").pop();
     // ✅ Use timestamp for uniqueness
     const uniqueSuffix = Date.now();
-    const filePath = `${member_id}/avatar-${uniqueSuffix}.${fileExt}`;
+    const filePath = `${account_number}/avatar-${uniqueSuffix}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("profile_pic")
@@ -98,7 +100,7 @@ const updateProfile = async (formData) => {
     const { error: avatarUpdateError } = await supabase
       .from("members")
       .update({ avatar_url: avatarUrl })
-      .eq("member_id", member_id);
+      .eq("account_number", account_number);
 
     if (avatarUpdateError)
       throw new Error(
@@ -110,15 +112,18 @@ const updateProfile = async (formData) => {
 };
 
 export function useUpdateProfile() {
-  const { data: memberId, isLoading: memberLoading } = useMemberId();
+
+    const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
+
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (formData) => updateProfile({ ...formData, member_id: memberId }),
-    enabled: !!memberId && !memberLoading,
+    mutationFn: (formData) =>
+      updateProfile({ ...formData, account_number: loggedInAccountNumber }),
+    enabled: !!loggedInAccountNumber && !accountLoading,
     onSuccess: (updatedMember) => {
       queryClient.setQueryData(
-        ["member_profile", updatedMember.member_id],
+        ["member_profile", updatedMember.account_number],
         updatedMember
       );
       queryClient.invalidateQueries(["members"]);

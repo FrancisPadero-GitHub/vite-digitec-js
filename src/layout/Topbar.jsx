@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+
+// db for logout
+import { supabase } from "../backend/supabase";
+
+// fetch hooks
+import { useMembers } from "../backend/hooks/shared/useFetchMembers";
+import { useFetchAccountNumber } from "../backend/hooks/shared/useFetchAccountNumber";
+
+// icons 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -9,25 +19,23 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HelpIcon from "@mui/icons-material/Help";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now 
-import { format } from "date-fns";
 
-// hooks
-import { useMembers } from "../backend/hooks/shared/useFetchMembers";
-import { useAuth } from "../backend/context/AuthProvider";
+// constants
+import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now
 
-import { supabase } from "../backend/supabase";
 
-const Topbar = ({ role }) => {
+
+const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
+ 
   const navigate = useNavigate();
 
   // to fetch member name for the logged in id
-  const { user } = useAuth();
-  const { data: members_data } = useMembers();
+  const { data: loggedInAccountNumber} = useFetchAccountNumber();
+  const { data: members_data, isLoading, isError, error } = useMembers();
   const members = members_data?.data || [];
 
   // Find member linked to this user
-  const member = members?.find((m) => m.login_id === user?.id);
+  const member = members?.find((m) => m.account_number === loggedInAccountNumber);
 
   const profile_pic = member?.avatar_url;
   
@@ -120,7 +128,7 @@ const Topbar = ({ role }) => {
             </div>
 
 
-            <span className="hidden sm:block font-medium">{matchedMember || "Error"}</span>
+            <span className="hidden sm:block font-medium">{matchedMember || error}</span>
             <ExpandMoreIcon />
           </button>
 
@@ -130,20 +138,40 @@ const Topbar = ({ role }) => {
           >
             {/* AVATAR, NAME, ROLE */}
             <div className="p-4 flex items-center gap-3 rounded-lg no-underline">
-              <div className="avatar">
-                <div className="w-10 rounded-full">
-                  <img
-                    src={profile_pic || "https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"}
-                    alt="Profile"
-                  />
-                </div>
-              </div>
-              <div>
-                <p className="font-medium text-base-content">{matchedMember || "Error"}</p>
-                <p className="text-xs text-base-content/60">
-                  {getRoleLabel(role)}
-                </p>
-              </div>
+              {isLoading ? (<tr>
+                <td className="py-10">
+                  <div className="flex justify-center items-center">
+                    <span className="loading loading-spinner loading-lg text-primary"></span>
+                  </div>
+                </td>
+                </tr>
+                ) : isError ? (
+                  <tr>
+                  <td className="py-10 text-center">
+                    <div className="text-red-500 font-semibold">
+                      {error?.message || "Something went wrong while loading account."}
+                    </div>
+                  </td>
+                </tr>
+                ) : (              
+                <>
+                  <div className="avatar">
+                    <div className="w-10 rounded-full">
+                      <img
+                        src={profile_pic || "https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"}
+                        alt="Profile"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-medium text-base-content">{matchedMember || "Error"}</p>
+                    <p className="text-xs text-base-content/60">
+                      {getRoleLabel(role)}
+                    </p>
+                  </div>
+                </>
+                )
+              };
             </div>
 
             {/* PROFILE, SETTINGS, DARK MODE, LOGOUT */}

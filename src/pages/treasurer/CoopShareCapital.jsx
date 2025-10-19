@@ -76,11 +76,12 @@ function CoopShareCapital() {
   const [modalType, setModalType] = useState(null);
   const [query, setQuery] = useState("");
 
+  // This is used for the combobox selection of members upon searching for account_number
   const filteredMembers =
     query === ""
       ? members || []
       : members.filter((m) =>
-        `${m.account_number} ${m.f_name} ${m.l_name} ${m.email}`
+        `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
           .toLowerCase()
           .includes(query.toLowerCase())
       );
@@ -357,9 +358,16 @@ function CoopShareCapital() {
                           }`
                         }
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="relative flex items-center justify-between">
                           <span className="font-mono text-sm">{member.account_number}</span>
-                          <span className="truncate text-sm">{member.f_name} {member.m_name} {member.l_name}</span>
+
+                          <span className="absolute left-1/2 -translate-x-1/2 text-center truncate text-sm">
+                            {member.account_role}
+                          </span>
+
+                          <span className="truncate text-sm">
+                            {member.f_name} {member.m_name} {member.l_name}
+                          </span>
                         </div>
                       </ComboboxOption>
                     ))
