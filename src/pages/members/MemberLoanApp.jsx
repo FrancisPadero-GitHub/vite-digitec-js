@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { useForm } from "react-hook-form";
+import {Toaster, toast} from "react-hot-toast"
 
 // fetch hooks
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
@@ -71,26 +72,29 @@ function MemberLoanApp() {
 
   const today = new Date().toISOString().split("T")[0];
 
+  const defaultValues = {
+    application_id: null,
+    /** loan_product 
+     * This does not exists in DB but used for the modal to show the name of the loan product
+     * also used to find the name that matches it to assign the product_id
+     *   */
+    loan_product: "",
+    amount: "",
+    purpose: "",
+    term_months: "",
+    application_date: today,
+  }
+
   // React Hook Form setup
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      application_id: null,
-      /** loan_product 
-       * This does not exists in DB but used for the modal to show the name of the loan product
-       * also used to find the name that matches it to assign the product_id
-       *   */
-      loan_product: "", 
-      amount: "",
-      purpose: "",
-      term_months: "",
-      application_date: today,
-    },
+    defaultValues
   });
 
   const selectedLoanProduct = watch("loan_product");
@@ -104,13 +108,7 @@ function MemberLoanApp() {
 
   // Modal Handlers
   const openAddModal = () => {
-    reset({
-      application_id: null,
-      loan_product: "",
-      amount: "",
-      purpose: "",
-      application_date: today,
-    });
+    reset(defaultValues);
     setModalType("add");
   };
 
@@ -118,7 +116,6 @@ function MemberLoanApp() {
     const matchedProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
-
     reset({
       application_id: row.application_id,
       loan_product: matchedProduct?.name || "",
@@ -127,7 +124,7 @@ function MemberLoanApp() {
       application_date: row.application_date || today,
       status: row.status || "Pending",
     });
-    setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
+    setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))     // returns true or false
     setModalType("edit");
   };
 
@@ -163,18 +160,103 @@ function MemberLoanApp() {
       product_id: selectedProduct?.product_id || null,
     };
 
-    if (modalType === "add") mutateAdd(payload);
-    else mutateEdit(payload);
+    if (modalType === "add") {
+      
+      mutateAdd(payload, {
+        onSuccess: () => {
+          console.log("Front-end data", payload )
+          toast.success("Submitted loan application successfully!")
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong!")
+        }
+      })
+    } else {
+      mutateEdit(payload, {
+        onSuccess: () => {
+          toast.success("Updated loan application successfully!")
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong!")
+        }
+      })
+    };
 
-    closeModal();
+
   };
 
-  if (isLoading) return <div>Loading Member Loan...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
+  const fields = [
+    {
+      label: "Loan Product",
+      name: "loan_product",
+      type: "select",
+      required: true,
+      disabled: loanStatus,
+      dynamicOptions: loanProducts?.map((p) => ({
+        label: p.name,
+        value: p.name,
+      })) || [],
+    },
+    {
+      label: "Amount",
+      name: "amount",
+      type: "number",
+      required: true,
+      disabled: loanStatus || !selectedLoanProduct,
+      placeholder: selectedProduct
+        ? `Enter between ₱${selectedProduct.min_amount} - ₱${selectedProduct.max_amount}`
+        : "Select a loan product first",
+      validation: {
+        min: selectedProduct?.min_amount || 0,
+        max: selectedProduct?.max_amount || 9999999,
+      },
+    },
+    {
+      label: "Term",
+      name: "term_months",
+      type: "select",
+      required: true,
+      disabled: loanStatus,
+      dynamicOptions: selectedProduct
+        ? [{ label: `${selectedProduct.max_term_months} months`, value: selectedProduct.max_term_months }]
+        : [],
+    },
+    {
+      label: "Application Date",
+      name: "application_date",
+      type: "date",
+      required: true,
+      disabled: loanStatus,
+    },
+    {
+      label: "Purpose",
+      name: "purpose",
+      type: "textarea",
+      required: true,
+      disabled: loanStatus,
+      placeholder: "Enter a very persuasive reason...",
+    },
+  ];
+  // sets the value of the term_months if a loan product is selected
+  useEffect(() => {
+    if (selectedProduct) {
+      setValue("term_months", selectedProduct.max_term_months, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    } else {
+      setValue("term_months", "");
+    }
+  }, [selectedProduct, setValue]);
+
 
   return (
     <div>
+      <Toaster position="bottom-left"/>
       <div className="mb-6 space-y-4">
+        {/* Put a restriction here if a certain criteria is not met */}
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">My Loan Applications</h1>
           <button
@@ -191,11 +273,10 @@ function MemberLoanApp() {
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Status",
+              label: "All Status",
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "Pending", value: "Pending"},
                 { label: "On Review", value: "On Review" },
                 { label: "Approved", value: "Approved" },
@@ -204,22 +285,21 @@ function MemberLoanApp() {
               ],
             },
             {
-              label: "Year",
+              label: "All Year",
               value: yearFilter,
               onChange: setYearFilter,
               options: [
-                { label: "All", value: "" },
+
                 { label: "2025", value: "2025" },
                 { label: "2024", value: "2024" },
                 { label: "2023", value: "2023" },
               ],
             },
             {
-              label: "Month",
+              label: "All Month",
               value: monthFilter,
               onChange: setMonthFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "January", value: "1" },
                 { label: "February", value: "2" },
                 { label: "March", value: "3" },
@@ -248,6 +328,8 @@ function MemberLoanApp() {
           ]}
           data={memberLoanApplications}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}
@@ -309,119 +391,68 @@ function MemberLoanApp() {
             handleDelete(watch("application_id"))
           }
         >
-          {/** 
-           * disabled and readOnly seems to have different style
-           * 
-            */}
+          {fields.map((field) => (
+            <div key={field.name} className="form-control w-full mt-2">
+              <label className="label mb-1">
+                <span className="label-text font-medium text-gray-700">{field.label}</span>
+              </label>
 
-
-
-          {/* Form Fields */}
-
-          {/* Loan Product Name */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Loan Product
-              </span>
-            </label>
-            <select
-              {...register("loan_product", { required: true })}
-              disabled={loanStatus}
-              className="select select-bordered w-full"
-            >
-              <option value="" disabled>Select Loan Product</option>
-              {loanProducts?.map((product) => (
-                <option key={product.product_id} value={product.name}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-            {errors.loan_product && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Amount</span>
-            </label>
-            <input
-              type="number"
-              {...register("amount", {
-                required: true,
-                min: selectedProduct?.min_amount || 0,
-                max: selectedProduct?.max_amount || 9999999,
-              })}
-              disabled={loanStatus || !selectedLoanProduct}
-              placeholder={
-                selectedProduct
-                  ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
-                  : "Select a loan product first"
-              }
-              className={`input input-bordered w-full ${!selectedLoanProduct ? "text-warning" : ""
-                }`}
-            />
-            {errors.amount && (
-              <p className="text-error text-sm mt-1">
-                Invalid amount range
-              </p>
-            )}
-          </div>
-
-          {/* Term */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Term</span>
-            </label>
-            <select
-              {...register("term_months", { required: true })}
-              disabled={loanStatus}
-              className="select select-bordered w-full"
-            >
-              <option value="" disabled>Select Term</option>
-              {selectedProduct && (
-                <option value={selectedProduct.max_term_months}>
-                  {selectedProduct.max_term_months} months
-                </option>
+              {field.type === "select" && (
+                <select
+                  {...register(field.name, { required: field.required })}
+                  disabled={field.disabled}
+                  className="select select-bordered w-full"
+                >
+                  {field.dynamicOptions?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               )}
-            </select>
-            {errors.term_months && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
 
-          {/* Application Date */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Application Date
-              </span>
-            </label>
-            <input
-              type="date"
-              {...register("application_date", { required: true })}
-              readOnly={loanStatus}
-              className="input input-bordered w-full"
-            />
-          </div>
+              {field.type === "number" && (
+                <input
+                  type="number"
+                  {...register(field.name, {
+                    required: field.required,
+                    min: field.validation?.min,
+                    max: field.validation?.max,
+                  })}
+                  disabled={field.disabled}
+                  placeholder={field.placeholder}
+                  className={`input input-bordered w-full ${!selectedLoanProduct && field.name === "amount" ? "text-warning" : ""
+                    }`}
+                />
+              )}
 
-          {/* Purpose */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Purpose</span>
-            </label>
-            <textarea
-              {...register("purpose", { required: true })}
-              readOnly={loanStatus}
-              rows={3}
-              placeholder="Enter a very persuasive reason..."
-              className="textarea textarea-bordered w-full"
-            />
-            {errors.purpose && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
+              {field.type === "textarea" && (
+                <textarea
+                  {...register(field.name, { required: field.required })}
+                  readOnly={field.disabled}
+                  rows={3}
+                  placeholder={field.placeholder}
+                  className="textarea textarea-bordered w-full"
+                />
+              )}
+
+              {field.type === "date" && (
+                <input
+                    type="date"
+                    {...register(field.name, { required: field.required })}
+                  readOnly={field.disabled}
+                  className="input input-bordered w-full"
+                />
+              )}
+
+              {errors[field.name] && (
+                <p className="text-error text-sm mt-1">
+                  {field.name === "amount" ? "Invalid amount range" : "Required"}
+                </p>
+              )}
+            </div>
+          ))}
+
         </MembersFormModal>
       </div>
     </div>

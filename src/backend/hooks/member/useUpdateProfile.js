@@ -113,7 +113,7 @@ const updateProfile = async (formData) => {
 
 export function useUpdateProfile() {
 
-    const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
+  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
 
   const queryClient = useQueryClient();
 

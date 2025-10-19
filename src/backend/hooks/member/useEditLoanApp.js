@@ -7,6 +7,7 @@ const updateLoanApp = async (formData) => {
     amount = null,
     purpose = null,
     application_date = null,
+    product_id = null,
   } = formData;
 
     if (!application_id) {
@@ -14,6 +15,7 @@ const updateLoanApp = async (formData) => {
     }
 
   const payload = {
+    product_id,
     amount,
     purpose,
     application_date,

@@ -1,25 +1,23 @@
 import { supabase } from "../../supabase";
-import { useMemberId } from "../shared/useFetchMemberId";
+import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 
-const insertLoanApp = async (formData, memberId) => {
-const {
-  product_id = null,
-  amount = null,
-  purpose = null,
-  application_date = null,
-} = formData;
+const insertLoanApp = async (formData, accountNumber) => {
+  const {
+    product_id = null,
+    amount = null,
+    purpose = null,
+    application_date = null,
+  } = formData;
 
-
-// Construct final payload
-const payload = {
-  product_id: product_id ? Number(product_id) : null,
-  amount: amount ? Number(amount) : null, // also normalize if needed
-  purpose,
-  application_date,
-  status: "Pending", // default
-  applicant_id: memberId,
-};
+  const payload = {
+    product_id,
+    amount,
+    purpose,
+    application_date,
+    status: "Pending",
+    account_number: accountNumber,
+  };
 
   const { data, error } = await supabase
     .from("loan_applications")
@@ -30,18 +28,22 @@ const payload = {
   if (error) {
     throw new Error(error.message);
   }
+
   return data;
 };
 
 export const useAddLoanApp = () => {
   const queryClient = useQueryClient();
-  const { data: memberId } = useMemberId();
+  const { data: loggedInAccountNumber } = useFetchAccountNumber();
 
   return useMutation({
-    mutationFn: (formData) => insertLoanApp(formData, memberId), // ✅ pass it in
+    mutationFn: (formData) => insertLoanApp(formData, loggedInAccountNumber),
     onSuccess: (data) => {
       console.log("Loan Application Added!: ", data);
-      queryClient.invalidateQueries(["loan_applications", "member"]);
+      queryClient.invalidateQueries([
+        "loan_applications",
+        loggedInAccountNumber,
+      ]);
     },
     onError: (error) => {
       console.error("Adding Loan Application failed", error.message);
