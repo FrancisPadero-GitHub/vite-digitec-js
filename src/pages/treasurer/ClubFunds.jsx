@@ -450,26 +450,73 @@ function ClubFunds() {
           />
         </div>
 
-        {fields.map(({ label, name, type, options }) => (
+        {fields.map(({ label, name, type, options, autoComplete }) => (
           <div key={name} className="form-control w-full mt-2">
-            <label htmlFor={name} className="label mb-1">
-              <span className="label-text font-medium">{label}</span>
+            <label htmlFor={name}>
+              <span className="label text-sm font-semibold mb-2">{label}</span>
             </label>
 
-            {type === "select" ? (
+            {name === "amount" ? (
+              <Controller
+                name="amount"
+                control={control}
+                rules={{
+                  required: true,
+                  min: {
+                    value: 1,
+                    message: "Amount must be greater than 0",
+                  },
+                  validate: (value) => value > 0 || "Amount cannot be zero or negative",
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <input
+                      id="amount"
+                      type="number"
+                      autoComplete="off"
+                      value={field.value}
+                      placeholder="Enter Amount"
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === "") {
+                          field.onChange(""); // allow clearing
+                          return;
+                        }
+
+                        const value = Number(raw);
+                        field.onChange(value < 0 ? 0 : value);
+                      }}
+                      className={`input input-bordered w-full ${error ? "input-error" : ""
+                        }`}
+                    />
+                    {error && (
+                      <span className="text-sm text-error mt-1 block">
+                        {error.message}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            ) : type === "select" ? (
               <select
                 id={name}
+                autoComplete={autoComplete}
                 {...register(name, { required: true })}
                 className="select select-bordered w-full"
               >
-                <option value="" disabled>Select {label}</option>
+                <option value="" disabled>
+                  Select {label}
+                </option>
                 {options?.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
             ) : (
               <input
                 id={name}
+                autoComplete={autoComplete}
                 type={type}
                 {...register(name, { required: true })}
                 className="input input-bordered w-full"
