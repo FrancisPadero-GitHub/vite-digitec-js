@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemberId } from "../shared/useFetchMemberId";
+import { useFetchMemberId } from "../shared/useFetchMemberId";
 import { supabase } from "../../supabase.js";
 
 async function fetchProfile(memberId) {
@@ -15,7 +15,7 @@ async function fetchProfile(memberId) {
 }
 
 export function useFetchProfile() {
-  const { data: memberId, isLoading: memberLoading } = useMemberId(); //fetch memberId
+  const { data: memberId, isLoading: memberLoading } = useFetchMemberId(); //fetch memberId
   return useQuery({
     queryKey: ["member_profile", memberId],
     queryFn: () => fetchProfile(memberId),

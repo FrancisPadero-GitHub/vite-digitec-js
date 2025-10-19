@@ -5,11 +5,12 @@ import generateSchedule from "../../../constants/GenPaymentSchedule";
 const addLoanAcc = async (formData) => {
   const {
     application_id = null,
-    applicant_id = null,
     product_id = null,
     account_number = null,
+    loan_ref_number = null,
     principal = null,
-    outstanding_balance = null,
+    amount_req = null,
+    total_amount_due = null,
     status = null,
     release_date = null,
     approved_date = null,
@@ -18,11 +19,13 @@ const addLoanAcc = async (formData) => {
 
   const loanPayload = {
     application_id,
-    applicant_id,
     product_id,
     account_number,
+    loan_ref_number,
     principal,
-    outstanding_balance,
+    amount_req,
+    total_amount_due,
+    outstanding_balance: Number(total_amount_due),
     status,
     release_date,
     approved_date,

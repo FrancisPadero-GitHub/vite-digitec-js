@@ -26,7 +26,7 @@ async function fetchMemberId(loginId) {
     return member?.member_id || null;
 }
 
-export function useMemberId() {
+export function useFetchMemberId() {
     // Get the login_id of the current logged in user
     const { user } = useAuth();
     const loginId = user?.id;

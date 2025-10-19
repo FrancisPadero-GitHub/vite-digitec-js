@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
-import { useFetchLoanApp } from "../../backend/hooks/_todelete/useFetchLoanApps";
+import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
+import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
 
 // mutation hooks
 import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
@@ -14,7 +16,7 @@ import { useAddLoanAcc } from "../../backend/hooks/board/useAddLoanAcc";
 import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
-import MembersFormModal from "../members/modal/MembersFormModal";
+import BoardFormModal from "./modal/BoardFormModal";
 import LoanAccModal from "./modal/LoanAccModal";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
@@ -32,14 +34,16 @@ function LoanApplications() {
   const [limit] = useState(20);
 
   // Fetches data 
-  const { data: members_data } = useMembers();
+  const {data: auth_member_id} = useFetchMemberId();    // used by the one who reviewed the loan application
+
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
   
-  const { data: loan_acc_data } = useFetchLoanAcc({});
+  const { data: loan_acc_data } = useFetchLoanAcc({page, limit});
   const loanAccRaw = loan_acc_data?.data || [];
 
-  const { data: loanProducts } = useFetchLoanProducts({});
-  const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp(page, limit);
+  const { data: loanProducts } = useFetchLoanProducts();
+  const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({page, limit});
 
   // Data manipulation 
   const { mutate: addLoanAcc } = useAddLoanAcc();
@@ -57,7 +61,7 @@ function LoanApplications() {
 
   const memberLoanApplications = loanDataRaw.filter((row) => {
 
-    const member = members?.find((m) => m.member_id === row.applicant_id);
+    const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
       ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
@@ -92,6 +96,20 @@ function LoanApplications() {
   const STATUS_OPTIONS = ["Pending", "On Review", "Approved", "Denied"];
   const today = new Date().toISOString().split("T")[0];
 
+
+  const defaultValuesLoanApp = {
+    application_id: null,
+    account_number: null,
+    applicant_name: "",
+    loan_product: "",
+    amount: "",
+    purpose: "",
+    term_months: "",
+    reviewed_by: null,
+    application_date: today,
+    status: "",
+  }
+
   // React Hook Form setup for loan applications 
   const {
     register,
@@ -100,34 +118,17 @@ function LoanApplications() {
     watch,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      application_id: null,
-      applicant_name: null,
-      loan_product: "",
-      amount: "",
-      purpose: "",
-      term_months: "",
-      application_date: today,
-      status: "",
-    },
+    defaultValuesLoanApp
   });
 
-  // React Hook Form setup for Loan Accounts
-  const {
-    register: registerLoanAcc,
-    handleSubmit: handleSubmitLoanAcc,
-    reset: resetLoanAcc,
-    watch: watchLoanAcc,
-    formState: { errors: errorsLoanAcc },
-  } = useForm({
-    defaultValues: {
+  const defaultValuesLoanAcc = {
       loan_id: null,
       application_id: null,
-      applicant_id: null,
+      loan_ref_number: null,
       product_id: null,
-      account_number: "",
-      principal: "",
-      outstanding_balance: "",
+      principal: 0,
+      amount_req: 0,
+      total_amount_due: "",
       interest_rate: "", // front_end only
       loan_term: "", // front_end only
       interest_method: "", // front_end only
@@ -135,7 +136,18 @@ function LoanApplications() {
       release_date: null, // will be configured by treasurer
       approved_date: today,
       maturity_date: "",
-    },
+    }
+
+  // React Hook Form setup for Loan Accounts
+  const {
+    register: registerLoanAcc,
+    handleSubmit: handleSubmitLoanAcc,
+    reset: resetLoanAcc,
+    watch: watchLoanAcc,
+    setValue: setLoanAccValue,
+    formState: { errors: errorsLoanAcc },
+  } = useForm({
+    defaultValuesLoanAcc
   });
 
   const selectedLoanProduct = watch("loan_product");
@@ -147,32 +159,38 @@ function LoanApplications() {
    */
   const [loanStatus, setLoanStatus] = useState(false);
   
-  const openEditModal = (row) => {
-    // console.log("eid", row.product_id)
+
+
+
+
+  
+  const openEditModal = (selectedRow) => {
+    // console.log("eid", selectedRow.product_id)
     
     const matchedMember = members?.find(
-      (member) => member.member_id === row.applicant_id
+      (member) => member.account_number === selectedRow.account_number
     );
+
     const fullName = matchedMember
       ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
       : "";
 
     const matchedLoanProduct = loanProducts?.find(
-      (product) => product.product_id === row.product_id
+      (product) => product.product_id === selectedRow.product_id
     );
 
     const loanTerm = Number(matchedLoanProduct?.max_term_months) || 0;
 
+    const status = watch("status")
+
+    // displays
     reset({
-      application_id: row.application_id,
-      applicant_id: row.applicant_id,
+      ...selectedRow,
+      ...(status === "On Review" && { reviewed_by: auth_member_id }), 
+      reviewed_by: auth_member_id,
       applicant_name: fullName,
       loan_product: matchedLoanProduct?.name || "",
-      amount: row.amount || "",
-      purpose: row.purpose || "",
       term_months: loanTerm,
-      application_date: row.application_date || today,
-      status: row.status,
     });
 
     setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
@@ -195,11 +213,37 @@ function LoanApplications() {
   };
 
 
+
+
+  const [isCalculating, setIsCalculating] = useState(false);
+  const principalValue = watchLoanAcc("principal");
+  const interestRateValue = watchLoanAcc("interest_rate");
+  const loanTermValue = watchLoanAcc("loan_term");
+
+  // detect the changes of principal then calculate on the go
+  useEffect(() => {
+    if (!principalValue || principalValue <= 0) return;
+
+    setIsCalculating(true);
+    const timer = setTimeout(() => {
+      const { totalPayable } = Calculation(
+        Number(interestRateValue),
+        Number(principalValue),
+        Number(loanTermValue)
+      );
+
+      setLoanAccValue("total_amount_due", totalPayable);
+      setIsCalculating(false);
+    }, 600); // debounce delay (ms)
+
+    return () => clearTimeout(timer);
+  }, [principalValue, interestRateValue, loanTermValue, setLoanAccValue]);
+
   // State to hold the edit application data temporarily
   // this is for the edit loan applications where the status is not "Approved"
   const [pendingAppData, setPendingAppData] = useState(null);
 
-  // Submit handler (add/edit)
+  // Submit handler (edit)
 
   /**
    * NOTE: When you submit as a "APPROVED" it will go to loan acc form modal and the values of it is not submitted yet but stored to
@@ -215,9 +259,8 @@ function LoanApplications() {
       const day = String(now.getDate()).padStart(2, "0");
       const paddedId = String(appId).padStart(6, "0");
       const randomSuffix = Math.floor(10 + Math.random() * 90);
-      return `ACCT-${year}${month}${day}-${paddedId}${randomSuffix}`;
+      return `LAPP-${year}${month}${day}-${paddedId}${randomSuffix}`;
     };
-
 
     if (data.status === "Approved") {
       const row = loanDataRaw.find(
@@ -246,13 +289,11 @@ function LoanApplications() {
       // console.log("Loan Term", loanTerm)
 
       resetLoanAcc({
+        ...data,
         loan_id: null,
-        application_id: data.application_id,
-        applicant_id: data.applicant_id,
         product_id: matchedLoanProduct?.product_id ?? null,
-        account_number: generateAccountNumber(data.application_id),
-        principal: data.amount,
-        outstanding_balance: totalPayable,
+        loan_ref_number: generateAccountNumber(data.application_id),
+        total_amount_due: totalPayable,
         interest_rate: interestRate,
         interest_method: interestMethod,
         loan_term: loanTerm,
@@ -283,6 +324,7 @@ function LoanApplications() {
       setShowLoanAccModal(true);
     } else {
       mutateEdit(data);
+      console.log("EDITED DATA", data )
       closeModal();
     }
   };
@@ -301,15 +343,12 @@ function LoanApplications() {
     }
 
     // 3. Finalize UI
+
     setShowLoanAccModal(false);
     closeModal();
     navigate("/board/loan-accounts");
+    // console.log("FINAL DATA", loanAccData )
   };
-
-
-
-  if (isLoading) return <div>Loading Member Loan...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
 
   return (
     <div>
@@ -317,16 +356,16 @@ function LoanApplications() {
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Members Loan Applications</h1>
         </div>
+
         <FilterToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Status",
+              label: "All Status",
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "Pending", value: "Pending" },
                 { label: "On Review", value: "On Review" },
                 { label: "Approved", value: "Approved" },
@@ -335,22 +374,20 @@ function LoanApplications() {
               ],
             },
             {
-              label: "Year",
+              label: "All Year",
               value: yearFilter,
               onChange: setYearFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "2025", value: "2025" },
                 { label: "2024", value: "2024" },
                 { label: "2023", value: "2023" },
               ],
             },
             {
-              label: "Month",
+              label: "All Month",
               value: monthFilter,
               onChange: setMonthFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "January", value: "1" },
                 { label: "February", value: "2" },
                 { label: "March", value: "3" },
@@ -371,6 +408,7 @@ function LoanApplications() {
         <MainDataTable
           headers={[
             "Ref No.",
+            "Account No.",
             "Name",
             "Loan Product",
             "Amount",
@@ -380,6 +418,8 @@ function LoanApplications() {
           ]}
           data={memberLoanApplications}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}
@@ -388,7 +428,7 @@ function LoanApplications() {
 
             // This is dynamic to query columns from foreign keys 
             const matchedMember = members?.find(
-              (member) => member.member_id === row.applicant_id
+              (member) => member.account_number === row.account_number
             );
             
             // 
@@ -409,6 +449,9 @@ function LoanApplications() {
               >
                 <td className="text-center px-2 py-2 text-xs font-medium">
                   {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
+                </td>
+                <td className="text-center px-2 py-2 text-xs font-medium">
+                  {row.account_number || "Not Found"}
                 </td>
 
                 <td className="px-4 py-4">
@@ -460,8 +503,8 @@ function LoanApplications() {
           }}
         />
 
-      <MembersFormModal
-        title={"Loan Application"}
+      <BoardFormModal
+        title={"Loan Application Info"}
         open={modalType !== null}
         close={closeModal}
         status={loanStatus}
@@ -478,7 +521,7 @@ function LoanApplications() {
               <span className="label-text font-medium text-gray-700">Ref No.</span>
             </label>
             <input
-              value={`LA_${watch("application_id") || ""}`}
+              value={`${TABLE_PREFIX}${watch("application_id") || ""}`}
               readOnly
               className="input input-bordered w-full bg-gray-100 text-gray-700"
             />
@@ -510,7 +553,20 @@ function LoanApplications() {
           {/* Applicant */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Applicant</span>
+              <span className="label-text font-medium text-gray-700">Account No.</span>
+            </label>
+            <input
+              type="text"
+              {...register("account_number") }
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+          </div>
+
+          {/* Account Name */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Name</span>
             </label>
             <input
               type="text"
@@ -547,7 +603,7 @@ function LoanApplications() {
           {/* Amount */}
             <div className="form-control w-full mt-2">
               <label className="label mb-1">
-                <span className="label-text font-medium text-gray-700">Amount</span>
+                <span className="label-text font-medium text-gray-700">Amount Requested</span>
               </label>
               <input
                 type="number"
@@ -556,9 +612,10 @@ function LoanApplications() {
                   min: selectedProduct?.min_amount || 0,
                   max: selectedProduct?.max_amount || 9999999,
                 })}
-                disabled={
-                  !selectedLoanProduct || loanStatus
-                }
+                // disabled={
+                //   !selectedLoanProduct || loanStatus
+                // }
+                readOnly
                 placeholder={
                   selectedProduct
                     ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
@@ -627,10 +684,10 @@ function LoanApplications() {
             )}
           </div>
         </div>
-      </MembersFormModal>
+      </BoardFormModal>
 
       <LoanAccModal
-        title={"Loan Account"}
+        title={"Loan Account (Approval)"}
         open={showLoanAccModal}
         close={() => {
           // Go back to edit modal
@@ -655,11 +712,30 @@ function LoanApplications() {
               <span className="label-text font-medium text-gray-700">Ref No.</span>
             </label>
             <input
-              value={`LA_${watchLoanAcc("application_id") || ""}`}
+              value={`${TABLE_PREFIX}${watchLoanAcc("application_id") || ""}`}
               readOnly
               className="input input-bordered w-full bg-gray-100 text-gray-700"
             />
           </div>
+
+            {/* Loan Ref No. */}
+            <div className="form-control w-full mt-2">
+              <label className="label mb-1">
+                <span className="label-text font-medium text-gray-700">
+                  Loan Ref No.
+                </span>
+              </label>
+              <input
+                type="text"
+                {...registerLoanAcc("loan_ref_number")}
+                readOnly
+                className="input input-bordered w-full bg-gray-100 text-gray-700"
+              />
+              {errorsLoanAcc.loan_ref_number && (
+                <p className="text-error text-sm mt-1">Required</p>
+              )}
+            </div>
+
 
           {/* Account Number */}
           <div className="form-control w-full mt-2">
@@ -670,7 +746,7 @@ function LoanApplications() {
             </label>
             <input
               type="text"
-              {...registerLoanAcc("account_number", { required: true })}
+              value={watch("account_number")}
               readOnly
               className="input input-bordered w-full bg-gray-100 text-gray-700"
             />
@@ -679,16 +755,51 @@ function LoanApplications() {
             )}
           </div>
 
+          {/* Name */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Name
+              </span>
+            </label>
+            <input
+              type="text"
+              value={watch("applicant_name")}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+            {errors.applicant_name && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Amount Req */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Amount Requested</span>
+            </label>
+            <input
+              type="number"
+              {...registerLoanAcc("amount_req", {required: true})}
+              value={watch("amount")}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+            {errorsLoanAcc.amount_req && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
           {/* Principal */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Principal</span>
+              <span className="label-text font-bold text-green-700 ">Principal | Approval Amount</span>
             </label>
             <input
               type="number"
               {...registerLoanAcc("principal", { required: true })}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
+              placeholder={watch("amount")}
+              className="input input-bordered w-full"
             />
             {errorsLoanAcc.principal && (
               <p className="text-error text-sm mt-1">Required</p>
@@ -706,30 +817,36 @@ function LoanApplications() {
               type="number"
               {...registerLoanAcc("interest_rate", { required: true })}
               readOnly
-              className="input input-bordered w-full"
+                className="input input-bordered w-full bg-gray-100"
             />
             {errorsLoanAcc.interest_rate && (
               <p className="text-error text-sm mt-1">Required</p>
             )}
           </div>
 
-            {/* Total To Pay */}
-            <div className="form-control w-full mt-2">
-              <label className="label mb-1">
-                <span className="label-text font-medium text-gray-700">
-                  Total Amount Due
-                </span>
-              </label>
-              <input
-                type="number"
-                {...registerLoanAcc("outstanding_balance", { required: true })}
-                readOnly
-                className="input input-bordered w-full bg-gray-100 text-gray-700"
-              />
-              {errorsLoanAcc.outstanding_balance && (
-                <p className="text-error text-sm mt-1">Required</p>
-              )}
-            </div>
+          {/* Total To Pay */}
+          <div className="form-control w-full mt-2 relative">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">
+                Total Amount Due
+              </span>
+            </label>
+            <input
+              type="number"
+              {...registerLoanAcc("total_amount_due", { required: true })}
+              readOnly
+              className={`input input-bordered w-full bg-gray-100 text-gray-700 ${isCalculating ? "opacity-50" : ""}`}
+            />
+            {isCalculating && (
+              <span className="absolute right-3 top-10 text-primary animate-spin">
+                <AiOutlineLoading3Quarters size={20} />
+              </span>
+            )}
+            {errorsLoanAcc.total_amount_due && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
 
           {/* Interest Method */}
           <div className="form-control w-full mt-2">
@@ -741,10 +858,26 @@ function LoanApplications() {
             <input
               {...registerLoanAcc("interest_method", { required: true })}
               readOnly
-              className="input input-bordered w-full"
+                className="input input-bordered w-full bg-gray-100 text-gray-700"
             />
             
             {errorsLoanAcc.interest_method && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Maturity Date */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Maturity Date</span>
+            </label>
+            <input
+              type="date"
+              {...registerLoanAcc("maturity_date", { required: false })}
+              readOnly
+                className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+            {errorsLoanAcc.maturity_date && (
               <p className="text-error text-sm mt-1">Required</p>
             )}
           </div>
@@ -759,22 +892,6 @@ function LoanApplications() {
               readOnly
               className="input input-bordered w-full bg-gray-100 text-gray-700"
             />
-          </div>
-
-          {/* Maturity Date */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Maturity Date</span>
-            </label>
-            <input
-              type="date"
-              {...registerLoanAcc("maturity_date", { required: false })}
-              readOnly
-              className="input input-bordered w-full"
-            />
-            {errorsLoanAcc.maturity_date && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
           </div>
         </div>
       </LoanAccModal>
