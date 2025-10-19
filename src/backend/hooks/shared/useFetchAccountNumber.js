@@ -23,7 +23,7 @@ export function useFetchAccountNumber() {
 
   return useQuery({
     queryFn: () => fetchAccountNumber(loginId),
-    queryKey: ["account_number"],
+    queryKey: ["account_number", loginId],
     enabled: !!loginId,
     staleTime: 1000 * 60 * 5,
   });

@@ -29,7 +29,7 @@ async function fetchTotal({ queryKey }) {
 export function useFetchTotal({ rpcFn, year, month }) {
   return useQuery({
     // Temporary queyrKey might change it to something practical later on
-    queryKey: ["rpc_totals", { rpcFn, year, month }],
+    queryKey: ["rpc_all_totals", { rpcFn, year, month }],
     queryFn: fetchTotal,
     staleTime: 1000 * 60 * 1,
   });

@@ -39,9 +39,16 @@ export function useFetchCoop({ page = null, limit = null, accountNumber = null, 
   const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;     // if the useLoggedInMember = true
 
   return useQuery({
-    queryKey: ["coop_cbu_contributions"],
-    queryFn: () => fetchCoopContributions({ accountNumber: effectiveAccountNumber, page, limit }),
-    enabled: useLoggedInMember ? !!loggedInAccountNumber && !accountLoading : true,
+    queryKey: ["coop_cbu_contributions", effectiveAccountNumber, page, limit],
+    queryFn: () =>
+      fetchCoopContributions({
+        accountNumber: effectiveAccountNumber,
+        page,
+        limit,
+      }),
+    enabled: useLoggedInMember
+      ? !!loggedInAccountNumber && !accountLoading
+      : true,
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemberId } from "../shared/useFetchMemberId";
+import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 import { supabase } from "../../supabase.js";
 
 /**
@@ -11,10 +11,10 @@ import { supabase } from "../../supabase.js";
  */
 
 async function fetchMemberTotal({ queryKey }) {
-  const [_key, { rpcFn, memberId, year, month }] = queryKey;
+  const [_key, { rpcFn, accountNumber, year, month }] = queryKey;
 
   const { data, error } = await supabase.rpc(rpcFn, {
-    p_member_id: memberId,
+    p_account_number: accountNumber,
     p_year: year && year !== "all" ? Number(year) : null,
     p_month: month && month !== "all" ? Number(month) : null,
   });
@@ -25,15 +25,11 @@ async function fetchMemberTotal({ queryKey }) {
 }
 
 export function useFetchMemberTotal({ rpcFn, year, month }) {
-  const { data: memberId, isLoading: memberLoading } = useMemberId();
- 
+  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   
   return useQuery({
+    queryKey: ["rpc_member_total", { rpcFn, accountNumber: loggedInAccountNumber, year, month }],
     queryFn: fetchMemberTotal,
-    queryKey: [
-      "rpc_member_total",
-      { rpcFn, memberId, year, month }, // ✅ pass object not string
-    ],
-    enabled: !!memberId && !memberLoading,
+    enabled: !!loggedInAccountNumber && !accountLoading,
     staleTime: 1000 * 60, // 1 minute
   });
 }

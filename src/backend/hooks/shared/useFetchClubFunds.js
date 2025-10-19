@@ -39,9 +39,12 @@ export function useFetchClubFunds({ page = null, limit = null, accountNumber = n
   const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;       // if the useLoggedInMember = true
 
   return useQuery({
-    queryKey: ["club_funds_contributions"],
-    queryFn: () => fetchClubFunds({ account_number: effectiveAccountNumber, page, limit}),
-    enabled: useLoggedInMember ? !!loggedInAccountNumber && !accountLoading : true,
+    queryKey: ["club_funds_contributions", effectiveAccountNumber, page, limit],
+    queryFn: () =>
+      fetchClubFunds({ accountNumber: effectiveAccountNumber, page, limit }),
+    enabled: useLoggedInMember
+      ? !!loggedInAccountNumber && !accountLoading
+      : true,
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

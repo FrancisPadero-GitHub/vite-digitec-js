@@ -39,9 +39,12 @@ export function useFetchLoanAcc({ page = null, limit = null, accountNumber = nul
   const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;     // if the useLoggedInMember = true
 
   return useQuery({
-    queryKey: ["loan_accounts"],
-    queryFn: () => fetchLoanAccounts({ accountNumber: effectiveAccountNumber, page, limit }),
-    enabled: useLoggedInMember ? !!loggedInAccountNumber && !accountLoading : true,
+    queryKey: ["loan_accounts", effectiveAccountNumber, page, limit],
+    queryFn: () =>
+      fetchLoanAccounts({ accountNumber: effectiveAccountNumber, page, limit }),
+    enabled: useLoggedInMember
+      ? !!loggedInAccountNumber && !accountLoading
+      : true,
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

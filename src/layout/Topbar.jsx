@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 
 // db for logout
 import { supabase } from "../backend/supabase";
@@ -26,7 +27,7 @@ const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWp
 
 
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
- 
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // to fetch member name for the logged in id
@@ -52,14 +53,31 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   const [dateTimeStr, setDateTimeStr] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+
+
+
   const handleSignOut = async () => {
     setIsLoggingOut(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error.message);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw new Error(error.message);
+
+      // Confirm session is really gone
+      const { data: sessionCheck } = await supabase.auth.getSession();
+      console.log("Post-logout session check:", sessionCheck);
+
+      // Clear all cached data tied to the previous user
+      queryClient.clear();
+
+      // Optional: redirect or reset app state here
+      // navigate("/login");
+    } catch (err) {
+      console.error("Error signing out:", err.message);
+    } finally {
       setIsLoggingOut(false);
     }
   };
+
 
   useEffect(() => {
     const updateTime = () => {
