@@ -14,9 +14,11 @@ import ViewMemberModal from "./modals/ViewMemberModal.jsx";
 
 // constants
 import { ROLE_COLORS } from "../../constants/Color.js";
+import getYearsMonthsDaysDifference from "../../constants/DateCalculation.js";
 
 
 
+// JSX
 function UserManagement() {
 
   // custom states
@@ -187,7 +189,7 @@ function UserManagement() {
         />
 
         <MainDataTable
-          headers={["ID", "User", "Role", "Status"]}
+          headers={["Account No.", "User", "Role", "Joined date", "Tenure", "Account status", "Membership status"]}
           data={members}
           isLoading={isLoading}
           isError={isError}
@@ -196,63 +198,96 @@ function UserManagement() {
           limit={limit}
           total={total}
           setPage={setPage}
-          renderRow={(row) => (
-            
-            <tr
-              key={`${TABLE_PREFIX}${row.member_id}`}
-              onClick={() => openModal(row)}
-              className="cursor-pointer hover:bg-base-200/70 transition-colors"
-            >
-              <td className="px-4 py-2 text-center text-info font-medium">
-                {row.generatedId}
-              </td>
-              <td className="px-4 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="avatar shrink-0">
-                    <div className="mask mask-circle w-10 h-10">
-                      <img
-                        src={row.avatar || `https://i.pravatar.cc/40?u=${row.generatedId}`}
-                        alt={row.displayName}
-                      />
+          renderRow={(row) => {
+
+            // Calculte the years months and days since joined
+            const joined = new Date(row.joined_date);
+            const { years, months, days } = getYearsMonthsDaysDifference(joined);
+
+            return (
+              <tr
+                key={`${TABLE_PREFIX}${row.member_id}`}
+                onClick={() => openModal(row)}
+                className="cursor-pointer hover:bg-base-200/70 transition-colors"
+              > 
+                {/* Account No. */}
+                <td className="px-4 py-2 text-center text-info font-medium">
+                  {row.account_number}
+                </td>
+
+                {/* Name and avatar */}
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="avatar shrink-0">
+                      <div className="mask mask-circle w-10 h-10">
+                        <img
+                          src={row.avatar || `https://i.pravatar.cc/40?u=${row.generatedId}`}
+                          alt={row.displayName}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="text-left">
+                      <div className="font-bold">{row.displayName}</div>
+                      <div className="text-sm text-gray-500">{row.email || "No email"}</div>
                     </div>
                   </div>
-                  <div className="text-left">
-                    <div className="font-bold">{row.displayName}</div>
-                    <div className="text-sm text-gray-500">{row.email || "No email"}</div>
-                  </div>
-                </div>
-              </td>
-              <td className="px-4 py-2 text-center font-bold">
-                {row.role ? (
-                  <span
-                    className={`badge badge-soft font-semibold ${ROLE_COLORS[row.role] || "badge-ghost text-gray-400"}`}
-                  >
-                    {row.role}
-                  </span>
-                ) : (
-                  <span className="text-gray-400 italic">Not Provided</span>
-                )}
-              </td>
-              <td className="px-5 py-2 text-center">
-                {row.status ? (
-                  <span
-                    className={`badge font-semibold ${row.status === "active"
+                </td>
+                {/* Account Role */}
+                <td className="px-4 py-2 text-center font-bold">
+                  {row.role ? (
+                    <span
+                      className={`badge badge-soft font-semibold ${ROLE_COLORS[row.role] || "badge-ghost text-gray-400"}`}
+                    >
+                      {row.role}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 italic">Not Provided</span>
+                  )}
+                </td>
+
+                {/* Joined date */}
+                <td className="px-4 py-2 text-center" >
+                  {row.joined_date}
+                </td>
+
+                {/* Membership years */}
+                <td className="px-4 py-2 text-center">
+                  {(years !== 0 || months !== 0 || days !== 0)
+                    ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
+                    : ""}
+                </td>
+
+
+
+                {/* Account Status */}
+                <td className="px-4 py-2 text-center">
+                  {row.status ? (
+                    <span
+                      className={`badge font-semibold ${row.status === "active"
                         ? "badge-success"
                         : row.status === "inactive"
                           ? "badge-ghost text-gray-500"
                           : row.status === "revoked"
                             ? "badge-error"
                             : "badge-soft"
-                      }`}
-                  >
-                    {row.status}
-                  </span>
-                ) : (
-                  <span className="badge font-semibold badge-error">Not Provided</span>
-                )}
-              </td>
-            </tr>
-          )}
+                        }`}
+                    >
+                      {row.status}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
+
+                {/* Membership Status */}
+                <td className="px-4 py-2 text-center">
+                  {row.membership_status}
+                </td>
+
+              </tr>
+            )
+          }}
         />
         
         <ViewMemberModal
