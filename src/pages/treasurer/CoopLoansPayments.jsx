@@ -2,6 +2,7 @@ import {useState, useMemo} from 'react'
 import dayjs from 'dayjs';
 import { Link } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
+import { Toaster, toast } from 'react-hot-toast';
 import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headlessui/react";
 
 // fetch hooks
@@ -26,20 +27,10 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 function CoopLoansPayments() {
   const { data: loan_acc_data, } = useFetchLoanAcc({});
-  const loanApps = loan_acc_data?.data || [];
+
 
   const { data: members_data } = useMembers();
   const members = members_data?.data || [];
-  // Filter members based on query
-  const [query, setQuery] = useState("");
-  const filteredMembers =
-    query === ""
-      ? members
-      : members.filter((m) =>
-        `${m.f_name} ${m.m_name} ${m.l_name} ${m.email}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
-      );
 
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
@@ -56,7 +47,7 @@ function CoopLoansPayments() {
 
   const TABLE_PREFIX = "LP"; // You can change this per table, this for the the unique table ID but this is not included in the database
   const loanPayments = loanPaymentsRaw.filter((row) => {
-    const member = members?.find((m) => m.member_id === row.member_id);
+    const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
       ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
@@ -89,8 +80,21 @@ function CoopLoansPayments() {
   const { mutate: mutateDelete } = useDelete('loan_payments');
 
   // React hook forms 
-  const {mutate: addLoanPayments} = useAddLoanPayments();
+  const {mutate: addLoanPayments, isPending} = useAddLoanPayments();
   const today = new Date().toISOString().split("T")[0];
+
+  const defaultValues = {
+      payment_id: "",
+      loan_id: null,
+      loan_ref_number:  "", // or Account_number
+      account_number: "",
+      member_id: null,
+      amount: "",
+      payment_method: "",
+      payment_date: today,
+      receipt_no: "",
+      payment_type: "",
+    }
   const {
     register,
     control,
@@ -98,22 +102,11 @@ function CoopLoansPayments() {
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
   } = useForm({
-    defaultValues: {
-      payment_id: "",
-      loan_id:  "", // or Account_number
-      payer_id: "",
-      amount: "",
-      payment_method: "",
-      payment_date: today,
-      receipt_no: "",
-      payment_type: "",
-    },
+    defaultValues
   });
 
 
-  
   /**
    * 
    * TEMPORARY WORK AROUND
@@ -122,8 +115,8 @@ function CoopLoansPayments() {
    */
 
   // Watch the dependencies
-  const payerId = watch("payer_id");
-  const loanId = watch("loan_id");
+  const payerId = watch("account_number");
+  const loanId = watch("loan_ref_number");
   const paymentDate = watch("payment_date");
 
   // Compute receipt_no whenever dependencies change
@@ -131,7 +124,7 @@ function CoopLoansPayments() {
     if (loanId && payerId && paymentDate) {
       setValue(
         "receipt_no",
-        `L${loanId}-P${payerId}-D${dayjs(paymentDate).format("YYYYMMDD")}`
+        `${loanId}-P${payerId}-D${dayjs(paymentDate).format("YYYYMMDD")}`
       );
     } else {
       setValue("receipt_no", "");
@@ -144,20 +137,12 @@ function CoopLoansPayments() {
   const [modalType, setModalType] = useState(null); // "add" | "edit" | null
 
   const openAddModal = () => {
-    reset({
-      loan_id: "",
-      payer_id: "",
-      amount: "",
-      payment_method: "",
-      payment_date: today,
-      receipt_no: "",
-      payment_type: "",
-    })
+    reset(defaultValues)
     setModalType("add");
   }
   const openEditModal = (data) => {
     console.log(data)
-    // setModalType("edit");
+    setModalType("edit");
   };
 
   const closeModal = () => {
@@ -172,16 +157,86 @@ function CoopLoansPayments() {
   };
 
   const onSubmit = (data) => {
-    addLoanPayments(data)
-    console.log("Form data:", data);
-    closeModal();
+    addLoanPayments(data, {
+      onSuccess: () => {
+        toast.success("Successfully added payment")
+
+        closeModal();
+      },
+      onError: () => {
+        toast.error("Something went wrong ")
+      }
+    })
+    // console.log("TEST:", data);
   }
 
-  if (isLoading) return <div>Loading Loan Payments...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
+
+  // Filters member upon inputing value
+  const [queryMem, setQueryMem] = useState("");
+  const filteredMembers =
+    queryMem === ""
+      ? members
+      : members.filter((m) =>
+        `${m.account_number} ${m.f_name} ${m.m_name} ${m.l_name} ${m.email}`
+          .toLowerCase()
+          .includes(queryMem.toLowerCase())
+      );
+
+      
+  // Only display loan acc base on the filteredMembers
+  const loanAcc = useMemo(() => loan_acc_data?.data || [], [loan_acc_data]);
+  const [queryLoan, setQueryLoan] = useState("");
+  const selectedMember = members.find((m) => m.account_number === watch("account_number"));
+  const filteredLoanAcc = useMemo(() => {
+    //  loans that belong to the selected member
+    const memberLoans = selectedMember
+      ? loanAcc.filter((loan) => loan.account_number === selectedMember.account_number)
+      : [];
+
+    // search query, filter further by loan_ref_number or balance
+    if (queryLoan !== "") {
+      return memberLoans.filter((loan) =>
+        `${loan.loan_ref_number} ${loan.outstanding_balance}`
+          .toLowerCase()
+          .includes(queryLoan.toLowerCase())
+      );
+    }
+
+    // If no query, return all loans of the selected member
+    return memberLoans;
+  }, [loanAcc, selectedMember, queryLoan]);
+
+
+  const fields = [
+    {
+      label: "Amount",
+      name: "amount",
+      type: "number",
+      autoComplete: "off",
+    },
+    {
+      label: "Payment Method",
+      name: "payment_method",
+      type: "select",
+      autoComplete: "off",
+      options: [
+        { label: "Cash", value: "Cash" },
+        { label: "GCash", value: "GCash" },
+        { label: "Bank", value: "Bank" },
+      ],
+    },
+    {
+      label: "Payment Date",
+      name: "payment_date",
+      type: "date",
+      autoComplete: "off",
+    },
+  ];
+
 
   return (
     <div>
+      <Toaster position="bottom-left"/>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold" >Member Loan Payments</h1>
@@ -201,32 +256,30 @@ function CoopLoansPayments() {
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Category",
+              label: "All Category",
               value: categoryFilter,
               onChange: setCategoryFilter,
               options: [
-                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
                 { label: "Full", value: "Full" },
                 { label: "Partial", value: "Partial" }
               ],
             },
             {
-              label: "Method",
+              label: "All Method",
               value: paymentMethodFilter,
               onChange: setPaymentMethodFilter,
               options: [
-                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
                 { label: "Cash", value: "Cash" },
                 { label: "GCash", value: "GCash" },
                 { label: "Bank", value: "Bank" },
               ],
             },
             {
-              label: "Year",
+              label: "All Year",
               value: yearFilter,
               onChange: setYearFilter,
               options: [
-                { label: "All", value: "" },
+   
                 { label: "2025", value: "2025" },
                 { label: "2024", value: "2024" },
                 { label: "2023", value: "2023" },
@@ -236,11 +289,10 @@ function CoopLoansPayments() {
               ],
             },
             {
-              label: "Month",
+              label: "All Month",
               value: monthFilter,
               onChange: setMonthFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "January", value: "1" },
                 { label: "February", value: "2" },
                 { label: "March", value: "3" },
@@ -259,29 +311,31 @@ function CoopLoansPayments() {
         />
 
         <MainDataTable 
-          headers={["Ref No.", "Loan ID", "Name", "Amount", "Payment Method", "Type", "Date", "Receipt No"]}
+          headers={["Ref No.", "Loan ID", "Name", "Amount", "Payment Method", "Date", "Receipt No"]}
           data={loanPayments}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}
           setPage={setPage}
           renderRow={(row) => {
             const matchedMember = members?.find(
-              (member) => member.member_id === row.payer_id // This is temporary so I don't have to create another shiz nga column .find or .filter kay kapoy HAHAHAHA
+              (member) => member.account_number === row.account_number // This is temporary so I don't have to create another shiz nga column .find or .filter kay kapoy HAHAHAHA
             );
             const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System";
             return (
               <tr
-                key={`${TABLE_PREFIX}${row.payment_id}`}
+                key={`${TABLE_PREFIX}${row?.payment_id}`}
                 onClick={() => openEditModal(row)}
                 className="transition-colors cursor-pointer hover:bg-base-200/70"
               >
                 {/* Ref no */}
-                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row.payment_id}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.payment_id}</td>
                 
                 {/* Loan ID */}
-                <td className="px-4 py-2 text-center">{row.loan_id || "Not Found"}</td>
+                <td className="px-4 py-2 text-center">{row?.loan_id || "Not Found"}</td>
                  
                  {/* Name */}
                 <td className="px-4 py-4">
@@ -291,7 +345,7 @@ function CoopLoansPayments() {
                       <div className="mask mask-circle w-10 h-10">
                         <img
                           src={
-                            matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                            matchedMember?.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
                           }
                           alt={fullName}
                         />
@@ -302,200 +356,238 @@ function CoopLoansPayments() {
                 </td>
                 {/* Amount */}
                 <td className="px-4 py-2 font-semibold text-success text-center">
-                  ₱ {row.amount?.toLocaleString() || "0"}
+                  ₱ {row?.amount?.toLocaleString() || "0"}
                 </td>
                 {/* Method */}
                 <td className="px-4 py-2 text-center">
-                  {row.payment_method ? (
-                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
-                      {row.payment_method}
+                  {row?.payment_method ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}>
+                      {row?.payment_method}
                     </span>
                   ) : (
                     <span> — </span>
                   )}
                 </td>
-                {/* Type */}
-                <td className="px-4 py-2 text-center">{row.payment_type}</td>
                 {/* Date */}
-                <td className="px-4 py-2 text-center">{row.payment_date}</td>
+                <td className="px-4 py-2 text-center">{row?.payment_date}</td>
                 {/* Row */}
-                <td className="px-4 py-2 text-center">{row.receipt_no}</td>
+                <td className="px-4 py-2 text-center">{row?.receipt_no}</td>
                 
               </tr>
             )}}
         />
         <FormModal
-          table={"Loan Payment"}
+          table="Loan Payment"
           open={modalType !== null}
           close={closeModal}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
+          status={isPending}
           deleteAction={() => handleDelete(watch("payment_id"))}
         >
-          {/* Member Selection */}
+            {/* Account No. */}
           <div className="form-control w-full">
-            <label className="label text-medium mb-2 font-semibold">Member</label>
-            <div className="relative">
-              <Controller
-                name="payer_id" // must reflect to the react use hook form 
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Combobox
-                    value={members.find((m) => m.member_id === field.value) || null}
-                    onChange={(member) => {
-                      // Set the payer_id
-                      field.onChange(member?.member_id);
+            <label className="label text-sm font-semibold mb-2">Member Account</label>
+            <Controller
+              name="account_number"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={members.find((m) => m.account_number === field.value) || null}
+                  onChange={(member) => {
+                    // Store the account number for display
+                    field.onChange(member?.account_number);
 
-                      // Immediately set the loan_id for that member
-                      const memberLoans = loanApps?.data?.find(
-                        (loan) => loan.applicant_id === member?.member_id && loan.status === "Active" && loan.deleted_at === null
-                      );
+                    // Also store the account number directly (optional redundancy)
+                    setValue("account_number", member?.account_number || "");
 
-                      console.log(memberLoans.loan_id)
+                    // Optional: if you want to store member_id for backend reference
+                    setValue("member_id", member?.member_id || null);
+                  }}
+                >
+                  <ComboboxInput
+                    required
+                    className="input input-bordered w-full"
+                    placeholder="Search by Account Number or Name..."
+                    displayValue={(member) => (member ? member.account_number : "")}
+                    onChange={(e) => setQueryMem(e.target.value)}
+                  />
+                  <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                    {filteredMembers.length === 0 ? (
+                      <div className="px-4 py-2 text-base-content/60">No members found.</div>
+                    ) : (
+                      filteredMembers.map((member) => (
+                        <ComboboxOption
+                          key={member.account_number}
+                          value={member}
+                          className={({ focus }) =>
+                            `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                            }`
+                          }
+                        >
+                          <div className="relative flex items-center justify-between">
+                            <span className="font-mono text-sm">{member.account_number}</span>
 
-                      if (memberLoans) {
-                        setValue("loan_id", memberLoans.loan_id);
-                      } else {
-                        setValue("loan_id", "Not Found");
-                      }
-                    }}
-                  >
-                    <ComboboxInput
-                      required
-                      className="input input-bordered w-full"
-                      placeholder="Search or select member..."
-                      displayValue={() => {
-                        const selected = members.find((m) => m.member_id === field.value);
-                        return selected
-                          ? `${selected.f_name} ${selected.l_name} (${selected.email})`
-                          : "";
-                      }}
-                      onChange={(e) => setQuery(e.target.value)}
-                    />
-                    <ComboboxOptions className="absolute z-[999] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                      {filteredMembers.length === 0 ? (
-                        <div className="px-4 py-2 text-base-content/60">No members found.</div>
-                      ) : (
-                        filteredMembers.map((member) => (
-                          <ComboboxOption
-                            key={member.member_id}
-                            value={member}
-                            className={({ active }) =>
-                              `px-4 py-2 cursor-pointer transition-colors duration-150 ${active ? "bg-primary text-primary-content" : "hover:bg-base-200"
-                              }`
-                            }
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="truncate">
-                                {member.f_name} {member.l_name} ({member.email})
+                            <span className="absolute left-1/2 -translate-x-1/2 text-center truncate text-sm">
+                              {member.account_role}
+                            </span>
+
+                            <span className="truncate text-sm">
+                              {member.f_name} {member.m_name} {member.l_name}
+                            </span>
+                          </div>
+                        </ComboboxOption>
+                      ))
+                    )}
+                  </ComboboxOptions>
+                </Combobox>
+              )}
+            />
+          </div>
+
+              {/* Loan Ref No */}
+          <div className="form-control w-full">
+            <label className="label text-sm font-semibold mb-2">Loan Account</label>
+            <Controller
+              name="loan_ref_number"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={loanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
+                  onChange={(loan) => {
+                    // Update both reference and ID
+                    field.onChange(loan?.loan_ref_number);
+                    setValue("loan_ref_number", loan?.loan_ref_number || "");
+                    setValue("loan_id", loan?.loan_id || null);
+
+                    // If needed, link account_number to the selected loan automatically
+                    setValue("account_number", loan?.account_number || "");
+                  }}
+                >
+                  <ComboboxInput
+                    required
+                    className="input input-bordered w-full"
+                    placeholder="Search by Loan Reference or Balance..."
+                    displayValue={(loan) => (loan ? loan.loan_ref_number : "")}
+                    onChange={(e) => setQueryLoan(e.target.value)}
+                  />
+                  <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                    {filteredLoanAcc.length === 0 ? (
+                      <div className="px-4 py-2 text-base-content/60">No loan accounts found.</div>
+                    ) : (
+                      filteredLoanAcc.map((loan) => (
+                        <ComboboxOption
+                          key={loan.loan_ref_number}
+                          value={loan}
+                          className={({ focus }) =>
+                            `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                            }`
+                          }
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-sm">{loan.loan_ref_number}</span>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">Outstanding Balance:</span>
+                              <span className="truncate text-sm font-semibold">
+                                ₱{Number(loan.outstanding_balance).toLocaleString()}
                               </span>
                             </div>
-                          </ComboboxOption>
-                        ))
+                          </div>
+                        </ComboboxOption>
+
+                      ))
+                    )}
+                  </ComboboxOptions>
+                </Combobox>
+              )}
+            />
+          </div>
+
+
+
+          {fields.map(({ label, name, type, options, autoComplete }) => (
+            <div key={name} className="form-control w-full mt-2">
+              <label htmlFor={name}>
+                <span className="label text-sm font-semibold mb-2">{label}</span>
+              </label>
+
+              {name === "amount" ? (
+                <Controller
+                  name="amount"
+                  control={control}
+                  rules={{
+                    required: true,
+                    min: { value: 1, message: "Amount must be greater than 0" },
+                    validate: (v) => v > 0 || "Amount cannot be zero or negative",
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <>
+                      <input
+                        id="amount"
+                        type="number"
+                        autoComplete={autoComplete}
+                        value={field.value}
+                        placeholder="Enter Amount"
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (raw === "") {
+                            field.onChange("");
+                            return;
+                          }
+                          const value = Number(raw);
+                          field.onChange(value < 0 ? 0 : value);
+                        }}
+                        className={`input input-bordered w-full ${error ? "input-error" : ""
+                          }`}
+                      />
+                      {error && (
+                        <span className="text-sm text-error mt-1 block">
+                          {error.message}
+                        </span>
                       )}
-                    </ComboboxOptions>
-                  </Combobox>
-                )}
-              />
-              {errors.member_id && (
-                <p className="text-red-500 text-medium mb-2 mt-1">Member is required</p>
+                    </>
+                  )}
+                />
+              ) : type === "select" ? (
+                <select
+                  id={name}
+                  autoComplete={autoComplete}
+                  {...register(name, { required: true })}
+                  className="select select-bordered w-full"
+                >
+                  <option value="" disabled>
+                    Select {label}
+                  </option>
+                  {options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : type === "readonly" ? (
+                <input
+                  id={name}
+                  type="text"
+                  {...register(name)}
+                  readOnly
+                  title="Auto Generated"
+                  placeholder="Will be auto-generated"
+                  className="input input-bordered w-full bg-gray-100 cursor-not-allowed"
+                />
+              ) : (
+                <input
+                  id={name}
+                  type={type}
+                  autoComplete={autoComplete}
+                  {...register(name, { required: true })}
+                  className="input input-bordered w-full"
+                />
               )}
             </div>
-          </div>
-
-          {/* Loan ID 
-          
-          IT MUST FETCH FROM THE LOAN ACCOUNTS HOOK ABOVE WHICH SHOWS ONLY ACTIVE ACCOUNTS OR PRE GENERATE IT
-          DISPLAY ALSO IF NOT FOUND 
-          
-          */}
-          {/* Loan ID (auto-filled based on selected member) */}
-          <div className="form-control w-full mt-2">
-            <label className="label text-medium mb-2 font-semibold">Loan ID or Account Number</label>
-            <input
-              type="text"
-              {...register("loan_id")}
-              value={watch("loan_id")}
-              className="input input-bordered w-full bg-gray-100 cursor-not-allowed"
-              placeholder="Will be auto fetch on the most latest active loan"
-              readOnly
-            />
-          </div>
-
-
-          {/* Amount */}
-          <div className="form-control w-full mt-2">
-            <label className="label text-medium mb-2 font-semibold">Amount</label>
-            <input
-              type="number"
-              {...register("amount", { required: true, min: 1 })}
-              className="input input-bordered w-full"
-            />
-            {errors.amount && <p className="text-red-500 text-sm">Amount is required</p>}
-          </div>
-
-          {/* Payment Method */}
-          <div className="form-control w-full mt-2">
-            <label className="label text-medium mb-2 font-semibold">Payment Method</label>
-            <select
-              {...register("payment_method", { required: true })}
-              className="select select-bordered w-full"
-            >
-              <option value="">Select method</option>
-              <option value="Cash">Cash</option>
-              <option value="GCash">GCash</option>
-              <option value="Bank">Bank</option>
-            </select>
-            {errors.payment_method && (
-              <p className="text-red-500 text-sm">Payment method is required</p>
-            )}
-          </div>
-
-          {/* Payment Date */}
-          <div className="form-control w-full mt-2">
-            <label className="label text-medium mb-2 font-semibold">Payment Date</label>
-            <input
-              type="date"
-              {...register("payment_date", { required: true })}
-              className="input input-bordered w-full"
-            />
-            {errors.payment_date && (
-              <p className="text-red-500 text-sm">Payment date is required</p>
-            )}
-          </div>
-
-          {/* Receipt No (disabled, auto-generated) */}
-          <div className="form-control w-full mt-2">
-            <label className="label text-medium mb-1 font-semibold">Receipt No.</label>
-            <input
-              type="text"
-              {...register("receipt_no")}
-              title='Read Only Auto Generated'
-              className="input input-bordered w-full bg-gray-100 cursor-not-allowed"
-              placeholder='Will be automatically generated'
-              readOnly
-            />
-          </div>
-
-
-          {/* Payment Type */}
-          <div className="form-control w-full mt-2">
-            <label className="label text-medium mb-2 font-semibold">Payment Type</label>
-            <select
-              {...register("payment_type", { required: true })}
-              className="select select-bordered w-full"
-            >
-              <option value="">Select type</option>
-              <option value="Full">Full</option>
-              <option value="Partial">Partial</option>
-              <option value="Advance">Advance</option>
-            </select>
-            {errors.payment_type && (
-              <p className="text-red-500 text-sm">Payment type is required</p>
-            )}
-          </div>
+          ))}
         </FormModal>
+
       </div>
     </div>
   )

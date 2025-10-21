@@ -5,23 +5,25 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 const insertLoanPayments = async (formData) => {
   const {
     loan_id = null,
-    payer_id = null,
+    account_number = null,
     amount = null,
     payment_method = null,
     payment_date = null,
     receipt_no = null,
-    payment_type = null,
+    loan_ref_number = null,
   } = formData;
 
   const payload = {
-    loan_id: loan_id ? Number(loan_id) : null,
-    payer_id: payer_id ? Number(payer_id) : null,
-    amount: amount ? Number(amount) : null,
+    loan_id,
+    account_number,
+    amount,
     payment_method,
     payment_date,
     receipt_no,
-    payment_type,
+    loan_ref_number,
   };
+
+  
 
   const { data, error } = await supabase
     .from("loan_payments")
