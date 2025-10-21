@@ -6,7 +6,9 @@ import dayjs from "dayjs";
 // fetch hooks
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
 import { useFetchPaySched } from "../../backend/hooks/shared/useFetchPaySched";
-import { useFetchMemberDetails } from "../../backend/hooks/member/useFetchMemberDetails";
+import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // components
 import LoanScheduleCardList from "./components/LoanScheduleCardList";
@@ -16,6 +18,7 @@ import LoanScheduleCardList from "./components/LoanScheduleCardList";
 function LoanAccountDetails() {
   // ID params Grabber 
   const { loan_id } = useParams();
+
   const parsedId = Number(loan_id);
 
   // Payment Schedules
@@ -25,19 +28,39 @@ function LoanAccountDetails() {
   const loanSchedRaw = loanSchedules?.data || [];
   const total = loanSchedules?.count || 0;
 
-  // Loan Account Data
   const { data: loanAcc } = useFetchLoanAcc();
   const loanAccRaw = loanAcc?.data || [];
 
   const accountData = loanAccRaw?.find((row) => row.loan_id === parsedId);
-  const applicant_id = accountData?.applicant_id;
+  const applicant_id = accountData?.account_number;
 
-  const { data: profileData} = useFetchMemberDetails(applicant_id);
-  const fullName = profileData
-    ? `${profileData.memberInfo.f_name} ${profileData.memberInfo.m_name} ${profileData.memberInfo.l_name}`.toLowerCase()
+  const { data: members_data } = useMembers({});
+  const members = members_data?.data || [];
+
+  const matchedMember = members?.find(
+    (member) => member.account_number === applicant_id
+  );
+
+  const fullName = matchedMember
+    ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
     : "";
 
-  // console.log(profileData)
+  const { data: loanProducts } = useFetchLoanProducts();
+
+  
+  const matchedLoanProduct = loanProducts?.find(
+    (product) => product.product_id === accountData?.product_id
+  );
+
+  const loanTerm = matchedLoanProduct?.max_term_months;
+  const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
+  const TABLE_PREFIX = "LAPP_";
+
+
+  const { memberRole } = useMemberRole();
+
+  // console.log(interestRate)
+
 
   return (
     <div>
@@ -47,7 +70,7 @@ function LoanAccountDetails() {
             Loan Account Detail
           </h1>
           <div className="flex flex-row items-center gap-3">
-            <Link to={"/board/loan-accounts"} className="btn btn-neutral whitespace-nowrap">
+            <Link to={`/${memberRole}/coop-loans/loan-accounts`} className="btn btn-neutral whitespace-nowrap">
               Back
             </Link>
           </div>
@@ -64,7 +87,7 @@ function LoanAccountDetails() {
               </div>
               <div>
                 <p className="text-sm text-base-content/60">Name</p>
-                <p className="text-lg font-semibold">{fullName}</p>
+                <p className="text-lg font-semibold">{fullName || "Not Found"}</p>
               </div>
               <div>
                 <span
@@ -81,14 +104,30 @@ function LoanAccountDetails() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80">
+
               <div className="flex flex-col">
                 <span className="text-xs text-base-content/60">Principal</span>
                 <span>₱{Number(accountData.principal || 0).toLocaleString()}</span>
               </div>
               <div className="flex flex-col">
+                <span className="text-xs text-base-content/60">Total Amount Due</span>
+                <span>₱{Number(accountData.total_amount_due || 0).toLocaleString()}</span>
+              </div>
+              <div className="flex flex-col">
                 <span className="text-xs text-base-content/60">Outstanding Balance</span>
                 <span>₱{Number(accountData.outstanding_balance || 0).toLocaleString()}</span>
               </div>
+
+              <div className="flex flex-col">
+                <span className="text-xs text-base-content/60">Interest Rate</span>
+                <span>{interestRate} %</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-xs text-base-content/60">Loan Term</span>
+                <span>{loanTerm}</span>
+              </div>
+
               <div className="flex flex-col">
                 <span className="text-xs text-base-content/60">Release Date</span>
                 <span>
@@ -109,12 +148,12 @@ function LoanAccountDetails() {
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Loan ID</span>
-                <span>{accountData.loan_id}</span>
+                <span className="text-xs text-base-content/60">Loan Ref No.</span>
+                <span>{accountData.loan_ref_number}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Application ID</span>
-                <span>{accountData.application_id || "—"}</span>
+                <span className="text-xs text-base-content/60">Loan Application ID</span>
+                <span>{TABLE_PREFIX}{accountData.application_id || "—"}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-xs text-base-content/60">Approved Date</span>

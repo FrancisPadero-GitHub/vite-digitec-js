@@ -41,7 +41,7 @@ function MemberLoanApp() {
   const [statusFilter, setStatusFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
-  const TABLE_PREFIX = "LA_";
+  const TABLE_PREFIX = "LAPP_";
 
   const memberLoanApplications = loanDataRaw.filter((row) => {
     const generatedId = `${TABLE_PREFIX}${row.application_id}`;

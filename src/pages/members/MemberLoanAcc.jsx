@@ -15,7 +15,7 @@ import { LOAN_ACCOUNT_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants
 
 function MemberLoanAcc() {
   const navigate = useNavigate();
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
   const { data: loanProducts } = useFetchLoanProducts();
 
@@ -33,7 +33,7 @@ function MemberLoanAcc() {
 
   const memberLoanAccounts = loanAppRaw.filter((row) => {
 
-    const member = members?.find((m) => m.member_id === row.applicant_id);
+    const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
       ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
@@ -68,11 +68,10 @@ function MemberLoanAcc() {
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Status",
+              label: "All Status",
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "Active", value: "Active" },
                 { label: "Defaulted", value: "Defaulted" },
                 { label: "Renewed", value: "Renewed" },
@@ -83,16 +82,15 @@ function MemberLoanAcc() {
 
         <MainDataTable
           headers={[
-            "Account No.",
-            "Name",
+            "Loan Ref No.",
+            "Amount Req",
             "Principal",
+            "Interest Rate",
+            "Total Amount Due",
             "Balance",
             "Loan Type",
-            "Interest rate",
-            "Method",
-            "Term",
-            "Maturity Date",
             "Status",
+            "Release",
           ]}
           data={memberLoanAccounts}
           isLoading={isLoading}
@@ -101,17 +99,14 @@ function MemberLoanAcc() {
           total={total}
           setPage={setPage}
           renderRow={(row) => {
-            const matchedMember = members?.find(
-              (member) => member.member_id === row.applicant_id
-            );
 
             const matchedLoanProduct = loanProducts?.find(
               (product) => product.product_id === row.product_id
             );
             const loanProductName = matchedLoanProduct?.name;
             const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
-            const interestMethod = matchedLoanProduct?.interest_method;
-            const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
+
+            // const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
 
             return (
               <tr
@@ -119,23 +114,29 @@ function MemberLoanAcc() {
                 className="cursor-pointer hover:bg-base-200/50"
                 onClick={() => openModal(row)}
               >
-                 {/* Account number */}
-                <td className="text-center px-2 py-2 text-xs">
-                  {row.account_number || "ID"}
+                 {/* Loan Ref number */}
+                <td className="text-center px-2 py-2 text-xs font-medium">
+                  {row.loan_ref_number || "ID"}
                 </td>
 
-                {/* Member name */}
-                <td className="py-2 px-4">
-                  <span className="flex items-center gap-2">
-                    {matchedMember
-                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                      : "System"}
-                  </span>
-
+                {/* Amount Req */}
+                <td className="px-2 py-2 text-center font-semibold text-info">
+                  ₱ {row.amount_req?.toLocaleString() || "0"}
                 </td>
+
                 {/* Principal */}
                 <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.principal?.toLocaleString() || "0"}
+                </td>
+
+                {/* Interest Rate */}
+                <td className="px-2 py-2 text-center font-semibold text-warning">
+                  {interestRate || "0"} %
+                </td>
+
+                {/* Balance */}
+                <td className="px-2 py-2 text-center font-semibold text-success">
+                  ₱ {row.total_amount_due?.toLocaleString() || "0"}
                 </td>
 
                 {/* Balance */}
@@ -154,28 +155,6 @@ function MemberLoanAcc() {
                   )}
                 </td>
 
-                {/* Interest Rate */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  {interestRate || "0"} %
-                </td>
-
-                {/* Interest Method */}
-                <td className="px-2 py-2 text-center">
-                  {interestMethod || "Not Found"}
-                </td>
-
-                {/* Loan Term */}
-                <td className="px-2 py-2 text-center">
-                  {loanTerm || "Not Found"} Months
-                </td>
-
-                {/* Maturity Date */}
-                <td className="px-2 py-2 text-center">
-                  {row.maturity_date
-                    ? new Date(row.maturity_date).toLocaleDateString()
-                    : "Not Found"}
-                </td>
-
                 {/* Status */}
                 <td className="px-4 py-4 text-center">
                   {row.status ? (
@@ -185,6 +164,12 @@ function MemberLoanAcc() {
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
+                </td>
+
+                <td className="px-4 py-4 text-center">
+                  {row.release_date
+                    ? new Date(row.release_date).toLocaleDateString()
+                    : "Pending release"}
                 </td>
               </tr>
             );

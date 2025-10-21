@@ -62,6 +62,15 @@ function AppRoutes() {
     { path: "reports", element: <Reports /> },
   ];
 
+  const boardSharedTreasurerPages = [
+    { path: "coop-share-capital", element: <CoopShareCapital /> },
+    { path: "club-funds", element: <ClubFunds /> },
+    { path: "club-expenses", element: <ClubExpenses /> },
+  ];
+
+
+  
+
   // Role-specific routes
   const adminRoutes = [
     { index: true, element: <UserManagement /> },
@@ -70,26 +79,17 @@ function AppRoutes() {
     { path: "activity-logs", element: <ActivityLogs /> },
   ];
 
-  // TREASURER PAGES TO SHARE WITH BOARD
-  const boardSharedTreasurerPages = [
-    { path: "coop-share-capital", element: <CoopShareCapital /> },
-    { path: "club-funds", element: <ClubFunds /> },
-    { path: "club-expenses", element: <ClubExpenses /> },
-  ];
-
   const boardRoutes = [
     ...sharedRoutes,
-    ...boardSharedTreasurerPages,  // Add shared treasurer pages here
-    { path: "loan-applications", element: <LoanApplications /> },
-    { path: "loan-accounts", element: <LoanAccounts /> },
-    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
+    ...boardSharedTreasurerPages, 
+    { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },   
+    { path: "coop-loans/loan-applications", element: <LoanApplications /> },
+    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },   
   ];
 
   const treasurerRoutes = [
     ...sharedRoutes,
-    { path: "coop-share-capital", element: <CoopShareCapital /> },
-    { path: "club-funds", element: <ClubFunds /> },
-    { path: "club-expenses", element: <ClubExpenses /> },
+    ...boardSharedTreasurerPages,
     { path: "coop-loans/releases", element: <CoopLoansReleases /> },
     { path: "coop-loans/payments", element: <CoopLoansPayments /> },
   ];
@@ -98,10 +98,9 @@ function AppRoutes() {
     { index: true, element: <MemberDashboard /> },
     { path: "regular-member-club-funds", element: <MemberClubFunds /> },
     { path: "regular-member-share-capital", element: <MemberCoopShareCapital /> },
-    { path: "coop-loans/accounts", element: <MemberLoanAcc /> },
-    { path: "coop-loans/my-applications", element: <MemberLoanApp /> },
+    { path: "coop-loans/loan-accounts", element: <MemberLoanAcc /> }, 
+    { path: "coop-loans/loan-applications", element: <MemberLoanApp /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
-    { path: "regular-member-reports", element: <MemberReports /> },
     { path: "regular-member-help", element: <MemberHelp /> },
     { path: "regular-member-settings", element: <MemberSettings /> },
     { path: "profile", element: <Profile /> },

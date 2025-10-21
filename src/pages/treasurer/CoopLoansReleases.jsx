@@ -20,7 +20,7 @@ function CoopLoansReleases() {
   const {mutate: releaseLoan } = useEditLoanAcc();
 
   //  const navigate = useNavigate();
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
    const { data: loanProducts } = useFetchLoanProducts();
 
@@ -85,6 +85,7 @@ function CoopLoansReleases() {
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
+    // This might confuse you but all this modal will update is the release_date column just refer to the hook
     reset({
       loan_id: row.loan_id,
       application_id: row.application_id,
@@ -111,11 +112,6 @@ function CoopLoansReleases() {
   }
 
 
-  
-
-  if (isLoading) return <div>Loading Loan Accounts...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
-
   return (
     <div>
       <div className="mb-6 space-y-4">
@@ -128,11 +124,10 @@ function CoopLoansReleases() {
           onSearchChange={setSearchTerm}
           dropdowns={[
             {
-              label: "Status",
+              label: "All Status",
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "All", value: "" },
                 { label: "Active", value: "Active" },
                 { label: "Defaulted", value: "Defaulted" },
                 { label: "Renewed", value: "Renewed" },
@@ -157,6 +152,8 @@ function CoopLoansReleases() {
           ]}
           data={memberLoanAccounts}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}

@@ -16,15 +16,29 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 
 
-// 🧩 Dynamic Finance Items
+
+// 🧩 Dynamic Pathings Items to be shared by other roles
+
+// board and treasurer
 const financeBase = (role) => [
   { label: "Coop Share Capital", icon: AccountBalanceIcon, path: `/${role}/coop-share-capital` },
   { label: "Club Funds", icon: SavingsIcon, path: `/${role}/club-funds` },
   { label: "Club Expenses", icon: ReceiptLongIcon, path: `/${role}/club-expenses` },
 ];
+
+// board and members
+const loansBase = (role) => [
+  {
+    label: "Coop Loans",
+    icon: HandshakeIcon,
+    children: [
+      { label: "Applications", path: `/${role}/coop-loans/loan-applications` },
+      { label: "Loan Accounts", path: `/${role}/coop-loans/loan-accounts` },
+    ],
+  }
+]
 
 // 📌 Sidebar Config Based on Role
 const sidebarConfig = {
@@ -66,16 +80,11 @@ const sidebarConfig = {
     },
     {
       section: "Finance",
-      items: financeBase("board"), // ✅ shared dynamically with Treasurer
-    },
-    {
-      section: "Loans",
       items: [
-        { label: "Applications", icon: StickyNote2Icon, path: "/board/loan-applications" },
-        { label: "Accounts", icon: RequestQuoteIcon, path: "/board/loan-accounts" },
-      ],
+        ...financeBase("board"), 
+        ...loansBase("board")
+      ]
     },
-
   ],
 
   "regular-member": [
@@ -89,16 +98,10 @@ const sidebarConfig = {
     {
       section: "Finance",
       items: [
+        
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
-        {
-          label: "Coop Loans",
-          icon: HandshakeIcon,
-          children: [
-            { label: "Applications", path: "/regular-member/coop-loans/my-applications" },
-            { label: "Loan Accounts", path: "/regular-member/coop-loans/accounts" },
-          ],
-        },
+        ...loansBase("regular-member"),
       ],
     },
   ],
