@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
@@ -835,9 +834,7 @@ function LoanApplications() {
               className={`input input-bordered w-full bg-gray-100 text-gray-700 ${isCalculating ? "opacity-50" : ""}`}
             />
             {isCalculating && (
-              <span className="absolute right-3 top-10 text-primary animate-spin">
-                <AiOutlineLoading3Quarters size={20} />
-              </span>
+              <span className="loading loading-spinner loading-lg text-primary"></span>
             )}
             {errorsLoanAcc.total_amount_due && (
               <p className="text-error text-sm mt-1">Required</p>

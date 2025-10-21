@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const insertCoopContributions = async (formData) => {
   const {
@@ -29,13 +30,24 @@ const insertCoopContributions = async (formData) => {
 
 export const useAddCoopContributions = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after contribution is added successfully
 
   return useMutation({
     mutationFn: insertCoopContributions,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Successfully insert data: ", data);
       queryClient.invalidateQueries(["coop_cbu_contributions"]);
       queryClient.invalidateQueries(["rpc_totals"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Created coop share capital contribution of ₱${data.amount} for account ${data.account_number}`,
+          type: "CREATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Something went wrong: ", error.message);

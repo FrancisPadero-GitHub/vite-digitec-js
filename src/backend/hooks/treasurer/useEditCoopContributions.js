@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const updateCoopContributions = async (formData) => {
   const {
@@ -44,12 +45,24 @@ const updateCoopContributions = async (formData) => {
 // React Query mutation hook
 export const useEditCoopContributions = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after contribution is edited successfully
+
   return useMutation({
     mutationFn: updateCoopContributions,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log(" Coop contribution Updated!", data);
       queryClient.invalidateQueries(["coop_cbu_contributions"]); // to reflect the change instantly
       queryClient.invalidateQueries(["rpc_totals"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Updated coop share capital contribution details for account ${data.account_number}`,
+          type: "UPDATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Updating coop contribution failed!", error.message);

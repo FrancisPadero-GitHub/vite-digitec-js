@@ -23,7 +23,7 @@ import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
 
 
 function ClubExpenses() {
-  const { memberRole } = useMemberRole();         // used to hide button to add transaction like a treasurer kay board rani sya view view langs 
+  const { memberRole } = useMemberRole(); // used to hide button to add transaction like a treasurer kay board rani sya view view langs 
 
   // front end pagination
   const [page, setPage] = useState(1);
@@ -271,7 +271,7 @@ function ClubExpenses() {
         close={closeModal}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
-        deleteAction={() => handleDelete()}
+        deleteAction={() => handleDelete(control._formValues.transaction_id)}
       >
         {fields.map(({ label, name, type, options }) => (
           <div key={name} className="form-control w-full mt-2">

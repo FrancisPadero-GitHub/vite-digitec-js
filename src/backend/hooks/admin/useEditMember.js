@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const updateMember = async ({ member_id, account_role }) => {
   const payload = { account_role };
@@ -20,11 +21,22 @@ const updateMember = async ({ member_id, account_role }) => {
 
 export function useUpdateMember() {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after member's role is updated successfully
 
   return useMutation({
     mutationFn: updateMember,
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries(["members"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Updated role of member ${data.member_id} to ${data.account_role}`,
+          type: "DELETE"
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
   });
 }

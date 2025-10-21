@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 // Insert function
 const insertClubfunds = async (formData) => {
@@ -42,14 +43,25 @@ const insertClubfunds = async (formData) => {
 // React Query mutation hook
 export const useAddClubFunds = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after contribution is added successfully
 
   return useMutation({
     mutationFn: insertClubfunds,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("✅ Contribution added:", data);
       // Refresh the list automatically
       queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
       queryClient.invalidateQueries(["rpc_totals"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Created club fund contribution of ₱${data.amount} (${data.category}) for account ${data.account_number}`,
+          type: "CREATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("❌ Add club fund contribution failed:", error.message);

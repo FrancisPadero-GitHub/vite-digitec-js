@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const updateClubFunds = async (formData) => {
   const {
@@ -47,12 +48,24 @@ const updateClubFunds = async (formData) => {
 // React Query mutation hook
 export const useEditClubFunds = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after contribution is edited successfully
+
   return useMutation({
     mutationFn: updateClubFunds,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Contribution Updated!", data);
       queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
       queryClient.invalidateQueries(["rpc_totals"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Updated club fund contribution details for account ${data.account_number}`,
+          type: "UPDATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Updating contribution failed!", error.message);

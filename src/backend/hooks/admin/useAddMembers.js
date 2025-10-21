@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 /**
  * Helper: Pick only relevant keys from formData
@@ -153,16 +154,27 @@ const insertMember = async (formData) => {
  */
 export const useAddMember = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after member is added successfully
 
   return useMutation({
     mutationFn: insertMember,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("New member created:", data);
       queryClient.invalidateQueries(["members"]);
       queryClient.invalidateQueries(["initial_payments"]);
       queryClient.invalidateQueries(["club_funds_contributions"]);
       queryClient.invalidateQueries(["coop_cbu_contributions"]);
       queryClient.invalidateQueries(["rpc_totals"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Created new member: ${data.member.f_name} ${data.member.l_name} (${data.member.account_role})`,
+          type: "CREATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Something went wrong:", error.message);

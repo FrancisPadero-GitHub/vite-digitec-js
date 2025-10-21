@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 /**
  * Soft delete a record in a specified table
@@ -10,6 +11,8 @@ import { supabase } from "../../supabase";
  */
 
 const markAsDelete = async ({ table, column_name, id }) => {
+  if (!id) throw new Error("Invalid ID provided for deletion");
+  
   const { data, error } = await supabase
     .from(table)
     .update({ deleted_at: new Date().toISOString() })
@@ -23,13 +26,24 @@ const markAsDelete = async ({ table, column_name, id }) => {
 
 export const useDelete = (table) => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after a record is deleted successfully
 
   return useMutation({
     mutationFn: markAsDelete,
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
       queryClient.invalidateQueries([table]);
       queryClient.invalidateQueries(["rpc_totals"]);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Deleted a record from ${table}`,
+          type: "DELETE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Failed to delete", error.message);
