@@ -39,7 +39,7 @@ async function fetchPaySched({ page, limit, loanId }) {
 export function useFetchPaySched({ page = null, limit = null, loanId = null } = {}) {
   return useQuery({
     queryFn: () => fetchPaySched({ page, limit, loanId }),
-    queryKey: ["loan_payment_schedules"],
+    queryKey: ["loan_payment_schedules", loanId],
     keepPreviousData: true,
     staleTime: 1000 * 60 * 1,
   });

@@ -1,5 +1,6 @@
 import {useState} from 'react'
 import { useForm } from 'react-hook-form';
+import { Toaster, toast} from "react-hot-toast";
 // import { useNavigate } from 'react-router-dom';
 
 // fetch hooks
@@ -14,6 +15,10 @@ import { useEditLoanAcc } from '../../backend/hooks/treasurer/useEditLoanAcc';
 import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
 import BoardFormModal from '../board/modal/BoardFormModal';
+
+// colors
+import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from '../../constants/Color';
+const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
 
 
 function CoopLoansReleases() {
@@ -38,7 +43,7 @@ function CoopLoansReleases() {
 
   const memberLoanAccounts = loanAppRaw.filter((row) => {
 
-    const member = members?.find((m) => m.member_id === row.applicant_id);
+    const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
       ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
@@ -67,7 +72,7 @@ function CoopLoansReleases() {
     defaultValues: {
       loan_id: null,
       application_id: null,
-      applicant_id: null,
+      applicant_name: "",
       account_number: "",
       principal: null,
       outstanding_balance: null,
@@ -82,14 +87,22 @@ function CoopLoansReleases() {
   const openModal = (row) => {
     console.log(row)
     setModalType("edit");
+
+    const matchedMember = members?.find(
+      (member) => member.account_number === row.account_number
+    );
+    const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
+
+
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
+
     // This might confuse you but all this modal will update is the release_date column just refer to the hook
     reset({
       loan_id: row.loan_id,
       application_id: row.application_id,
-      applicant_id: row.applicant_id,
+      applicant_name: fullName,
       account_number: row.account_number,
       principal: row.principal,
       outstanding_balance: row.outstanding_balance,
@@ -102,8 +115,15 @@ function CoopLoansReleases() {
   };
 
   const onSubmit = (data) => {
-    releaseLoan(data)
-    closeModal();
+    releaseLoan(data, {
+      onSuccess: () => {
+        toast.success("Loan released succesfully!")
+        closeModal();
+      },
+      onError: () => {
+        toast.error("Something went wrong!")
+      }
+    })
   };
 
 
@@ -114,6 +134,7 @@ function CoopLoansReleases() {
 
   return (
     <div>
+      <Toaster position="bottom-left" />
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Loan Accounts</h1>
@@ -138,15 +159,12 @@ function CoopLoansReleases() {
 
         <MainDataTable
           headers={[
+            "Loan Ref No.",
             "Account No.",
             "Name",
-            "Principal",
             "Total Amount Due",
+            "Outstanding Balance",
             "Loan Type",
-            "Interest rate",
-            "Method",
-            "Term",
-            "Maturity Date",
             "Status",
             "Release"
           ]}
@@ -160,16 +178,15 @@ function CoopLoansReleases() {
           setPage={setPage}
           renderRow={(row) => {
             const matchedMember = members?.find(
-              (member) => member.member_id === row.applicant_id
+              (member) => member.account_number === row.account_number
             );
 
             const matchedLoanProduct = loanProducts?.find(
               (product) => product.product_id === row.product_id
             );
+
+            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
             const loanProductName = matchedLoanProduct?.name;
-            const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
-            const interestMethod = matchedLoanProduct?.interest_method;
-            const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
 
             return (
               <tr
@@ -177,47 +194,65 @@ function CoopLoansReleases() {
                 className="cursor-pointer hover:bg-base-200/50"
                 onClick={() => openModal(row)}
               >
-                 {/* Account number */}
-                <td className="text-center  ">
-                  {row.account_number || "ID"}
+                {/* Application ID */}
+                <td className="text-center px-2 py-2 text-xs font-medium">
+                  {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
                 </td>
-                {/* Member name */}
-                <td className="py-2">
-                  <span className="flex items-center gap-2">
-                    {matchedMember
-                      ? `${matchedMember.f_name ?? ""} ${matchedMember.m_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
-                      : "System"}
+
+                {/* Account Number */}
+                <td className="text-center px-2 py-2 text-xs font-medium">
+                  {row.account_number || "Not Found"}
+                </td>
+
+                {/* Full name + avatar */}
+                <td className="px-4 py-4">
+                  <span className="flex items-center gap-3">
+                    <div className="avatar">
+                      <div className="mask mask-circle w-10 h-10">
+                        <img
+                          src={
+                            matchedMember?.avatar_url || catGif
+                          }
+                          alt={fullName}
+                        />
+                      </div>
+                    </div>
+                    <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
                   </span>
                 </td>
-                {/* Principal */}
-                <td className="font-semibold text-success">
-                  ₱ {row.principal?.toLocaleString() || "0"}
-                </td>
+
 
                 {/* Balance */}
-                <td className="font-semibold text-success">
+                <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.outstanding_balance?.toLocaleString() || "0"}
                 </td>
-                {/* Loan Product */}
-                <td>
-                  {loanProductName || "Not Found"}
+
+                {/* total amount due */}
+                <td className="px-2 py-2 text-center font-semibold text-success">
+                  ₱ {row.total_amount_due?.toLocaleString() || "0"}
                 </td>
 
-                {/* Interest Rate */}
-                <td className="font-semibold text-success">
-                  {interestRate || "0"} %
+                {/* Product Name*/}
+                <td className="px-4 py-2 text-center">
+                  {loanProductName ? (
+                    <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
+                      {loanProductName}
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-error">Not Provided</span>
+                  )}
                 </td>
-                {/* Interest Method */}
-                <td>{interestMethod || "Not Found"}</td>
-                <td>{loanTerm || "Not Found"}</td>
 
-                {/* Maturity Date */}
-                <td>
-                  {row.maturity_date
-                    ? new Date(row.maturity_date).toLocaleDateString()
-                    : "Not Found"}
+                {/* Status */}
+                <td className="px-4 py-4 text-center">
+                  {row.status ? (
+                    <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[row.status]}`}>
+                      {row.status}
+                    </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
                 </td>
-                <td>{row.status}</td>
 
                 {/* Release Date */}
                 <td>
@@ -248,7 +283,7 @@ function CoopLoansReleases() {
               <input
                 type="text"
                 disabled
-                {...register("application_id")}
+                value={`${TABLE_PREFIX}${watch("application_id")}` }
                 className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
               />
             </div>
@@ -262,6 +297,21 @@ function CoopLoansReleases() {
                 type="text"
                 disabled
                 {...register("account_number")}
+                className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
+              />
+            </div>
+
+
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Name
+
+              </label>
+              <input
+                type="text"
+                value={watch("applicant_name")}
+                readOnly
                 className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
               />
             </div>

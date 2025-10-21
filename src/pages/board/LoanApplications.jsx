@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { Toaster } from "react-hot-toast";
+import { usePrompt } from "../shared/components/usePrompt";
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
@@ -22,11 +25,14 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 import Calculation from "../../constants/Calculation";
+import calculateLoanAndSchedule from "../../constants/calculateLoanAndSchedule";
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
+const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
 
 
 
 function LoanApplications() {
+  const { showPrompt } = usePrompt();
   const navigate = useNavigate();
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -152,6 +158,7 @@ function LoanApplications() {
   // for the total amount due input auto calculation
   const [isCalculating, setIsCalculating] = useState(false);
   const principalValue = watchLoanAcc("principal");
+  const totalAmount = watchLoanAcc("total_amount_due")
   const interestRateValue = watchLoanAcc("interest_rate");
   const loanTermValue = watchLoanAcc("loan_term");
 
@@ -161,11 +168,11 @@ function LoanApplications() {
 
     setIsCalculating(true);
     const timer = setTimeout(() => {
-      const { totalPayable } = Calculation({
-        interestRate: Number(interestRateValue),
-        principal: Number(principalValue),
-        termMonths: Number(loanTermValue)
-      });
+    const { totalPayable } = calculateLoanAndSchedule({
+      interestRate: Number(interestRateValue),
+      principal: Number(principalValue),
+      termMonths: Number(loanTermValue)
+    });
 
       setLoanAccValue("total_amount_due", totalPayable);
       setIsCalculating(false);
@@ -217,7 +224,7 @@ function LoanApplications() {
     });
 
     setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))
-    console.log(loanAcc?.some((loan) => loan.application_id === selectedRow.application_id))
+    // console.log(loanAcc?.some((loan) => loan.application_id === selectedRow.application_id))
     setModalType("edit");
   };
 
@@ -275,23 +282,12 @@ function LoanApplications() {
       const interestMethod = matchedLoanProduct?.interest_method ?? "";
       const loanTerm = Number(matchedLoanProduct?.max_term_months);
 
-      // for the total amount due input auto calculation
-      const {
-        // totalInterest,
-        totalPayable,
-        // monthlyPayment,
-        // monthlyPrincipal,
-        // monthlyInterest
-      } = Calculation(interestRate, data.amount, loanTerm);
-
-      // console.log("Loan Term", loanTerm)
-
       resetLoanAcc({
         ...data,
         loan_id: null,
         product_id: matchedLoanProduct?.product_id ?? null,
         loan_ref_number: generateAccountNumber(data.application_id),
-        total_amount_due: totalPayable,
+        total_amount_due: totalAmount,
         interest_rate: interestRate,
         interest_method: interestMethod,
         loan_term: loanTerm,
@@ -318,8 +314,13 @@ function LoanApplications() {
       setSelectedApplicationId(data.application_id);
       setShowLoanAccModal(true);
     } else {
-      mutateEdit(data);
-      console.log("EDITED DATA", data )
+      mutateEdit(data,
+        {
+          onSuccess: () => {
+            showPrompt("success", "Updated Loan Application")
+          }
+        });
+      // console.log("EDITED DATA", data )
       closeModal();
     }
   };
@@ -329,24 +330,34 @@ function LoanApplications() {
   // This is the last one to be submitted if the status is for approval
   const onSubmitLoanAcc = (loanAccData) => {
     // 1. Create the loan account
-    addLoanAcc(loanAccData); // this is the first mutation add on success here then 
+    addLoanAcc(loanAccData,
+      {
+        onSuccess: () => {
+          showPrompt("success", "Loan Application Approved!",)
+        }
+      }
+    ); // this is the first mutation add on success here then 
 
     // 2. Mutate the original application too (if it's pending)
     if (pendingAppData) {
-      mutateEdit(pendingAppData);
-      setPendingAppData(null); // clear it after use
+      mutateEdit(pendingAppData,
+        {
+          onSuccess: () => {
+            showPrompt("success", "Updated Loan Application")
+            setPendingAppData(null); // clear it after use
+            setShowLoanAccModal(false);
+            closeModal();
+            setTimeout(() => {
+              navigate("/board/coop-loans/loan-accounts");
+            }, 3000);
+          }
+        });
     }
-
-    // 3. Finalize UI
-
-    setShowLoanAccModal(false);
-    closeModal();
-    navigate("/board/coop-loans/loan-accounts");
-    // console.log("FINAL DATA", loanAccData )
   };
 
   return (
     <div>
+      <Toaster position="bottom-left"/>
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Members Loan Applications</h1>
@@ -442,21 +453,21 @@ function LoanApplications() {
                 className="cursor-pointer hover:bg-base-200/50"
                 onClick={() => openEditModal(row)}
               >
+                {/* Application ID */}
                 <td className="text-center px-2 py-2 text-xs font-medium">
                   {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
                 </td>
+                {/* Account Number */}
                 <td className="text-center px-2 py-2 text-xs font-medium">
                   {row.account_number || "Not Found"}
                 </td>
-
+                {/* Full name + avatar */}
                 <td className="px-4 py-4">
                     <span className="flex items-center gap-3">
                       <div className="avatar">
                         <div className="mask mask-circle w-10 h-10">
                           <img
-                            src={
-                              matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
-                            }
+                            src={matchedMember?.avatar_url || catGif}
                             alt={fullName}
                           />
                         </div>
@@ -478,12 +489,15 @@ function LoanApplications() {
 
                 {/* Amount */}
                 <td className="font-semibold text-success px-4 py-2 text-center">₱ {row.amount?.toLocaleString() || "0"}</td>
+                 {/* Loan term */}
                 <td className="px-4 py-2 text-center">{loanTerm || "Not Found"} Months</td>
+                 {/* Application Date */}
                 <td className="px-4 py-2 text-center">
                   {row.application_date
                     ? new Date(row.application_date).toLocaleDateString()
                     : "Not Found"}
                 </td>
+                {/* Status */}
                 <td className="px-4 py-4 text-center">
                   {row.status ? (
                     <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[row.status]}`}>
@@ -834,7 +848,9 @@ function LoanApplications() {
               className={`input input-bordered w-full bg-gray-100 text-gray-700 ${isCalculating ? "opacity-50" : ""}`}
             />
             {isCalculating && (
-              <span className="loading loading-spinner loading-lg text-primary"></span>
+              <span className="absolute right-3 top-10 text-primary animate-spin">
+                <AiOutlineLoading3Quarters size={20} />
+              </span>
             )}
             {errorsLoanAcc.total_amount_due && (
               <p className="text-error text-sm mt-1">Required</p>

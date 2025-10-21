@@ -1,6 +1,6 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import generateSchedule from "../../../constants/GenPaymentSchedule";
+import calculateLoanAndSchedule from "../../../constants/calculateLoanAndSchedule";
 
 const addLoanAcc = async (formData) => {
   const {
@@ -62,30 +62,29 @@ export const useAddLoanAcc = () => {
       // console.log("Form data", formData)
 
       // Generate payment schedule after loan is successfully created
-      const schedules = generateSchedule({
+      const { schedule } = calculateLoanAndSchedule({
         loanId: loan.loan_id,
         principal: formData.principal,
         interestRate: formData.interest_rate,
         termMonths: formData.loan_term,
         startDate: loan.approved_date,
+        generateSchedule: true,
       });
 
-      // console.log("Generated schedules after loan insert:", schedules);
+      console.log("Generated schedules after loan insert:", schedule);
 
-      // to make sure that schedules does indeed generate schedules otherwise return an error
-      
-      if (schedules.length > 0) {
+      if (schedule.length > 0) {
         const { error: scheduleError } = await supabase
           .from("loan_payment_schedules")
-          .insert(schedules);
+          .insert(schedule);
 
         if (scheduleError) {
-          console.error(
-            "Failed to insert payment schedules:",
-            scheduleError.message
-          );
+          console.error("Failed to insert payment schedules:", scheduleError.message);
+        } else {
+          console.log("Successfully inserted payment schedules into DB.");
         }
       }
+
 
       queryClient.invalidateQueries(["loan_accounts"]);
       queryClient.invalidateQueries(["loan_payment_schedules"]);
