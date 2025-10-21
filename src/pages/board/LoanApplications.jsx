@@ -162,11 +162,11 @@ function LoanApplications() {
 
     setIsCalculating(true);
     const timer = setTimeout(() => {
-      const { totalPayable } = Calculation(
-        Number(interestRateValue),
-        Number(principalValue),
-        Number(loanTermValue)
-      );
+      const { totalPayable } = Calculation({
+        interestRate: Number(interestRateValue),
+        principal: Number(principalValue),
+        termMonths: Number(loanTermValue)
+      });
 
       setLoanAccValue("total_amount_due", totalPayable);
       setIsCalculating(false);
@@ -342,7 +342,7 @@ function LoanApplications() {
 
     setShowLoanAccModal(false);
     closeModal();
-    navigate("/board/loan-accounts");
+    navigate("/board/coop-loans/loan-accounts");
     // console.log("FINAL DATA", loanAccData )
   };
 
@@ -695,6 +695,7 @@ function LoanApplications() {
           }
           setShowLoanAccModal(false);
         }}
+        status={isCalculating}
         onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)}
       >
 

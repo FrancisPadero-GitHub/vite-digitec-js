@@ -1,51 +1,60 @@
-import React from "react";
+// constants/Calculation.js
 
 /**
- * Calculates loan details using flat interest.
+ * Flat Interest Rate Calculation (Simple Interest - Flat per Loan Term)
  *
- * @param {number} interest - Annual interest rate in percent (e.g. 12 for 12%).
- * @param {number} principal - Total principal amount.
- * @param {number} term - Loan term in months.
- * @returns {object} - { totalInterest, totalPayable, monthlyPayment, monthlyInterest, monthlyPrincipal }
+ * This version assumes the interest rate applies to the entire loan term,
+ * not annualized. Ideal for cooperatives or microfinance setups
+ * where a product defines “6% for 6 months” instead of “6% per year”.
+ *
+ * @param {Object} params
+ * @param {number} params.interestRate - Interest rate in percent for the full term (e.g., 6 or 12)
+ * @param {number} params.principal - The principal amount (loaned amount)
+ * @param {number} params.termMonths - Loan term in months
+ *
+ * @returns {Object} {
+ *  totalInterest: number,
+ *  totalPayable: number,
+ *  monthlyPayment: number,
+ *  monthlyPrincipal: number,
+ *  monthlyInterest: number
+ * }
  */
-function Calculation(interest, principal, term) {
-  const p = Number(principal);
-  const annualRate = Number(interest) / 100;
-  const months = Number(term);
 
-  if (isNaN(p) || isNaN(annualRate) || isNaN(months) || months <= 0) {
-    console.error("Invalid calculation inputs.");
+export default function Calculation({ interestRate, principal, termMonths }) {
+  // 1. Input Validation
+  if (!interestRate || !principal || !termMonths) {
     return {
       totalInterest: 0,
       totalPayable: 0,
       monthlyPayment: 0,
-      monthlyInterest: 0,
       monthlyPrincipal: 0,
+      monthlyInterest: 0,
     };
   }
 
-  // Convert annual interest rate to monthly interest rate for flat interest
-  const monthlyInterestRate = annualRate / 12;
+  // 2. Convert rate to decimal
+  const rate = interestRate / 100;
 
-  // Total interest = principal × annualRate × (months / 12)
-  const totalInterest = p * annualRate * (months / 12);
+  // 3. Flat Interest — applied to full term (no division by 12)
+  const totalInterest = principal * rate;
 
-  // Total payable = principal + total interest
-  const totalPayable = p + totalInterest;
+  // 4. Totals
+  const totalPayable = principal + totalInterest;
 
-  // Monthly values for flat interest
-  const monthlyPrincipal = p / months;
-  const monthlyInterest = totalInterest / months;
+  // 5. Monthly breakdown (flat, equal each month)
+  const monthlyPrincipal = principal / termMonths;
+  const monthlyInterest = totalInterest / termMonths;
   const monthlyPayment = monthlyPrincipal + monthlyInterest;
 
+  // 6. Round values for UI
+  const round = (num) => Number(num.toFixed(2));
+
   return {
-    totalInterest: parseFloat(totalInterest.toFixed(2)),
-    totalPayable: parseFloat(totalPayable.toFixed(2)),
-    monthlyInterestRate: parseFloat(monthlyInterestRate.toFixed(2)),
-    monthlyPayment: parseFloat(monthlyPayment.toFixed(2)),
-    monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(2)),
-    monthlyInterest: parseFloat(monthlyInterest.toFixed(2)),
+    totalInterest: round(totalInterest),
+    totalPayable: round(totalPayable),
+    monthlyPayment: round(monthlyPayment),
+    monthlyPrincipal: round(monthlyPrincipal),
+    monthlyInterest: round(monthlyInterest),
   };
 }
-
-export default Calculation;

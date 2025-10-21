@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import { useState} from 'react'
 import { useNavigate } from 'react-router-dom';
 
 // fetch hooks
@@ -13,8 +13,22 @@ import FilterToolbar from '../shared/components/FilterToolbar';
 // constants
 import { LOAN_ACCOUNT_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
+// Restriction
+import { useLoanRestriction } from "../shared/components/useRestriction";
+
+/**
+ * if tenure is under 1 year                (DISABLES ACCESS TO UI)
+ * if age is under 18 years                 (DISABLES ACCESS TO UI)
+ * if myShares is less than or equals 5000  (DISABLES ACCESS TO UI)
+ * 
+ * PS: TO CONFIGURE THIS PAGE THIS CONDITIONS MUST BE MET FIRST
+ */
+
+
 function MemberLoanAcc() {
   const navigate = useNavigate();
+  const { hasRestriction } = useLoanRestriction();
+
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
   const { data: loanProducts } = useFetchLoanProducts();
@@ -53,8 +67,19 @@ function MemberLoanAcc() {
   }
 
 
-  if (isLoading) return <div>Loading Loan Accounts...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
+
+  if (hasRestriction) {
+    return (
+      <div className="p-6 text-center bg-red-50 rounded-xl border border-red-200">
+        <h2 className="text-xl font-semibold text-red-600">
+          You are not eligible for loan applications
+        </h2>
+        <p className="text-gray-700 mt-2">
+          Please contact the administrator or board members for assistance.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -94,6 +119,8 @@ function MemberLoanAcc() {
           ]}
           data={memberLoanAccounts}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           page={page}
           limit={limit}
           total={total}

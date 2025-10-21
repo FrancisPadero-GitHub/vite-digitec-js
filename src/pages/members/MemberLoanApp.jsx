@@ -1,6 +1,7 @@
 import { useState, useEffect} from "react";
 import { useForm } from "react-hook-form";
-import {Toaster, toast} from "react-hot-toast"
+// import { useNavigate } from "react-router-dom";
+import { Toaster, toast } from "react-hot-toast"
 
 // fetch hooks
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
@@ -17,21 +18,43 @@ import MembersFormModal from "./modal/MembersFormModal";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
+// component hook
+import { usePrompt } from "../shared/components/usePrompt";
+
 // constants
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 
+// Restriction
+import { useLoanRestriction } from "../shared/components/useRestriction";
+
+/**
+ * if loanAppsNo is more than 1 (ONLY DISABLES BUTTON) 
+ * if loanAccFind returns true  (ONLY DISABLES BUTTON) 
+ * 
+ * if tenure is under 1 year                (DISABLES ACCESS TO UI)
+ * if age is under 18 years                 (DISABLES ACCESS TO UI)
+ * if myShares is less than or equals 5000  (DISABLES ACCESS TO UI)
+ * 
+ * PS: TO CONFIGURE THIS PAGE THIS CONDITIONS MUST BE MET FIRST
+ */
 
 function MemberLoanApp() {
+  // const navigate = useNavigate();
+  const { hasRestriction } = useLoanRestriction();
   const { data: loanProducts } = useFetchLoanProducts();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
-  const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({ page, limit, useLoggedInMember: true});
-  const loanDataRaw = memberLoanAppData?.data || [];
-  const total = loanDataRaw?.count || 0;
+  const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ page, limit, useLoggedInMember: true});
+  const loanAppRaw = memberLoanAppRaw?.data || [];
+
+
+  const { showPrompt } = usePrompt();
+
+  const total = loanAppRaw?.count || 0;
 
   const { data: loanAccRaw } = useFetchLoanAcc({ page, limit, useLoggedInMember: true });
   const loanAcc = loanAccRaw?.data || [];
@@ -43,7 +66,7 @@ function MemberLoanApp() {
   const [monthFilter, setMonthFilter] = useState("");
   const TABLE_PREFIX = "LAPP_";
 
-  const memberLoanApplications = loanDataRaw.filter((row) => {
+  const memberLoanApplications = loanAppRaw.filter((row) => {
     const generatedId = `${TABLE_PREFIX}${row.application_id}`;
 
     const matchesSearch =
@@ -82,6 +105,7 @@ function MemberLoanApp() {
     amount: "",
     purpose: "",
     term_months: "",
+    status: "",
     application_date: today,
   }
 
@@ -104,12 +128,28 @@ function MemberLoanApp() {
      * Grab the application_id in loan application then checks it if it exists on loan accounts
      * used to conditionally render disabled inputs and selects and status on form modal
      */
-    const [loanStatus, setLoanStatus] = useState(false);
+  const [loanStatus, setLoanStatus] = useState(false);
 
   // Modal Handlers
+
   const openAddModal = () => {
-    reset(defaultValues);
-    setModalType("add");
+    // for the restriction of the button
+    const loanAppStatus = loanAppRaw.some(
+      (app) => app.status === "Pending"
+    ); 
+    const loanAccFind = loanAcc?.some(
+      (loan) => loan.status === "Active" || loan.status === "Defaulted"
+    );
+
+    if (loanAppStatus) {
+      showPrompt("info", "You already have pending application")
+    } else if (loanAccFind) {
+      showPrompt("info", "Please settle your ongoing loans first")
+      // navigate("/regular-member/coop-loans/loan-accounts")
+    } else {
+      reset(defaultValues);
+      setModalType("add");
+    }
   };
 
   const openEditModal = (row) => {
@@ -124,7 +164,18 @@ function MemberLoanApp() {
       application_date: row.application_date || today,
       status: row.status || "Pending",
     });
-    setLoanStatus(loanAcc?.some((loan) => loan.application_id === watch("application_id")))     // returns true or false
+
+    // returns true or false if the application has already approved and existing in loan accounts
+    // setLoanStatus(loanAcc?.some(
+    //   (loan) => loan.application_id === watch("application_id")))     
+    
+    // to disable the form if the app is already Denied not being able to update or delete
+    // setLoanStatus(row.status === "Denied" || row.status === "Approved")
+
+    const appFound = loanAcc?.some((loan) => loan.application_id === watch("application_id"))
+    
+    if (row.status === "Denied" || row.status === "Approved" || appFound) setLoanStatus(true)
+
     setModalType("edit");
   };
 
@@ -193,7 +244,6 @@ function MemberLoanApp() {
       name: "loan_product",
       type: "select",
       required: true,
-      disabled: loanStatus,
       dynamicOptions: loanProducts?.map((p) => ({
         label: p.name,
         value: p.name,
@@ -218,7 +268,6 @@ function MemberLoanApp() {
       name: "term_months",
       type: "select",
       required: true,
-      disabled: loanStatus,
       dynamicOptions: selectedProduct
         ? [{ label: `${selectedProduct.max_term_months} months`, value: selectedProduct.max_term_months }]
         : [],
@@ -228,17 +277,16 @@ function MemberLoanApp() {
       name: "application_date",
       type: "date",
       required: true,
-      disabled: loanStatus,
     },
     {
       label: "Purpose",
       name: "purpose",
       type: "textarea",
       required: true,
-      disabled: loanStatus,
       placeholder: "Enter a very persuasive reason...",
     },
   ];
+  
   // sets the value of the term_months if a loan product is selected
   useEffect(() => {
     if (selectedProduct) {
@@ -251,6 +299,19 @@ function MemberLoanApp() {
     }
   }, [selectedProduct, setValue]);
 
+
+  if (hasRestriction) {
+    return (
+      <div className="p-6 text-center bg-red-50 rounded-xl border border-red-200">
+        <h2 className="text-xl font-semibold text-red-600">
+          You are not eligible for loan applications
+        </h2>
+        <p className="text-gray-700 mt-2">
+          Please contact the administrator or board members for assistance.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -267,7 +328,6 @@ function MemberLoanApp() {
             Apply For A Loan
           </button>
         </div>
-
         <FilterToolbar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -281,7 +341,7 @@ function MemberLoanApp() {
                 { label: "On Review", value: "On Review" },
                 { label: "Approved", value: "Approved" },
                 { label: "Denied", value: "Denied" },
-                
+      
               ],
             },
             {
@@ -289,7 +349,6 @@ function MemberLoanApp() {
               value: yearFilter,
               onChange: setYearFilter,
               options: [
-
                 { label: "2025", value: "2025" },
                 { label: "2024", value: "2024" },
                 { label: "2023", value: "2023" },
@@ -316,7 +375,6 @@ function MemberLoanApp() {
             },
           ]}
         />
-
         <MainDataTable
           headers={[
             "Ref No.",
@@ -359,7 +417,7 @@ function MemberLoanApp() {
                 <td className="font-semibold text-success text-center">
                   ₱ {row.amount?.toLocaleString() || "0"}
                 </td>
-                
+      
                 <td className="text-center">{loanTerm  || "Not Found"} Months</td>
                 <td className="text-center">
                   {row.application_date
@@ -379,7 +437,6 @@ function MemberLoanApp() {
             );
           }}
         />
-
         <MembersFormModal
           title={"Loan Application"}
           open={modalType !== null}
@@ -396,7 +453,6 @@ function MemberLoanApp() {
               <label className="label mb-1">
                 <span className="label-text font-medium text-gray-700">{field.label}</span>
               </label>
-
               {field.type === "select" && (
                 <select
                   {...register(field.name, { required: field.required })}
@@ -410,7 +466,6 @@ function MemberLoanApp() {
                   ))}
                 </select>
               )}
-
               {field.type === "number" && (
                 <input
                   type="number"
@@ -425,7 +480,6 @@ function MemberLoanApp() {
                     }`}
                 />
               )}
-
               {field.type === "textarea" && (
                 <textarea
                   {...register(field.name, { required: field.required })}
@@ -435,7 +489,6 @@ function MemberLoanApp() {
                   className="textarea textarea-bordered w-full"
                 />
               )}
-
               {field.type === "date" && (
                 <input
                     type="date"
@@ -444,7 +497,6 @@ function MemberLoanApp() {
                   className="input input-bordered w-full"
                 />
               )}
-
               {errors[field.name] && (
                 <p className="text-error text-sm mt-1">
                   {field.name === "amount" ? "Invalid amount range" : "Required"}
@@ -452,7 +504,6 @@ function MemberLoanApp() {
               )}
             </div>
           ))}
-
         </MembersFormModal>
       </div>
     </div>

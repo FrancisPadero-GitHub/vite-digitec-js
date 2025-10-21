@@ -2,6 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useFetchMemberId } from "../shared/useFetchMemberId";
 import { supabase } from "../../supabase.js";
 
+// get the profile of the logged in user 
+// returns only a single data
+
 async function fetchProfile(memberId) {
   const { data, error } = await supabase
     .from("members")
