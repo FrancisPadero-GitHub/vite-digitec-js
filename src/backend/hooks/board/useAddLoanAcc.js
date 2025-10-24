@@ -74,17 +74,25 @@ export const useAddLoanAcc = () => {
       console.log("Generated schedules after loan insert:", schedule);
 
       if (schedule.length > 0) {
+        // Attach loan_ref_number to each schedule entry
+        const scheduleWithRef = schedule.map((item) => ({
+          ...item,
+          loan_ref_number: formData.loan_ref_number, // use from the created loan
+        }));
+
         const { error: scheduleError } = await supabase
           .from("loan_payment_schedules")
-          .insert(schedule);
+          .insert(scheduleWithRef);
 
         if (scheduleError) {
-          console.error("Failed to insert payment schedules:", scheduleError.message);
+          console.error(
+            "Failed to insert payment schedules:",
+            scheduleError.message
+          );
         } else {
           console.log("Successfully inserted payment schedules into DB.");
         }
       }
-
 
       queryClient.invalidateQueries(["loan_accounts"]);
       queryClient.invalidateQueries(["loan_payment_schedules"]);

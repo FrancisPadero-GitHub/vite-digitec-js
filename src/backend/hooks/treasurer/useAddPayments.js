@@ -6,7 +6,7 @@ const insertLoanPayments = async (formData) => {
   const {
     loan_id = null,
     account_number = null,
-    amount = null,
+    total_amount = null,
     payment_method = null,
     payment_date = null,
     receipt_no = null,
@@ -16,7 +16,7 @@ const insertLoanPayments = async (formData) => {
   const payload = {
     loan_id,
     account_number,
-    amount,
+    total_amount,
     payment_method,
     payment_date,
     receipt_no,

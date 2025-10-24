@@ -40,7 +40,6 @@ function CoopLoansPayments() {
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState(""); // for the search bar
-  const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
@@ -61,8 +60,7 @@ function CoopLoansPayments() {
       row.payment_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
 
-    const matchesCategory =
-      categoryFilter === "" || row.payment_type === categoryFilter;
+
 
 
     const matchesPaymentMethod =
@@ -74,7 +72,7 @@ function CoopLoansPayments() {
     const matchesMonth =
       monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
-    return matchesSearch && matchesCategory && matchesYear && matchesMonth && matchesPaymentMethod;
+    return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod;
   });
 
   const { mutate: mutateDelete } = useDelete('loan_payments');
@@ -89,10 +87,10 @@ function CoopLoansPayments() {
       loan_ref_number:  "", // or Account_number
       account_number: "",
       member_id: null,
-      amount: "",
+      total_amount: "",
       payment_method: "",
       payment_date: today,
-      receipt_no: "",
+      // receipt_no: "",
       payment_type: "",
     }
   const {
@@ -115,21 +113,21 @@ function CoopLoansPayments() {
    */
 
   // Watch the dependencies
-  const payerId = watch("account_number");
-  const loanId = watch("loan_ref_number");
-  const paymentDate = watch("payment_date");
+  // const payerId = watch("account_number");
+  // const loanId = watch("loan_ref_number");
+  // const paymentDate = watch("payment_date");
 
   // Compute receipt_no whenever dependencies change
-  useMemo(() => {
-    if (loanId && payerId && paymentDate) {
-      setValue(
-        "receipt_no",
-        `${loanId}-P${payerId}-D${dayjs(paymentDate).format("YYYYMMDD")}`
-      );
-    } else {
-      setValue("receipt_no", "");
-    }
-  }, [loanId, payerId, paymentDate, setValue]);
+  // useMemo(() => {
+  //   if (loanId && payerId && paymentDate) {
+  //     setValue(
+  //       "receipt_no",
+  //       `${loanId}-P${payerId}-D${dayjs(paymentDate).format("YYYYMMDD")}`
+  //     );
+  //   } else {
+  //     setValue("receipt_no", "");
+  //   }
+  // }, [loanId, payerId, paymentDate, setValue]);
 
 
 
@@ -167,7 +165,12 @@ function CoopLoansPayments() {
         toast.error("Something went wrong ")
       }
     })
-    // console.log("TEST:", data);
+
+    /**
+     * Scans the payment schedule 
+     * then structure the total_amount that fits to (fees -> interest -> principal )
+     */
+    console.log("TEST:", data);
   }
 
 
@@ -210,7 +213,7 @@ function CoopLoansPayments() {
   const fields = [
     {
       label: "Amount",
-      name: "amount",
+      name: "total_amount",
       type: "number",
       autoComplete: "off",
     },
@@ -255,15 +258,6 @@ function CoopLoansPayments() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           dropdowns={[
-            {
-              label: "All Category",
-              value: categoryFilter,
-              onChange: setCategoryFilter,
-              options: [
-                { label: "Full", value: "Full" },
-                { label: "Partial", value: "Partial" }
-              ],
-            },
             {
               label: "All Method",
               value: paymentMethodFilter,
@@ -311,7 +305,7 @@ function CoopLoansPayments() {
         />
 
         <MainDataTable 
-          headers={["Ref No.", "Loan ID", "Name", "Amount", "Payment Method", "Date", "Receipt No"]}
+          headers={["Payment Ref.", "Loan Ref No.", "Name", "Amount", "Payment Method", "Date"]}
           data={loanPayments}
           isLoading={isLoading}
           isError={isError}
@@ -335,7 +329,7 @@ function CoopLoansPayments() {
                 <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.payment_id}</td>
                 
                 {/* Loan ID */}
-                <td className="px-4 py-2 text-center">{row?.loan_id || "Not Found"}</td>
+                <td className="px-4 py-2 text-center">{row?.loan_ref_number || "Not Found"}</td>
                  
                  {/* Name */}
                 <td className="px-4 py-4">
@@ -345,7 +339,7 @@ function CoopLoansPayments() {
                       <div className="mask mask-circle w-10 h-10">
                         <img
                           src={
-                            matchedMember?.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                            matchedMember?.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember?.id || matchedMember?.l_name}`
                           }
                           alt={fullName}
                         />
@@ -356,7 +350,7 @@ function CoopLoansPayments() {
                 </td>
                 {/* Amount */}
                 <td className="px-4 py-2 font-semibold text-success text-center">
-                  ₱ {row?.amount?.toLocaleString() || "0"}
+                  ₱ {row?.total_amount?.toLocaleString() || "0"}
                 </td>
                 {/* Method */}
                 <td className="px-4 py-2 text-center">
@@ -370,9 +364,7 @@ function CoopLoansPayments() {
                 </td>
                 {/* Date */}
                 <td className="px-4 py-2 text-center">{row?.payment_date}</td>
-                {/* Row */}
-                <td className="px-4 py-2 text-center">{row?.receipt_no}</td>
-                
+    
               </tr>
             )}}
         />
@@ -512,9 +504,9 @@ function CoopLoansPayments() {
                 <span className="label text-sm font-semibold mb-2">{label}</span>
               </label>
 
-              {name === "amount" ? (
+              {name === "total_amount" ? (
                 <Controller
-                  name="amount"
+                  name="total_amount"
                   control={control}
                   rules={{
                     required: true,
@@ -524,7 +516,7 @@ function CoopLoansPayments() {
                   render={({ field, fieldState: { error } }) => (
                     <>
                       <input
-                        id="amount"
+                        id="total_amount"
                         type="number"
                         autoComplete={autoComplete}
                         value={field.value}
