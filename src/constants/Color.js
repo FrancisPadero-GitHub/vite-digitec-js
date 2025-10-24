@@ -97,5 +97,5 @@ export const ROLE_COLORS = {
   "board": "badge-accent",
   "regular-member": "badge-primary",
   "associate-member": "badge-secondary",
-  "Admin": "badge-error",
+  "admin": "badge-neutral",
 };

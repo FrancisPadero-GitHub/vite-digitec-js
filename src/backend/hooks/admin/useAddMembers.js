@@ -109,7 +109,7 @@ const insertMember = async (formData) => {
   // --- 4. Insert initial payment ---
   const newPayment = await insertTable("initial_payments", {
     ...payment,
-    member_id: newMember.member_id,
+    account_number: newMember.account_number,
   });
 
   // --- 5. Insert club funds contribution ---
@@ -124,7 +124,7 @@ const insertMember = async (formData) => {
   };
   const newClubFunds = await insertTable("club_funds_contributions", {
     ...clubFunds,
-    member_id: newMember.member_id,
+    account_number: newMember.account_number,
   });
 
   // --- 6. Insert coop contribution ---
@@ -138,7 +138,7 @@ const insertMember = async (formData) => {
   };
   const newCoop = await insertTable("coop_cbu_contributions", {
     ...coop,
-    member_id: newMember.member_id,
+    account_number: newMember.account_number,
   });
 
   return {

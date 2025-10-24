@@ -180,9 +180,9 @@ function UserManagement() {
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "Active", value: "active" },
-                { label: "Inactive", value: "inactive" },
-                { label: "Revoked", value: "revoked" },
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+                { label: "Revoked", value: "Revoked" },
               ],
             },
           ]}
@@ -201,8 +201,13 @@ function UserManagement() {
           renderRow={(row) => {
 
             // Calculte the years months and days since joined
-            const joined = new Date(row.joined_date);
-            const { years, months, days } = getYearsMonthsDaysDifference(joined);
+            let years = 0, months = 0, days = 0;
+            if (row.joined_date) {
+              const joined = new Date(row.joined_date);
+              if (!isNaN(joined)) {
+                ({ years, months, days } = getYearsMonthsDaysDifference(joined));
+              }
+            }
 
             return (
               <tr
@@ -216,8 +221,8 @@ function UserManagement() {
                 </td>
 
                 {/* Name and avatar */}
-                <td className="px-4 py-4">
-                  <div className="flex items-center gap-3">
+                <td className="px-4 py-4 align-middle">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="avatar shrink-0">
                       <div className="mask mask-circle w-10 h-10">
                         <img
@@ -227,12 +232,20 @@ function UserManagement() {
                       </div>
                     </div>
 
-                    <div className="text-left">
-                      <div className="font-bold">{row.displayName}</div>
-                      <div className="text-sm text-gray-500">{row.email || "No email"}</div>
+                    <div className="text-left min-w-0">
+                      {/* Display name with tooltip */}
+                      <div className="font-bold truncate max-w-[150px]" title={row.displayName}>
+                        {row.displayName}
+                      </div>
+
+                      {/* Email with tooltip */}
+                      <div className="text-sm text-gray-500 truncate max-w-[150px]" title={row.email || "No email"}>
+                        {row.email || "No email"}
+                      </div>
                     </div>
                   </div>
                 </td>
+                
                 {/* Account Role */}
                 <td className="px-4 py-2 text-center font-bold">
                   {row.role ? (
@@ -246,29 +259,28 @@ function UserManagement() {
                   )}
                 </td>
 
+                {/* To sort out later on */}
                 {/* Joined date */}
-                <td className="px-4 py-2 text-center" >
-                  {row.joined_date}
-                </td>
+                  <td className="px-4 py-2 text-center">
+                    {row.joined_date ? row.joined_date : <span className="text-gray-400 italic">No date</span>}
+                  </td>
 
-                {/* Membership years */}
-                <td className="px-4 py-2 text-center">
-                  {(years !== 0 || months !== 0 || days !== 0)
-                    ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
-                    : ""}
-                </td>
-
-
+                  {/* Membership years */}
+                  <td className="px-4 py-2 text-center">
+                    {(years || months || days)
+                      ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
+                      : <span className="text-gray-400 italic">Not available</span>}
+                  </td>
 
                 {/* Account Status */}
                 <td className="px-4 py-2 text-center">
                   {row.status ? (
                     <span
-                      className={`badge font-semibold ${row.status === "active"
+                      className={`badge font-semibold ${row.status === "Active"
                         ? "badge-success"
-                        : row.status === "inactive"
+                        : row.status === "Inactive"
                           ? "badge-ghost text-gray-500"
-                          : row.status === "revoked"
+                          : row.status === "Revoked"
                             ? "badge-error"
                             : "badge-soft"
                         }`}
@@ -280,9 +292,12 @@ function UserManagement() {
                   )}
                 </td>
 
+                {/* To sort out later on */}
                 {/* Membership Status */}
                 <td className="px-4 py-2 text-center">
-                  {row.membership_status}
+                  {row.membership_status
+                    ? row.membership_status
+                    : <span className="text-gray-400 italic">No status</span>}
                 </td>
 
               </tr>

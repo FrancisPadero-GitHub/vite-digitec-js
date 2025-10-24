@@ -11,12 +11,25 @@ function ViewMemberModal({ open, close, member, children, onSave, isSaving }) {
       >
         {/* Header */}
         <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-bold flex-1">User Information</h2>
           <img
             src={member?.avatar_url || placeholderAvatar}
             alt="Avatar"
-            className="w-14 h-14 rounded-full object-cover border-3 border-primary"
+            className="w-16 h-16 rounded-full object-cover border-4 border-primary"
           />
+
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold flex items-center gap-2 truncate">
+              {member?.displayName || "Unnamed Member"}
+              {member?.account_number && (
+                <span className="text-sm bg-base-200 text-gray-500 font-mono px-2 py-0.5 rounded">
+                  {member.account_number}
+                </span>
+              )}
+            </h2>
+            <p className="text-gray-500 text-sm truncate" title={member?.email || "No email"}>
+              {member?.email || "No email"}
+            </p>
+          </div>
         </div>
 
         {/* Body */}
