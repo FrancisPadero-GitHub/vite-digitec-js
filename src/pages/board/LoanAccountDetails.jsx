@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 
 // fetch hooks
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
 import { useFetchPaySched } from "../../backend/hooks/shared/useFetchPaySched";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
@@ -31,7 +32,20 @@ function LoanAccountDetails() {
   const { data: loanAcc } = useFetchLoanAcc();
   const loanAccRaw = loanAcc?.data || [];
 
-  const accountData = loanAccRaw?.find((row) => row.loan_id === parsedId);
+  const { data: loanAccView } = useFetchLoanAccView();
+  const loanAccViewRaw = loanAccView?.data || [];
+
+  const mergedLoanAccounts = loanAccRaw.map(baseRow => {
+    const viewRow = loanAccViewRaw.find(v => v.loan_id === baseRow.loan_id);
+
+    return {
+      ...baseRow,
+      total_paid: viewRow?.total_paid || 0,
+      outstanding_balance: viewRow?.outstanding_balance || 0,
+    };
+  });
+
+  const accountData = mergedLoanAccounts?.find((row) => row.loan_id === parsedId);
   const applicant_id = accountData?.account_number;
 
   const { data: members_data } = useMembers({});
@@ -116,6 +130,11 @@ function LoanAccountDetails() {
               <div className="flex flex-col">
                 <span className="text-xs text-base-content/60">Outstanding Balance</span>
                 <span>₱{Number(accountData.outstanding_balance || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-xs text-base-content/60">Total Paid</span>
+                <span>₱{Number(accountData.total_paid || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">

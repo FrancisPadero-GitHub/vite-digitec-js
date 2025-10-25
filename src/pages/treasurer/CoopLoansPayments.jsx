@@ -141,15 +141,24 @@ function CoopLoansPayments() {
     reset(defaultValues)
     setModalType("add");
   }
-  const openEditModal = (data) => {
-    console.log(data)
-    reset(data)
-
-    setModalType("edit");
-  };
+  
+  // const openEditModal = (data) => {
+  //   console.log(data)
+  //   reset(data)
+  //   setModalType("edit");
+  // };
 
   const closeModal = () => {
     setModalType(null);
+  };
+
+  // View modals
+  const [viewPaymentData, setViewPaymentData] = useState(null);
+  const openViewModal = (data) => {
+    setViewPaymentData(data);
+  };
+  const closeViewModal = () => {
+    setViewPaymentData(null);
   };
 
   // Handlers
@@ -345,7 +354,7 @@ function CoopLoansPayments() {
             return (
               <tr
                 key={`${TABLE_PREFIX}${row?.payment_id}`}
-                onClick={() => openEditModal(row)}
+                onClick={() => openViewModal(row)}
                 className="transition-colors cursor-pointer hover:bg-base-200/70"
               >
                 {/* Ref no */}
@@ -536,10 +545,7 @@ function CoopLoansPayments() {
           </div>
 
 
-   
-
-
-
+  
           {fields.map(({ label, name, type, options, autoComplete }) => (
             <div key={name} className="form-control w-full mt-2">
               <label htmlFor={name}>
@@ -625,6 +631,38 @@ function CoopLoansPayments() {
             </div>
           ))}
         </FormModal>
+         
+
+         {/* View only data modal */}
+        {viewPaymentData && (
+          <div className="fixed inset-0 z-[900] flex items-center justify-center bg-black/50">
+            <div className="bg-base-100 p-6 rounded-lg w-96">
+              <h2 className="text-lg font-bold mb-4">Payment Details</h2>
+
+              <div className="space-y-2">
+                <div><span className="font-semibold">Account Number:</span> {viewPaymentData.account_number}</div>
+                <div><span className="font-semibold">Loan Ref Number:</span> {viewPaymentData.loan_ref_number}</div>
+                <div><span className="font-semibold">Payment Date:</span> {viewPaymentData.payment_date}</div>
+                <div><span className="font-semibold">Payment Method:</span> {viewPaymentData.payment_method}</div>
+                <div><span className="font-semibold">Principal:</span> ₱ {viewPaymentData.principal.toLocaleString()}</div>
+                <div><span className="font-semibold">Interest:</span> ₱ {viewPaymentData.interest.toLocaleString()}</div>
+                <div><span className="font-semibold">Fees:</span> ₱ {viewPaymentData.fees.toLocaleString()}</div>
+                <div><span className="font-semibold">Total Amount:</span> ₱ {viewPaymentData.total_amount.toLocaleString()}</div>
+                <div><span className="font-semibold">Status:</span> {viewPaymentData.status}</div>
+                <div><span className="font-semibold">Schedule ID:</span> {viewPaymentData.schedule_id}</div>
+              </div>
+
+              <div className="mt-4 text-right">
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={closeViewModal}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 // fetch hooks
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
 
@@ -36,16 +37,32 @@ function MemberLoanAcc() {
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: loanApps, isLoading, isError, error } = useFetchLoanAcc({page, limit,useLoggedInMember: true});
-  const loanAppRaw = loanApps?.data || [];
-  const total = loanAppRaw?.count || 0;
+
+  // get the outstanding balance on this view table instead of the base table 
+  const { data: loanAccView } = useFetchLoanAccView({ page, limit, useLoggedInMember: true });
+  const loanAccViewRaw = loanAccView?.data || [];
+
+  const { data: loanAcc, isLoading, isError, error } = useFetchLoanAcc({page, limit, useLoggedInMember: true});
+  const loanAccRaw = loanAcc?.data || [];
+  const total = loanAccRaw?.count || 0;
+
+  // Merge view and base table by loan_id
+  const mergedLoanAccounts = loanAccRaw.map(baseRow => {
+    const viewRow = loanAccViewRaw.find(v => v.loan_id === baseRow.loan_id);
+
+    return {
+      ...baseRow, // all base table fields
+      total_paid: viewRow?.total_paid || 0,
+      outstanding_balance: viewRow?.outstanding_balance || 0,
+    };
+  });
 
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const TABLE_PREFIX = "LACC_";
 
-  const memberLoanAccounts = loanAppRaw.filter((row) => {
+  const memberLoanAccounts = mergedLoanAccounts.filter((row) => {
 
     const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
@@ -113,6 +130,7 @@ function MemberLoanAcc() {
             "Interest Rate",
             "Total Amount Due",
             "Balance",
+            "Total Paid",
             "Loan Type",
             "Status",
             "Release",
@@ -161,7 +179,7 @@ function MemberLoanAcc() {
                   {interestRate || "0"} %
                 </td>
 
-                {/* Balance */}
+                {/* total amount due */}
                 <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.total_amount_due?.toLocaleString() || "0"}
                 </td>
@@ -169,6 +187,11 @@ function MemberLoanAcc() {
                 {/* Balance */}
                 <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.outstanding_balance?.toLocaleString() || "0"}
+                </td>
+
+                {/* total paid */}
+                <td className="px-2 py-2 text-center font-semibold text-success">
+                  ₱ {row.total_paid?.toLocaleString() || "0"}
                 </td>
 
                 {/* Loan Product */}
