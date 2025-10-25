@@ -15,7 +15,7 @@ import FilterToolbar from '../shared/components/FilterToolbar';
 import { LOAN_ACCOUNT_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 // Restriction
-import { useLoanRestriction } from "../shared/components/useRestriction";
+import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
 
 /**
  * if tenure is under 1 year                (DISABLES ACCESS TO UI)

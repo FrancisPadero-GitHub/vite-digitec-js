@@ -1,9 +1,9 @@
 // useLoanRestriction.js
-import { useFetchProfile } from '../../../backend/hooks/member/useFetchProfile';
-import { useFetchMemberTotal } from '../../../backend/hooks/member/useFetchMemberTotals';
-import getYearsMonthsDaysDifference from '../../../constants/DateCalculation';
+import { useFetchProfile } from '../useFetchProfile';
+import { useFetchMemberTotal } from '../useFetchMemberTotals';
+import getYearsMonthsDaysDifference from '../../../../constants/DateCalculation';
 
-export function useLoanRestriction() {
+export default function useLoanRestriction() {
   const { data: myProfile } = useFetchProfile();
   const { data: shares } = useFetchMemberTotal({
     rpcFn: "get_coop_contributions_total_by_member",

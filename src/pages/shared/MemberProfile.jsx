@@ -32,10 +32,10 @@ function MemberProfile() {
   const [page, setPage] = useState(1);
   const limit = 2; // or 20 — depends on your UI preference
   
+  // page limit somehow is messing up the calculation below not accountng all the transactions but only the 
+  // rows that is covered on the limiter
   const { data, isLoading, isError, error } = useFetchMemberDetails({
     memberId: parsedId,
-    page,
-    limit,
   });
 
   const memberInfo = data?.memberInfo || {};
@@ -63,19 +63,19 @@ function MemberProfile() {
   );
 
   // Calculate membership duration
-  const calculateMembershipMonths = (application_date) => {
-    if (!application_date) return 0;
-    const joined = new Date(application_date);
+  const calculateMembershipMonths = (joined_date) => {
+    if (!joined_date) return 0;
+    const joined = new Date(joined_date);
     const now = new Date();
     const years = now.getFullYear() - joined.getFullYear();
     const months = now.getMonth() - joined.getMonth();
     return years * 12 + months;
   };
 
-  const membershipMonths = calculateMembershipMonths(memberInfo?.application_date);
+  const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
 
   const topInfo = [
-    { label: "ID No.", value: memberInfo?.member_id || "—" },
+    { label: "Account No.", value: memberInfo?.account_number || "—" },
     {
       label: "Share Capital",
       value: `₱${totalShareCapital.toLocaleString()}`,
@@ -199,7 +199,6 @@ function MemberProfile() {
         >
           Member Records
         </button>
-        ›
         <span className="text-base-content">Member Profile</span>
       </div>
 
@@ -220,15 +219,16 @@ function MemberProfile() {
               </div>
               <h2 className="text-lg font-semibold">{displayName}</h2>
               <span className="badge badge-neutral">
-                {memberInfo?.account_type}
+                {memberInfo?.account_role}
               </span>
               <p className="text-sm mt-2">
                 Member Since:{" "}
-                {memberInfo?.application_date
-                  ? new Date(memberInfo.application_date).toLocaleDateString()
+                {memberInfo?.joined_date
+                  ? new Date(memberInfo.joined_date).toLocaleDateString()
                   : "N/A"}
               </p>
             </div>
+
             <div className="card-body p-4 grid grid-cols-3 text-center">
               {topInfo.map((stat, i) => (
                 <div key={i}>
@@ -238,11 +238,27 @@ function MemberProfile() {
               ))}
             </div>
           </section>
+          <section className="card bg-base-100 shadow">
+            <div className="card-body">
+              <div className="flex justify-start items-center mb-4">
+                <h2 className="card-title text-primary">
+                  Loan Eligibility
+                </h2>
+              </div>
+              <div className="flex justify-start items-center mb-4">
+                <h2>
+                  Text here 
+                  Text here
+                </h2>
+              </div>
+            </div>
+          </section>
+
 
           {/* PERSONAL DETAILS */}
           <section className="card bg-base-100 shadow">
             <div className="card-body">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-start items-center mb-4">
                 <h2 className="card-title text-primary">
                   Personal Information
                 </h2>

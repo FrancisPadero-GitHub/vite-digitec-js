@@ -26,7 +26,7 @@ import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../const
 
 
 // Restriction
-import { useLoanRestriction } from "../shared/components/useRestriction";
+import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
 
 /**
  * if loanAppsNo is more than 1 (ONLY DISABLES BUTTON) 
