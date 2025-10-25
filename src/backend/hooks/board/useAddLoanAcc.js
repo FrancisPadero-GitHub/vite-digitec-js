@@ -25,7 +25,6 @@ const addLoanAcc = async (formData) => {
     principal,
     amount_req,
     total_amount_due,
-    outstanding_balance: Number(total_amount_due),
     status,
     release_date,
     approved_date,
