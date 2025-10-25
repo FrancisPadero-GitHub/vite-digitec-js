@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 
 // fetch hooks
 import { useFetchMemberDetails } from "../../backend/hooks/member/useFetchMemberDetails";
+import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
 
 // icons 
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
@@ -43,13 +44,29 @@ function MemberProfile() {
   const coopContributions = data?.coopContributions?.data || [];
   const loanAccount = data?.loanAcc?.data || [];
 
-  const activeLoans = loanAccount?.filter(
-    (row) => row.applicant_id === parsedId && row.status === "Active"
+  const accountNo = memberInfo?.account_number
+  const { data: loanAccView } = useFetchLoanAccView({ accountNumber: accountNo });    // loan acc view to view outstanding balance realtime
+  const loanAccViewRaw = loanAccView?.data || [];
+
+  const mergedLoanAccounts = loanAccount.map(baseRow => {
+    const viewRow = loanAccViewRaw.find(v => v.loan_id === baseRow.loan_id);
+
+    return {
+      ...baseRow, // all base table fields
+      total_paid: viewRow?.total_paid || 0,
+      outstanding_balance: viewRow?.outstanding_balance || 0,
+    };
+  });
+
+  // console.log("TEST", mergedLoanAccounts )
+
+  const activeLoans = mergedLoanAccounts?.filter(
+    (row) => row.account_number === accountNo && row.status === "ONGOING"
   );
 
   // Past (Closed) loans — could be multiple
   const pastLoans = loanAccount?.filter(
-    (row) => row.applicant_id === parsedId && row.status === "Closed"
+    (row) => row.applicant_id === parsedId && row.status === "CLOSED"
   );
 
 
@@ -393,34 +410,38 @@ function MemberProfile() {
               label="Ongoing Loans"
               icon={<HandshakeIcon className="mr-2" />}
               headers={[
-                "Account No.",
+                "Loan Ref No.",
                 "Status",
                 "Principal",
+                "Total Amount Due",
                 "Outstanding Balance",
-                "Release Date",
-                "Maturity Date",
+                "Total Paid",
+                // "Release Date",
+                // "Maturity Date",
               ]}
               data={activeLoans}
               renderRow={(loan) => (
                 <tr key={loan.loan_id} className="text-center">
-                  <td className="font-medium text-info">{loan.account_number}</td>
+                  <td className="font-medium text-info">{loan.loan_ref_number}</td>
                   <td>
                     <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                       {loan.status}
                     </span>
                   </td>
                   <td>₱{Number(loan.principal || 0).toLocaleString()}</td>
+                  <td>₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
                   <td>₱{Number(loan.outstanding_balance || 0).toLocaleString()}</td>
-                  <td>
+                  <td>₱{Number(loan.total_paid || 0).toLocaleString()}</td>
+                  {/* <td>
                     {loan.release_date
                       ? dayjs(loan.release_date).format("MMM D, YYYY")
                       : "—"}
-                  </td>
-                  <td>
+                  </td> */}
+                  {/* <td>
                     {loan.maturity_date
                       ? dayjs(loan.maturity_date).format("MMM D, YYYY")
                       : "—"}
-                  </td>
+                  </td> */}
                 </tr>
               )}
             />
