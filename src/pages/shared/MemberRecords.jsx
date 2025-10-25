@@ -93,9 +93,9 @@ export default function MemberRecords() {
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "Active", value: "active" },
-                { label: "Inactive", value: "inactive" },
-                { label: "Revoked", value: "revoked" },
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+                { label: "Revoked", value: "Revoked" },
               ],
             },
           ]}
@@ -103,7 +103,7 @@ export default function MemberRecords() {
 
         {/* Users Table */}
         <MainDataTable
-          headers={["ID","Account No.", "Member", "Email", "Contact No.", "Role", "Status"]}
+          headers={["Account No.", "Member", "Email", "Contact No.", "Role", "Status"]}
           data={users}
           isLoading={isLoading}
           isError={isError}
@@ -115,12 +115,11 @@ export default function MemberRecords() {
           renderRow={(row) => {
             return (
               <tr
-                key={`${TABLE_PREFIX}${row.member_id}`}
+                key={row.account_number}
                 onClick={() => handleClick(row)}
                 className="cursor-pointer hover:bg-base-200/70 transition-colors"
               >
-                <td className="px-4 py-2 text-center font-medium">{row.generatedId}</td>
-                <td className="px-4 py-2 text-center font-medium">{row?.account_number || "Something went wrong"}</td>
+                <td className="px-4 py-2 text-center font-medium text-info">{row?.account_number || "Something went wrong"}</td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <div className="avatar">
@@ -132,7 +131,7 @@ export default function MemberRecords() {
                       </div>
                     </div>
 
-                    <div>{row.displayName || (<span className="text-gray-400 italic">Not Provided</span>)}</div>
+                    <div className="font-semibold">{row.displayName || (<span className="text-gray-400 italic">Not Provided</span>)}</div>
                   </div>
                 </td>
                 <td className="px-4 py-2 text-center">

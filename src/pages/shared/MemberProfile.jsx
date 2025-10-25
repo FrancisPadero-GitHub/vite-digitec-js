@@ -10,6 +10,9 @@ import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccV
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import SavingsIcon from "@mui/icons-material/Savings";
 import HandshakeIcon from "@mui/icons-material/Handshake";
+import InfoIcon from '@mui/icons-material/Info';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 // components
 import FinanceTab from "./components/FinanceTab";
@@ -91,6 +94,21 @@ function MemberProfile() {
 
   const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
 
+  // Calculate member's age based on birthday
+  const birthday = new Date(memberInfo?.birthday);
+  const today = new Date();
+
+  let memberAge = today.getFullYear() - birthday.getFullYear();
+  const monthDiff = today.getMonth() - birthday.getMonth();
+  const dayDiff = today.getDate() - birthday.getDate();
+
+  // if birthday did not occur yet for the year, subtract 1
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    memberAge--;
+  }
+
+
+
   const topInfo = [
     { label: "Account No.", value: memberInfo?.account_number || "—" },
     {
@@ -121,6 +139,26 @@ function MemberProfile() {
     { name: "office_address", label: "Office Address" },
   ];
 
+  const eligibilityInfo = [
+     {
+      label: "Tenure",
+      value: `${membershipMonths} months`,
+      passed: membershipMonths >= 12,
+      rule: "12 months of membership",
+    },
+    {
+      label: "Age",
+      value: `${memberAge} years old`,
+      passed: memberAge >= 18,
+      rule: "Must be at least 18 years old",
+    },
+    {
+      label: "Share Capital",
+      value: `₱${totalShareCapital.toLocaleString()}`,
+      passed: totalShareCapital > 5000,
+      rule: "₱5,000 share capital required",
+    },
+  ]
   
   // ----------- LOADING STATE -----------
   if (isLoading) {
@@ -210,13 +248,10 @@ function MemberProfile() {
     <div>
       {/* Breadcrumb */}
       <div className="text-2xl font-bold flex items-center gap-2 mb-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-primary hover:underline"
-        >
+        <button onClick={() => navigate(-1)} className="text-primary hover:underline">
           Member Records
         </button>
-        <span className="text-base-content">Member Profile</span>
+        <span className="text-base-content">| Member Profile</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -255,18 +290,65 @@ function MemberProfile() {
               ))}
             </div>
           </section>
+
           <section className="card bg-base-100 shadow">
             <div className="card-body">
-              <div className="flex justify-start items-center mb-4">
-                <h2 className="card-title text-primary">
-                  Loan Eligibility
-                </h2>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="card-title text-primary">Loan Eligibility</h2>
+
+                  {/* Eligibility rules */}
+                  <div className="dropdown dropdown-hover dropdown-right">
+                    <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-gray-400 hover:text-gray-500">
+                      <InfoIcon fontSize="small"/>
+                    </div>
+                    <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-64 p-4 shadow bg-base-200 text-base-content">
+                      <div className="card-body p-0">
+                        <h3 className="font-semibold text-sm mb-2">Eligibility Requirements</h3>
+                        <ul className="text-xs space-y-1.5">
+                          {eligibilityInfo.map((item, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-primary">•</span>
+                              <span>{item.rule}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Eligible/Ineligible badge */}
+                {eligibilityInfo.every(item => item.passed) ? (
+                  <span className="badge badge-success gap-2">
+                    <CheckCircleIcon sx={{ fontSize: 16 }} />Eligible
+                  </span>
+                  ) : (
+                    <span className="badge badge-error gap-2">
+                      <CancelIcon sx={{ fontSize: 16 }} />Not Eligible
+                    </span>
+                )}
               </div>
-              <div className="flex justify-start items-center mb-4">
-                <h2>
-                  Text here 
-                  Text here
-                </h2>
+
+              {/* Member's loan elibility info */}
+              <div className="space-y-3">
+                {eligibilityInfo.map((item, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className={`${item.passed ? 'text-success' : 'text-error'}`}>
+                      {item.passed ? (
+                        <CheckCircleIcon fontSize="small"/>
+                      ) : (
+                        <CancelIcon fontSize="small"/>
+                      )}
+                    </div>
+                    <div className="flex-1 flex justify-between items-center gap-2">
+                      <span className="font-medium text-sm">{item.label}:</span>
+                      <p className={`text-sm font-semibold whitespace-nowrap ${item.passed ? 'text-success' : 'text-error'}`}>
+                        {item.value}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
@@ -420,9 +502,14 @@ function MemberProfile() {
                 // "Maturity Date",
               ]}
               data={activeLoans}
+              page={page}
+              total={activeLoans?.length || 0}
+              limit={limit}
+              setPage={setPage}
+
               renderRow={(loan) => (
                 <tr key={loan.loan_id} className="text-center">
-                  <td className="font-medium text-info">{loan.loan_ref_number}</td>
+                  <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
                   <td>
                     <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                       {loan.status}
@@ -459,9 +546,14 @@ function MemberProfile() {
                 "Maturity Date",
               ]}
               data={pastLoans}
+              page={page}
+              total={pastLoans?.length || 0}
+              limit={limit}
+              setPage={setPage}
+
               renderRow={(loan) => (
                 <tr key={loan.loan_id} className="text-center">
-                  <td className="font-medium text-info">{loan.account_number}</td>
+                  <td className="font-medium text-info text-xs">{loan.account_number}</td>
                   <td>
                     <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
                       {loan.status}
