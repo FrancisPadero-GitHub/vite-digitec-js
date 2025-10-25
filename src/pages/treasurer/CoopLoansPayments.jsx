@@ -1,5 +1,5 @@
 import {useState, useMemo} from 'react'
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
 import { Link } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { Toaster, toast } from 'react-hot-toast';
@@ -9,6 +9,7 @@ import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headl
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
 import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
+import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 
 
 // mutation hooks
@@ -26,7 +27,9 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 
 function CoopLoansPayments() {
-  const { data: loan_acc_data, } = useFetchLoanAcc({});
+  const { data: loan_acc_data } = useFetchLoanAcc({});
+
+  const { data: loan_acc_view } = useFetchLoanAccView({});
 
 
   const { data: members_data } = useMembers();
@@ -140,6 +143,8 @@ function CoopLoansPayments() {
   }
   const openEditModal = (data) => {
     console.log(data)
+    reset(data)
+
     setModalType("edit");
   };
 
@@ -188,8 +193,11 @@ function CoopLoansPayments() {
       
   // Only display loan acc base on the filteredMembers
   const loanAcc = useMemo(() => loan_acc_data?.data || [], [loan_acc_data]);
+  const loanAccView = useMemo(() => loan_acc_view?.data || [], [loan_acc_view]) // fetch the outstandanding balance? base on the filtered member
+
   const [queryLoan, setQueryLoan] = useState("");
   const selectedMember = members.find((m) => m.account_number === watch("account_number"));
+
   const filteredLoanAcc = useMemo(() => {
     //  loans that belong to the selected member
     const memberLoans = selectedMember
@@ -199,7 +207,8 @@ function CoopLoansPayments() {
     // search query, filter further by loan_ref_number or balance
     if (queryLoan !== "") {
       return memberLoans.filter((loan) =>
-        `${loan.loan_ref_number} ${loan.outstanding_balance}`
+        `${loan.loan_ref_number} `
+      // ${ loan.outstanding_balance } insert this beside it 
           .toLowerCase()
           .includes(queryLoan.toLowerCase())
       );
@@ -208,6 +217,20 @@ function CoopLoansPayments() {
     // If no query, return all loans of the selected member
     return memberLoans;
   }, [loanAcc, selectedMember, queryLoan]);
+
+
+
+  // View the loan outstanding balance on the loan_acc_view
+  const selectedLoanRef = watch("loan_ref_number");
+  const selectedLoanBalance = useMemo(() => {
+    if (!selectedLoanRef) return 0;
+    const record = loanAccView.find(
+      (v) => v.loan_ref_number === selectedLoanRef
+    );
+    return record?.outstanding_balance ?? 0;
+  }, [selectedLoanRef, loanAccView]);
+
+
 
 
   const fields = [
@@ -305,7 +328,7 @@ function CoopLoansPayments() {
         />
 
         <MainDataTable 
-          headers={["Payment Ref.", "Loan Ref No.", "Name", "Amount", "Payment Method", "Date"]}
+          headers={["Payment Ref.", "Loan Ref No.", "Name", "Amount", "Status", "Payment Method", "Date"]}
           data={loanPayments}
           isLoading={isLoading}
           isError={isError}
@@ -332,7 +355,7 @@ function CoopLoansPayments() {
                 <td className="px-4 py-2 text-center">{row?.loan_ref_number || "Not Found"}</td>
                  
                  {/* Name */}
-                <td className="px-4 py-4">
+                <td className="px-4 py-4 text-center" >
                   <span className="flex items-center gap-3">
                     {/* avatar for members */}
                     <div className="avatar">
@@ -352,6 +375,12 @@ function CoopLoansPayments() {
                 <td className="px-4 py-2 font-semibold text-success text-center">
                   ₱ {row?.total_amount?.toLocaleString() || "0"}
                 </td>
+
+                {/* Status */}
+                <td className="px-4 py-2 font-semibold text-info text-center">
+                  {row?.status|| "0"}
+                </td>
+
                 {/* Method */}
                 <td className="px-4 py-2 text-center">
                   {row?.payment_method ? (
@@ -437,7 +466,16 @@ function CoopLoansPayments() {
             />
           </div>
 
-              {/* Loan Ref No */}
+          {/* Outstanding Balance Display */}
+          <div className="form-control w-full mt-2 mb-2">
+            <label className="label text-sm font-semibold mb-2">Outstanding Balance</label>
+            <div className="flex items-center font-semibold">
+              <span className='text-info'>₱ {Number(selectedLoanBalance).toLocaleString()}</span>
+              <span className="text-sm text-gray-500 ml-2">remaining</span>
+            </div>
+          </div>
+
+          {/* Loan Ref No */}
           <div className="form-control w-full">
             <label className="label text-sm font-semibold mb-2">Loan Account</label>
             <Controller
@@ -479,12 +517,13 @@ function CoopLoansPayments() {
                           <div className="flex items-center justify-between">
                             <span className="font-mono text-sm">{loan.loan_ref_number}</span>
 
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                               <span className="text-sm">Outstanding Balance:</span>
                               <span className="truncate text-sm font-semibold">
                                 ₱{Number(loan.outstanding_balance).toLocaleString()}
                               </span>
-                            </div>
+                              
+                            </div> */}
                           </div>
                         </ComboboxOption>
 
@@ -495,6 +534,9 @@ function CoopLoansPayments() {
               )}
             />
           </div>
+
+
+   
 
 
 
@@ -510,15 +552,19 @@ function CoopLoansPayments() {
                   control={control}
                   rules={{
                     required: true,
-                    min: { value: 1, message: "Amount must be greater than 0" },
-                    validate: (v) => v > 0 || "Amount cannot be zero or negative",
+                    validate: (value) => {
+                      if (value <= 0) return "Amount cannot be zero or negative";
+                      if (value > selectedLoanBalance)
+                        return `Amount cannot exceed outstanding balance of ₱${Number(selectedLoanBalance).toLocaleString()}`;
+                      return true;
+                    },
                   }}
                   render={({ field, fieldState: { error } }) => (
                     <>
                       <input
                         id="total_amount"
                         type="number"
-                        autoComplete={autoComplete}
+                        autoComplete="off"
                         value={field.value}
                         placeholder="Enter Amount"
                         onChange={(e) => {
@@ -530,8 +576,7 @@ function CoopLoansPayments() {
                           const value = Number(raw);
                           field.onChange(value < 0 ? 0 : value);
                         }}
-                        className={`input input-bordered w-full ${error ? "input-error" : ""
-                          }`}
+                        className={`input input-bordered w-full ${error ? "input-error" : ""}`}
                       />
                       {error && (
                         <span className="text-sm text-error mt-1 block">
@@ -541,6 +586,7 @@ function CoopLoansPayments() {
                     </>
                   )}
                 />
+
               ) : type === "select" ? (
                 <select
                   id={name}

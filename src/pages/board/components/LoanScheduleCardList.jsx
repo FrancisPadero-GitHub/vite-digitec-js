@@ -73,6 +73,10 @@ function LoanScheduleCardList({
                   <span className="font-semibold">{dayjs(item.due_date).format("MMM D, YYYY")}</span>
                 </div>
                 <div className="flex flex-col">
+                  <span className="text-xs text-base-content/60 ">Status TEMPORARY</span>
+                  <span className="font-semibold">{item.status || "Not Provided"}</span>
+                </div>
+                <div className="flex flex-col">
                   <span className="text-xs text-base-content/60">Principal</span>
                   <span className="font-semibold">₱{Number(item.principal_due).toLocaleString()}</span>
                 </div>
