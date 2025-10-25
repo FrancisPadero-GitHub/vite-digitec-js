@@ -24,7 +24,9 @@ import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
-import calculateLoanAndSchedule from "../../constants/calculateLoanAndSchedule";
+import calculateLoanAndScheduleFlatRate from "../../constants/calculateLoanAndScheduleFlatRate";
+import calculateLoanAndScheduleReducing from "../../constants/calculateLoanAndScheduleReducing";
+
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
 
@@ -136,7 +138,7 @@ function LoanApplications() {
       interest_rate: "", // front_end only
       loan_term: "", // front_end only
       interest_method: "", // front_end only
-      status: "Active",
+      status: "ONGOING",
       release_date: null, // will be configured by treasurer
       approved_date: today,
       maturity_date: "",
@@ -158,27 +160,41 @@ function LoanApplications() {
   const [isCalculating, setIsCalculating] = useState(false);
   const principalValue = watchLoanAcc("principal");
   const totalAmount = watchLoanAcc("total_amount_due")
+  const interestMethod = watchLoanAcc("interest_method")
   const interestRateValue = watchLoanAcc("interest_rate");
   const loanTermValue = watchLoanAcc("loan_term");
 
   // detect the changes of principal then calculate on the go
   useEffect(() => {
     if (!principalValue || principalValue <= 0) return;
-
+    // console.log(`TEST`, interestMethod )
     setIsCalculating(true);
     const timer = setTimeout(() => {
-    const { totalPayable } = calculateLoanAndSchedule({
-      interestRate: Number(interestRateValue),
-      principal: Number(principalValue),
-      termMonths: Number(loanTermValue)
-    });
+      let totalPayable = 0;
+
+      if (interestMethod === "Flat Rate") {
+        const result = calculateLoanAndScheduleFlatRate({
+          interestRate: Number(interestRateValue),
+          principal: Number(principalValue),
+          termMonths: Number(loanTermValue),
+        });
+        totalPayable = result.totalPayable;
+      } else if (interestMethod === "Reducing") {
+        const result = calculateLoanAndScheduleReducing({
+          interestRate: Number(interestRateValue),
+          principal: Number(principalValue),
+          termMonths: Number(loanTermValue),
+        });
+        totalPayable = result.totalPayable;
+      }
 
       setLoanAccValue("total_amount_due", totalPayable);
       setIsCalculating(false);
+
     }, 600); // debounce delay (ms)
 
     return () => clearTimeout(timer);
-  }, [principalValue, interestRateValue, loanTermValue, setLoanAccValue]);
+  }, [principalValue, interestRateValue, loanTermValue, interestMethod, setLoanAccValue]);
 
   const selectedLoanProduct = watch("loan_product");
   const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct);

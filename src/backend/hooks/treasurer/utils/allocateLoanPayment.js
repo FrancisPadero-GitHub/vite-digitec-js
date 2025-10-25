@@ -1,5 +1,13 @@
 import { updateLoanStatusFromView } from "./updateLoanStatusFromView";
 
+/**
+ *
+ * This version splits the overpayment to two transaction
+ * 
+ */
+
+
+
 export async function allocateLoanPayment(
   supabase,
   {

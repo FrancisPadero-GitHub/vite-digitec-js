@@ -1,6 +1,7 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import calculateLoanAndSchedule from "../../../constants/calculateLoanAndSchedule";
+import calculateLoanAndScheduleFlatRate from "../../../constants/calculateLoanAndScheduleFlatRate";
+import calculateLoanAndScheduleReducing from "../../../constants/calculateLoanAndScheduleReducing";
 
 const addLoanAcc = async (formData) => {
   const {
@@ -41,7 +42,6 @@ const addLoanAcc = async (formData) => {
     throw new Error(loanError.message);
   }
 
-  // Only return the loanData. Schedules will be generated in onSuccess
   return { loan: loanData, formData };
 };
 
@@ -50,33 +50,52 @@ export const useAddLoanAcc = () => {
 
   return useMutation({
     mutationFn: addLoanAcc,
-    /**
-     * After it successfully insert the record
-     * it will generate the payment schedules for it respectively
-     * 
-     * 
-     */
+
     onSuccess: async ({ loan, formData }) => {
+      const {
+        interest_rate,
+        loan_term,
+        interest_method, // should be either "FLAT" or "DIMINISHING"
+        principal,
+        loan_ref_number,
+      } = formData;
 
-      // console.log("Form data", formData)
+      // Choose which calculator to use
+      let scheduleData = [];
+      if (interest_method === "Flat Rate") {
+        console.log("Generating FLAT RATE schedule...");
+        const { schedule } = calculateLoanAndScheduleFlatRate({
+          loanId: loan.loan_id,
+          principal,
+          interestRate: interest_rate,
+          termMonths: loan_term,
+          startDate: loan.approved_date,
+          generateSchedule: true,
+        });
+        scheduleData = schedule;
+      } else if (interest_method === "Reducing") {
+        console.log("Generating DIMINISHING schedule...");
+        const { schedule } = calculateLoanAndScheduleReducing({
+          loanId: loan.loan_id,
+          principal,
+          interestRate: interest_rate,
+          termMonths: loan_term,
+          startDate: loan.approved_date,
+          generateSchedule: true,
+        });
+        scheduleData = schedule;
+      } else {
+        console.warn("Unknown interest type — skipping schedule generation.");
+        return;
+      }
 
-      // Generate payment schedule after loan is successfully created
-      const { schedule } = calculateLoanAndSchedule({
-        loanId: loan.loan_id,
-        principal: formData.principal,
-        interestRate: formData.interest_rate,
-        termMonths: formData.loan_term,
-        startDate: loan.approved_date,
-        generateSchedule: true,
-      });
+      console.log("Generated schedules:", scheduleData);
 
-      console.log("Generated schedules after loan insert:", schedule);
-
-      if (schedule.length > 0) {
+      if (scheduleData.length > 0) {
         // Attach loan_ref_number to each schedule entry
-        const scheduleWithRef = schedule.map((item) => ({
+        const scheduleWithRef = scheduleData.map((item) => ({
           ...item,
-          loan_ref_number: formData.loan_ref_number, // use from the created loan
+          loan_ref_number,
         }));
 
         const { error: scheduleError } = await supabase
@@ -84,12 +103,9 @@ export const useAddLoanAcc = () => {
           .insert(scheduleWithRef);
 
         if (scheduleError) {
-          console.error(
-            "Failed to insert payment schedules:",
-            scheduleError.message
-          );
+          console.error("Failed to insert payment schedules:", scheduleError.message);
         } else {
-          console.log("Successfully inserted payment schedules into DB.");
+          console.log("✅ Successfully inserted payment schedules into DB.");
         }
       }
 

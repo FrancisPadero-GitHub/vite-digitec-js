@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 
-export default function calculateLoanAndSchedule({
+// this version is for the flat rate 
+
+export default function calculateLoanAndScheduleFlatRate({
   interestRate,
   principal,
   termMonths,

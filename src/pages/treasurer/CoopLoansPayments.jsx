@@ -8,6 +8,7 @@ import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headl
 // fetch hooks
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
+import { useFetchPaySched } from '../../backend/hooks/shared/useFetchPaySched';
 import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
 import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 
@@ -30,7 +31,6 @@ function CoopLoansPayments() {
   const { data: loan_acc_data } = useFetchLoanAcc({});
 
   const { data: loan_acc_view } = useFetchLoanAccView({});
-
 
   const { data: members_data } = useMembers();
   const members = members_data?.data || [];
@@ -169,16 +169,16 @@ function CoopLoansPayments() {
   };
 
   const onSubmit = (data) => {
-    addLoanPayments(data, {
-      onSuccess: () => {
-        toast.success("Successfully added payment")
+    // addLoanPayments(data, {
+    //   onSuccess: () => {
+    //     toast.success("Successfully added payment")
 
-        closeModal();
-      },
-      onError: () => {
-        toast.error("Something went wrong ")
-      }
-    })
+    //     closeModal();
+    //   },
+    //   onError: () => {
+    //     toast.error("Something went wrong ")
+    //   }
+    // })
 
     /**
      * Scans the payment schedule 
@@ -202,7 +202,6 @@ function CoopLoansPayments() {
       
   // Only display loan acc base on the filteredMembers
   const loanAcc = useMemo(() => loan_acc_data?.data || [], [loan_acc_data]);
-  const loanAccView = useMemo(() => loan_acc_view?.data || [], [loan_acc_view]) // fetch the outstandanding balance? base on the filtered member
 
   const [queryLoan, setQueryLoan] = useState("");
   const selectedMember = members.find((m) => m.account_number === watch("account_number"));
@@ -228,18 +227,32 @@ function CoopLoansPayments() {
   }, [loanAcc, selectedMember, queryLoan]);
 
 
-
   // View the loan outstanding balance on the loan_acc_view
+  const loanAccView = useMemo(() => loan_acc_view?.data || [], [loan_acc_view]) // fetch the outstandanding balance? base on the filtered member
   const selectedLoanRef = watch("loan_ref_number");
-  const selectedLoanBalance = useMemo(() => {
+
+  const loanAccViewData = useMemo(() => {
     if (!selectedLoanRef) return 0;
+
     const record = loanAccView.find(
       (v) => v.loan_ref_number === selectedLoanRef
     );
-    return record?.outstanding_balance ?? 0;
+    return record;
   }, [selectedLoanRef, loanAccView]);
 
+  const balance = loanAccViewData?.outstanding_balance || 0;
 
+  // View the loan payment schedule total due of monthly payments
+  const loan_id = loanAccViewData?.loan_id || null;
+  const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});
+
+  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
+
+  // Compute monthly total — only if a member and a loan are selected
+  const monthlyTotal = useMemo(() => {
+    if (!selectedLoanRef || loanSchedRaw.length === 0) return 0;
+    return loanSchedRaw[0]?.total_due || 0;
+  }, [selectedLoanRef, loanSchedRaw]);
 
 
   const fields = [
@@ -474,16 +487,6 @@ function CoopLoansPayments() {
               )}
             />
           </div>
-
-          {/* Outstanding Balance Display */}
-          <div className="form-control w-full mt-2 mb-2">
-            <label className="label text-sm font-semibold mb-2">Outstanding Balance</label>
-            <div className="flex items-center font-semibold">
-              <span className='text-info'>₱ {Number(selectedLoanBalance).toLocaleString()}</span>
-              <span className="text-sm text-gray-500 ml-2">remaining</span>
-            </div>
-          </div>
-
           {/* Loan Ref No */}
           <div className="form-control w-full">
             <label className="label text-sm font-semibold mb-2">Loan Account</label>
@@ -544,8 +547,24 @@ function CoopLoansPayments() {
             />
           </div>
 
+          {/* Outstanding Balance and monthly payment total Display */}
+          <div className="form-control w-full mt-2 mb-2 flex justify-between">
+            <div>
+              <label className="label text-sm font-semibold mb-2">Monthly Payment</label>
+              <div className="flex items-center font-semibold">
+                <span className='text-info'>₱ {Number(monthlyTotal).toLocaleString()}</span>
+              </div>
+            </div>
 
-  
+            <div className="text-right">
+              <label className="label text-sm font-semibold mb-2">Outstanding Balance</label>
+              <div className="flex justify-end items-center font-semibold">
+                <span className='text-warning'>₱ {Number(balance).toLocaleString()}</span>
+                <span className="text-sm text-gray-500 ml-2">remaining</span>
+              </div>
+            </div>
+          </div>
+
           {fields.map(({ label, name, type, options, autoComplete }) => (
             <div key={name} className="form-control w-full mt-2">
               <label htmlFor={name}>
@@ -560,8 +579,10 @@ function CoopLoansPayments() {
                     required: true,
                     validate: (value) => {
                       if (value <= 0) return "Amount cannot be zero or negative";
-                      if (value > selectedLoanBalance)
-                        return `Amount cannot exceed outstanding balance of ₱${Number(selectedLoanBalance).toLocaleString()}`;
+                      if (value > monthlyTotal)
+                        return `Amount cannot exceed monthly total payment of ₱${Number(monthlyTotal).toLocaleString()} (TEMPORARY)`;
+                      if (value > balance)
+                        return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
                       return true;
                     },
                   }}
