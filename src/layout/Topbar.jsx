@@ -54,12 +54,10 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 
-
-
   const handleSignOut = async () => {
     setIsLoggingOut(true);
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({scope: "local"}); // scope: "local" Persists login on other devices and has to logout manually each devices
       if (error) throw new Error(error.message);
 
       // Confirm session is really gone
@@ -156,22 +154,17 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
           >
             {/* AVATAR, NAME, ROLE */}
             <div className="p-4 flex items-center gap-3 rounded-lg no-underline">
-              {isLoading ? (<tr>
-                <td className="py-10">
-                  <div className="flex justify-center items-center">
-                    <span className="loading loading-spinner loading-lg text-primary"></span>
+              {isLoading ? (
+                <div className="py-4 w-full flex justify-center items-center">
+                  <span className="loading loading-spinner loading-lg text-primary" />
+                </div>
+              ) : isError ? (
+                <div className="py-4 w-full text-center">
+                  <div className="text-red-500 font-semibold">
+                    {error?.message || "Something went wrong while loading account."}
                   </div>
-                </td>
-                </tr>
-                ) : isError ? (
-                  <tr>
-                  <td className="py-10 text-center">
-                    <div className="text-red-500 font-semibold">
-                      {error?.message || "Something went wrong while loading account."}
-                    </div>
-                  </td>
-                </tr>
-                ) : (              
+                </div>
+              ) : (
                 <>
                   <div className="avatar">
                     <div className="w-10 rounded-full">
@@ -183,13 +176,10 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                   </div>
                   <div>
                     <p className="font-medium text-base-content">{matchedMember || "Error"}</p>
-                    <p className="text-xs text-base-content/60">
-                      {getRoleLabel(role)}
-                    </p>
+                    <p className="text-xs text-base-content/60">{getRoleLabel(role)}</p>
                   </div>
                 </>
-                )
-              };
+              )}
             </div>
 
             {/* PROFILE, SETTINGS, DARK MODE, LOGOUT */}

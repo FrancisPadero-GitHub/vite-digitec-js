@@ -42,9 +42,13 @@ const gallery = [
 
 const Landing = () => {
 
-  const notify = () => {
-    toast.error("To access the dashboard, please log in.");
-  }
+  const handleNavigation = (e) => {
+    if (!memberRole) {
+      e.preventDefault();
+      toast.error("Please log in to access the dashboard.");
+      return;
+    }
+  };
 
   // Smooth scrolling for header links
   const scrollToAbout = () => {
@@ -85,8 +89,8 @@ const Landing = () => {
       <header className="sticky top-0 z-50 navbar bg-base-100 px-4 py-4 md:py-5 shadow-lg">
         <div className="flex-1">
           <Link 
-            to={`${memberRole || "/"}`} 
-            onClick={() => notify()} 
+            to={memberRole ? `/${memberRole}` : "/"} 
+            onClick={handleNavigation} 
             className="flex items-center normal-case text-lg md:text-xl"
             >
             <div className="w-10 h-10 md:w-12 md:h-12 mr-2 md:mr-3">
@@ -100,8 +104,13 @@ const Landing = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex flex-none">
           <ul className="menu menu-horizontal px-1 gap-1 md:gap-2">
-            {/* <li><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="text-sm md:text-base">Home</button></li> */}
-            <li><Link to={`${memberRole || "/"}`} className="text-sm md:text-base">Home</Link></li>
+            <li>
+              {memberRole ? (
+                <Link to={`/${memberRole}`} className="text-sm md:text-base">Dashboard</Link>
+              ) : (
+                <Link to="/" className="text-sm md:text-base">Home</Link>
+              )}
+            </li>
             <li><button onClick={scrollToAbout} className="text-sm md:text-base">About ECTEC</button></li>
             <li><button onClick={scrollToContact} className="text-sm md:text-base">Contact Info</button></li>
             <li>
@@ -129,8 +138,11 @@ const Landing = () => {
                 Unifying membership and finances in one digital platform.
               </p>
               <div className="flex justify-center lg:justify-start">
-                <Link to="/login" className="bg-green-800 btn btn-primary px-6 py-4 md:px-8 md:py-6 text-base md:text-lg">
-                  Get Started
+                <Link 
+                  to={memberRole ? `/${memberRole}` : "/login"} 
+                  className="bg-green-800 btn btn-primary px-6 py-4 md:px-8 md:py-6 text-base md:text-lg"
+                >
+                  {memberRole ? 'Go to Dashboard' : 'Get Started'}
                   <LoginOutlinedIcon className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
               </div>

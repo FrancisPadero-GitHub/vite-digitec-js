@@ -33,10 +33,10 @@ const LoadingContainer = ({ children }) => (
  */
 
 const ProtectedRoutes = ({ children, roleAllowed }) => {
-  const { user } = useAuth();
+  const {  session, loading: authLoading } = useAuth();
   const { memberRole, loading } = useMemberRole();
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <LoadingContainer>
         <CircularProgress size={50} thickness={3} />
@@ -47,8 +47,8 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  if (!session) {
+    return <Navigate to="/" replace />;
   }
   
   if (!memberRole) {

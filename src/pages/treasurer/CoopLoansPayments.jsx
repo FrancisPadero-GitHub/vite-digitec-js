@@ -258,6 +258,7 @@ function CoopLoansPayments() {
   const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});    // If this returns a null it wont return any schedules
   const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
 
+  // Get the current or next payment schedule dynamically
   const paymentSchedule = useMemo(() => {
     if (!selectedLoanRef || loanSchedRaw.length === 0) return { schedule: null };
 
@@ -282,9 +283,6 @@ function CoopLoansPayments() {
 
     return data;
   }, [selectedLoanRef, loanSchedRaw]);
-
-  // Get the current or next payment schedule dynamically
-
 
   // Variables extracted values on this is tied to the conditional inside which is either today month or next due
   const schedId = paymentSchedule?.schedule_id || null;
