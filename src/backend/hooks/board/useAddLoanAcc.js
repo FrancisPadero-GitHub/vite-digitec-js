@@ -61,7 +61,7 @@ export const useAddLoanAcc = () => {
         loan_term,
         interest_method, // should be either "FLAT" or "DIMINISHING"
         principal,
-        start_date,
+        first_due,
         loan_ref_number,
       } = formData;
 
@@ -73,7 +73,7 @@ export const useAddLoanAcc = () => {
           principal,
           interestRate: interest_rate,
           termMonths: loan_term,
-          startDate: start_date,
+          startDate: first_due,
           generateSchedule: true,
         });
         scheduleData = schedule;
@@ -83,7 +83,7 @@ export const useAddLoanAcc = () => {
           principal,
           interestRate: interest_rate,
           termMonths: loan_term,
-          startDate: start_date,
+          startDate: first_due,
           generateSchedule: true,
         });
         scheduleData = schedule;

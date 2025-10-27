@@ -58,6 +58,12 @@ function LoanApplications() {
   const loanDataRaw = memberLoanAppData?.data || [];
   const total = loanDataRaw?.count || 0;
 
+  /**
+ * Grab the application_id in loan application then checks it if it exists on loan accounts
+ * used to conditionally render disabled inputs and selects and status on form modal
+ */
+  const [loanStatus, setLoanStatus] = useState(false);
+
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -100,7 +106,15 @@ function LoanApplications() {
 
   const [modalType, setModalType] = useState(null);
   const STATUS_OPTIONS = ["Pending", "On Review", "Approved", "Denied"];
-  const today = new Date().toISOString().split("T")[0];
+
+  // To avoid timezone issues with date inputs, we convert dates to local date strings
+  function getLocalDateString(date) {
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split("T")[0];
+  }
+
+  const today = getLocalDateString(new Date());
 
 
   const defaultValuesLoanApp = {
@@ -143,7 +157,7 @@ function LoanApplications() {
       release_date: null, // will be configured by treasurer
       approved_date: today,
       maturity_date: "",
-      start_date: today,
+      first_due: "",
     }
 
   // React Hook Form setup for Loan Accounts
@@ -165,6 +179,7 @@ function LoanApplications() {
   const interestMethod = watchLoanAcc("interest_method")
   const interestRateValue = watchLoanAcc("interest_rate");
   const loanTermValue = watchLoanAcc("loan_term");
+  const startDateValue = watchLoanAcc("first_due");
 
   // detect the changes of principal then calculate on the go
   useEffect(() => {
@@ -202,19 +217,31 @@ function LoanApplications() {
     return () => clearTimeout(timer);
   }, [principalValue, interestRateValue, loanTermValue, interestMethod, setLoanAccValue]);
 
+  // detect changes in start date or loan term to auto calculate maturity date
+  useEffect(() => {
+    if (!startDateValue || !loanTermValue) return;
+
+    const startDate = new Date(startDateValue);
+    const monthsMaturity = Number(loanTermValue);
+
+    // Add months directly to the original date
+    const maturity = new Date(startDate);
+    maturity.setMonth(maturity.getMonth() + monthsMaturity - 1); // - 1 to account for first due month in payment schedule generation
+
+    // If the day overflows (e.g., Feb 30), set to last day of month
+    if (maturity.getDate() !== startDate.getDate()) {
+      maturity.setDate(0); // go to last day of previous month
+    }
+
+    const maturityDate = maturity.toISOString().split("T")[0];
+    setLoanAccValue("maturity_date", maturityDate);
+  }, [startDateValue, loanTermValue, setLoanAccValue]);
+
   const selectedLoanProduct = watch("loan_product");
   const selectedProduct = loanProducts?.find((p) => p.name === selectedLoanProduct);
 
-  /**
-   * Grab the application_id in loan application then checks it if it exists on loan accounts
-   * used to conditionally render disabled inputs and selects and status on form modal
-   */
-  const [loanStatus, setLoanStatus] = useState(false);
- 
 
 
-
-  
   const openEditModal = (selectedRow) => {
     // console.log("eid", selectedRow.product_id)
     
@@ -296,8 +323,6 @@ function LoanApplications() {
       const matchedLoanProduct = loanProducts?.find(
         (product) => product.product_id === row.product_id
       );
-       // get the term months of the specific loan product to calculate the maturity automatically
-      const monthsMaturity = Number(matchedLoanProduct?.max_term_months) || null;
 
       const interestRate = Number(matchedLoanProduct?.interest_rate) || 0;
       const interestMethod = matchedLoanProduct?.interest_method ?? "";
@@ -315,19 +340,6 @@ function LoanApplications() {
         status: "Active",
         release_date: null,
         approved_date: today,
-        start_date: today,
-        maturity_date: (() => {
-          const date = new Date();
-          // normalize to avoid edge cases like Jan 31 -> Mar 3 (Feb months is kulang)
-          const day = date.getDate();
-          date.setDate(1);
-          date.setMonth(date.getMonth() + monthsMaturity);
-          // restore closest possible day of month
-          const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-          date.setDate(Math.min(day, lastDayOfMonth));
-          return date.toISOString().split("T")[0];
-        })(),
-
       });
 
       // store the application data for later mutation for the edit on loan application
@@ -354,7 +366,7 @@ function LoanApplications() {
   // Loan Accounts handler
   // This is the last one to be submitted if the status is for approval
   const onSubmitLoanAcc = (loanAccData) => {
-    // console.log(`TEST`, loanAccData?.start_date )
+    // console.log(`TEST`, loanAccData?.first_due )
 
     // 1. Create the loan account
 
@@ -914,15 +926,15 @@ function LoanApplications() {
           {/* Start Date */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Start Date</span>
+              <span className="label-text font-medium text-gray-700">First Due / Start Date</span>
             </label>
             <input
               type="date"
-              {...registerLoanAcc("start_date", { required: false })}
+              {...registerLoanAcc("first_due", { required: true })}
               className="input input-bordered w-full text-gray-700"
             />
-            {errorsLoanAcc.start_date && (
-              <p className="text-error text-sm mt-1">Required</p>
+            {errorsLoanAcc.first_due && (
+              <p className="text-error text-sm mt-1">Required to determine maturity date</p>
             )}
           </div>
 
@@ -945,9 +957,8 @@ function LoanApplications() {
             </label>
             <input
               type="date"
-              {...registerLoanAcc("maturity_date", { required: false })}
-              readOnly
-                className="input input-bordered w-full bg-gray-100 text-gray-700"
+              {...registerLoanAcc("maturity_date", { required: true })}
+                className="input input-bordered w-full text-gray-700"
             />
             {errorsLoanAcc.maturity_date && (
               <p className="text-error text-sm mt-1">Required</p>
