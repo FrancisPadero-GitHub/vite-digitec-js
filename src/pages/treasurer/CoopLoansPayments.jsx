@@ -256,37 +256,35 @@ function CoopLoansPayments() {
    */
   // View the loan payment schedule total due of monthly payments
   const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});    // If this returns a null it wont return any schedules
-  const useCurrentPaymentSchedule = (loanSchedRaw = []) => {
-    return useMemo(() => {
-      if (!selectedLoanRef || loanSchedRaw.length === 0) return { schedule: null};
+  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
 
-      const today = dayjs();
+  const paymentSchedule = useMemo(() => {
+    if (!selectedLoanRef || loanSchedRaw.length === 0) return { schedule: null };
 
-      // Filter out already-paid schedules
-      const unpaidSchedules = loanSchedRaw.filter(item => !item.paid);
-      if (unpaidSchedules.length === 0) return { schedule: null };
+    const today = dayjs();
 
+    // Filter out already-paid schedules
+    const unpaidSchedules = loanSchedRaw.filter(item => !item.paid);
+    if (unpaidSchedules.length === 0) return { schedule: null };
 
-      // Try to find an unpaid schedule for the current month
-      const currentMonthUnpaid = unpaidSchedules.find(item => {
-        const dueDate = dayjs(item.due_date);
-        return dueDate.month() === today.month() && dueDate.year() === today.year();
-      });
+    // Try to find an unpaid schedule for the current month
+    const currentMonthUnpaid = unpaidSchedules.find(item => {
+      const dueDate = dayjs(item.due_date);
+      return dueDate.month() === today.month() && dueDate.year() === today.year();
+    });
 
-      // Fallback: find the next unpaid schedule in the future
-      const nextUnpaid = currentMonthUnpaid ||
-        unpaidSchedules.find(item => dayjs(item.due_date).isAfter(today));
+    // Fallback: find the next unpaid schedule in the future
+    const nextUnpaid = currentMonthUnpaid ||
+      unpaidSchedules.find(item => dayjs(item.due_date).isAfter(today));
 
-      // If still nothing, fallback to the earliest unpaid schedule (just in case)
-      const fallbackUnpaid = nextUnpaid || unpaidSchedules[0];
+    // If still nothing, fallback to the earliest unpaid schedule (just in case)
+    const data = nextUnpaid || unpaidSchedules[0];
 
-      return {schedule: fallbackUnpaid || null};
-    }, [loanSchedRaw]);
-  };
+    return data;
+  }, [selectedLoanRef, loanSchedRaw]);
 
   // Get the current or next payment schedule dynamically
-  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
-  const { schedule: paymentSchedule } = useCurrentPaymentSchedule(loanSchedRaw);
+
 
   // Variables extracted values on this is tied to the conditional inside which is either today month or next due
   const schedId = paymentSchedule?.schedule_id || null;
