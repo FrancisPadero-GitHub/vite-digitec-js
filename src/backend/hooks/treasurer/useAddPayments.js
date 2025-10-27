@@ -33,6 +33,7 @@
         console.log("✅ Loan payment added:", data);
         // Refresh any component using this query
         queryClient.invalidateQueries(["loan_payments"]);
+        queryClient.invalidateQueries(["loan_payment_schedules"])
       },
       onError: (error) => {
         console.error("❌ Add loan payment failed:", error.message);

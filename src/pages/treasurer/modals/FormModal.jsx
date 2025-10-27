@@ -18,7 +18,7 @@ import React from 'react'
  * 
  */
 
-function FormModal({ table, open, close, action, children, onSubmit, deleteAction, status }) {
+function FormModal({ table, open, close, action, children, onSubmit, deleteAction, status, isPending}) {
 
   // if open is false, don't render anything
   if (!open) return null
@@ -43,8 +43,15 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status}>
-                  Submit
+                <button type="submit" className="btn btn-primary" disabled={status || isPending}>
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Loading...
+                    </>
+                  ) : (
+                    'Submit'
+                  )}
                 </button>
               )}
             </div>

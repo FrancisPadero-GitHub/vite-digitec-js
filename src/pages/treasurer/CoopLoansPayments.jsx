@@ -10,7 +10,6 @@ import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headl
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
 import { useFetchPaySched } from '../../backend/hooks/shared/useFetchPaySched';
-import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
 import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 
 
@@ -29,8 +28,6 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 
 function CoopLoansPayments() {
-  const { data: loan_acc_data } = useFetchLoanAcc({});
-
   const { data: loan_acc_view } = useFetchLoanAccView({});
 
   const { data: members_data } = useMembers();
@@ -173,84 +170,69 @@ function CoopLoansPayments() {
   };
 
   const onSubmit = (data) => {
-    // addLoanPayments(data, {
-    //   onSuccess: () => {
-    //     toast.success("Successfully added payment")
-
-    //     closeModal();
-    //   },
-    //   onError: () => {
-    //     toast.error("Something went wrong ")
-    //   }
-    // })
+    addLoanPayments(data, {
+      onSuccess: () => {
+        toast.success("Successfully added payment")
+        closeModal();
+      },
+      onError: () => {
+        toast.error("Something went wrong ")
+      }
+    })
 
     /**
      * Scans the payment schedule 
      * then structure the total_amount that fits to (fees -> interest -> principal )
      */
-    console.log("TEST:", data);
+    // console.log("TEST:", data);
   }
-
-
-  // Filters member upon inputing value
+  
+  /**
+   * MEMBERS FILTER
+   */
   const [queryMem, setQueryMem] = useState("");
+  // This is used for the search query on the form
   const filteredMembers =
     queryMem === ""
       ? members
       : members.filter((m) =>
         `${m.account_number} ${m.f_name} ${m.m_name} ${m.l_name} ${m.email}`
-          .toLowerCase()
+          .toLowerCase()     
           .includes(queryMem.toLowerCase())
       );
 
+
   /**
-   * MEMBERS FILTER
+   * LOAN ACC FILTER
    */
-  // Only display loan acc base on the filteredMembers
-  // const loanAcc = useMemo(() => loan_acc_data?.data || [], [loan_acc_data]);
-
-  const loanAcc = useMemo(() => {
-    const data = loan_acc_data?.data || [];
-    // Filter to only Active loan accounts
-    return data.filter((loan) => loan.status === "Closed");
-  }, [loan_acc_data]);
-
   const [queryLoan, setQueryLoan] = useState("");
+  const loanAcc = useMemo(() => {
+    const data = loan_acc_view?.data || [];                     // Uses the view table version instead of the base table
+    return data.filter((loan) => loan.status === "Active");     // Filter to only Active loan accounts
+  }, [loan_acc_view]);
+  
+  // Get the account number of the selected member
   const selectedMember = members.find((m) => m.account_number === watch("account_number"));
 
+  // Then filter the active loan accs base on the selectedMember
   const filteredLoanAcc = useMemo(() => {
-    //  loans that belong to the selected member
-    const memberLoans = selectedMember
+    const data = selectedMember
       ? loanAcc.filter((loan) => loan.account_number === selectedMember.account_number)
       : [];
 
-    // search query, filter further by loan_ref_number or balance
+    // Then this is used for the search query on the form
     if (queryLoan !== "") {
-      return memberLoans.filter((loan) =>
-        `${loan.loan_ref_number} `
-      // ${ loan.outstanding_balance } insert this beside it 
+      return data.filter((loan) =>
+        `${loan.loan_ref_number} ${loan.loan_id}`      // You can add columns here that you wanna search
           .toLowerCase()
           .includes(queryLoan.toLowerCase())
       );
     }
 
     // If no query, return all loans of the selected member
-    return memberLoans;
+    return data;
   }, [loanAcc, selectedMember, queryLoan]);
 
-
-
-  /**
-   * LOAN ACC FILTER (Only Active Loans)
-   */
-  // View the loan outstanding balance on the loan_acc_view
-  const loanAccView = useMemo(() => {
-    const data = loan_acc_view?.data || [];
-    // Filter to only Active loan accounts
-    return data.filter((loan) => loan.status === "Closed");
-  }, [loan_acc_view]);
-
-  // console.log(`TEST`, loanAccView)
 
   // fetch the outstandanding balance base on the filtered member
   const selectedLoanRef = watch("loan_ref_number");
@@ -258,52 +240,32 @@ function CoopLoansPayments() {
   const loanAccViewData = useMemo(() => {
     if (!selectedLoanRef) return 0;
 
-    const record = loanAccView.find(
+    const data = loanAcc.find(
       (v) => v.loan_ref_number === selectedLoanRef
     );
-    return record;
-  }, [selectedLoanRef, loanAccView]);
+    return data;
+  }, [selectedLoanRef, loanAcc]);
 
   const balance = loanAccViewData?.outstanding_balance || 0;
+  const loan_id = loanAccViewData?.loan_id || null;
+
 
 
   /**
    * LOAN PAYMENT SCHEDULE FILTER
    */
   // View the loan payment schedule total due of monthly payments
-  const loan_id = loanAccViewData?.loan_id || null;
-  const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});
-
-  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
-
-  /**
-   * Determines the current or next unpaid payment schedule.
-   * If all are paid, returns a status indicating the loan is fully paid or closed.
-   */
-  const useCurrentPaymentSchedule = (loanSchedRaw = [], loanAccViewData = {}) => {
+  const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});    // If this returns a null it wont return any schedules
+  const useCurrentPaymentSchedule = (loanSchedRaw = []) => {
     return useMemo(() => {
-
-      // If there’s no selected loan or no loan data, return all null
-      const isLoanDataEmpty =
-        !loanAccViewData ||
-        Object.keys(loanAccViewData).length === 0 ||
-        !selectedLoanRef;
-
-
-      if (!selectedLoanRef || loanSchedRaw.length === 0 || isLoanDataEmpty) return { schedule: null, status: "no_schedule" };
+      if (!selectedLoanRef || loanSchedRaw.length === 0) return { schedule: null};
 
       const today = dayjs();
 
       // Filter out already-paid schedules
       const unpaidSchedules = loanSchedRaw.filter(item => !item.paid);
-      if (unpaidSchedules.length === 0) {
-        // If all schedules are paid, check the loan account status
-        const loanStatus = loanAccViewData?.loan_status?.toLowerCase() || "";
-        if (["Fully Paid", "Closed"].includes(loanStatus)) {
-          return { schedule: null, status: "Closed" };
-        }
-        return { schedule: null, status: "Fully Paid" };
-      }
+      if (unpaidSchedules.length === 0) return { schedule: null };
+
 
       // Try to find an unpaid schedule for the current month
       const currentMonthUnpaid = unpaidSchedules.find(item => {
@@ -318,27 +280,13 @@ function CoopLoansPayments() {
       // If still nothing, fallback to the earliest unpaid schedule (just in case)
       const fallbackUnpaid = nextUnpaid || unpaidSchedules[0];
 
-      return {
-        schedule: fallbackUnpaid || null,
-        status: "Active"
-      };
-    }, [loanSchedRaw, loanAccViewData]);
+      return {schedule: fallbackUnpaid || null};
+    }, [loanSchedRaw]);
   };
 
   // Get the current or next payment schedule dynamically
-  const { schedule: paymentSchedule, status } = useCurrentPaymentSchedule(loanSchedRaw, loanAccViewData);
-
-  // Examples:
-  if (status === "Active") {
-    console.log("Next due:", paymentSchedule?.due_date);
-    console.log("Total due:", paymentSchedule?.total_due);
-  } else if (status === "Fully Paid") {
-    console.log("🎉 Loan is fully paid!");
-  } else if (status === "Closed") {
-    console.log("✅ Loan is closed or archived");
-  }
-
-  // console.log("Active Schedule:", paymentSchedule);
+  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
+  const { schedule: paymentSchedule } = useCurrentPaymentSchedule(loanSchedRaw);
 
   // Variables extracted values on this is tied to the conditional inside which is either today month or next due
   const schedId = paymentSchedule?.schedule_id || null;
@@ -347,8 +295,6 @@ function CoopLoansPayments() {
   const amountPaid = paymentSchedule?.amount_paid || 0;
   const dueDate = paymentSchedule?.due_date || null;
   
-
-
 
   const fields = [
     {
@@ -529,6 +475,7 @@ function CoopLoansPayments() {
           close={closeModal}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
+          isPending={isPending}
           status={isPending}
           deleteAction={() => handleDelete(watch("payment_id"))}
         >
