@@ -1,5 +1,6 @@
 import {useState, useMemo} from 'react'
-// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+
 import { Link } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { Toaster, toast } from 'react-hot-toast';
@@ -172,16 +173,16 @@ function CoopLoansPayments() {
   };
 
   const onSubmit = (data) => {
-    addLoanPayments(data, {
-      onSuccess: () => {
-        toast.success("Successfully added payment")
+    // addLoanPayments(data, {
+    //   onSuccess: () => {
+    //     toast.success("Successfully added payment")
 
-        closeModal();
-      },
-      onError: () => {
-        toast.error("Something went wrong ")
-      }
-    })
+    //     closeModal();
+    //   },
+    //   onError: () => {
+    //     toast.error("Something went wrong ")
+    //   }
+    // })
 
     /**
      * Scans the payment schedule 
@@ -202,9 +203,17 @@ function CoopLoansPayments() {
           .includes(queryMem.toLowerCase())
       );
 
-      
+  /**
+   * MEMBERS FILTER
+   */
   // Only display loan acc base on the filteredMembers
-  const loanAcc = useMemo(() => loan_acc_data?.data || [], [loan_acc_data]);
+  // const loanAcc = useMemo(() => loan_acc_data?.data || [], [loan_acc_data]);
+
+  const loanAcc = useMemo(() => {
+    const data = loan_acc_data?.data || [];
+    // Filter to only Active loan accounts
+    return data.filter((loan) => loan.status === "Closed");
+  }, [loan_acc_data]);
 
   const [queryLoan, setQueryLoan] = useState("");
   const selectedMember = members.find((m) => m.account_number === watch("account_number"));
@@ -230,8 +239,20 @@ function CoopLoansPayments() {
   }, [loanAcc, selectedMember, queryLoan]);
 
 
+
+  /**
+   * LOAN ACC FILTER (Only Active Loans)
+   */
   // View the loan outstanding balance on the loan_acc_view
-  const loanAccView = useMemo(() => loan_acc_view?.data || [], [loan_acc_view]) // fetch the outstandanding balance? base on the filtered member
+  const loanAccView = useMemo(() => {
+    const data = loan_acc_view?.data || [];
+    // Filter to only Active loan accounts
+    return data.filter((loan) => loan.status === "Closed");
+  }, [loan_acc_view]);
+
+  // console.log(`TEST`, loanAccView)
+
+  // fetch the outstandanding balance base on the filtered member
   const selectedLoanRef = watch("loan_ref_number");
 
   const loanAccViewData = useMemo(() => {
@@ -245,17 +266,88 @@ function CoopLoansPayments() {
 
   const balance = loanAccViewData?.outstanding_balance || 0;
 
+
+  /**
+   * LOAN PAYMENT SCHEDULE FILTER
+   */
   // View the loan payment schedule total due of monthly payments
   const loan_id = loanAccViewData?.loan_id || null;
   const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});
 
   const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
 
-  // Compute monthly total — only if a member and a loan are selected
-  const monthlyTotal = useMemo(() => {
-    if (!selectedLoanRef || loanSchedRaw.length === 0) return 0;
-    return loanSchedRaw[0]?.total_due || 0;
-  }, [selectedLoanRef, loanSchedRaw]);
+  /**
+   * Determines the current or next unpaid payment schedule.
+   * If all are paid, returns a status indicating the loan is fully paid or closed.
+   */
+  const useCurrentPaymentSchedule = (loanSchedRaw = [], loanAccViewData = {}) => {
+    return useMemo(() => {
+
+      // If there’s no selected loan or no loan data, return all null
+      const isLoanDataEmpty =
+        !loanAccViewData ||
+        Object.keys(loanAccViewData).length === 0 ||
+        !selectedLoanRef;
+
+
+      if (!selectedLoanRef || loanSchedRaw.length === 0 || isLoanDataEmpty) return { schedule: null, status: "no_schedule" };
+
+      const today = dayjs();
+
+      // Filter out already-paid schedules
+      const unpaidSchedules = loanSchedRaw.filter(item => !item.paid);
+      if (unpaidSchedules.length === 0) {
+        // If all schedules are paid, check the loan account status
+        const loanStatus = loanAccViewData?.loan_status?.toLowerCase() || "";
+        if (["Fully Paid", "Closed"].includes(loanStatus)) {
+          return { schedule: null, status: "Closed" };
+        }
+        return { schedule: null, status: "Fully Paid" };
+      }
+
+      // Try to find an unpaid schedule for the current month
+      const currentMonthUnpaid = unpaidSchedules.find(item => {
+        const dueDate = dayjs(item.due_date);
+        return dueDate.month() === today.month() && dueDate.year() === today.year();
+      });
+
+      // Fallback: find the next unpaid schedule in the future
+      const nextUnpaid = currentMonthUnpaid ||
+        unpaidSchedules.find(item => dayjs(item.due_date).isAfter(today));
+
+      // If still nothing, fallback to the earliest unpaid schedule (just in case)
+      const fallbackUnpaid = nextUnpaid || unpaidSchedules[0];
+
+      return {
+        schedule: fallbackUnpaid || null,
+        status: "Active"
+      };
+    }, [loanSchedRaw, loanAccViewData]);
+  };
+
+  // Get the current or next payment schedule dynamically
+  const { schedule: paymentSchedule, status } = useCurrentPaymentSchedule(loanSchedRaw, loanAccViewData);
+
+  // Examples:
+  if (status === "Active") {
+    console.log("Next due:", paymentSchedule?.due_date);
+    console.log("Total due:", paymentSchedule?.total_due);
+  } else if (status === "Fully Paid") {
+    console.log("🎉 Loan is fully paid!");
+  } else if (status === "Closed") {
+    console.log("✅ Loan is closed or archived");
+  }
+
+  // console.log("Active Schedule:", paymentSchedule);
+
+  // Variables extracted values on this is tied to the conditional inside which is either today month or next due
+  const schedId = paymentSchedule?.schedule_id || null;
+  const totalDue = paymentSchedule?.total_due || 0;
+  const paymentStatus = paymentSchedule?.status || "";
+  const amountPaid = paymentSchedule?.amount_paid || 0;
+  const dueDate = paymentSchedule?.due_date || null;
+  
+
 
 
   const fields = [
@@ -559,14 +651,60 @@ function CoopLoansPayments() {
             />
           </div>
 
+
+
           {/* Outstanding Balance and monthly payment total Display */}
           <div className="form-control w-full mt-2 mb-2 flex justify-between">
             <div>
-              <label className="label text-sm font-semibold mb-2">Monthly Payment</label>
+              <label className="label text-sm font-semibold mb-2">Sched ID.</label>
               <div className="flex items-center font-semibold">
-                <span className='text-info'>₱ {Number(monthlyTotal).toLocaleString()}</span>
+                <span className=''>{schedId}</span>
               </div>
             </div>
+
+            <div>
+              <label className="label text-sm font-semibold mb-2">Monthly Amount</label>
+              <div className="flex items-center font-semibold">
+                <span className='text-warning'>₱ {Number(totalDue).toLocaleString()}</span>
+              </div>
+            </div>
+
+
+            <div>
+              <label className="label text-sm font-semibold mb-2">Status</label>
+              <div className="flex items-center font-semibold">
+                <span className='text-neutral'>{paymentStatus}</span>
+              </div>
+            </div>
+
+            {paymentStatus === "PARTIALLY PAID" && (
+              <div>
+                <label className="label text-sm font-semibold mb-2">Amount</label>
+                <div className="flex items-center font-semibold">
+                  <span className='text-info'>₱ {Number(amountPaid).toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+
+          </div>
+          {/* Outstanding Balance and monthly payment total Display */}
+          <div className="form-control w-full mt-2 mb-2 flex justify-between">
+
+            <div>
+              <label className="label text-sm font-semibold mb-2">Due Date</label>
+              <div className="flex items-center font-semibold">
+                {/* <span className='text-info'>{isPaid ? "Paid": null}</span> */}
+                <span>{dueDate}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="label text-sm font-semibold mb-2">Total Payable</label>
+              <div className="flex items-center font-semibold">
+                <span className='text-success'>₱ {Number(totalDue - amountPaid).toLocaleString()}</span>
+              </div>
+            </div>
+
 
             <div className="text-right">
               <label className="label text-sm font-semibold mb-2">Outstanding Balance</label>
@@ -576,6 +714,8 @@ function CoopLoansPayments() {
               </div>
             </div>
           </div>
+
+
 
           {fields.map(({ label, name, type, options, autoComplete }) => (
             <div key={name} className="form-control w-full mt-2">
@@ -591,8 +731,8 @@ function CoopLoansPayments() {
                     required: true,
                     validate: (value) => {
                       if (value <= 0) return "Amount cannot be zero or negative";
-                      if (value > monthlyTotal)
-                        return `Amount cannot exceed monthly total payment of ₱${Number(monthlyTotal).toLocaleString()} (TEMPORARY)`;
+                      if (value > totalDue)
+                        return `Amount cannot exceed monthly total payment of ₱${Number(totalDue).toLocaleString()} (TEMPORARY)`;
                       if (value > balance)
                         return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
                       return true;

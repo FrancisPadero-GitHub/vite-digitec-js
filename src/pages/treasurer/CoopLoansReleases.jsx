@@ -215,7 +215,7 @@ function CoopLoansReleases() {
               >
                 {/* Application ID */}
                 <td className="text-center px-2 py-2 text-xs font-medium">
-                  {TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}
+                  {TABLE_PREFIX}{row.loan_ref_number?.toLocaleString() || "ID"}
                 </td>
 
                 {/* Account Number */}
