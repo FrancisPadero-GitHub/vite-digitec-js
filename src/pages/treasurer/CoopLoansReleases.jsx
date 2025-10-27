@@ -291,15 +291,20 @@ function CoopLoansReleases() {
           }}
         />
         
+
         <BoardFormModal
           title={"Loan Account"}
           open={modalType !== null}
           close={closeModal}
-          action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
-          status={true} // disables if the value is null
+          status={!watch("release_date")}
           isPending={isPending}
           isDisabled={watch("status") === "Active"}
+          confirmRelease={{
+            show: watch("release_date"), // Only show confirmation if not yet released
+            message:
+              "Releasing this loan will generate the payment schedule and activate the loan. Do you want to proceed?",
+          }}
         >
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -428,7 +433,6 @@ function CoopLoansReleases() {
                 <input
                   type="date"
                   {...register("release_date", { required: true })}
-                  disabled
                   className="w-full rounded-md border border-gray-300 p-2"
                 />
               </div>

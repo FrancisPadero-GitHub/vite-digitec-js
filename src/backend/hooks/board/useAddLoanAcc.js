@@ -56,6 +56,7 @@ export const useAddLoanAcc = () => {
     onSuccess: (data) => {
       console.log("✅ Loan Account Added!", data);
       queryClient.invalidateQueries(["loan_accounts"]);
+      queryClient.invalidateQueries(["loan_accounts_view"]);
     },
 
     onError: (error) => {

@@ -196,7 +196,7 @@ function LoanAccountDetails() {
             </div>
 
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Loan Ref No.</span>
                 <span>{accountData.loan_ref_number}</span>
@@ -211,6 +211,15 @@ function LoanAccountDetails() {
                   {accountData.approved_date
                     ? dayjs(accountData.approved_date).format("MMM D, YYYY")
                     : "—"}
+                </span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Release Date</span>
+                <span>
+                  {accountData.release_date
+                    ? dayjs(accountData.release_date).format("MMM D, YYYY")
+                    : "Pending Release"}
                 </span>
               </div>
             </div>
