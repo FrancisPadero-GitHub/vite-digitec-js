@@ -35,10 +35,12 @@ import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
 import LoanApplications from "./pages/board/LoanApplications";
 import LoanAccounts from "./pages/board/LoanAccounts";
 import LoanAccountDetails from "./pages/board/LoanAccountDetails";
+import LoansPayments from "./pages/board/LoanPayments";
 
 // REGULAR AND ASSOCIATE PAGES
 import MemberDashboard from "./pages/members/MemberDashboard";
 import MemberCoopShareCapital from "./pages/members/MemberCoopShareCapital";
+import MemberPayments from "./pages/members/MemberPayments";
 import MemberLoanApp from "./pages/members/MemberLoanApp";
 import MemberReports from "./pages/members/MemberReports";
 import MemberHelp from "./pages/members/MemberHelp";
@@ -48,6 +50,7 @@ import MemberSettings from "./pages/members/MemberSettings";
 import MemberClubFunds from "./pages/members/MemberClubFunds";
 import Profile from "./pages/members/Profile";
 import MemberLoanAcc from "./pages/members/MemberLoanAcc";
+
 
 
 const queryClient = new QueryClient();
@@ -84,6 +87,7 @@ function AppRoutes() {
     ...boardSharedTreasurerPages, 
     { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },   
     { path: "coop-loans/loan-applications", element: <LoanApplications /> },
+    { path: "coop-loans/loan-payments", element: <LoansPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },   
   ];
 
@@ -100,6 +104,7 @@ function AppRoutes() {
     { path: "regular-member-share-capital", element: <MemberCoopShareCapital /> },
     { path: "coop-loans/loan-accounts", element: <MemberLoanAcc /> }, 
     { path: "coop-loans/loan-applications", element: <MemberLoanApp /> },
+    { path: "coop-loans/loan-payments", element: <MemberPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "regular-member-help", element: <MemberHelp /> },
     { path: "regular-member-settings", element: <MemberSettings /> },

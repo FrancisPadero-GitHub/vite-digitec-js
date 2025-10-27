@@ -37,12 +37,13 @@ function CoopLoansPayments() {
 
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments(page, limit);
+  const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({page, limit});
   const loanPaymentsRaw = loanPaymentsData?.data || [];
   const total = loanPaymentsData?.count || 0;
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+  const [statusFilter, setStatusFilter] = useState("");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
@@ -59,12 +60,13 @@ function CoopLoansPayments() {
     const matchesSearch =
       searchTerm === "" ||
       fullName.includes(searchTerm.toLowerCase()) ||
+      row.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.receipt_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.payment_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
 
-
-
+    const statusPaymentFilter =
+      statusFilter === "" || row.status === statusFilter;
 
     const matchesPaymentMethod =
       paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
@@ -75,7 +77,7 @@ function CoopLoansPayments() {
     const matchesMonth =
       monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
-    return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod;
+    return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod && statusPaymentFilter;
   });
 
   const { mutate: mutateDelete } = useDelete('loan_payments');
@@ -120,6 +122,7 @@ function CoopLoansPayments() {
   // const loanId = watch("loan_ref_number");
   // const paymentDate = watch("payment_date");
 
+  // RECEIPT NO GENERATOR
   // Compute receipt_no whenever dependencies change
   // useMemo(() => {
   //   if (loanId && payerId && paymentDate) {
@@ -303,6 +306,15 @@ function CoopLoansPayments() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           dropdowns={[
+            {
+              label: "All Status",
+              value: statusFilter,
+              onChange: setStatusFilter,
+              options: [
+                { label: "Full", value: "full" },
+                { label: "Partial", value: "partial" },
+              ],
+            },
             {
               label: "All Method",
               value: paymentMethodFilter,
@@ -654,29 +666,70 @@ function CoopLoansPayments() {
         </FormModal>
          
 
-         {/* View only data modal */}
+        {/* View only data modal */}
         {viewPaymentData && (
-          <div className="fixed inset-0 z-[900] flex items-center justify-center bg-black/50">
-            <div className="bg-base-100 p-6 rounded-lg w-96">
-              <h2 className="text-lg font-bold mb-4">Payment Details</h2>
+          <div className="fixed inset-0 z-[900] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6 text-center">
+                Payment Details
+              </h2>
 
-              <div className="space-y-2">
-                <div><span className="font-semibold">Account Number:</span> {viewPaymentData.account_number}</div>
-                <div><span className="font-semibold">Loan Ref Number:</span> {viewPaymentData.loan_ref_number}</div>
-                <div><span className="font-semibold">Payment Date:</span> {viewPaymentData.payment_date}</div>
-                <div><span className="font-semibold">Payment Method:</span> {viewPaymentData.payment_method}</div>
-                <div><span className="font-semibold">Principal:</span> ₱ {viewPaymentData.principal.toLocaleString()}</div>
-                <div><span className="font-semibold">Interest:</span> ₱ {viewPaymentData.interest.toLocaleString()}</div>
-                <div><span className="font-semibold">Fees:</span> ₱ {viewPaymentData.fees.toLocaleString()}</div>
-                <div><span className="font-semibold">Total Amount:</span> ₱ {viewPaymentData.total_amount.toLocaleString()}</div>
-                <div><span className="font-semibold">Status:</span> {viewPaymentData.status}</div>
-                <div><span className="font-semibold">Schedule ID:</span> {viewPaymentData.schedule_id}</div>
+              <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <div className="flex justify-between">
+                  <span className="font-medium">Account Number:</span>
+                  <span>{viewPaymentData.account_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Loan Ref Number:</span>
+                  <span>{viewPaymentData.loan_ref_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Payment Date:</span>
+                  <span>{viewPaymentData.payment_date}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Payment Method:</span>
+                  <span>{viewPaymentData.payment_method}</span>
+                </div>
+                <hr className="border-gray-300 dark:border-gray-700 my-2" />
+                <div className="flex justify-between">
+                  <span className="font-medium">Principal:</span>
+                  <span>₱ {viewPaymentData.principal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Interest:</span>
+                  <span>₱ {viewPaymentData.interest.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Fees:</span>
+                  <span>₱ {viewPaymentData.fees.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-base font-semibold text-gray-900 dark:text-white mt-2">
+                  <span>Total Amount:</span>
+                  <span>₱ {viewPaymentData.total_amount.toLocaleString()}</span>
+                </div>
+                <hr className="border-gray-300 dark:border-gray-700 my-2" />
+                <div className="flex justify-between">
+                  <span className="font-medium">Status:</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${viewPaymentData.status === "PAID"
+                      ? "bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200"
+                      : "bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-200"
+                      }`}
+                  >
+                    {viewPaymentData.status}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Schedule ID:</span>
+                  <span>{viewPaymentData.schedule_id}</span>
+                </div>
               </div>
 
-              <div className="mt-4 text-right">
+              <div className="mt-6 text-center">
                 <button
-                  className="btn btn-sm btn-primary"
                   onClick={closeViewModal}
+                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md transition-all duration-200"
                 >
                   Close
                 </button>

@@ -34,8 +34,12 @@ const loansBase = (role) => [
     label: "Coop Loans",
     icon: HandshakeIcon,
     children: [
+      // NOTE: they may seem the same but the parent path is different as well as the pages they are used
+      // refer to the routes.jsx to view what pages they are belong to
+      // this is dynaminally configured
       { label: "Applications", path: `/${role}/coop-loans/loan-applications` },
       { label: "Loan Accounts", path: `/${role}/coop-loans/loan-accounts` },
+      { label: "Payments", path: `/${role}/coop-loans/loan-payments` },
     ],
   }
 ]
