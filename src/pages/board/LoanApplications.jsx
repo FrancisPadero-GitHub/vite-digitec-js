@@ -143,6 +143,7 @@ function LoanApplications() {
       release_date: null, // will be configured by treasurer
       approved_date: today,
       maturity_date: "",
+      start_date: today,
     }
 
   // React Hook Form setup for Loan Accounts
@@ -314,6 +315,7 @@ function LoanApplications() {
         status: "Active",
         release_date: null,
         approved_date: today,
+        start_date: today,
         maturity_date: (() => {
           const date = new Date();
           // normalize to avoid edge cases like Jan 31 -> Mar 3 (Feb months is kulang)
@@ -338,6 +340,9 @@ function LoanApplications() {
         {
           onSuccess: () => {
             showPrompt("success", "Updated Loan Application")
+          },
+          onError: () => {
+            showPrompt("error", "Failed to update loan application.") 
           }
         });
       // console.log("EDITED DATA", data )
@@ -349,16 +354,23 @@ function LoanApplications() {
   // Loan Accounts handler
   // This is the last one to be submitted if the status is for approval
   const onSubmitLoanAcc = (loanAccData) => {
+    // console.log(`TEST`, loanAccData?.start_date )
+
     // 1. Create the loan account
+
     addLoanAcc(loanAccData,
       {
         onSuccess: () => {
           showPrompt("success", "Loan Application Approved!",)
+        },
+        onError: () => {
+          showPrompt("error", "Failed to approve loan application.")
         }
       }
-    ); // this is the first mutation add on success here then 
+    );
 
     // 2. Mutate the original application too (if it's pending)
+    
     if (pendingAppData) {
       mutateEdit(pendingAppData,
         {
@@ -370,6 +382,9 @@ function LoanApplications() {
             setTimeout(() => {
               navigate("/board/coop-loans/loan-accounts");
             }, 3000);
+          },
+          onError: () => {
+            showPrompt("error", "Failed to update loan application.")
           }
         });
     }
@@ -895,6 +910,33 @@ function LoanApplications() {
               <p className="text-error text-sm mt-1">Required</p>
             )}
           </div>
+          
+          {/* Start Date */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Start Date</span>
+            </label>
+            <input
+              type="date"
+              {...registerLoanAcc("start_date", { required: false })}
+              className="input input-bordered w-full text-gray-700"
+            />
+            {errorsLoanAcc.start_date && (
+              <p className="text-error text-sm mt-1">Required</p>
+            )}
+          </div>
+
+          {/* Status */}
+          <div className="form-control w-full mt-2">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-gray-700">Status</span>
+            </label>
+            <input
+              {...registerLoanAcc("status")}
+              readOnly
+              className="input input-bordered w-full bg-gray-100 text-gray-700"
+            />
+          </div>
 
           {/* Maturity Date */}
           <div className="form-control w-full mt-2">
@@ -912,17 +954,7 @@ function LoanApplications() {
             )}
           </div>
 
-          {/* Status */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Status</span>
-            </label>
-            <input
-              {...registerLoanAcc("status")}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-          </div>
+
         </div>
       </LoanAccModal>
 

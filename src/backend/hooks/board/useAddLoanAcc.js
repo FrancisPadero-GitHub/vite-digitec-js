@@ -54,37 +54,36 @@ export const useAddLoanAcc = () => {
     mutationFn: addLoanAcc,
 
     onSuccess: async ({ loan, formData }) => {
-      console.log("✅ Loan Account Added:", loan);
-      
+      console.log("✅ Loan Account Added!", loan);
+
       const {
         interest_rate,
         loan_term,
         interest_method, // should be either "FLAT" or "DIMINISHING"
         principal,
+        start_date,
         loan_ref_number,
       } = formData;
 
-      // Choose which calculator to use
+      // Choose which calculator to use NOTE THIS TWO HAVE DIFFERENT CALCULATION METHODS
       let scheduleData = [];
       if (interest_method === "Flat Rate") {
-        console.log("Generating FLAT RATE schedule...");
         const { schedule } = calculateLoanAndScheduleFlatRate({
           loanId: loan.loan_id,
           principal,
           interestRate: interest_rate,
           termMonths: loan_term,
-          startDate: loan.approved_date,
+          startDate: start_date,
           generateSchedule: true,
         });
         scheduleData = schedule;
       } else if (interest_method === "Reducing") {
-        console.log("Generating DIMINISHING schedule...");
         const { schedule } = calculateLoanAndScheduleReducing({
           loanId: loan.loan_id,
           principal,
           interestRate: interest_rate,
           termMonths: loan_term,
-          startDate: loan.approved_date,
+          startDate: start_date,
           generateSchedule: true,
         });
         scheduleData = schedule;

@@ -48,7 +48,7 @@ export default function calculateLoanAndScheduleFlatRate({
   // Optional schedule generation
   let schedule = [];
   if (generateSchedule) {
-    for (let i = 1; i <= months; i++) {
+    for (let i = 0; i < months; i++) {
       const dueDate = dayjs(startDate).add(i, "month").format("YYYY-MM-DD");
       schedule.push({
         loan_id: loanId,

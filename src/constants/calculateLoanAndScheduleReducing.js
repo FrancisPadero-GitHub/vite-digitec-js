@@ -20,6 +20,7 @@ export default function calculateLoanAndScheduleReducing({
   const amount = Number(principal);
   const months = Number(termMonths);
 
+  // Validation
   if (
     !rate ||
     !amount ||
@@ -53,7 +54,7 @@ export default function calculateLoanAndScheduleReducing({
   let schedule = [];
 
   if (generateSchedule) {
-    for (let i = 1; i <= months; i++) {
+    for (let i = 0; i < months; i++) {
       const interestDue = balance * monthlyRate;
       const principalDue = monthlyPayment - interestDue;
       balance -= principalDue;
@@ -73,7 +74,7 @@ export default function calculateLoanAndScheduleReducing({
     }
   } else {
     // If schedule isn't needed, just compute totals quickly
-    for (let i = 1; i <= months; i++) {
+    for (let i = 0; i < months; i++) {
       const interestDue = balance * monthlyRate;
       const principalDue = monthlyPayment - interestDue;
       balance -= principalDue;
