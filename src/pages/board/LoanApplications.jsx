@@ -847,21 +847,31 @@ function LoanApplications() {
             )}
           </div>
 
-          {/* Principal */}
+ 
+          {/* Principal | Approval Amount */}
           <div className="form-control w-full mt-2">
             <label className="label mb-1">
-              <span className="label-text font-bold text-green-700 ">Principal | Approval Amount</span>
+              <span className="label-text font-bold text-green-700 ">
+                Principal | Approval Amount
+              </span>
             </label>
             <input
               type="number"
-              {...registerLoanAcc("principal", { required: true })}
+              {...registerLoanAcc("principal", {
+                required: true,
+                min: selectedProduct?.min_amount || 0,
+                max: selectedProduct?.max_amount || 9999999,
+              })}
               placeholder={watch("amount")}
               className="input input-bordered w-full"
             />
             {errorsLoanAcc.principal && (
-              <p className="text-error text-sm mt-1">Required</p>
+              <p className="text-error text-sm mt-1 ml-2">
+                Amount must be between {selectedProduct?.min_amount} and {selectedProduct?.max_amount}
+              </p>
             )}
           </div>
+
 
           {/* Interest Rate */}
           <div className="form-control w-full mt-2">
