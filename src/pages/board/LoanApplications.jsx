@@ -337,7 +337,7 @@ function LoanApplications() {
         interest_rate: interestRate,
         interest_method: interestMethod,
         loan_term: loanTerm,
-        status: "Active",
+        status: "Pending Release",
         release_date: null,
         approved_date: today,
       });

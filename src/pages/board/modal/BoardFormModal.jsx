@@ -1,7 +1,7 @@
 
 
 
-function BoardFormModal({ title, open, close, children, onSubmit, status, action, deleteAction, type}) { 
+function BoardFormModal({ title, open, close, children, onSubmit, status, action, deleteAction, type, isPending, isDisabled}) {
 
   // if open is false, don't render anything
   if (!open) return null
@@ -18,7 +18,7 @@ function BoardFormModal({ title, open, close, children, onSubmit, status, action
               <button
                 type="button"
                 className="btn btn-error"
-                disabled={status}
+                disabled={status || isDisabled || status}
                 onClick={deleteAction}
               >
                 Delete
@@ -27,8 +27,15 @@ function BoardFormModal({ title, open, close, children, onSubmit, status, action
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status} >
-                  {type ? "Next" : "Submit"}
+                <button type="submit" className="btn btn-primary" disabled={status && isPending || isDisabled}>
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Loading...
+                    </>
+                  ) : (
+                    type ? "Next" : "Release"
+                  )}
                 </button>
               )}
             </div>

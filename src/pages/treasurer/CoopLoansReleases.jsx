@@ -23,7 +23,7 @@ const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWp
 
 
 function CoopLoansReleases() {
-  const {mutate: releaseLoan } = useEditLoanAcc();
+  const {mutate: releaseLoan, isPending } = useEditLoanAcc();
 
   //  const navigate = useNavigate();
   const { data: members_data } = useMembers({});
@@ -76,7 +76,24 @@ function CoopLoansReleases() {
     return matchesSearch && matchesStatus;
   });
   const [modalType, setModalType] = useState(null);
-
+  const defaultValues = {
+    loan_id: "",
+    loan_ref_number: "",
+    application_id: "",
+    applicant_name: "",
+    account_number: "",
+    principal: "",
+    outstanding_balance: "",
+    total_interest: "",
+    total_amount_due: "",
+    interest_rate: "",
+    interest_method: "",
+    loan_term: "",
+    status: "Active",
+    release_date: "",
+    maturity_date: "",
+    first_due: "",
+  };
 
   // React Hook Form setup for Loan Accounts
   const {
@@ -87,48 +104,31 @@ function CoopLoansReleases() {
     setValue,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      loan_id: null,
-      application_id: null,
-      applicant_name: "",
-      account_number: "",
-      principal: null,
-      outstanding_balance: null,
-      interest_rate: null,
-      interest_method: null,
-      status: "Active",
-      release_date: null, // will be configured by treasurer
-      maturity_date: "",
-    },
+    defaultValues
   });
 
   const openModal = (row) => {
-    console.log(row)
+    // console.log(row)
     setModalType("edit");
-
     const matchedMember = members?.find(
       (member) => member.account_number === row.account_number
     );
     const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
 
-
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
+    const loanTerm = Number(matchedLoanProduct?.max_term_months) || 0;
+    const interestMethod = matchedLoanProduct?.interest_method ?? "";
+    const interestRate = Number(matchedLoanProduct?.interest_rate) || 0;
 
     // This might confuse you but all this modal will update is the release_date column just refer to the hook
     reset({
-      loan_id: row.loan_id,
-      application_id: row.application_id,
+      ...row,
       applicant_name: fullName,
-      account_number: row.account_number,
-      principal: row.principal,
-      outstanding_balance: row.outstanding_balance,
-      interest_rate: Number(matchedLoanProduct?.interest_rate) || 0,
-      interest_method: matchedLoanProduct?.interest_method ?? "",
-      status: row.status,
-      release_date: row.release_date ?? "",
-      maturity_date: row.maturity_date ?? "",
+      loan_term: loanTerm,
+      interest_rate: interestRate,
+      interest_method: interestMethod,
     });
   };
 
@@ -143,7 +143,6 @@ function CoopLoansReleases() {
       }
     })
   };
-
 
   const closeModal = () => {
     setModalType(null)
@@ -298,18 +297,21 @@ function CoopLoansReleases() {
           close={closeModal}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
-          status={!watch("release_date")} // disables if the value is null 
+          status={true} // disables if the value is null
+          isPending={isPending}
+          isDisabled={watch("status") === "Active"}
         >
-          <div className="space-y-4">
-            {/* Application ID */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Loan Ref No */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Application ID
+                Loan Ref No.
               </label>
               <input
                 type="text"
                 disabled
-                value={`${TABLE_PREFIX}${watch("application_id")}` }
+                value={watch("loan_ref_number")}
                 className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
               />
             </div>
@@ -317,7 +319,7 @@ function CoopLoansReleases() {
             {/* Account Number */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Account Number
+                Account No.
               </label>
               <input
                 type="text"
@@ -327,12 +329,10 @@ function CoopLoansReleases() {
               />
             </div>
 
-
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Name
-
+                Name
               </label>
               <input
                 type="text"
@@ -340,21 +340,6 @@ function CoopLoansReleases() {
                 readOnly
                 className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
               />
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Status
-              </label>
-              <select
-                {...register("status")}
-                className="w-full rounded-md border border-gray-300 p-2"
-              >
-                <option value="Active">Active</option>
-                <option value="Defaulted">Defaulted</option>
-                <option value="Renewed">Renewed</option>
-              </select>
             </div>
 
             {/* Principal */}
@@ -366,12 +351,74 @@ function CoopLoansReleases() {
                 type="number"
                 disabled
                 {...register("principal", { required: true })}
-                className="w-full rounded-md border border-gray-300 p-2"
+                className="w-full rounded-md border border-gray-300 bg-gray-100  p-2"
               />
               {errors.principal && (
                 <p className="text-red-500 text-sm mt-1">Principal is required</p>
               )}
             </div>
+
+            {/* Total Interest Rate */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Total Interest
+              </label>
+              <input
+                type="number"
+                disabled
+                {...register("total_interest", { required: true })}
+                className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
+              />
+              {errors.total_interest && (
+                <p className="text-red-500 text-sm mt-1">Total interest rate is required</p>
+              )}
+            </div>
+
+            {/* Amount Due */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Amount Due
+              </label>
+              <input
+                type="number"
+                disabled
+                {...register("total_amount_due", { required: true })}
+                className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
+              />
+              {errors.total_amount_due && (
+                <p className="text-red-500 text-sm mt-1">Amount due is required</p>
+              )}
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Status
+              </label>
+              <input
+                value={watch("status")}
+                disabled
+                className="w-full rounded-md border border-gray-300 bg-gray-100 p-2"
+              />
+            </div>
+
+            {/* First Due Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                First Due Date
+              </label>
+              <input
+                type="date"
+                {...register("first_due", { required: true })}
+                className="w-full rounded-md border border-gray-300 p-2"
+              />
+              {errors.first_due && (
+                <p className="text-red-500 text-sm mt-1">
+                  First due date is required
+                </p>
+              )}
+            </div>
+
             {/* Release Date */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -384,7 +431,6 @@ function CoopLoansReleases() {
                   disabled
                   className="w-full rounded-md border border-gray-300 p-2"
                 />
-
               </div>
               {errors.release_date && (
                 <p className="text-red-500 text-sm mt-1">
@@ -393,10 +439,14 @@ function CoopLoansReleases() {
               )}
             </div>
 
+            
+          </div>
+          {/* Button below the grid */}
+          <div className="mt-4">
             <button
               type="button"
               onClick={() => setValue("release_date", new Date().toISOString().split("T")[0])}
-              disabled={!!watch("release_date")}  // disables if there's already a value
+              disabled={!!watch("release_date")}
               className={`px-3 py-2 rounded-md transition
                   ${watch("release_date")
                   ? "bg-gray-400 cursor-not-allowed"
