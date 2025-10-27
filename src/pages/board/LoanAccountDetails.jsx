@@ -121,7 +121,7 @@ function LoanAccountDetails() {
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Principal</span>
-                <span>₱{Number(accountData.principal || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.principal || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
@@ -136,22 +136,22 @@ function LoanAccountDetails() {
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Total Interest</span>
-                <span>₱{Number(accountData.total_interest || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.total_interest || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Total Amount Due</span>
-                <span>₱{Number(accountData.total_amount_due || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.total_amount_due || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Total Paid</span>
-                <span>₱{Number(accountData.total_paid || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.total_paid || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Outstanding Balance</span>
-                <span>₱{Number(accountData.outstanding_balance || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.outstanding_balance || 0).toLocaleString()}</span>
               </div>
 
               {/* <div className="flex flex-col">
@@ -176,22 +176,22 @@ function LoanAccountDetails() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Total Principal Paid</span>
-                <span>₱{Number(accountData.principal_paid || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.principal_paid || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Remaining Principal</span>
-                <span>₱{Number(accountData.remaining_principal || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.remaining_principal || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Total Interest Paid</span>
-                <span>₱{Number(accountData.interest_paid || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.interest_paid || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Remaining Interest</span>
-                <span>₱{Number(accountData.remaining_interest || 0).toLocaleString()}</span>
+                <span>₱ {Number(accountData.remaining_interest || 0).toLocaleString()}</span>
               </div>
             </div>
 
@@ -202,8 +202,8 @@ function LoanAccountDetails() {
                 <span>{accountData.loan_ref_number}</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-base-content/60">Loan Application ID</span>
-                <span>{TABLE_PREFIX}{accountData.application_id || "—"}</span>
+                <span className="font-bold text-base-content/60">Service Fee</span>
+                <span>₱ {Number(accountData.service_fee || 0).toLocaleString()}</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-base-content/60">Approved Date</span>

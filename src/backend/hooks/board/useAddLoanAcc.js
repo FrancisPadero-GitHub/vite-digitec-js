@@ -17,6 +17,7 @@ const addLoanAcc = async (formData) => {
     approved_date = null,
     maturity_date = null,
     first_due = null,
+    service_fee = null,
   } = formData;
 
   const loanPayload = {
@@ -33,6 +34,7 @@ const addLoanAcc = async (formData) => {
     approved_date,
     maturity_date,
     first_due,
+    service_fee,
   };
 
   const { data, error: loanError } = await supabase

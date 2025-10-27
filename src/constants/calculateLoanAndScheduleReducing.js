@@ -15,10 +15,20 @@ export default function calculateLoanAndScheduleReducing({
   startDate = dayjs(),
   loanId = null,
   generateSchedule = false,
+  serviceFeeRate = 0, // Add service fee rate (percent)
 }) {
   const rate = Number(interestRate);
   const amount = Number(principal);
   const months = Number(termMonths);
+  const serviceFee = amount * (Number(serviceFeeRate) / 100);
+  const netPrincipal = amount - serviceFee; // Deduct service fee from principal
+
+  /**
+   * Alternative approach (do not deduct service fee from principal)
+   * 
+   * const netPrincipal = amount; // do not deduct service fee from principal
+   * const totalPayable = netPrincipal + totalInterest + serviceFee;
+   */
 
   // Validation
   if (
@@ -34,6 +44,7 @@ export default function calculateLoanAndScheduleReducing({
       totalInterest: 0,
       totalPayable: 0,
       monthlyPayment: 0,
+      serviceFee: 0,
       schedule: [],
     };
   }
@@ -44,10 +55,10 @@ export default function calculateLoanAndScheduleReducing({
   // Monthly amortization formula:
   // Payment = P * [r(1+r)^n] / [(1+r)^n - 1]
   const monthlyPayment =
-    (amount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+    (netPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
     (Math.pow(1 + monthlyRate, months) - 1);
 
-  let balance = amount;
+  let balance = netPrincipal;
   let totalInterest = 0;
   const round = (n) => Number((Number(n) || 0).toFixed(2));
 
@@ -73,7 +84,6 @@ export default function calculateLoanAndScheduleReducing({
       });
     }
   } else {
-    // If schedule isn't needed, just compute totals quickly
     for (let i = 0; i < months; i++) {
       const interestDue = balance * monthlyRate;
       const principalDue = monthlyPayment - interestDue;
@@ -82,12 +92,13 @@ export default function calculateLoanAndScheduleReducing({
     }
   }
 
-  const totalPayable = amount + totalInterest;
+  const totalPayable = netPrincipal + totalInterest + serviceFee;
 
   return {
     totalInterest: round(totalInterest),
     totalPayable: round(totalPayable),
     monthlyPayment: round(monthlyPayment),
+    serviceFee: round(serviceFee),
     schedule,
   };
 }

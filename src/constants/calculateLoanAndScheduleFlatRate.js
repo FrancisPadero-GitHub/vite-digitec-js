@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-// this version is for the flat rate 
+// this version is for the flat rate
 
 export default function calculateLoanAndScheduleFlatRate({
   interestRate,
@@ -9,11 +9,21 @@ export default function calculateLoanAndScheduleFlatRate({
   startDate = dayjs(),
   loanId = null,
   generateSchedule = false,
+  serviceFeeRate = 0, // Add service fee rate (percent)
 }) {
   // Convert to numbers safely
   const rate = Number(interestRate);
   const amount = Number(principal);
   const months = Number(termMonths);
+  const serviceFee = amount * (Number(serviceFeeRate) / 100);
+  const netPrincipal = amount - serviceFee; // Deduct service fee from principal
+
+  /**
+   * Alternative approach (do not deduct service fee from principal)
+   * 
+   * const netPrincipal = amount; // do not deduct service fee from principal
+   * const totalPayable = netPrincipal + totalInterest + serviceFee;
+   */
 
   // Validation
   if (
@@ -31,15 +41,16 @@ export default function calculateLoanAndScheduleFlatRate({
       monthlyPayment: 0,
       monthlyPrincipal: 0,
       monthlyInterest: 0,
+      serviceFee: 0,
       schedule: [],
     };
   }
 
   // Flat interest logic
-  const totalInterest = amount * (rate / 100);
-  const totalPayable = amount + totalInterest;
+  const totalInterest = netPrincipal * (rate / 100);
+  const totalPayable = netPrincipal + totalInterest + serviceFee;
 
-  const monthlyPrincipal = amount / months;
+  const monthlyPrincipal = netPrincipal / months;
   const monthlyInterest = totalInterest / months;
   const monthlyPayment = monthlyPrincipal + monthlyInterest;
 
@@ -68,6 +79,7 @@ export default function calculateLoanAndScheduleFlatRate({
     monthlyPayment: round(monthlyPayment),
     monthlyPrincipal: round(monthlyPrincipal),
     monthlyInterest: round(monthlyInterest),
+    serviceFee: round(serviceFee),
     schedule,
   };
 }

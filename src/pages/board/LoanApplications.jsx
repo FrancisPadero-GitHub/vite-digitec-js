@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Toaster } from "react-hot-toast";
 import { usePrompt } from "../shared/components/usePrompt";
@@ -11,6 +11,7 @@ import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
 import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
+import { useFetchSettings } from "../../backend/hooks/shared/useFetchSettings";
 
 // mutation hooks
 import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
@@ -34,12 +35,15 @@ const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWp
 
 function LoanApplications() {
   const { showPrompt } = usePrompt();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
   // Fetches data 
+  const { data: settingsData } = useFetchSettings();
+  const serviceFeeRate = settingsData?.loan_service_fee || 0;
+
   const {data: auth_member_id} = useFetchMemberId();    // used by the one who reviewed the loan application
 
   const { data: members_data } = useMembers({});
@@ -158,6 +162,7 @@ function LoanApplications() {
       approved_date: today,
       maturity_date: "",
       first_due: "",
+      service_fee: 0,
     }
 
   // React Hook Form setup for Loan Accounts
@@ -189,33 +194,39 @@ function LoanApplications() {
     const timer = setTimeout(() => {
       let totalPayable = 0;
       let totalInterest = 0;
+      let serviceFee = 0;
 
       if (interestMethod === "Flat Rate") {
         const result = calculateLoanAndScheduleFlatRate({
           interestRate: Number(interestRateValue),
           principal: Number(principalValue),
           termMonths: Number(loanTermValue),
+          serviceFeeRate: Number(serviceFeeRate),
         });
         totalPayable = result.totalPayable;
         totalInterest = result.totalInterest;
+        serviceFee = result.serviceFee;
       } else if (interestMethod === "Reducing") {
         const result = calculateLoanAndScheduleReducing({
           interestRate: Number(interestRateValue),
           principal: Number(principalValue),
           termMonths: Number(loanTermValue),
+          serviceFeeRate: Number(serviceFeeRate),
         });
         totalPayable = result.totalPayable;
         totalInterest = result.totalInterest;
+        serviceFee = result.serviceFee;
       }
 
       setLoanAccValue("total_amount_due", totalPayable);
-      setLoanAccValue("total_interest", totalInterest)
+      setLoanAccValue("total_interest", totalInterest);
+      setLoanAccValue("service_fee", serviceFee);
       setIsCalculating(false);
 
     }, 600); // debounce delay (ms)
 
     return () => clearTimeout(timer);
-  }, [principalValue, interestRateValue, loanTermValue, interestMethod, setLoanAccValue]);
+  }, [principalValue, interestRateValue, loanTermValue, interestMethod, setLoanAccValue, serviceFeeRate]);
 
   // detect changes in start date or loan term to auto calculate maturity date
   useEffect(() => {
@@ -366,7 +377,7 @@ function LoanApplications() {
   // Loan Accounts handler
   // This is the last one to be submitted if the status is for approval
   const onSubmitLoanAcc = (loanAccData) => {
-    // console.log(`TEST`, loanAccData?.first_due )
+    // console.log(`TEST`, loanAccData )
 
     // 1. Create the loan account
 
@@ -391,9 +402,6 @@ function LoanApplications() {
             setPendingAppData(null); // clear it after use
             setShowLoanAccModal(false);
             closeModal();
-            setTimeout(() => {
-              navigate("/board/coop-loans/loan-accounts");
-            }, 3000);
           },
           onError: () => {
             showPrompt("error", "Failed to update loan application.")
