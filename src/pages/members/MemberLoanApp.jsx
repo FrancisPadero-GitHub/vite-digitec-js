@@ -137,6 +137,9 @@ function MemberLoanApp() {
     const loanAppStatus = loanAppRaw.some(
       (app) => app.status === "Pending"
     ); 
+
+    // Restriction parameters
+    // if a member has a defaulted loan acc which means he or she didn't paid all of the borrowed money
     const loanAccFind = loanAcc?.some(
       (loan) => loan.status === "Active" || loan.status === "Defaulted"
     );

@@ -50,8 +50,7 @@ function CoopLoansReleases() {
 
     return {
       ...baseRow, // all base table fields
-      total_paid: viewRow?.total_paid || 0,
-      outstanding_balance: viewRow?.outstanding_balance || 0,
+      ...viewRow,
     };
   });
 
@@ -181,9 +180,9 @@ function CoopLoansReleases() {
             "Loan Ref No.",
             "Account No.",
             "Name",
-            "Total Amount Due",
-            "Outstanding Balance",
-            "Total Paid",
+            "Principal",
+            "Interest",
+            "Amount Due",
             "Loan Type",
             "Status",
             "Release"
@@ -243,20 +242,20 @@ function CoopLoansReleases() {
 
 
 
-                {/* total amount due */}
+                {/* Principal*/}
+                <td className="px-2 py-2 text-center font-semibold text-success">
+                  ₱ {row.principal?.toLocaleString() || "0"}
+                </td>
+
+                {/* Total Interest */}
+                <td className="px-2 py-2 text-center font-semibold text-success">
+                  ₱ {row.total_interest?.toLocaleString() || "0"}
+                </td>
+
+
+                {/*  Total amount due */}
                 <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.total_amount_due?.toLocaleString() || "0"}
-                </td>
-
-                {/* Outstanding Balance */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.outstanding_balance?.toLocaleString() || "0"}
-                </td>
-
-
-                {/*  Total paid */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.total_paid?.toLocaleString() || "0"}
                 </td>
 
                 {/* Product Name*/}

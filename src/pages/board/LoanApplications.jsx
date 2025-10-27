@@ -136,9 +136,10 @@ function LoanApplications() {
       amount_req: 0,
       total_amount_due: "",
       interest_rate: "", // front_end only
+      total_interest: 0,
       loan_term: "", // front_end only
       interest_method: "", // front_end only
-      status: "ONGOING",
+      status: "",
       release_date: null, // will be configured by treasurer
       approved_date: today,
       maturity_date: "",
@@ -171,6 +172,7 @@ function LoanApplications() {
     setIsCalculating(true);
     const timer = setTimeout(() => {
       let totalPayable = 0;
+      let totalInterest = 0;
 
       if (interestMethod === "Flat Rate") {
         const result = calculateLoanAndScheduleFlatRate({
@@ -179,6 +181,7 @@ function LoanApplications() {
           termMonths: Number(loanTermValue),
         });
         totalPayable = result.totalPayable;
+        totalInterest = result.totalInterest;
       } else if (interestMethod === "Reducing") {
         const result = calculateLoanAndScheduleReducing({
           interestRate: Number(interestRateValue),
@@ -186,9 +189,11 @@ function LoanApplications() {
           termMonths: Number(loanTermValue),
         });
         totalPayable = result.totalPayable;
+        totalInterest = result.totalInterest;
       }
 
       setLoanAccValue("total_amount_due", totalPayable);
+      setLoanAccValue("total_interest", totalInterest)
       setIsCalculating(false);
 
     }, 600); // debounce delay (ms)

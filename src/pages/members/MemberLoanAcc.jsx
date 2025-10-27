@@ -52,8 +52,7 @@ function MemberLoanAcc() {
 
     return {
       ...baseRow, // all base table fields
-      total_paid: viewRow?.total_paid || 0,
-      outstanding_balance: viewRow?.outstanding_balance || 0,
+      ...viewRow,
     };
   });
 

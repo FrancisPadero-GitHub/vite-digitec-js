@@ -35,13 +35,13 @@ function LoanAccountDetails() {
   const { data: loanAccView } = useFetchLoanAccView();
   const loanAccViewRaw = loanAccView?.data || [];
 
+  // merges the data fetched on the two tables
   const mergedLoanAccounts = loanAccRaw.map(baseRow => {
     const viewRow = loanAccViewRaw.find(v => v.loan_id === baseRow.loan_id);
 
     return {
       ...baseRow,
-      total_paid: viewRow?.total_paid || 0,
-      outstanding_balance: viewRow?.outstanding_balance || 0,
+      ...viewRow,
     };
   });
 
@@ -117,46 +117,54 @@ function LoanAccountDetails() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
 
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Principal</span>
+                <span className="font-bold text-base-content/60">Principal</span>
                 <span>₱{Number(accountData.principal || 0).toLocaleString()}</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Total Amount Due</span>
-                <span>₱{Number(accountData.total_amount_due || 0).toLocaleString()}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Outstanding Balance</span>
-                <span>₱{Number(accountData.outstanding_balance || 0).toLocaleString()}</span>
-              </div>
 
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Total Paid</span>
-                <span>₱{Number(accountData.total_paid || 0).toLocaleString()}</span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Interest Rate</span>
+                <span className="font-bold text-base-content/60">Interest Rate</span>
                 <span>{interestRate} %</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Loan Term</span>
+                <span className="font-bold text-base-content/60">Loan Term</span>
                 <span>{loanTerm}</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Release Date</span>
+                <span className="font-bold text-base-content/60">Total Interest</span>
+                <span>₱{Number(accountData.total_interest || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Total Amount Due</span>
+                <span>₱{Number(accountData.total_amount_due || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Total Paid</span>
+                <span>₱{Number(accountData.total_paid || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Outstanding Balance</span>
+                <span>₱{Number(accountData.outstanding_balance || 0).toLocaleString()}</span>
+              </div>
+
+              {/* <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Release Date</span>
                 <span>
                   {accountData.release_date
                     ? dayjs(accountData.release_date).format("MMM D, YYYY")
                     : "—"}
                 </span>
-              </div>
+              </div> */}
+
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Maturity Date</span>
+                <span className="font-bold text-base-content/60">Maturity Date</span>
                 <span>
                   {accountData.maturity_date
                     ? dayjs(accountData.maturity_date).format("MMM D, YYYY")
@@ -165,17 +173,40 @@ function LoanAccountDetails() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Total Principal Paid</span>
+                <span>₱{Number(accountData.principal_paid || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Remaining Principal</span>
+                <span>₱{Number(accountData.remaining_principal || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Total Interest Paid</span>
+                <span>₱{Number(accountData.interest_paid || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Remaining Interest</span>
+                <span>₱{Number(accountData.remaining_interest || 0).toLocaleString()}</span>
+              </div>
+            </div>
+
+
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Loan Ref No.</span>
+                <span className="font-bold text-base-content/60">Loan Ref No.</span>
                 <span>{accountData.loan_ref_number}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Loan Application ID</span>
+                <span className="font-bold text-base-content/60">Loan Application ID</span>
                 <span>{TABLE_PREFIX}{accountData.application_id || "—"}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs text-base-content/60">Approved Date</span>
+                <span className="font-bold text-base-content/60">Approved Date</span>
                 <span>
                   {accountData.approved_date
                     ? dayjs(accountData.approved_date).format("MMM D, YYYY")

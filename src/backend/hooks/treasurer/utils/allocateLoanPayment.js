@@ -1,16 +1,18 @@
 import { updateLoanStatusFromView } from "./updateLoanStatusFromView";
 
 /**
+ * Allocates a loan payment across multiple scheduled payments.
  *
- * This version splits the overpayment to two transaction
- * 
+ * Note:
+ *   This version previously supported splitting overpayments into two separate
+ *   transactions, but that logic is currently disabled per ECTEC policy.
+ *   Overpayments are not officially supported yet.
  */
-
-
 
 export async function allocateLoanPayment(
   supabase,
   {
+    // Extracted from formData – only the relevant payment fields are needed
     loan_ref_number,
     account_number,
     total_amount,
@@ -19,9 +21,10 @@ export async function allocateLoanPayment(
     receipt_no,
   }
 ) {
+  // Helper function to ensure consistent two-decimal rounding
   const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
-  // --- Fetch the loan_id using the ref number ---
+  // Retrieve loan_id from the reference number to identify the target loan
   const { data: loanAccount, error: loanErr } = await supabase
     .from("loan_accounts")
     .select("loan_id")
@@ -30,37 +33,41 @@ export async function allocateLoanPayment(
 
   if (loanErr || !loanAccount)
     throw new Error("No loan_id found for this loan_ref_number.");
+
+  // Used later to update the loan’s status when fully paid
   const targetLoanId = loanAccount.loan_id;
 
-  // --- Initialize remaining payment ---
+  // Tracks the portion of the payment still available for allocation
   let remaining = round(total_amount);
+
+  // Will collect each allocation record for database insertion/logging
   let allocations = [];
 
-  // --- Fetch unpaid or partially paid schedules in order ---
+  // Fetch all unpaid or partially paid schedules for this loan, sorted by due date
   const { data: schedules, error: schedErr } = await supabase
     .from("loan_payment_schedules")
     .select("*")
     .eq("loan_id", targetLoanId)
-    .neq("status", "PAID") // fetch all unpaid or partially paid
+    .neq("status", "PAID") // .neq means not equal
     .order("due_date", { ascending: true });
 
   if (schedErr) throw schedErr;
 
-  // --- Iterate through schedules and allocate payments ---
+  // Process payment allocation across each pending schedule
   for (const sched of schedules) {
-    if (remaining <= 0) break;
+    if (remaining <= 0) break; // stop when full payment is allocated
 
-    // Use amount_paid if it exists; otherwise assume 0
+    // Determine how much has already been paid for this schedule
     const alreadyPaid = round(sched.amount_paid || 0);
     const remainingDue = round(sched.total_due - alreadyPaid);
 
-    if (remainingDue <= 0) continue; // skip fully paid schedule (just in case)
+    if (remainingDue <= 0) continue; // skip any fully paid schedule (safety check)
 
-    // --- Allocate payment up to the remaining due ---
+    // Allocate only up to the remaining due for this schedule
     const allocation = Math.min(remaining, remainingDue);
     remaining = round(remaining - allocation);
 
-    // --- Split the allocation by fee, interest, principal proportionally ---
+    // Split allocation proportionally across fee, interest, and principal
     const totalDue = round(sched.total_due);
     const feePortion = sched.fee_due / totalDue;
     const interestPortion = sched.interest_due / totalDue;
@@ -70,10 +77,11 @@ export async function allocateLoanPayment(
     const interest = round(allocation * interestPortion);
     const principal = round(allocation * principalPortion);
 
+    // Determine if this schedule is now fully paid
     const newTotalPaid = round(alreadyPaid + allocation);
     const fullyPaid = newTotalPaid >= sched.total_due;
 
-    // --- Record this allocation ---
+    // Push the data to the payments table columns
     allocations.push({
       schedule_id: sched.schedule_id,
       loan_id: targetLoanId,
@@ -89,7 +97,7 @@ export async function allocateLoanPayment(
       status: fullyPaid ? "full" : "partial",
     });
 
-    // --- Update the schedule’s payment progress ---
+    // Update this schedule’s payment progress in the database
     const { error: updateErr } = await supabase
       .from("loan_payment_schedules")
       .update({
@@ -102,12 +110,15 @@ export async function allocateLoanPayment(
 
     if (updateErr) throw updateErr;
 
-    if (remaining <= 0) break; // stop if payment fully used
+    // Stop early if no unallocated payment remains
+    if (remaining <= 0) break;
   }
 
-  // --- Handle leftover overpayment (apply to next unpaid schedule’s principal) ---
+  // Handle any leftover amount that couldn’t be allocated normally (overpayment)
+  // THIS IS UNUSED FOR THE MOMENT AND DOES NOTHING CAUSE THE AMOUNT LIMITER IS PLACED ON THE FORM
+  
   if (remaining > 0) {
-    // Try to find next unpaid schedule
+    // Try applying it to the next available unpaid schedule
     const nextSched = schedules.find((s) => s.status !== "PAID");
     if (nextSched) {
       const { error: updateErr } = await supabase
@@ -121,6 +132,7 @@ export async function allocateLoanPayment(
 
       if (updateErr) throw updateErr;
 
+      // Record auto-applied overpayment allocation
       allocations.push({
         schedule_id: nextSched.schedule_id,
         loan_id: targetLoanId,
@@ -136,7 +148,8 @@ export async function allocateLoanPayment(
         status: "auto-applied",
       });
     } else {
-      // If no remaining schedules, treat as pure overpayment (extra principal)
+      // If no unpaid schedule exists, record it as a true overpayment
+      // THIS IS UNUSED FOR THE MOMENT AND DOES NOTHING CAUSE THE AMOUNT LIMITER IS PLACED ON THE FORM
       allocations.push({
         loan_id: targetLoanId,
         account_number,
@@ -155,8 +168,9 @@ export async function allocateLoanPayment(
     remaining = 0;
   }
 
-  // --- Update loan_accounts status if fully paid ---
+  // Recheck and update the main loan status (e.g., mark as fully paid if applicable)
   updateLoanStatusFromView(supabase, targetLoanId);
 
+  // Return all recorded allocations for auditing or confirmation
   return allocations;
 }

@@ -169,16 +169,16 @@ function CoopLoansPayments() {
   };
 
   const onSubmit = (data) => {
-    // addLoanPayments(data, {
-    //   onSuccess: () => {
-    //     toast.success("Successfully added payment")
+    addLoanPayments(data, {
+      onSuccess: () => {
+        toast.success("Successfully added payment")
 
-    //     closeModal();
-    //   },
-    //   onError: () => {
-    //     toast.error("Something went wrong ")
-    //   }
-    // })
+        closeModal();
+      },
+      onError: () => {
+        toast.error("Something went wrong ")
+      }
+    })
 
     /**
      * Scans the payment schedule 

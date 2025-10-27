@@ -5,8 +5,9 @@
 
   // --- Insert function ---
   const insertLoanPayments = async (formData) => {
-    const allocations = await allocateLoanPayment(supabase, formData);
 
+    // the payload is inside this hook
+    const allocations = await allocateLoanPayment(supabase, formData);
 
     const { data, error } = await supabase
       .from("loan_payments")

@@ -10,6 +10,7 @@ const addLoanAcc = async (formData) => {
     account_number = null,
     loan_ref_number = null,
     principal = null,
+    total_interest = null,
     amount_req = null,
     total_amount_due = null,
     status = null,
@@ -24,6 +25,7 @@ const addLoanAcc = async (formData) => {
     account_number,
     loan_ref_number,
     principal,
+    total_interest,
     amount_req,
     total_amount_due,
     status,
@@ -52,6 +54,8 @@ export const useAddLoanAcc = () => {
     mutationFn: addLoanAcc,
 
     onSuccess: async ({ loan, formData }) => {
+      console.log("✅ Loan Account Added:", loan);
+      
       const {
         interest_rate,
         loan_term,
