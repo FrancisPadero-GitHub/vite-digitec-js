@@ -25,7 +25,7 @@ export default function calculateLoanAndScheduleReducing({
 
   /**
    * Alternative approach (do not deduct service fee from principal)
-   * 
+   *
    * const netPrincipal = amount; // do not deduct service fee from principal
    * const totalPayable = netPrincipal + totalInterest + serviceFee;
    */
@@ -60,7 +60,9 @@ export default function calculateLoanAndScheduleReducing({
 
   let balance = netPrincipal;
   let totalInterest = 0;
-  const round = (n) => Number((Number(n) || 0).toFixed(2));
+  
+  // Helper function to ensure consistent two-decimal rounding
+  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
   let schedule = [];
 

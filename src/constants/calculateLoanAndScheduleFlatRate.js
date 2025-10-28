@@ -20,7 +20,7 @@ export default function calculateLoanAndScheduleFlatRate({
 
   /**
    * Alternative approach (do not deduct service fee from principal)
-   * 
+   *
    * const netPrincipal = amount; // do not deduct service fee from principal
    * const totalPayable = netPrincipal + totalInterest + serviceFee;
    */
@@ -54,7 +54,8 @@ export default function calculateLoanAndScheduleFlatRate({
   const monthlyInterest = totalInterest / months;
   const monthlyPayment = monthlyPrincipal + monthlyInterest;
 
-  const round = (n) => Number((Number(n) || 0).toFixed(2));
+  // Helper function to ensure consistent two-decimal rounding
+  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
   // Optional schedule generation
   let schedule = [];

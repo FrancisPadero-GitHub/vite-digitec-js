@@ -1,4 +1,4 @@
-import {useState, useMemo} from 'react'
+import {useState, useMemo, Fragment} from 'react'
 import dayjs from 'dayjs';
 
 import { Link } from 'react-router';
@@ -28,6 +28,7 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 
 function CoopLoansPayments() {
+  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
   const { data: loan_acc_view } = useFetchLoanAccView({});
 
   const { data: members_data } = useMembers();
@@ -262,34 +263,27 @@ function CoopLoansPayments() {
   const paymentSchedule = useMemo(() => {
     if (!selectedLoanRef || loanSchedRaw.length === 0) return { schedule: null };
 
-    const today = dayjs();
+    // const today = dayjs();
 
-    // Filter out already-paid schedules
-    const unpaidSchedules = loanSchedRaw.filter(item => !item.paid);
+    const unpaidSchedules = loanSchedRaw
+      .filter(item => !item.paid)
+      .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
+
     if (unpaidSchedules.length === 0) return { schedule: null };
 
-    // Try to find an unpaid schedule for the current month
-    const currentMonthUnpaid = unpaidSchedules.find(item => {
-      const dueDate = dayjs(item.due_date);
-      return dueDate.month() === today.month() && dueDate.year() === today.year();
-    });
-
-    // Fallback: find the next unpaid schedule in the future
-    const nextUnpaid = currentMonthUnpaid ||
-      unpaidSchedules.find(item => dayjs(item.due_date).isAfter(today));
-
-    // If still nothing, fallback to the earliest unpaid schedule (just in case)
-    const data = nextUnpaid || unpaidSchedules[0];
-
-    return data;
+    // Return the first unpaid schedule (earliest due)
+    return unpaidSchedules[0];
   }, [selectedLoanRef, loanSchedRaw]);
+
 
   // Variables extracted values on this is tied to the conditional inside which is either today month or next due
   const schedId = paymentSchedule?.schedule_id || null;
   const totalDue = paymentSchedule?.total_due || 0;
-  const paymentStatus = paymentSchedule?.status || "";
+  const feeDue = paymentSchedule?.fee_due || 0;
   const amountPaid = paymentSchedule?.amount_paid || 0;
+  const paymentStatus = paymentSchedule?.status || "";
   const dueDate = paymentSchedule?.due_date || null;
+  const mosOverdue = paymentSchedule?.mos_overdue || 0;
   
 
   const fields = [
@@ -608,7 +602,7 @@ function CoopLoansPayments() {
             <div>
               <label className="label text-sm font-semibold mb-2">Monthly Amount</label>
               <div className="flex items-center font-semibold">
-                <span className='text-warning'>₱ {Number(totalDue).toLocaleString()}</span>
+                <span className='text-warning'>₱ {round(totalDue - feeDue).toLocaleString()}</span>
               </div>
             </div>
 
@@ -624,13 +618,13 @@ function CoopLoansPayments() {
               <div>
                 <label className="label text-sm font-semibold mb-2">Amount</label>
                 <div className="flex items-center font-semibold">
-                  <span className='text-info'>₱ {Number(amountPaid).toLocaleString()}</span>
+                  <span className='text-info'>₱ {round(amountPaid).toLocaleString()}</span>
                 </div>
               </div>
             )}
 
           </div>
-          {/* Outstanding Balance and monthly payment total Display */}
+          {/*  */}
           <div className="form-control w-full mt-2 mb-2 flex justify-between">
 
             <div>
@@ -641,10 +635,30 @@ function CoopLoansPayments() {
               </div>
             </div>
 
+            {paymentStatus === "OVERDUE" && (
+              <Fragment>
+              <div>
+                <label className="label text-sm font-semibold mb-2"> Overdue</label>
+                <div className="flex items-center font-semibold">
+                  <span className='text-error'>{mosOverdue.toLocaleString()} mos</span>
+                </div>
+              </div>
+
+                <div>
+                  <label className="label text-sm font-semibold mb-2">Penalty</label>
+                  <div className="flex items-center font-semibold">
+                    <span className='text-error'>₱ {round(feeDue).toLocaleString()}</span>
+                  </div>
+                </div> 
+              </Fragment>
+
+            )}
+
+            {/* Total Payable*/}
             <div>
               <label className="label text-sm font-semibold mb-2">Total Payable</label>
               <div className="flex items-center font-semibold">
-                <span className='text-success'>₱ {Number(totalDue - amountPaid).toLocaleString()}</span>
+                <span className='text-success'>₱ {round(totalDue - amountPaid).toLocaleString()}</span>
               </div>
             </div>
 
@@ -675,7 +689,7 @@ function CoopLoansPayments() {
                     validate: (value) => {
                       if (value <= 0) return "Amount cannot be zero or negative";
                       if (value > totalDue)
-                        return `Amount cannot exceed monthly total payment of ₱${Number(totalDue).toLocaleString()} (TEMPORARY)`;
+                        return `Amount cannot exceed monthly total payment of ₱${round(totalDue).toLocaleString()} (TEMPORARY)`;
                       if (value > balance)
                         return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
                       return true;
