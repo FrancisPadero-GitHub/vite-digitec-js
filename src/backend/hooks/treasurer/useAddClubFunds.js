@@ -7,7 +7,7 @@ const insertClubfunds = async (formData) => {
 
   const {
     account_number = null,
-    amount = null,
+    amount = 0,
     category = null,
     payment_date = null,
     period_start = null,

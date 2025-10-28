@@ -10,10 +10,12 @@ import {
 } from "@headlessui/react";
 import { Link } from "react-router";
 
-// hooks
+// fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useMemberRole } from "../../backend/context/useMemberRole";
 import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds";
+
+// mutation hooks
 import { useAddClubFunds } from "../../backend/hooks/treasurer/useAddClubFunds";
 import { useEditClubFunds } from "../../backend/hooks/treasurer/useEditClubFunds";
 import { useDelete } from "../../backend/hooks/shared/useDelete";
@@ -90,6 +92,13 @@ function ClubFunds() {
       matchesMethod
     );
   });
+
+  // helper to format numbers
+  const display = (num) =>
+    Number(num).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) ?? "0.00";
 
   // mutations
   const { mutate: mutateAdd } = useAddClubFunds();
@@ -305,23 +314,24 @@ function ClubFunds() {
           total={total}
           setPage={setPage}
           renderRow={(row) => {
+            const amount = row?.amount || 0;
             const matchedMember = members?.find(
-              (member) => member.account_number === row.account_number
+              (member) => member?.account_number === row?.account_number
             );
             const fullName = matchedMember
-              ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+              ? `${matchedMember?.f_name ?? ""} ${matchedMember?.l_name ?? ""}`.trim()
               : "Not Found";
 
             return (
               <tr
-                key={`${TABLE_PREFIX}${row.contribution_id}`}
+                key={`${TABLE_PREFIX}${row?.contribution_id}`}
                 onClick={
                   memberRole !== "board" ? () => openEditModal(row) : undefined
                 }
                 className="transition-colors cursor-pointer hover:bg-base-200/70"
               >
                 <td className="px-4 py-2 text-center font-medium text-xs">
-                  {TABLE_PREFIX}_{row.contribution_id}
+                  {TABLE_PREFIX}_{row?.contribution_id}
                 </td>
                 <td className="px-4 py-2 text-center font-medium text-xs">
                   {matchedMember?.account_number || "Something went wrong"}
@@ -344,28 +354,28 @@ function ClubFunds() {
                   </span>
                 </td>
                 <td className="px-4 py-2 font-semibold text-success text-center">
-                  ₱ {row.amount?.toLocaleString() || "0"}
+                  ₱ {display(amount)}
                 </td>
                 <td className="px-4 py-2 text-center">
                   <span
-                    className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}
+                    className={`font-semibold ${CLUB_CATEGORY_COLORS[row?.category]}`}
                   >
-                    {row.category || "Not Provided"}
+                    {row?.category || "Not Provided"}
                   </span>
                 </td>
                 <td className="px-4 py-2 text-center">
-                  {row.payment_date ? (
-                    <span>{new Date(row.payment_date).toLocaleDateString()}</span>
+                  {row?.payment_date ? (
+                    <span>{new Date(row?.payment_date).toLocaleDateString()}</span>
                   ) : (
                     <span className="italic">Not Provided</span>
                   )}
                 </td>
                 <td className="px-4 py-2 text-center">
-                  {row.payment_date ? (
+                  {row?.payment_date ? (
                     <span
-                      className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}
+                      className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}
                     >
-                      {row.payment_method}
+                      {row?.payment_method}
                     </span>
                   ) : (
                     <span className="badge font-semibold badge-error">
@@ -374,7 +384,7 @@ function ClubFunds() {
                   )}
                 </td>
                 <td className="px-4 py-2 text-center">
-                  {row.period_start && row.period_end ? (
+                  {row?.period_start && row?.period_end ? (
                     <span className="text-xs">
                       {new Date(row.period_start).toLocaleDateString()} -<br />
                       {new Date(row.period_end).toLocaleDateString()}

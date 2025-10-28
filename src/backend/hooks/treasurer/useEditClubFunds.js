@@ -6,7 +6,7 @@ const updateClubFunds = async (formData) => {
   const {
     contribution_id, // we need this to identify which row to update
     account_number = null,
-    amount = null,
+    amount = 0,
     category = null,
     payment_date = null,
     period_start = null,
@@ -54,8 +54,8 @@ export const useEditClubFunds = () => {
     mutationFn: updateClubFunds,
     onSuccess: async (data) => {
       console.log("Contribution Updated!", data);
-      queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({ queryKey: ["club_funds_contributions"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["rpc_totals"], exact: false });
 
       // log activity
       try {
