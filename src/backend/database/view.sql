@@ -1,5 +1,5 @@
 -- LOAN ACCOUNTS VIEW VIEW VIEW
-
+-- This version ensures rounding at the calculation level leaving total as the result of the rounded calculations
 DROP VIEW IF EXISTS public.loan_accounts_view;
 CREATE OR REPLACE VIEW public.loan_accounts_view AS
 SELECT
@@ -7,11 +7,16 @@ SELECT
   la.loan_ref_number,
   la.principal,
   la.service_fee,
+  la.total_interest,
+  la.total_amount_due,
 
-  -- schedule-based totals (aggregations rounded)
-  ROUND(COALESCE(SUM(s.total_due), 0), 2) AS total_due,
   ROUND(COALESCE(SUM(s.amount_paid), 0), 2) AS total_paid,
-  ROUND(COALESCE(SUM(s.total_due) - SUM(s.amount_paid), 0), 2) AS outstanding_balance,
+
+  -- total amount due + total fee then minus amount paid
+  ROUND(
+    COALESCE(la.total_amount_due + SUM(s.fee_due) - SUM(s.amount_paid), 0),
+    2
+  ) AS outstanding_balance,
 
   -- interest and principal paid (filtered)
   ROUND(COALESCE(SUM(s.interest_due) FILTER (WHERE s.paid = TRUE), 0), 2) AS interest_paid,
