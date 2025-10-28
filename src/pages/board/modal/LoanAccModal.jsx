@@ -24,7 +24,7 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, }) { // 
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
+      <div className="modal-box space-y-6 overflow-visible w-[50rem] max-w-full">
         <h2 className="text-2xl font-semibold">{`${title}`}</h2>
         <form onSubmit={onSubmit}>
           {children}

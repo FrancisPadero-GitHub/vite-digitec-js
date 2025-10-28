@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Toaster } from "react-hot-toast";
 import { usePrompt } from "../shared/components/usePrompt";
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import dayjs from 'dayjs';
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
@@ -568,186 +570,152 @@ function LoanApplications() {
         />
 
       <BoardFormModal
-        title={"Loan Application Info"}
+        title={"Loan Application Review"}
         open={modalType !== null}
         close={closeModal}
         status={loanStatus}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
         deleteAction={() => handleDelete(watch("application_id"))}
-        type={watch("status") === "Approved"} // this one will watch the status changes to set either "next" or "submit" status on the form modal
+        type={watch("status") === "Approved"}
       >
-        {/* Use grid layout for 2 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Ref No. */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Ref No.</span>
-            </label>
-            <input
-              value={`${TABLE_PREFIX}${watch("application_id") || ""}`}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
+        {/* Loan decision */}
+        <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircleOutlinedIcon fontSize="small" color="info"/>
+            <h3 className="font-bold">Application Decision</h3>
           </div>
-
-          {/* Loan Application Status */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Application Status
-              </span>
-            </label>
-            <select
-              {...register("status", { required: true })}
-              className="select select-bordered w-full"
-              disabled={loanStatus}
-            >
-              {STATUS_OPTIONS.map((status) => (
-                <option key={status} value={status}>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
+            {STATUS_OPTIONS.map((status) => {
+              const isSelected = watch("status") === status;
+              const isApproved = status === "Approved";
+              const isDenied = status === "Denied";
+              
+              return (
+                <label
+                  key={status}
+                  className={`relative cursor-pointer px-3 py-2 rounded-lg font-semibold text-sm text-center transition-all border-2
+                    ${isSelected 
+                      ? isApproved 
+                        ? 'bg-green-600 text-white border-green-600 shadow-lg scale-105' 
+                        : isDenied
+                        ? 'bg-red-600 text-white border-red-600 shadow-lg scale-105'
+                        : 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                    }
+                    ${loanStatus ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                >
+                  <input
+                    type="radio"
+                    value={status}
+                    {...register("status", { required: true })}
+                    disabled={loanStatus}
+                    className="sr-only"
+                  />
                   {status}
-                </option>
-              ))}
-            </select>
-            {errors.status && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
+                </label>
+              );
+            })}
           </div>
 
-          {/* Applicant */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Account No.</span>
-            </label>
-            <input
-              type="text"
-              {...register("account_number") }
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-          </div>
+          {watch("status") === "Approved" && !loanStatus && (
+            <div className="p-3 bg-green-50 border border-green-300 rounded-lg flex items-start gap-2">
+              <CheckCircleOutlinedIcon fontSize="small" color="success" />
+              <p className="text-sm text-green-800">
+                <strong>Approved:</strong> Click "Next" to review and confirm loan release details.
+              </p>
+            </div>
+          )}
 
-          {/* Account Name */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Name</span>
-            </label>
-            <input
-              type="text"
-              {...register("applicant_name")}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-          </div>
+          {watch("status") === "Denied" && (
+            <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
+              <p className="text-sm text-red-800">
+                <strong>Denied:</strong> This application will be declined. The applicant will be notified.
+              </p>
+            </div>
+          )}
 
-          {/* Loan Product */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Loan Product
-              </span>
-            </label>
-            <select
-              {...register("loan_product", { required: true })}
-              disabled
-              className="select select-bordered w-full"
-            >
-              <option value="">Select Loan Product</option>
-              {loanProducts?.map((product) => (
-                <option key={product.product_id} value={product.name}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-            {errors.loan_product && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
+          {errors.status && (<p className="text-error text-sm mt-2">Application status is required</p>)}
+        </div>
 
-          {/* Amount */}
-            <div className="form-control w-full mt-2">
-              <label className="label mb-1">
-                <span className="label-text font-medium text-gray-700">Amount Requested</span>
-              </label>
-              <input
-                type="number"
-                {...register("amount", {
-                  required: true,
-                  min: selectedProduct?.min_amount || 0,
-                  max: selectedProduct?.max_amount || 9999999,
-                })}
-                // disabled={
-                //   !selectedLoanProduct || loanStatus
-                // }
-                readOnly
-                placeholder={
-                  selectedProduct
-                    ? `Enter between ${selectedProduct.min_amount} - ${selectedProduct.max_amount}`
-                    : "Select a loan product first"
-                }
-                className={`input input-bordered w-full ${!selectedLoanProduct ? "text-warning" : ""
-                  }`}
-              />
-              {errors.amount && (
-                <p className="text-error text-sm mt-1">Invalid amount range</p>
-              )}
+        {/* Application details (ref no, date, acc number, name) */}
+        <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Ref No.</label>
+              <div className="text-sm font-mono font-bold text-gray-900">
+                {`${TABLE_PREFIX}${watch("application_id") || ""}`}
+              </div>
+              <input type="hidden" {...register("application_id")} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Application Date</label>
+              <div className="text-sm font-semibold text-gray-900">
+                {watch("application_date") && dayjs(watch("application_date")).format("MMM D, YYYY")}
+              </div>
+              <input type="hidden" {...register("application_date")} />
             </div>
 
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
+              <div className="text-sm font-semibold text-gray-900">{watch("account_number")}</div>
+              <input type="hidden" {...register("account_number")} />
+            </div>
 
-          {/* Term */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Term</span>
-            </label>
-            <select
-              {...register("term_months", { required: true })}
-              disabled
-              className="select select-bordered w-full"
-            >
-              <option value="">Select Term</option>
-              {selectedProduct && (
-                <option value={selectedProduct.max_term_months}>
-                  {selectedProduct.max_term_months} months
-                </option>
-              )}
-            </select>
-            {errors.term_months && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
-          {/* Application Date */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Application Date
-              </span>
-            </label>
-            <input
-              type="date"
-              {...register("application_date", { required: true })}
-              readOnly
-              className="input input-bordered w-full"
-            />
-          </div>
-
-          {/* Purpose (make this span both columns) */}
-          <div className="form-control w-full mt-2 md:col-span-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Purpose</span>
-            </label>
-            <textarea
-              {...register("purpose", { required: true })}
-              readOnly
-              rows={3}
-              placeholder="Enter a very persuasive reason..."
-              className="textarea textarea-bordered w-full"
-            />
-            {errors.purpose && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Applicant Name</label>
+              <div className="text-sm font-bold text-gray-900">{watch("applicant_name")}</div>
+              <input type="hidden" {...register("applicant_name")} />
+            </div>
           </div>
         </div>
+
+        {/* Loan details (product, term, amount) */}
+        <div className="bg-white p-3 rounded-lg border border-gray-200">
+          <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center">Loan Details</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Loan Product</label>
+              <div className="text-sm font-semibold text-gray-900 px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                {watch("loan_product") || "N/A"}
+              </div>
+              {errors.loan_product && (<p className="text-error text-xs mt-1">Required</p>)}
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Term</label>
+              <div className="text-sm font-semibold text-gray-900 px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                {watch("term_months") ? `${watch("term_months")} months` : "N/A"}
+              </div>
+              {errors.term_months && (<p className="text-error text-xs mt-1">Required</p>)}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Amount Requested</label>
+              <div className="px-4 py-1 bg-blue-50 rounded-lg border-2 border-blue-200">
+                <div className="text-lg font-bold text-blue-900">
+                  ₱{watch("amount") ? parseFloat(watch("amount")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                </div>
+              </div>
+              <input
+                type="hidden"
+                {...register("amount", {required: true, min: selectedProduct?.min_amount || 0, max: selectedProduct?.max_amount || 9999999,})}
+              />
+              {errors.amount && (<p className="text-error text-xs mt-1">Invalid amount range</p>)}
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-2 mt-2">Loan Purpose</label>
+            <div className="text-sm text-gray-900 leading-relaxed px-3 py-2.5 bg-gray-50 rounded border border-gray-200">
+              {watch("purpose") || "No purpose provided"}
+            </div>
+            <textarea {...register("purpose", { required: true })} className="hidden" />
+            {errors.purpose && (<p className="text-error text-xs mt-1">Required</p>)}
+            </div>
+          </div>
       </BoardFormModal>
 
       <LoanAccModal
@@ -755,238 +723,157 @@ function LoanApplications() {
         open={showLoanAccModal}
         close={() => {
           // Go back to edit modal
-          const row = loanDataRaw.find(
-            (item) => item.application_id === selectedApplicationId
-          );
-          if (row) {
-            openEditModal(row);
-          }
+          const row = loanDataRaw.find((item) => item.application_id === selectedApplicationId);
+          if (row) {openEditModal(row);}
           setShowLoanAccModal(false);
         }}
         status={isCalculating}
         onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)}
       >
+        {/* Hidden fields */}
+        <input type="hidden" {...registerLoanAcc("loan_id")} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Loan ID (hidden or read-only) */}
-          <input type="hidden" {...registerLoanAcc("loan_id")} />
-
-          {/* Ref No. */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Ref No.</span>
-            </label>
-            <input
-              value={`${TABLE_PREFIX}${watchLoanAcc("application_id") || ""}`}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
+        {/* Approval Amount */}
+        <div className="p-3 bg-green-50 rounded-lg border-2 border-green-300 mb-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="font-bold">Approval Amount</h3>
+            <p className="text-xs text-green-600 italic">(Adjust if needed)</p>
           </div>
 
-            {/* Loan Ref No. */}
-            <div className="form-control w-full mt-2">
-              <label className="label mb-1">
-                <span className="label-text font-medium text-gray-700">
-                  Loan Ref No.
-                </span>
-              </label>
-              <input
-                type="text"
-                {...registerLoanAcc("loan_ref_number")}
-                readOnly
-                className="input input-bordered w-full bg-gray-100 text-gray-700"
-              />
-              {errorsLoanAcc.loan_ref_number && (
-                <p className="text-error text-sm mt-1">Required</p>
-              )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Amount Requested</label>
+              <div className="px-3 py-2 bg-white rounded border border-gray-200">
+                <div className=" font-bold text-gray-700">
+                  ₱{watch("amount") ? parseFloat(watch("amount")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                </div>
+              </div>
+              <input type="hidden" {...registerLoanAcc("amount_req", {required: true})} value={watch("amount")} />
             </div>
 
-
-          {/* Account Number */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Account Number
-              </span>
-            </label>
-            <input
-              type="text"
-              value={watch("account_number")}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-            {errorsLoanAcc.account_number && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
+            <div>
+              <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
+              <input
+                type="number"
+                min="0"
+                {...registerLoanAcc("principal", {
+                  required: true,
+                  min: selectedProduct?.min_amount || 0,
+                  max: selectedProduct?.max_amount || 9999999,
+                })}
+                placeholder={watch("amount")}
+                className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
+              />
+              {errorsLoanAcc.principal && (
+                <p className="text-error text-xs mt-2">
+                  Input amount; must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{selectedProduct?.max_amount?.toLocaleString()}
+                </p>
+              )}
+            </div>
           </div>
+        </div>
 
-          {/* Name */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Name
-              </span>
-            </label>
-            <input
-              type="text"
-              value={watch("applicant_name")}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-            {errors.applicant_name && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
-          {/* Amount Req */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Amount Requested</span>
-            </label>
-            <input
-              type="number"
-              {...registerLoanAcc("amount_req", {required: true})}
-              value={watch("amount")}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-            {errorsLoanAcc.amount_req && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
- 
-          {/* Principal | Approval Amount */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-bold text-green-700 ">
-                Principal | Approval Amount
-              </span>
-            </label>
-            <input
-              type="number"
-              {...registerLoanAcc("principal", {
-                required: true,
-                min: selectedProduct?.min_amount || 0,
-                max: selectedProduct?.max_amount || 9999999,
-              })}
-              placeholder={watch("amount")}
-              className="input input-bordered w-full"
-            />
-            {errorsLoanAcc.principal && (
-              <p className="text-error text-sm mt-1 ml-2">
-                Amount must be between {selectedProduct?.min_amount} and {selectedProduct?.max_amount}
-              </p>
-            )}
-          </div>
-
-
-          {/* Interest Rate */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Interest Rate (%)
-              </span>
-            </label>
-            <input
-              type="number"
-              {...registerLoanAcc("interest_rate", { required: true })}
-              readOnly
-                className="input input-bordered w-full bg-gray-100"
-            />
-            {errorsLoanAcc.interest_rate && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
-          {/* Total To Pay */}
-          <div className="form-control w-full mt-2 relative">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Total Amount Due
-              </span>
-            </label>
-            <input
-              type="number"
-              {...registerLoanAcc("total_amount_due", { required: true })}
-              readOnly
-              className={`input input-bordered w-full bg-gray-100 text-gray-700 ${isCalculating ? "opacity-50" : ""}`}
-            />
-            {isCalculating && (
-              <span className="absolute right-3 top-10 text-primary animate-spin">
-                <AiOutlineLoading3Quarters size={20} />
-              </span>
-            )}
-            {errorsLoanAcc.total_amount_due && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-
-
-          {/* Interest Method */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">
-                Interest Method
-              </span>
-            </label>
-            <input
-              {...registerLoanAcc("interest_method", { required: true })}
-              readOnly
-                className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-            
-            {errorsLoanAcc.interest_method && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
-          </div>
-          
-          {/* Start Date */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">First Due / Start Date</span>
-            </label>
+        {/* EDITABLE SECTION - Dates */}
+       <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
+        <h3 className="font-bold mb-2">Loan Schedule</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-blue-700 mb-1">First Due / Start Date</label>
             <input
               type="date"
+              defaultValue={dayjs().add(1, 'month').format('YYYY-MM-DD')}
               {...registerLoanAcc("first_due", { required: true })}
-              className="input input-bordered w-full text-gray-700"
+              className="input input-bordered w-full border-blue-400 focus:border-blue-600"
             />
-            {errorsLoanAcc.first_due && (
-              <p className="text-error text-sm mt-1">Required to determine maturity date</p>
-            )}
+            {errorsLoanAcc.first_due && (<p className="text-error text-xs mt-1">Date required to calculate schedule</p>)}
           </div>
 
-          {/* Status */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Status</span>
-            </label>
-            <input
-              {...registerLoanAcc("status")}
-              readOnly
-              className="input input-bordered w-full bg-gray-100 text-gray-700"
-            />
-          </div>
-
-          {/* Maturity Date */}
-          <div className="form-control w-full mt-2">
-            <label className="label mb-1">
-              <span className="label-text font-medium text-gray-700">Maturity Date</span>
-            </label>
+          <div>
+            <label className="block text-xs font-medium text-blue-700 mb-1">Maturity Date</label>
             <input
               type="date"
+              defaultValue={dayjs().add(12, 'month').format('YYYY-MM-DD')}
               {...registerLoanAcc("maturity_date", { required: true })}
-                className="input input-bordered w-full text-gray-700"
+              className="input input-bordered w-full border-blue-400 focus:border-blue-600"
             />
-            {errorsLoanAcc.maturity_date && (
-              <p className="text-error text-sm mt-1">Required</p>
-            )}
+            {errorsLoanAcc.maturity_date && (<p className="text-error text-xs mt-1">Required</p>)}
+          </div>
+        </div>
+       </div>
+
+        {/* Application details (ref no, loan ref no, account no, name) */}
+        <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+          <h4 className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Application Details</h4>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Ref No.</label>
+            <div className="text-sm font-mono font-bold text-gray-900">
+              {`${TABLE_PREFIX}${watchLoanAcc("application_id") || ""}`}
+            </div>
           </div>
 
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref No.</label>
+            <div className="text-sm font-mono font-bold text-gray-900">{watchLoanAcc("loan_ref_number")}</div>
+            <input type="hidden" {...registerLoanAcc("loan_ref_number")} />
+            {errorsLoanAcc.loan_ref_number && (<p className="text-error text-xs mt-1">Required</p>)}
+          </div>
 
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
+            <div className="text-sm font-semibold text-gray-900">{watch("account_number")}</div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Applicant</label>
+            <div className="text-sm font-bold text-gray-900">{watch("applicant_name")}</div>
+          </div>
+        </div>
+        </div>
+
+        {/* Loan Terms */}
+        <div className="bg-white p-3 rounded-lg border border-gray-200">
+          <h4 className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Loan Terms & Calculations</h4>
+          
+          {/* Interest info and status */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
+              <span className="text-xs font-medium text-gray-500">Interest Rate:</span>
+              <span className="text-xs font-bold">{watchLoanAcc("interest_rate")}%</span>
+              <input type="hidden" {...registerLoanAcc("interest_rate", { required: true })} />
+            </div>
+            
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-200">
+              <span className="text-xs font-medium text-gray-500">Method:</span>
+              <span className="text-xs font-bold">{watchLoanAcc("interest_method")}</span>
+              <input type="hidden" {...registerLoanAcc("interest_method", { required: true })} />
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+              <span className="text-xs font-medium text-gray-500">Status:</span>
+              <span className="text-xs font-bold">{watchLoanAcc("status")}</span>
+              <input type="hidden" {...registerLoanAcc("status")} />
+            </div>
+          </div>
+
+          {/* Total amount due */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Total Amount Due</label>
+            <div className={`relative px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 ${isCalculating ? "opacity-50" : ""}`}>
+              <div className="text-xl font-bold">
+                ₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+              </div>
+              {isCalculating && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 animate-spin">
+                  <AiOutlineLoading3Quarters size={20} />
+                </span>
+              )}
+            </div>
+            <input type="hidden" {...registerLoanAcc("total_amount_due", { required: true })} />
+          </div>
         </div>
       </LoanAccModal>
-
       </div>
     </div>
   );
