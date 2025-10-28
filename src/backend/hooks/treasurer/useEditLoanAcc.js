@@ -9,10 +9,10 @@ const updateLoanAcc = async (formData) => {
   const {
     loan_id = null,
     release_date = null,
-    interest_rate = null,
-    loan_term = null,
+    interest_rate = 0,
+    loan_term = 0,
     interest_method = null,
-    principal = null,
+    principal = 0,
     first_due = null,
     loan_ref_number = null,
   } = formData;
@@ -101,8 +101,8 @@ export const useEditLoanAcc = () => {
       } else if (result.scheduleResult?.error) {
         console.warn("Schedule insertion error:", result.scheduleResult.error);
       }
-      queryClient.invalidateQueries(["loan_accounts"]);
-      queryClient.invalidateQueries(["loan_payment_schedules"]);
+      queryClient.invalidateQueries({queryKey:["loan_accounts"], exact: false});
+      queryClient.invalidateQueries({queryKey:["loan_payment_schedules"], exact: false});
     },
     onError: (error) => {
       console.error("Loan Failed Release", error.message);

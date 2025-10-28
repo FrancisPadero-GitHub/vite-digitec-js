@@ -8,16 +8,16 @@ const addLoanAcc = async (formData) => {
     product_id = null,
     account_number = null,
     loan_ref_number = null,
-    principal = null,
-    total_interest = null,
-    amount_req = null,
-    total_amount_due = null,
+    principal = 0,
+    total_interest = 0,
+    amount_req = 0,
+    total_amount_due = 0,
     status = null,
     release_date = null,
     approved_date = null,
     maturity_date = null,
     first_due = null,
-    service_fee = null,
+    service_fee = 0,
   } = formData;
 
   const loanPayload = {
