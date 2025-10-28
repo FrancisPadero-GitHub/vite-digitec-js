@@ -41,7 +41,9 @@ export const useAddActivityLog = () => {
     mutationFn: insertActivityLog,
     onSuccess: (data) => {
       console.log("Activity logged:", data);
-      queryClient.invalidateQueries(["activity_logs"]);
+      queryClient.invalidateQueries({queryKey: ["activity_logs"],
+        exact: false
+      });
     },
     onError: (error) => {
       console.error("Error logging activity:", error.message);

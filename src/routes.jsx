@@ -100,24 +100,25 @@ function AppRoutes() {
 
   const regularMemberRoutes = [
     { index: true, element: <MemberDashboard /> },
-    { path: "regular-member-club-funds", element: <MemberClubFunds /> },
-    { path: "regular-member-share-capital", element: <MemberCoopShareCapital /> },
-    { path: "coop-loans/loan-accounts", element: <MemberLoanAcc /> }, 
+    { path: "club-funds", element: <MemberClubFunds /> },
+    { path: "share-capital", element: <MemberCoopShareCapital /> },
+    { path: "coop-loans/loan-accounts", element: <MemberLoanAcc /> },
     { path: "coop-loans/loan-applications", element: <MemberLoanApp /> },
     { path: "coop-loans/loan-payments", element: <MemberPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
-    { path: "regular-member-help", element: <MemberHelp /> },
-    { path: "regular-member-settings", element: <MemberSettings /> },
+    { path: "help", element: <MemberHelp /> },
+    { path: "reports", element: <MemberReports /> },
+    { path: "settings", element: <MemberSettings /> },
     { path: "profile", element: <Profile /> },
   ];
 
   const associateMemberRoutes = [
     { index: true, element: <MemberDashboard /> },
-    { path: "associate-member-share-capital", element: <MemberCoopShareCapital /> },
-    { path: "associate-member-coop-loans", element: <MemberLoanApp /> },
-    { path: "associate-member-reports", element: <MemberReports /> },
-    { path: "associate-member-help", element: <MemberHelp /> },
-    { path: "associate-member-settings", element: <MemberSettings /> },
+    { path: "share-capital", element: <MemberCoopShareCapital /> },
+    { path: "coop-loans", element: <MemberLoanApp /> },
+    { path: "reports", element: <MemberReports /> },
+    { path: "help", element: <MemberHelp /> },
+    { path: "settings", element: <MemberSettings /> },
     { path: "profile", element: <Profile /> },
   ];
 

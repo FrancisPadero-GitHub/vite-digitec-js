@@ -96,15 +96,15 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/regular-member" },
-        { label: "Reports", icon: AssessmentIcon, path: "/regular-member/regular-member-reports" },
+        { label: "Reports", icon: AssessmentIcon, path: "/regular-member/reports" },
       ],
     },
     {
       section: "Finance",
       items: [
         
-        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/regular-member-share-capital" },
-        { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/regular-member-club-funds" },
+        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/share-capital" },
+        { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/club-funds" },
         ...loansBase("regular-member"),
       ],
     },
@@ -115,14 +115,14 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/associate-member" },
-        { label: "Reports", icon: AssessmentIcon, path: "/associate-member/associate-member-reports" },
+        { label: "Reports", icon: AssessmentIcon, path: "/associate-member/reports" },
       ],
     },
     {
       section: "Finance",
       items: [
-        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/associate-member/associate-member-share-capital" },
-        { label: "Coop Loans", icon: HandshakeIcon, path: "/associate-member/associate-member-coop-loans" },
+        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/associate-member/share-capital" },
+        { label: "Coop Loans", icon: HandshakeIcon, path: "/associate-member/coop-loans" },
       ],
     },
   ],

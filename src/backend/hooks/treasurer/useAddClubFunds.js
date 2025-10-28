@@ -4,7 +4,7 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 // Insert function
 const insertClubfunds = async (formData) => {
-  // Build payload safely with destructuring + null fallback
+
   const {
     account_number = null,
     amount = null,
@@ -49,9 +49,16 @@ export const useAddClubFunds = () => {
     mutationFn: insertClubfunds,
     onSuccess: async (data) => {
       console.log("✅ Contribution added:", data);
-      // Refresh the list automatically
-      queryClient.invalidateQueries(["club_funds_contributions"]); // to reflect the change instantly
-      queryClient.invalidateQueries(["rpc_totals"]);
+
+      queryClient.invalidateQueries({
+        queryKey: ["club_funds_contributions"],
+        exact: false
+      });
+
+      queryClient.invalidateQueries({
+        queryKey:["rpc_totals"],
+        exact: false
+      });
 
       // log activity
       try {
