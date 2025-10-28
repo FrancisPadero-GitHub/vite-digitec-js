@@ -171,6 +171,11 @@ function LoanAccountDetails() {
                     : "—"}
                 </span>
               </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Total Penalty Fee</span>
+                <span>₱ {Number(accountData.total_penalty_fees || 0).toLocaleString()}</span>
+              </div>
+ 
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-base-content/80 border-t pt-4 border-base-content/10">
@@ -193,6 +198,18 @@ function LoanAccountDetails() {
                 <span className="font-bold text-base-content/60">Remaining Interest</span>
                 <span>₱ {Number(accountData.remaining_interest || 0).toLocaleString()}</span>
               </div>
+
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Total Penalty Fee Paid</span>
+                <span>₱ {Number(accountData.penalty_fees_paid || 0).toLocaleString()}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-bold text-base-content/60">Remaining Penalty Fee</span>
+                <span>₱ {Number(accountData.remaining_penalty_fees || 0).toLocaleString()}</span>
+              </div>
+
             </div>
 
 
