@@ -6,7 +6,7 @@ const insertCoopContributions = async (formData) => {
   const {
     account_number = null,
     source = null,
-    amount = null,
+    amount = 0,
     category = null,
     contribution_date = null,
     payment_method = null,
@@ -36,8 +36,8 @@ export const useAddCoopContributions = () => {
     mutationFn: insertCoopContributions,
     onSuccess: async (data) => {
       console.log("Successfully insert data: ", data);
-      queryClient.invalidateQueries(["coop_cbu_contributions"]);
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({queryKey:["coop_cbu_contributions"], exact: false});
+      queryClient.invalidateQueries({queryKey:["rpc_totals"], exact: false});
 
       // log activity
       try {

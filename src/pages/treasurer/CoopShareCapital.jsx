@@ -10,6 +10,8 @@ import { useMemberRole } from "../../backend/context/useMemberRole";
 // Fetch Hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
+
+// Mutation Hooks
 import { useAddCoopContributions } from "../../backend/hooks/treasurer/useAddCoopContributions";
 import { useEditCoopContributions } from "../../backend/hooks/treasurer/useEditCoopContributions";
 import { useDelete } from "../../backend/hooks/shared/useDelete";
@@ -69,6 +71,13 @@ function CoopShareCapital() {
     );
   });
 
+  // helper to format numbers
+  const display = (num) =>
+    Number(num).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) ?? "0.00";
+
   const { mutate: mutateAdd } = useAddCoopContributions();
   const { mutate: mutateEdit } = useEditCoopContributions();
   const { mutate: mutateDelete } = useDelete("coop_cbu_contributions");
@@ -119,6 +128,7 @@ function CoopShareCapital() {
   };
 
   const onSubmit = (data) => {
+    // console.log(`coop test`, data )
     if (modalType === "add") {
       mutateAdd(data,
         {onSuccess: () => {
@@ -261,17 +271,19 @@ function CoopShareCapital() {
           total={total}
           setPage={setPage}
           renderRow={(row) => {
-            const matchedMember = members.find((member) => member.account_number === row.account_number);
+
+            const amount = row?.amount || 0;
+            const matchedMember = members.find((member) => member?.account_number === row?.account_number);
             const isDisabled = !matchedMember;
-            const fullName = matchedMember ? `${matchedMember.f_name} ${matchedMember.l_name}`.trim() : "System";
+            const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "System";
 
             return (
               <tr
-                key={`${TABLE_PREFIX}${row.coop_contri_id}`}
+                key={`${TABLE_PREFIX}${row?.coop_contri_id}`}
                 onClick={!isDisabled && memberRole !== "board" ? () => openEditModal(row) : undefined}
                 className={`transition-colors ${!isDisabled ? "cursor-pointer hover:bg-base-200/70" : "cursor-not-allowed opacity-80 bg-base-100/70"}`}
               >
-                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row.coop_contri_id}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.coop_contri_id}</td>
                 <td className="px-4 py-2 text-center font-medium text-xs">{matchedMember?.account_number || "Something went wrong"}</td>
                 <td className="px-4 py-4">
                   <span className="flex items-center gap-3">
@@ -282,7 +294,7 @@ function CoopShareCapital() {
                           <div className="mask mask-circle w-10 h-10">
                             <img
                               src={
-                                matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                                matchedMember?.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember?.id || matchedMember?.l_name}`
                               }
                               alt={fullName}
                             />
@@ -298,18 +310,18 @@ function CoopShareCapital() {
                     )}
                   </span>
                 </td>
-                <td className="px-4 py-2 font-semibold text-success text-center">₱ {row.amount?.toLocaleString() || "0"}</td>
+                <td className="px-4 py-2 font-semibold text-success text-center">₱ {display(amount)}</td>
                 <td className="px-4 py-2 text-center">
-                  {row.category ? (
-                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>{row.category}</span>
+                  {row?.category ? (
+                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row?.category]}`}>{row?.category}</span>
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-center">{row.contribution_date ? new Date(row.contribution_date).toLocaleDateString() : <span className="text-gray-400 italic">Not Provided</span>}</td>
+                <td className="px-4 py-2 text-center">{row?.contribution_date ? new Date(row?.contribution_date).toLocaleDateString() : <span className="text-gray-400 italic">Not Provided</span>}</td>
                 <td className="px-4 py-2 text-center">
-                  {row.payment_method ? (
-                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>{row.payment_method}</span>
+                  {row?.payment_method ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}>{row?.payment_method}</span>
                   ) : (
                     <span> — </span>
                   )}

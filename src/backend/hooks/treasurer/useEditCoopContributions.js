@@ -7,7 +7,7 @@ const updateCoopContributions = async (formData) => {
     coop_contri_id,
     account_number = null,
     source = null,
-    amount = null,
+    amount = 0,
     category = null,
     contribution_date = null,
     payment_method = null,
@@ -51,8 +51,8 @@ export const useEditCoopContributions = () => {
     mutationFn: updateCoopContributions,
     onSuccess: async (data) => {
       console.log(" Coop contribution Updated!", data);
-      queryClient.invalidateQueries(["coop_cbu_contributions"]); // to reflect the change instantly
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({queryKey:["coop_cbu_contributions"], exact: false}); // to reflect the change instantly
+      queryClient.invalidateQueries({queryKey:["rpc_totals"], exact: false});
 
       // log activity
       try {

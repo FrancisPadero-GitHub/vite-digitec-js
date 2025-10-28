@@ -74,8 +74,9 @@ function LoanAccountDetails() {
   const { memberRole } = useMemberRole();
   let path = "";
   if (memberRole === "board") path = `/${memberRole}/coop-loans/loan-accounts`;
-  if (memberRole === "regular-member") path = `/${memberRole}/coop-loans/loan-accounts`;
   if (memberRole === "treasurer") path = `/${memberRole}/member-records`;
+  if (memberRole === "regular-member") path = `/${memberRole}/coop-loans/loan-accounts`;
+  if (memberRole === "associate") path = `/${memberRole}/member-records`;
 
 
   return (
