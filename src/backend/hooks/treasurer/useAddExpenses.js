@@ -4,7 +4,7 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const insertExpenses = async (formData) => {
   const {
-    amount = null,
+    amount = 0,
     title = null,
     category = null,
     description = null,
@@ -39,8 +39,8 @@ export const useAddExpenses = () => {
     mutationFn: insertExpenses,
     onSuccess: async (data) => {
       console.log("Expenses Added!: ", data);
-      queryClient.invalidateQueries(["club_funds_expenses"]);
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({queryKey:["club_funds_expenses"], exact: false});
+      queryClient.invalidateQueries({queryKey:["rpc_totals"], exact: false});
 
       // log activity
       try {

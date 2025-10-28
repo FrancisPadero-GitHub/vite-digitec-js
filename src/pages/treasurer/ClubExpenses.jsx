@@ -29,7 +29,7 @@ function ClubExpenses() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
-  const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses(page, limit);
+  const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses({page, limit});
   const fundExpensesRaw = fundExpensesData?.data || [];
   const total = fundExpensesData?.count || 0;
 
@@ -57,6 +57,13 @@ function ClubExpenses() {
 
     return matchesSearch && matchesCategory && matchesYear && matchesMonth;
   });
+
+  // helper to format numbers
+  const display = (num) =>
+    Number(num).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) ?? "0.00";
 
   const { mutate: mutateAdd } = useAddExpenses();
   const { mutate: mutateEdit } = useEditExpenses();
@@ -237,31 +244,34 @@ function ClubExpenses() {
           limit={limit}
           total={total}
           setPage={setPage}
-          renderRow={(row) => (
-            <tr
-              key={`${TABLE_PREFIX}${row.transaction_id}`}
-              className="cursor-pointer hover:bg-base-200/50"
-              onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
-            >
-              <td className="x-4 py-2 text-center font-medium text-xs">
-                {TABLE_PREFIX}_{row.transaction_id?.toLocaleString() || "ID"}
-              </td>
-              <td className="px-4 py-4 text-center font-medium">{row.title}</td>
-              <td className="px-4 py-2 font-semibold text-error text-center">
-                ₱ {row.amount?.toLocaleString() || "0"}
-              </td>
-              <td className="px-4 py-2 text-center">
-                <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row.category]}`}>
-                  {row.category || "Not Provided"}
-                </span>
-              </td>
-              <td className="px-4 py-2 text-center">
-                {row.transaction_date
-                  ? new Date(row.transaction_date).toLocaleDateString()
-                  : "Not Provided"}
-              </td>
-            </tr>
-          )}
+          renderRow={(row) => {
+            const amount = row?.amount || 0;
+            return (
+              <tr
+                key={`${TABLE_PREFIX}${row.transaction_id}`}
+                className="cursor-pointer hover:bg-base-200/50"
+                onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
+              >
+                <td className="x-4 py-2 text-center font-medium text-xs">
+                  {TABLE_PREFIX}_{row?.transaction_id.toLocaleString() || "ID"}
+                </td>
+                <td className="px-4 py-4 text-center font-medium">{row?.title}</td>
+                <td className="px-4 py-2 font-semibold text-error text-center">
+                  ₱ {display(amount)}
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row?.category]}`}>
+                    {row?.category || "Not Provided"}
+                  </span>
+                </td>
+                <td className="px-4 py-2 text-center">
+                  {row?.transaction_date
+                    ? new Date(row?.transaction_date).toLocaleDateString()
+                    : "Not Provided"}
+                </td>
+              </tr>
+            )
+          }}
         />
       </div>
 

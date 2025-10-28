@@ -5,7 +5,7 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
 const updateExpenses = async (formData) => {
   const {
     transaction_id, // we need this to identify which row to update
-    amount = null,
+    amount = 0,
     title = null,
     category = null,
     description = null,
@@ -46,8 +46,8 @@ export const useEditExpenses = () => {
     mutationFn: updateExpenses,
     onSuccess: async (data) => {
       console.log("Expenses Updated!: ", data);
-      queryClient.invalidateQueries(["club_funds_expenses"]); // refetch after update
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({queryKey:["club_funds_expenses"], exact: false});
+      queryClient.invalidateQueries({queryKey:["rpc_totals"], exact: false});
 
       // log activity
       try {
