@@ -68,12 +68,14 @@ function LoanAccountDetails() {
 
   const loanTerm = matchedLoanProduct?.max_term_months;
   const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
-  const TABLE_PREFIX = "LAPP_";
-
-
+  // const TABLE_PREFIX = "LAPP_";
+  
+  // For the dynamic back link base on member role
   const { memberRole } = useMemberRole();
-
-  // console.log(interestRate)
+  let path = "";
+  if (memberRole === "board") path = `/${memberRole}/coop-loans/loan-accounts`;
+  if (memberRole === "regular-member") path = `/${memberRole}/coop-loans/loan-accounts`;
+  if (memberRole === "treasurer") path = `/${memberRole}/member-records`;
 
 
   return (
@@ -84,7 +86,7 @@ function LoanAccountDetails() {
             Loan Account Detail
           </h1>
           <div className="flex flex-row items-center gap-3">
-            <Link to={`/${memberRole}/coop-loans/loan-accounts`} className="btn btn-neutral whitespace-nowrap">
+            <Link to={path} className="btn btn-neutral whitespace-nowrap">
               Back
             </Link>
           </div>

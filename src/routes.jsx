@@ -94,6 +94,7 @@ function AppRoutes() {
   const treasurerRoutes = [
     ...sharedRoutes,
     ...boardSharedTreasurerPages,
+    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "coop-loans/releases", element: <CoopLoansReleases /> },
     { path: "coop-loans/payments", element: <CoopLoansPayments /> },
   ];

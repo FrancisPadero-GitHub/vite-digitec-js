@@ -64,12 +64,12 @@ function MemberProfile() {
   // console.log("TEST", mergedLoanAccounts )
 
   const activeLoans = mergedLoanAccounts?.filter(
-    (row) => row.account_number === accountNo && row.status === "ONGOING"
+    (row) => row.account_number === accountNo && row.status === "Active"
   );
 
   // Past (Closed) loans — could be multiple
   const pastLoans = loanAccount?.filter(
-    (row) => row.applicant_id === parsedId && row.status === "CLOSED"
+    (row) => row.applicant_id === parsedId && row.status === "Closed"
   );
 
 
@@ -107,6 +107,10 @@ function MemberProfile() {
     memberAge--;
   }
 
+  const openModal = (row) => {
+    // console.log(`TEST`, row.loan_id)
+    navigate(`../loan-account/details/${row.loan_id}`);
+  }
 
 
   const topInfo = [
@@ -508,7 +512,11 @@ function MemberProfile() {
               setPage={setPage}
 
               renderRow={(loan) => (
-                <tr key={loan.loan_id} className="text-center">
+                <tr
+                  key={loan.loan_id}
+                  className="cursor-pointer hover:bg-base-200/50"
+                  onClick={() => openModal(loan)}
+                >
                   <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
                   <td>
                     <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
