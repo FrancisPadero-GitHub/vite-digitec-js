@@ -172,31 +172,30 @@ function CoopLoansPayments() {
     mutateDelete({ table: "loan_payments", column_name: "payment_id", id: payment_id });
     closeModal();
   };
+  const [pendingPaymentData, setPendingPaymentData] = useState(null);
 
-  const handlePaymentSubmit = (e) => {
-    e.preventDefault();
+  // On form submit (opens confirmation)
+  const handlePaymentSubmit = (data) => {
+    setPendingPaymentData(data);
     setShowPaymentConfirm(true);
   };
-
-  const onSubmit = (data) => {
-  addLoanPayments(data, {
-    onSuccess: () => {
-      toast.success("Successfully added payment");
-      setShowPaymentConfirm(false);
-      closeModal();
-    },
-    onError: () => {
-      toast.error("Something went wrong");
-      setShowPaymentConfirm(false);
-    }
-  });
-
-    /**
-     * Scans the payment schedule 
-     * then structure the total_amount that fits to (fees -> interest -> principal )
-     */
-    // console.log("TEST:", data);
-  }
+  
+  // On confirm button
+  const confirmPayment = () => {
+    if (!pendingPaymentData) return;
+    addLoanPayments(pendingPaymentData, {
+      onSuccess: () => {
+        toast.success("Successfully added payment");
+        setShowPaymentConfirm(false);
+        setPendingPaymentData(null);
+        closeModal();
+      },
+      onError: () => {
+        toast.error("Something went wrong");
+        setShowPaymentConfirm(false);
+      },
+    });
+  };
   
   /**
    * MEMBERS FILTER
@@ -475,7 +474,7 @@ function CoopLoansPayments() {
           open={modalType !== null}
           close={closeModal}
           action={modalType === "edit"}
-          onSubmit={handlePaymentSubmit} 
+          onSubmit={handleSubmit(handlePaymentSubmit)} // <-- this now stores data
           isPending={isPending}
           status={isPending}
           deleteAction={() => handleDelete(watch("payment_id"))}
@@ -812,7 +811,7 @@ function CoopLoansPayments() {
                 </button>
                 <button
                   className="px-4 py-2 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white shadow-sm cursor-pointer"
-                  onClick={handleSubmit(onSubmit)}
+                  onClick={confirmPayment}
                   disabled={isPending}
                 >
                   {isPending ? (
