@@ -11,6 +11,7 @@ import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
 import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // mutation hooks
 import { useEditLoanAcc } from '../../backend/hooks/treasurer/useEditLoanAcc';
@@ -31,7 +32,9 @@ function CoopLoansReleases() {
   //  const navigate = useNavigate();
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-   const { data: loanProducts } = useFetchLoanProducts();
+  const { data: loanProducts } = useFetchLoanProducts();
+
+  const { memberRole } = useMemberRole();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -311,6 +314,7 @@ function CoopLoansReleases() {
           status={!watch("release_date")}
           isPending={isPending}
           isDisabled={watch("status") === "Active"}
+          memberRole={memberRole}
         >
           {/* Release dates */}
           <div className="p-3 bg-white rounded-lg border-2 border-gray-200 mb-4">
@@ -335,7 +339,6 @@ function CoopLoansReleases() {
                     className="input input-bordered w-full border-green-400 focus:border-green-600"
                   />
                 )}
-                <input type="hidden" {...register("release_date")} />
                 {errors.release_date && (<p className="text-error text-xs mt-1">Release date is required</p>)}
               </div>
 
@@ -475,7 +478,6 @@ function CoopLoansReleases() {
                     className="input input-bordered w-full border-gray-400 focus:border-blue-600 font-semibold"
                   />
                 )}
-                <input type="hidden" {...register("first_due")} />
                 {errors.first_due && (<p className="text-error text-xs mt-1">First due date is required</p>)}
               </div>
 

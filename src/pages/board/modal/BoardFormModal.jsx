@@ -10,9 +10,9 @@ function BoardFormModal({
   type,
   isPending,
   isDisabled,
+  memberRole,
 }) {
 
-  // if open is false, don't render anything
   if (!open) return null;
 
   const handleFormSubmit = (e) => {
@@ -20,7 +20,26 @@ function BoardFormModal({
     onSubmit(e);
   };
 
- return (
+  // Button text based on role and type
+  const getButtonText = () => {
+    if (isPending) {
+      return (
+        <>
+          <span className="loading loading-spinner loading-sm"></span>
+          Loading...
+        </>
+      );
+    }
+    
+    
+    if (type) return "Next"; // When board picks "Approved" in decision, show "Next"
+    if (memberRole === "board") return "Update"; //When board picks "Pending", "On Review", "Denied" in application decision
+    if (memberRole === "treasurer") return "Release"; //When treasurer releases loan
+    
+    return "Submit";
+  };
+
+  return (
     <dialog open className="modal" onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[45rem] max-w-full">
         <h2 className="text-2xl font-semibold">{title}</h2>
@@ -48,14 +67,7 @@ function BoardFormModal({
                   className="btn btn-primary"
                   disabled={status || isPending || isDisabled}
                 >
-                  {isPending ? (
-                    <>
-                      <span className="loading loading-spinner loading-sm"></span>
-                      Loading...
-                    </>
-                  ) : (
-                    type ? "Next" : "Release"
-                  )}
+                  {getButtonText()}
                 </button>
               )}
             </div>

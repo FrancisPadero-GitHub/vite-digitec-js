@@ -14,6 +14,7 @@ import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanPro
 import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
 import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
 import { useFetchSettings } from "../../backend/hooks/shared/useFetchSettings";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // mutation hooks
 import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
@@ -56,6 +57,8 @@ function LoanApplications() {
 
   const { data: loanProducts } = useFetchLoanProducts();
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({page, limit});
+
+  const { memberRole } = useMemberRole();
 
   // Data manipulation 
   const { mutate: addLoanAcc } = useAddLoanAcc();
@@ -578,11 +581,12 @@ function LoanApplications() {
         onSubmit={handleSubmit(onSubmit)}
         deleteAction={() => handleDelete(watch("application_id"))}
         type={watch("status") === "Approved"}
+        memberRole={memberRole}
       >
         {/* Loan decision */}
         <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
           <div className="flex items-center gap-2 mb-2">
-            <CheckCircleOutlinedIcon fontSize="small" color="info"/>
+            <CheckCircleOutlinedIcon fontSize="sma ll" color="info"/>
             <h3 className="font-bold">Application Decision</h3>
           </div>
           
