@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
 // custom hook
-import { useMemberRole } from "../backend/context/useMemberRole";
+import { useAuth } from "../backend/context/AuthProvider";
 
 import logo from "../assets/digitec-logo.png";
 import hero1 from "../assets/hero1.jpg";
@@ -41,7 +41,7 @@ const gallery = [
 
 
 const Landing = () => {
-
+  const { role: memberRole } = useAuth();
   const handleNavigation = (e) => {
     if (!memberRole) {
       e.preventDefault();
@@ -79,8 +79,6 @@ const Landing = () => {
   // Manual controls for carousel
   const prevSlide = () => { setIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1)); };
   const nextSlide = () => { setIndex((prev) => (prev + 1) % gallery.length); };
-
-  const {memberRole} = useMemberRole();
 
   return (
     <div className="min-h-screen text-base-content">

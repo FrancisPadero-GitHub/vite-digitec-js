@@ -9,7 +9,7 @@ import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccV
 import { useFetchPaySched } from "../../backend/hooks/shared/useFetchPaySched";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
-import { useMemberRole } from "../../backend/context/useMemberRole";
+import { useAuth } from "../../backend/context/AuthProvider";
 
 // components
 import LoanScheduleCardList from "./components/LoanScheduleCardList";
@@ -71,7 +71,7 @@ function LoanAccountDetails() {
   // const TABLE_PREFIX = "LAPP_";
   
   // For the dynamic back link base on member role
-  const { memberRole } = useMemberRole();
+  const { role: memberRole } = useAuth();
   let path = "";
   if (memberRole === "board") path = `/${memberRole}/coop-loans/loan-accounts`;
   if (memberRole === "treasurer") path = `/${memberRole}/member-records`;

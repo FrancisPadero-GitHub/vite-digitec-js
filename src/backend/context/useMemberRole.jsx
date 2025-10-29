@@ -15,5 +15,11 @@ export const useMemberRole = () => {
 
   if (isLoading) return { memberRole: null, loading: true };
 
-  return { memberRole: member?.account_role || null, loading: false };
+  return { memberRole: member || null, loading: false };
 };
+
+/**
+ * 
+ *  This is unused code that was part of the previous implementation. It has been retained for reference.
+ * 
+  */

@@ -14,7 +14,7 @@ import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanPro
 import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
 import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
 import { useFetchSettings } from "../../backend/hooks/shared/useFetchSettings";
-import { useMemberRole } from "../../backend/context/useMemberRole";
+import { useAuth } from "../../backend/context/AuthProvider";
 
 // mutation hooks
 import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
@@ -58,7 +58,7 @@ function LoanApplications() {
   const { data: loanProducts } = useFetchLoanProducts();
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({page, limit});
 
-  const { memberRole } = useMemberRole();
+  const { role: memberRole } = useAuth();
 
   // Data manipulation 
   const { mutate: addLoanAcc } = useAddLoanAcc();

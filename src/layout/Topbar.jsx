@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../backend/context/AuthProvider";
 
 // db for logout
 import { supabase } from "../backend/supabase";
@@ -27,6 +28,8 @@ const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWp
 
 
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
+  const {setSession, setUser, setRole} = useAuth();
+
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -65,6 +68,9 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
       console.log("Post-logout session check:", sessionCheck);
 
       // Clear all cached data tied to the previous user
+      setSession(null);
+      setUser(null);
+      setRole(null);
       queryClient.clear();
 
       // Optional: redirect or reset app state here

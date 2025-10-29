@@ -12,7 +12,7 @@ import { Link } from "react-router";
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
-import { useMemberRole } from "../../backend/context/useMemberRole";
+import { useAuth } from "../../backend/context/AuthProvider";
 import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds";
 
 // mutation hooks
@@ -32,7 +32,7 @@ import {
 } from "../../constants/Color";
 
 function ClubFunds() {
-  const { memberRole } = useMemberRole();
+  const { role: memberRole } = useAuth();
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 

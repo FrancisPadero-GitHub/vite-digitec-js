@@ -16,7 +16,7 @@ import { useFetchCoop } from '../../backend/hooks/shared/useFetchCoop';
 
 // helper 
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
-import { useMemberRole } from '../../backend/context/useMemberRole';
+import { useAuth } from '../../backend/context/AuthProvider';
 
 // constants
 import { PAYMENT_METHOD_COLORS, CLUB_CATEGORY_COLORS, INCOME_SOURCE_COLORS, CAPITAL_CATEGORY_COLORS} from '../../constants/Color';
@@ -31,8 +31,7 @@ import DataTable from './components/DataTable';
 
 
 function Dashboard() {
-
-  const {memberRole} = useMemberRole();
+  const { role: memberRole } = useAuth();
 
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];

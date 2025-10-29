@@ -2,10 +2,10 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Footer from "./Footer";
-import { useMemberRole } from "../backend/context/useMemberRole";
+import { useAuth } from "../backend/context/AuthProvider";
 
 const Layout = () => {
-  const {memberRole} = useMemberRole();
+  const { role: memberRole } = useAuth();
   return (
   <div className="drawer lg:drawer-open">
     <input

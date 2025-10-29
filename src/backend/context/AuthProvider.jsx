@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     // Get current session from Supabase
@@ -35,8 +36,20 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // Load role from localStorage on mount
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    if (storedRole) setRole(storedRole);
+  }, []);
+
+  // Sync role changes to localStorage
+  useEffect(() => {
+    if (role) localStorage.setItem("role", role);
+  }, [role]);
+
+
   return (
-    <AuthContext.Provider value={{ user, session, loading }}>
+    <AuthContext.Provider value={{ user, setUser, session, setSession, loading, role, setRole }}>
       {children}
     </AuthContext.Provider>
   );

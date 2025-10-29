@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 
 // fetch hooks
-import { useMemberRole } from "../../backend/context/useMemberRole";
+import { useAuth } from "../../backend/context/AuthProvider";
 import { useFetchExpenses } from "../../backend/hooks/shared/useFetchExpenses";
 
 // mutation hooks
@@ -23,7 +23,7 @@ import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
 
 
 function ClubExpenses() {
-  const { memberRole } = useMemberRole(); // used to hide button to add transaction like a treasurer kay board rani sya view view langs 
+  const { role: memberRole } = useAuth();
 
   // front end pagination
   const [page, setPage] = useState(1);

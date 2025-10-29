@@ -2,7 +2,6 @@ import { Navigate } from "react-router-dom";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { useAuth } from "./backend/context/AuthProvider";
-import { useMemberRole } from "./backend/context/useMemberRole";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -25,20 +24,12 @@ const LoadingContainer = ({ children }) => (
   </Box>
 );
 
-/**
- * ProtectedRoutes
- * Handles role fetching, loading state, and access restriction in one place.
- * @param {ReactNode} children
- * @param {string|string[]} roleAllowed - roles allowed to access this route
- */
-
 const ProtectedRoutes = ({ children, roleAllowed }) => {
-  const { session, loading: authLoading } = useAuth();
-  const { memberRole, loading: roleLoading } = useMemberRole();
-  console.log(`prtd:`, memberRole)
-  const loading = authLoading || roleLoading;
+  const { session, loading: authLoading, role } = useAuth();
 
-  if (loading) {
+  const activeRole = role ;
+
+  if (authLoading) {
     return (
       <LoadingContainer>
         <CircularProgress size={50} thickness={3} />
@@ -49,19 +40,23 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
     );
   }
 
+  // If not logged in, go to login
   if (!session) return <Navigate to="/" replace />;
-  if (!memberRole) return <Navigate to="/not-found" replace />;
 
+  // No role found, show 404
+  if (!activeRole) return <Navigate to="/not-found" replace />;
+
+  // Normalize allowed roles into array
   const allowedRoles = Array.isArray(roleAllowed)
     ? roleAllowed
     : [roleAllowed];
 
-  if (!allowedRoles.includes(memberRole)) {
-    return <Navigate to={`/${memberRole}`} replace />;
+  // If role isn’t allowed, redirect to that user’s base route
+  if (!allowedRoles.includes(activeRole)) {
+    return <Navigate to={`/${activeRole}`} replace />;
   }
 
   return children;
 };
-
 
 export default ProtectedRoutes;
