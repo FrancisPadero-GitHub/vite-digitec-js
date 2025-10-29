@@ -155,7 +155,7 @@ function CoopLoansReleases() {
     });
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = () => {
     setShowConfirmModal(true);
   };
 
