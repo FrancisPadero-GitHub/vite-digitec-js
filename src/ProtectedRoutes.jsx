@@ -33,10 +33,12 @@ const LoadingContainer = ({ children }) => (
  */
 
 const ProtectedRoutes = ({ children, roleAllowed }) => {
-  const {  session, loading: authLoading } = useAuth();
-  const { memberRole, loading } = useMemberRole();
+  const { session, loading: authLoading } = useAuth();
+  const { memberRole, loading: roleLoading } = useMemberRole();
+  console.log(`prtd:`, memberRole)
+  const loading = authLoading || roleLoading;
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <LoadingContainer>
         <CircularProgress size={50} thickness={3} />
@@ -47,20 +49,19 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
     );
   }
 
-  if (!session) {
-    return <Navigate to="/" replace />;
-  }
-  
-  if (!memberRole) {
-    return <Navigate to="/not-found" replace />;
-  }
+  if (!session) return <Navigate to="/" replace />;
+  if (!memberRole) return <Navigate to="/not-found" replace />;
 
-  const allowedRoles = Array.isArray(roleAllowed) ? roleAllowed : [roleAllowed];
+  const allowedRoles = Array.isArray(roleAllowed)
+    ? roleAllowed
+    : [roleAllowed];
+
   if (!allowedRoles.includes(memberRole)) {
     return <Navigate to={`/${memberRole}`} replace />;
   }
 
   return children;
 };
+
 
 export default ProtectedRoutes;

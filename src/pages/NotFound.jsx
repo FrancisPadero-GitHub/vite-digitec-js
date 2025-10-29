@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 const NotFound = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-base-200 text-center">
@@ -5,9 +6,9 @@ const NotFound = () => {
       <p className="text-2xl text-base-content/80 mb-6">
         Whoopsie! Page Not Found!
       </p>
-      <a href="/" className="text-lg btn btn-primary">
+      <Link to="/" className="text-lg btn btn-primary">
         Back to Home
-      </a>
+      </Link>
     </div>
   );
 };

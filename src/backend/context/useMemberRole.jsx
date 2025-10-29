@@ -10,13 +10,10 @@ import { useMembers } from "../hooks/shared/useFetchMembers.js";
 
 export const useMemberRole = () => {
   const { user } = useAuth();
-  const { data: members_data, isLoading } = useMembers();
-  const members = members_data?.data || [];
+  const { data: members_data, isLoading } = useMembers({ login_id: user?.id });
+  const member = members_data?.data?.[0] || null; // ✅ grab the first result
 
   if (isLoading) return { memberRole: null, loading: true };
 
-  const member = members?.find((m) => m.login_id === user?.id);  
-  const memberRole = member ? member.account_role : null;
-
-  return { memberRole, loading: false };
+  return { memberRole: member?.account_role || null, loading: false };
 };
