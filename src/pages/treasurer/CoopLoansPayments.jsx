@@ -557,23 +557,19 @@ function CoopLoansPayments() {
                     name="loan_ref_number"
                     control={control}
                     render={({ field }) => {
-                      const selectedAccount = watch("account_number");
-                      const selectedMember = members.find(m => m.account_number === selectedAccount);
-                      const memberLoans = loanAcc.filter(loan => loan.account_number === selectedAccount);
-                      const filteredMemberLoans = memberLoans.filter(loan =>
-                        loan.loan_ref_number.toLowerCase().includes(queryLoan.toLowerCase())
-                      );
+                    const selectedAccount = watch("account_number");
+                    const selectedMember = members.find(m => m.account_number === selectedAccount);
 
-                      return (
-                        <Combobox
-                          value={memberLoans.find((loan) => loan.loan_ref_number === field.value) || null}
-                          onChange={(loan) => {
-                            field.onChange(loan?.loan_ref_number);
-                            setValue("loan_ref_number", loan?.loan_ref_number || "");
-                            setValue("loan_id", loan?.loan_id || null);
-                          }}
-                          disabled={!selectedAccount}
-                        >
+                    return (
+                      <Combobox
+                        value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
+                        onChange={(loan) => {
+                          field.onChange(loan?.loan_ref_number);
+                          setValue("loan_ref_number", loan?.loan_ref_number || "");
+                          setValue("loan_id", loan?.loan_id || null);
+                        }}
+                        disabled={!selectedAccount}
+                      >
                         <ComboboxInput
                           required
                           className="input input-sm input-bordered w-full disabled:bg-base-200"
@@ -582,12 +578,12 @@ function CoopLoansPayments() {
                           onChange={(e) => setQueryLoan(e.target.value)}
                         />
                         <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                          {filteredMemberLoans.length === 0 ? (
+                          {filteredLoanAcc.length === 0 ? (
                             <div className="px-4 py-2 text-base-content/60">
                               {selectedAccount ? "No loan accounts found for this member." : "Select a member first."}
                             </div>
                           ) : (
-                            filteredMemberLoans.map((loan) => (
+                            filteredLoanAcc.map((loan) => (
                               <ComboboxOption
                                 key={loan.loan_ref_number}
                                 value={loan}
@@ -607,7 +603,7 @@ function CoopLoansPayments() {
                             ))
                           )}
                         </ComboboxOptions>
-                        </Combobox>
+                      </Combobox>
                       );
                     }}
                   />

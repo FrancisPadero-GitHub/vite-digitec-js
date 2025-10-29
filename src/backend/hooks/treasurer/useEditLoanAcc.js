@@ -24,6 +24,7 @@ const updateLoanAcc = async (formData) => {
   const payload = {
     status: "Active",
     release_date,
+    first_due,
   };
   
   const { data, error } = await supabase
