@@ -44,7 +44,11 @@ export const AuthProvider = ({ children }) => {
 
   // Sync role changes to localStorage
   useEffect(() => {
-    if (role) localStorage.setItem("role", role);
+    if (role) {
+      localStorage.setItem("role", role);
+    } else {
+      localStorage.removeItem("role");
+    }
   }, [role]);
 
 

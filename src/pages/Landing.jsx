@@ -42,6 +42,7 @@ const gallery = [
 
 const Landing = () => {
   const { role: memberRole } = useAuth();
+  console.log(`TEST`, { memberRole });
   const handleNavigation = (e) => {
     if (!memberRole) {
       e.preventDefault();

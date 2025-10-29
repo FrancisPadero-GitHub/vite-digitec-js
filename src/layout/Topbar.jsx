@@ -59,6 +59,13 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
+
+    // Clear the auth state immediately
+    setSession(null);
+    setUser(null);
+    setRole(null);
+    localStorage.removeItem("role");
+
     try {
       const { error } = await supabase.auth.signOut({scope: "local"}); // scope: "local" Persists login on other devices and has to logout manually each devices
       if (error) throw new Error(error.message);
@@ -68,9 +75,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
       console.log("Post-logout session check:", sessionCheck);
 
       // Clear all cached data tied to the previous user
-      setSession(null);
-      setUser(null);
-      setRole(null);
       queryClient.clear();
 
       // Optional: redirect or reset app state here
