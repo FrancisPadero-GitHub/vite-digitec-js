@@ -8,7 +8,7 @@ import { Toaster, toast } from "react-hot-toast";
 
 
 // Fetch Hooks
-import { useAuth } from "../../backend/context/AuthProvider";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 
@@ -26,7 +26,7 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 
 function CoopShareCapital() {
-  const { role: memberRole } = useAuth(); // used to hide button to add transaction like a treasurer kay board rani sya view view langs
+  const { memberRole } = useMemberRole(); // used to hide button to add transaction like a treasurer kay board rani sya view view langs
 
   // front end pagination
   const [page, setPage] = useState(1);                    

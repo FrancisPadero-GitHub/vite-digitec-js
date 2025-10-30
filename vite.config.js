@@ -14,14 +14,35 @@ export default defineConfig({
       "@mui/icons-material",
       "@emotion/react",
       "@emotion/styled",
+      "@tanstack/react-query",
+      "react-hook-form",
+      "dayjs",
     ],
     persist: true, // keep optimization cache across restarts
+  },
+
+  // Performance optimizations
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          mui: ['@mui/material', '@mui/icons-material'],
+          forms: ['react-hook-form'],
+          utils: ['dayjs', 'date-fns'],
+        },
+      },
+    },
   },
 
   // optional but can speed up hot reloads
   server: {
     fs: {
       strict: false,
+    },
+    // Improve HMR performance
+    hmr: {
+      overlay: false, // Disable error overlay that can cause performance issues
     },
   },
 });

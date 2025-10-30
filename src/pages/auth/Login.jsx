@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../backend/context/AuthProvider";
+
 
 // mutation hooks
 import { useLogin } from "../../backend/hooks/auth/useLogin";
@@ -19,7 +19,7 @@ import auth_bg from "../../assets/auth-bg.jpg";
 
 
 const Login = () => {
-  const { setRole } = useAuth();
+
   // hooks
   const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
@@ -48,7 +48,6 @@ const Login = () => {
     // Might remove the switch process in the future after I fix the admin user adding
     login(form_data, {
       onSuccess: ({role}) => { // {role} is destructered cause we returned {role: members.account_type} as object otherwise its default (data)
-        setRole(role);
         navigate(`/${role}`);
       },
 

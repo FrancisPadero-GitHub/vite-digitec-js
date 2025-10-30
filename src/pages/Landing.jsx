@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
 // custom hook
-import { useAuth } from "../backend/context/AuthProvider";
+import { useMemberRole } from "../backend/context/useMemberRole";
 
 import logo from "../assets/digitec-logo.png";
 import hero1 from "../assets/hero1.jpg";
@@ -41,10 +41,12 @@ const gallery = [
 
 
 const Landing = () => {
-  const { role: memberRole } = useAuth();
+  const { memberRole: data } = useMemberRole();
+
+  const role = data ?? "guest";
   // console.log(`TEST`, { memberRole });
   const handleNavigation = (e) => {
-    if (!memberRole) {
+    if (!role) {
       e.preventDefault();
       toast.error("Please log in to access the dashboard.");
       return;
@@ -88,7 +90,7 @@ const Landing = () => {
       <header className="sticky top-0 z-50 navbar bg-base-100 px-4 py-4 md:py-5 shadow-lg">
         <div className="flex-1">
           <Link 
-            to={memberRole ? `/${memberRole}` : "/"} 
+            to={role ? `/${role}` : "/"} 
             onClick={handleNavigation} 
             className="flex items-center normal-case text-lg md:text-xl"
             >
@@ -104,8 +106,8 @@ const Landing = () => {
         <div className="hidden md:flex flex-none">
           <ul className="menu menu-horizontal px-1 gap-1 md:gap-2">
             <li>
-              {memberRole ? (
-                <Link to={`/${memberRole}`} className="text-sm md:text-base">Dashboard</Link>
+              {role ? (
+                <Link to={`/${role}`} className="text-sm md:text-base">Dashboard</Link>
               ) : (
                 <Link to="/" className="text-sm md:text-base">Home</Link>
               )}
@@ -138,10 +140,10 @@ const Landing = () => {
               </p>
               <div className="flex justify-center lg:justify-start">
                 <Link 
-                  to={memberRole ? `/${memberRole}` : "/login"} 
+                  to={role ? `/${role}` : "/login"} 
                   className="bg-green-800 btn btn-primary px-6 py-4 md:px-8 md:py-6 text-base md:text-lg"
                 >
-                  {memberRole ? 'Go to Dashboard' : 'Get Started'}
+                  {role ? 'Go to Dashboard' : 'Get Started'}
                   <LoginOutlinedIcon className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
               </div>

@@ -11,7 +11,8 @@ import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
 import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
-import { useAuth } from '../../backend/context/AuthProvider';
+import { useMemberRole } from '../../backend/context/useMemberRole';
+
 
 // mutation hooks
 import { useEditLoanAcc } from '../../backend/hooks/treasurer/useEditLoanAcc';
@@ -34,7 +35,7 @@ function CoopLoansReleases() {
   const members = members_data?.data || [];
   const { data: loanProducts } = useFetchLoanProducts();
 
-  const {role: memberRole} = useAuth();
+  const { memberRole } = useMemberRole();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);

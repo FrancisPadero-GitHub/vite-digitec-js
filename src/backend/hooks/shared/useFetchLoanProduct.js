@@ -16,7 +16,7 @@ export function useFetchLoanProducts() {
   return useQuery({
     queryKey: ["loan_products"],
     queryFn: fetchLoanProducts,
-    staleTime: 1000 * 60 * 1, 
+    staleTime: 1000 * 60 * 10, // Increased to 10 minutes - loan products don't change often
 
   });
 }

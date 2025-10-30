@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 // import { useNavigate } from "react-router";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -14,7 +14,7 @@ import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanPro
 import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
 import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
 import { useFetchSettings } from "../../backend/hooks/shared/useFetchSettings";
-import { useAuth } from "../../backend/context/AuthProvider";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // mutation hooks
 import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
@@ -58,7 +58,7 @@ function LoanApplications() {
   const { data: loanProducts } = useFetchLoanProducts();
   const { data: memberLoanAppData, isLoading, isError, error } = useFetchLoanApp({page, limit});
 
-  const { role: memberRole } = useAuth();
+  const { memberRole } = useMemberRole();
 
   // Data manipulation 
   const { mutate: addLoanAcc } = useAddLoanAcc();
@@ -192,46 +192,55 @@ function LoanApplications() {
   const startDateValue = watchLoanAcc("first_due");
 
   // detect the changes of principal then calculate on the go
+  const calculatedLoan = useMemo(() => {
+    if (!principalValue || principalValue <= 0) return null;
+    
+    let totalPayable = 0;
+    let totalInterest = 0;
+    let serviceFee = 0;
+
+    if (interestMethod === "Flat Rate") {
+      const result = calculateLoanAndScheduleFlatRate({
+        interestRate: Number(interestRateValue),
+        principal: Number(principalValue),
+        termMonths: Number(loanTermValue),
+        serviceFeeRate: Number(serviceFeeRate),
+      });
+      totalPayable = result.totalPayable;
+      totalInterest = result.totalInterest;
+      serviceFee = result.serviceFee;
+    } else if (interestMethod === "Reducing") {
+      const result = calculateLoanAndScheduleReducing({
+        interestRate: Number(interestRateValue),
+        principal: Number(principalValue),
+        termMonths: Number(loanTermValue),
+        serviceFeeRate: Number(serviceFeeRate),
+      });
+      totalPayable = result.totalPayable;
+      totalInterest = result.totalInterest;
+      serviceFee = result.serviceFee;
+    }
+
+    return { totalPayable, totalInterest, serviceFee };
+  }, [principalValue, interestMethod, interestRateValue, loanTermValue, serviceFeeRate]);
+
   useEffect(() => {
-    if (!principalValue || principalValue <= 0) return;
-    // console.log(`TEST`, interestMethod )
-    setIsCalculating(true);
-    const timer = setTimeout(() => {
-      let totalPayable = 0;
-      let totalInterest = 0;
-      let serviceFee = 0;
+    if (calculatedLoan) {
+      setIsCalculating(true);
+      // Use a shorter timeout or requestAnimationFrame for UI updates
+      const timer = setTimeout(() => {
+        const { totalPayable, totalInterest, serviceFee } = calculatedLoan;
 
-      if (interestMethod === "Flat Rate") {
-        const result = calculateLoanAndScheduleFlatRate({
-          interestRate: Number(interestRateValue),
-          principal: Number(principalValue),
-          termMonths: Number(loanTermValue),
-          serviceFeeRate: Number(serviceFeeRate),
-        });
-        totalPayable = result.totalPayable;
-        totalInterest = result.totalInterest;
-        serviceFee = result.serviceFee;
-      } else if (interestMethod === "Reducing") {
-        const result = calculateLoanAndScheduleReducing({
-          interestRate: Number(interestRateValue),
-          principal: Number(principalValue),
-          termMonths: Number(loanTermValue),
-          serviceFeeRate: Number(serviceFeeRate),
-        });
-        totalPayable = result.totalPayable;
-        totalInterest = result.totalInterest;
-        serviceFee = result.serviceFee;
-      }
+        setLoanAccValue("total_amount_due", totalPayable);
+        setLoanAccValue("total_interest", totalInterest);
+        setLoanAccValue("service_fee", serviceFee);
+        setIsCalculating(false);
 
-      setLoanAccValue("total_amount_due", totalPayable);
-      setLoanAccValue("total_interest", totalInterest);
-      setLoanAccValue("service_fee", serviceFee);
-      setIsCalculating(false);
+      }, 100); // Reduced debounce delay
 
-    }, 600); // debounce delay (ms)
-
-    return () => clearTimeout(timer);
-  }, [principalValue, interestRateValue, loanTermValue, interestMethod, setLoanAccValue, serviceFeeRate]);
+      return () => clearTimeout(timer);
+    }
+  }, [calculatedLoan, setLoanAccValue]);
 
   // detect changes in start date or loan term to auto calculate maturity date
   useEffect(() => {

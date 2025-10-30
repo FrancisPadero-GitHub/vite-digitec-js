@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 
 // fetch hooks
-import { useAuth } from "../../backend/context/AuthProvider";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 import { useFetchExpenses } from "../../backend/hooks/shared/useFetchExpenses";
 
 // mutation hooks
@@ -23,7 +23,7 @@ import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
 
 
 function ClubExpenses() {
-  const { role: memberRole } = useAuth();
+  const { memberRole } = useMemberRole();
 
   // front end pagination
   const [page, setPage] = useState(1);

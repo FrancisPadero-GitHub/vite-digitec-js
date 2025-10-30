@@ -28,8 +28,8 @@ const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWp
 
 
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
-  const {setSession, setUser, setRole} = useAuth();
-
+  const {setSession, setUser} = useAuth();
+  
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -63,8 +63,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
     // Clear the auth state immediately
     setSession(null);
     setUser(null);
-    setRole(null);
-    localStorage.removeItem("role");
 
     try {
       const { error } = await supabase.auth.signOut({scope: "local"}); // scope: "local" Persists login on other devices and has to logout manually each devices

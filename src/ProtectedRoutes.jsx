@@ -1,7 +1,8 @@
 import { Navigate } from "react-router-dom";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { keyframes } from "@mui/system";
-import { useAuth } from "./backend/context/AuthProvider";
+import { useAuth } from "./backend/context/AuthProvider"; // Assuming you are importing useAuth from your AuthProvider
+import { useMemberRole } from "./backend/context/useMemberRole"; // Adjust the path accordingly
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -25,11 +26,13 @@ const LoadingContainer = ({ children }) => (
 );
 
 const ProtectedRoutes = ({ children, roleAllowed }) => {
-  const { session, loading: authLoading, role } = useAuth();
+  const { session, loading: authLoading } = useAuth();
+  
+  // Use the custom hook to get member role and loading state
+  const { memberRole, loading: roleLoading } = useMemberRole();
 
-  const activeRole = role ;
-
-  if (authLoading) {
+  // Combine auth loading and role loading states
+  if (authLoading || roleLoading) {
     return (
       <LoadingContainer>
         <CircularProgress size={50} thickness={3} />
@@ -44,7 +47,7 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
   if (!session) return <Navigate to="/" replace />;
 
   // No role found, show 404
-  if (!activeRole) return <Navigate to="/not-found" replace />;
+  if (!memberRole) return <Navigate to="/not-found" replace />;
 
   // Normalize allowed roles into array
   const allowedRoles = Array.isArray(roleAllowed)
@@ -52,8 +55,8 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
     : [roleAllowed];
 
   // If role isn’t allowed, redirect to that user’s base route
-  if (!allowedRoles.includes(activeRole)) {
-    return <Navigate to={`/${activeRole}`} replace />;
+  if (!allowedRoles.includes(memberRole)) {
+    return <Navigate to={`/${memberRole}`} replace />;
   }
 
   return children;

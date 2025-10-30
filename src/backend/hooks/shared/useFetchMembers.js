@@ -54,6 +54,6 @@ export function useMembers({
     queryKey: ["members", page, limit, login_id],
     queryFn: () => fetchMembers({ page, limit, login_id }),
     keepPreviousData: true,
-    staleTime: 1000 * 60 * 1, // 1 minute
+    staleTime: 1000 * 60 * 5, // Increased to 5 minutes - member data doesn't change frequently
   });
 }

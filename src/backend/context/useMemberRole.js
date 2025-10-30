@@ -1,6 +1,6 @@
 // useMemberRole.js
 import { useAuth } from "./AuthProvider.jsx";
-import { useMembers } from "../hooks/shared/useFetchMembers.js";
+import { useMembers } from "../hooks/shared/useFetchMembers";
 
 /**
  * Returns the member role of the currently logged-in user.
@@ -15,7 +15,7 @@ export const useMemberRole = () => {
 
   if (isLoading) return { memberRole: null, loading: true };
 
-  return { memberRole: member || null, loading: false };
+  return { memberRole: member?.account_role || null, loading: false };
 };
 
 /**
