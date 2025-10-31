@@ -16,7 +16,7 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
 
 function LoansPayments() {
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
 
   const [page, setPage] = useState(1);

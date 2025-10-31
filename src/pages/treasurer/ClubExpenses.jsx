@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 
@@ -172,12 +171,12 @@ function ClubExpenses() {
           <h1 className="text-2xl font-bold">Club Expenses</h1>
           <div className="flex flex-row items-center gap-3">
             {memberRole !== "board" && (
-              <Link
+              <button
                 className="btn btn-neutral whitespace-nowrap"
                 onClick={openAddModal}
               >
                 + Add Expenses
-              </Link>
+              </button>
             )}
           </div>
         </div>

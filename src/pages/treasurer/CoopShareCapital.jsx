@@ -1,7 +1,7 @@
 import { useState, Fragment } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
-import { Link } from "react-router";
+
 import { Toaster, toast } from "react-hot-toast";
 
 // Context
@@ -34,9 +34,8 @@ function CoopShareCapital() {
   const [page, setPage] = useState(1);                    
   const [limit] = useState(20);
 
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-  
   const { data: coopData, isLoading, isError, error } = useFetchCoop({});
   const total = coopData?.count || 0;
   const coopRaw = coopData?.data || [];
@@ -198,9 +197,9 @@ function CoopShareCapital() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Share Capital / Coop Contribution</h1>
           {memberRole !== "board" && (
-            <Link className="btn btn-neutral whitespace-nowrap" onClick={openAddModal}>
+            <button className="btn btn-neutral whitespace-nowrap" onClick={openAddModal}>
               + Add Contribution
-            </Link>
+            </button>
           )}
         </div>
 

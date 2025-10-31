@@ -34,9 +34,9 @@ function CoopLoansPayments() {
   const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
   const { data: loan_acc_view } = useFetchLoanAccView({});
 
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-
+   
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({page, limit});
@@ -330,13 +330,13 @@ function CoopLoansPayments() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold" >Member Loan Payments</h1>
           <div className="flex flex-row items-center gap-3">
-            <Link
+            <button
               className="btn btn-neutral whitespace-nowrap"
               onClick={openAddModal}
 
             >
               + Add Payments
-            </Link>
+            </button>
           </div>
         </div>
 

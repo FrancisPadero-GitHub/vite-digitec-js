@@ -21,6 +21,8 @@ export default function MemberRecords() {
 
   const { data: members, isLoading, isError, error } = useMembers({page, limit});
 
+  
+
   // Get total count and raw data
   const total = members?.count || 0;
   const usersRaw = members?.data || [];

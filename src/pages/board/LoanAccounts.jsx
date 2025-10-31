@@ -17,7 +17,7 @@ import { LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 function LoanAccounts() {
    const navigate = useNavigate();
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
    const { data: loanProducts } = useFetchLoanProducts();
 

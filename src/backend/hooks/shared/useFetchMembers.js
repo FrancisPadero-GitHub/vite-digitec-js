@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
+import { useAuth } from "../../context/AuthProvider";
 
 /**
  * Fetches members from the database.
@@ -12,7 +13,7 @@ import { supabase } from "../../supabase";
  * @param {string} [options.login_id] - filter by user login_id (optional)
  * @returns { data, count, ...queryStates }
  */
-async function fetchMembers({ page, limit, login_id } = {}) {
+async function fetchMembers({ page, limit, login_id }) {
   let query = supabase
     .from("members")
     .select("*", { count: "exact" })
@@ -50,10 +51,13 @@ export function useMembers({
   limit = null,
   login_id = null,
 } = {}) {
+  const { user } = useAuth();
+
   return useQuery({
     queryKey: ["members", page, limit, login_id],
     queryFn: () => fetchMembers({ page, limit, login_id }),
     keepPreviousData: true,
-    staleTime: 1000 * 60 * 5, // Increased to 5 minutes - member data doesn't change frequently
+    enabled: !!user,
+    staleTime: 1000 * 60 * 1, 
   });
 }

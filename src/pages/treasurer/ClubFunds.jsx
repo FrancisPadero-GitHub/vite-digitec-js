@@ -8,7 +8,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { Link } from "react-router";
+
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
@@ -222,12 +222,12 @@ function ClubFunds() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Club Funds Contribution</h1>
           {memberRole !== "board" && (
-            <Link
+            <button
               className="btn btn-neutral whitespace-nowrap"
               onClick={openAddModal}
             >
               + Add Transaction
-            </Link>
+            </button>
           )}
         </div>
 
