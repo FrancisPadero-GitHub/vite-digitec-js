@@ -37,7 +37,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
 
   // to fetch member name for the logged in id
   const { data: loggedInAccountNumber} = useFetchAccountNumber();
-  const { data: members_data, isLoading, isError, error } = useMembers();
+  const { data: members_data, isLoading, isError, error } = useMembers({});
   const members = members_data?.data || [];
 
   // Find member linked to this user
