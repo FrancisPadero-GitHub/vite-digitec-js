@@ -27,9 +27,10 @@ import FormModal from './modals/FormModal';
 
 // constants
 import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
-
+import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 function CoopLoansPayments() {
+  const placeHolderAvatar = defaultAvatar;
   const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
   const { data: loan_acc_view } = useFetchLoanAccView({});
 
@@ -433,7 +434,7 @@ function CoopLoansPayments() {
                       <div className="mask mask-circle w-10 h-10">
                         <img
                           src={
-                            matchedMember?.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember?.id || matchedMember?.l_name}`
+                            matchedMember?.avatar_url || placeHolderAvatar
                           }
                           alt={fullName}
                         />

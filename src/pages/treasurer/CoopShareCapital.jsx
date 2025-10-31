@@ -24,8 +24,10 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 
 // Constants
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
+import defaultAvatar from "../../assets/placeholder-avatar.png";
 
 function CoopShareCapital() {
+  const placeHolderAvatar = defaultAvatar;
   const { memberRole } = useMemberRole(); // used to hide button to add transaction like a treasurer kay board rani sya view view langs
 
   // front end pagination
@@ -293,7 +295,7 @@ function CoopShareCapital() {
             const amount = row?.amount || 0;
             const matchedMember = members.find((member) => member?.account_number === row?.account_number);
             const isDisabled = !matchedMember;
-            const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "System";
+            const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "Not Found";
 
             return (
               <tr
@@ -302,7 +304,7 @@ function CoopShareCapital() {
                 className={`transition-colors ${!isDisabled ? "cursor-pointer hover:bg-base-200/70" : "cursor-not-allowed opacity-80 bg-base-100/70"}`}
               >
                 <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.coop_contri_id}</td>
-                <td className="px-4 py-2 text-center font-medium text-xs">{matchedMember?.account_number || "Something went wrong"}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{matchedMember?.account_number || "Not Found"}</td>
                 <td className="px-4 py-4">
                   <span className="flex items-center gap-3">
                     {matchedMember ? (
@@ -312,7 +314,7 @@ function CoopShareCapital() {
                           <div className="mask mask-circle w-10 h-10">
                             <img
                               src={
-                                matchedMember?.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember?.id || matchedMember?.l_name}`
+                                matchedMember?.avatar_url || placeHolderAvatar
                               }
                               alt={fullName}
                             />

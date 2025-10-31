@@ -24,10 +24,10 @@ import BoardFormModal from '../board/modal/BoardFormModal';
 
 // colors
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from '../../constants/Color';
-const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
-
+import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 function CoopLoansReleases() {
+  const placeHolderAvatar = defaultAvatar;
   const {mutate: releaseLoan, isPending } = useEditLoanAcc();
 
   //  const navigate = useNavigate();
@@ -245,7 +245,7 @@ function CoopLoansReleases() {
                       <div className="mask mask-circle w-10 h-10">
                         <img
                           src={
-                            matchedMember?.avatar_url || catGif
+                            matchedMember?.avatar_url || placeHolderAvatar
                           }
                           alt={fullName}
                         />

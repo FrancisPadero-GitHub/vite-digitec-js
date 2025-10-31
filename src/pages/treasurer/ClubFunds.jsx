@@ -30,8 +30,10 @@ import {
   CLUB_CATEGORY_COLORS,
   PAYMENT_METHOD_COLORS,
 } from "../../constants/Color";
+import defaultAvatar from "../../assets/placeholder-avatar.png";
 
 function ClubFunds() {
+    const placeHolderAvatar = defaultAvatar;
   const { memberRole } = useMemberRole();
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
@@ -330,23 +332,31 @@ function ClubFunds() {
                   {TABLE_PREFIX}_{row?.contribution_id}
                 </td>
                 <td className="px-4 py-2 text-center font-medium text-xs">
-                  {matchedMember?.account_number || "Something went wrong"}
+                  {matchedMember?.account_number || "Not Found"}
                 </td>
-                <td className="px-4 py-4 text-center">
+                <td className="px-4 py-4">
                   <span className="flex items-center gap-3">
-                    <div className="avatar">
-                      <div className="mask mask-circle w-10 h-10">
-                        <img
-                          src={
-                            matchedMember?.avatar_url ||
-                            `https://i.pravatar.cc/40?u=${matchedMember?.id || matchedMember?.l_name
-                            }`
-                          }
-                          alt={fullName}
-                        />
-                      </div>
-                    </div>
-                    <div className="truncate">{fullName}</div>
+                    {matchedMember ? (
+                      <>
+                        {/* avatar for members */}
+                        <div className="avatar">
+                          <div className="mask mask-circle w-10 h-10">
+                            <img
+                              src={
+                                matchedMember?.avatar_url || placeHolderAvatar
+                              }
+                              alt={fullName}
+                            />
+                          </div>
+                        </div>
+                        <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
+                      </>
+                    ) : (
+                      <>
+                        {/* system-generated row */}
+                        <div className="text-gray-800 italic">{fullName}</div>
+                      </>
+                    )}
                   </span>
                 </td>
                 <td className="px-4 py-2 font-semibold text-success text-center">

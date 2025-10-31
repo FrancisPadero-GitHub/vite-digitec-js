@@ -24,10 +24,12 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 // constants
 import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now
-const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
+import defaultAvatar from '../assets/placeholder-avatar.png';
 
 
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
+  const placeHolderAvatar = defaultAvatar;
+
   const {setSession, setUser} = useAuth();
   
   const queryClient = useQueryClient();
@@ -146,7 +148,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
             <div className="avatar">
               <div className="w-10 rounded-full">
                 <img
-                  src={profile_pic || catGif}
+                  src={profile_pic || placeHolderAvatar}
                   alt="Profile"
                 />
               </div>
@@ -178,7 +180,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                   <div className="avatar">
                     <div className="w-10 rounded-full">
                       <img
-                        src={profile_pic || "https://media.tenor.com/GKydCswZLZEAAAAC/cat.gif"}
+                        src={profile_pic || placeHolderAvatar}
                         alt="Profile"
                       />
                     </div>

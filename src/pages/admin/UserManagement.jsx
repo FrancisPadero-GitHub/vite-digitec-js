@@ -15,11 +15,13 @@ import ViewMemberModal from "./modals/ViewMemberModal.jsx";
 // constants
 import { ROLE_COLORS } from "../../constants/Color.js";
 import getYearsMonthsDaysDifference from "../../constants/DateCalculation.js";
+import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 
 
 // JSX
 function UserManagement() {
+  const placeHolderAvatar = defaultAvatar;
 
   // custom states
   const { mutate: updateMemberRole, isPending } = useUpdateMember();
@@ -27,7 +29,7 @@ function UserManagement() {
   // fetch all members with pagination
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: members_data, isLoading, isError, error } = useMembers(page, limit);
+  const { data: members_data, isLoading, isError, error } = useMembers({page, limit});
   const membersRaw = members_data?.data || [];
   const total = members_data?.count || 0;
 
@@ -226,7 +228,7 @@ function UserManagement() {
                     <div className="avatar shrink-0">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={row.avatar || `https://i.pravatar.cc/40?u=${row.generatedId}`}
+                          src={row.avatar || placeHolderAvatar}
                           alt={row.displayName}
                         />
                       </div>
