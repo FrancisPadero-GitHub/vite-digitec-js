@@ -344,7 +344,12 @@ function CoopLoansPayments() {
   const paymentStatus = paymentSchedule?.status || "";
   const dueDate = paymentSchedule?.due_date || null;
   const mosOverdue = paymentSchedule?.mos_overdue || 0;
-  
+
+
+  // Only log when we have actual data (when a loan is selected)
+  // if (selectedLoanRef && paymentSchedule) {
+  //   console.log(`Total Due`, totalDue);
+  // }
 
   const fields = [
     {
@@ -767,6 +772,9 @@ function CoopLoansPayments() {
                       required: true,
                       validate: (value) => {
                         if (value <= 0) return "Amount cannot be zero or negative";
+                        const minRequiredAmount = totalDue * 0.3; // Require minimum 30% of monthly due
+                        if (value < minRequiredAmount)
+                          return `Amount must be at least 30% of monthly payment (₱${round(minRequiredAmount).toLocaleString()})`;
                         if (value > totalDue)
                           return `Amount cannot exceed monthly total payment of ₱${round(totalDue).toLocaleString()}`;
                         if (value > balance)
@@ -842,10 +850,25 @@ function CoopLoansPayments() {
                   <WarningIcon className="text-amber-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold mb-2">Confirm Payment Submission</h3>
+                  <h3 className="text-lg font-bold mb-2">
+                    {modalType === "edit" ? "Confirm Payment Modification" : "Confirm Payment Submission"}
+                  </h3>
                   <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                    Please review all payment details carefully. Once submitted, this payment <strong>cannot be edited or deleted</strong>.
+                    {modalType === "edit" 
+                      ? "You are about to modify an existing payment record. This action will update the payment schedules and recalculate loan balances. All changes will be logged for audit purposes and cannot be undone." 
+                      : "You are about to process a new loan payment. Please verify all details are correct as this transaction will immediately update the borrower's payment schedule and outstanding balance. This action cannot be reversed once submitted."}
                   </p>
+                  {pendingPaymentData && (
+                    <div className="bg-gray-50 p-3 rounded-lg border">
+                      <h4 className="text-xs font-bold text-gray-700 mb-2">Payment Summary</h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div><span className="text-gray-500 mr-2">Amount: </span> <span className="font-bold text-success">₱ {Number(pendingPaymentData.total_amount).toLocaleString()}</span></div>
+                        <div><span className="text-gray-500 mr-1">Method: </span> <span className="font-semibold">{pendingPaymentData.payment_method}</span></div>
+                        <div><span className="text-gray-500 mr-1">Date: </span> <span className="font-semibold">{dayjs(pendingPaymentData.payment_date).format('MM/DD/YYYY')}</span></div>
+                        <div><span className="text-gray-500 mr-1">Loan Ref: </span> <span className="font-semibold">{pendingPaymentData.loan_ref_number}</span></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -864,10 +887,10 @@ function CoopLoansPayments() {
                   {isAddPending || isEditPending ? (
                     <>
                       <span className="loading loading-spinner loading-sm mr-2"></span>
-                      Processing...
+                      {modalType === "edit" ? "Updating Payment..." : "Processing Payment..."}
                     </>
                   ) : (
-                    "Confirm Payment"
+                    modalType === "edit" ? "Confirm Payment Update" : "Process Payment"
                   )}
                 </button>
               </div>
