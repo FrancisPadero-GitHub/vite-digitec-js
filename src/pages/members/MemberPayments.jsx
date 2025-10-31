@@ -67,7 +67,7 @@ function MemberPayments() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold" >Member Loan Payments</h1>
+          <h1 className="text-2xl font-bold" >My Loan Payments</h1>
         </div>
 
         <FilterToolbar

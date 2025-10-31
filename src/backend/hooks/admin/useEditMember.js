@@ -32,7 +32,7 @@ export function useUpdateMember() {
       try {
         await logActivity({
           action: `Updated role of member ${data.member_id} to ${data.account_role}`,
-          type: "DELETE"
+          type: "UPDATE"
         });
       } catch (err) {
         console.warn("Failed to log activity:", err.message);

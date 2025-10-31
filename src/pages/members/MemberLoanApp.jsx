@@ -164,6 +164,7 @@ function MemberLoanApp() {
       loan_product: matchedProduct?.name || "",
       amount: row.amount || "",
       purpose: row.purpose || "",
+      term_months: row.term_months || matchedProduct?.max_term_months || "",
       application_date: row.application_date || today,
       status: row.status || "Pending",
     });
@@ -177,7 +178,8 @@ function MemberLoanApp() {
 
     const appFound = loanAcc?.some((loan) => loan.application_id === watch("application_id"))
     
-    if (row.status === "Denied" || row.status === "Approved" || appFound) setLoanStatus(true)
+    // Disable editing if status is not pending/if it exists in loan accounts
+    if (row.status !== "Pending" || appFound) {setLoanStatus(true);}
 
     setModalType("edit");
   };
@@ -447,66 +449,150 @@ function MemberLoanApp() {
           status={loanStatus}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
-          deleteAction={() =>
-            handleDelete(watch("application_id"))
-          }
+          deleteAction={() => handleDelete(watch("application_id"))}
         >
-          {fields.map((field) => (
-            <div key={field.name} className="form-control w-full mt-2">
-              <label className="label mb-1">
-                <span className="label-text font-medium text-gray-700">{field.label}</span>
-              </label>
-              {field.type === "select" && (
-                <select
-                  {...register(field.name, { required: field.required })}
-                  disabled={field.disabled}
-                  className="select select-bordered w-full"
-                >
-                  {field.dynamicOptions?.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
+          {fields.map((field) => {
+            // Loan Product
+            if (field.name === "loan_product") {
+              return (
+                <div key={field.name} className="bg-white p-3 rounded-lg border-2 border-gray-200 mb-3">
+                  <div className="form-control w-full">
+                    <label className="label text-xs font-medium text-gray-600 mb-1">{field.label}</label>
+                    {loanStatus ? (
+                      <div className="input input-bordered w-full bg-white flex items-center">
+                        {field.dynamicOptions?.find(opt => opt.value === watch(field.name))?.label || 'Select Loan Product'}
+                      </div>
+                    ) : (
+                      <select {...register(field.name, { required: field.required })} className="select select-bordered w-full">
+                        <option value="">Select Loan Product</option>
+                        {field.dynamicOptions?.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                      </select>
+                    )}
+                    {errors[field.name] && (<p className="text-error text-xs mt-1">Please select a loan product</p>)}
+                  </div>
+
+                  {/* Show loan product terms (interest, penalty, service, loan range) when selected */}
+                  {selectedProduct && (
+                  <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                    <h5 className="text-xs font-semibold text-gray-600 mb-2">Loan Terms & Conditions</h5>
+                    <div className="grid grid-cols-2 gap-y-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Interest Rate:</span>
+                        <span className="font-semibold text-blue-900">{selectedProduct.interest_rate}%</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Interest Method:</span>
+                        <span className="font-semibold">{selectedProduct.interest_method}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Penalty Rate:</span>
+                        <span className="font-semibold text-red-700">{selectedProduct.penalty_rate}%</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Repayment Frequency:</span>
+                        <span className="font-semibold">{selectedProduct.repayment_freq}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Service Fee:</span>
+                        <span className="font-semibold text-purple-900">{selectedProduct.service_fee}%</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Loan Range:</span>
+                        <span className="font-bold text-green-700">₱{selectedProduct.min_amount?.toLocaleString()} - ₱{selectedProduct.max_amount?.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Application details (amount, term, date)
+            if (field.name === "amount") {
+              const hasAmount = watch("amount");
+              return (
+                <div key="application-details" className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+                  {/* Amount */}
+                  <div>
+                    <label className="label text-xs font-medium text-gray-600 mb-1">{field.label} Requested</label>
+                    {loanStatus ? (
+                      <div className="input input-bordered w-full bg-white flex items-center">₱{Number(watch("amount")).toLocaleString()}</div>
+                    ) : (
+                    <input
+                      type="number"
+                      {...register(field.name, {
+                        required: field.required,
+                        min: field.validation?.min,
+                        max: field.validation?.max,
+                      })}
+                      disabled={field.disabled}
+                      placeholder={field.placeholder}
+                      className={`input input-bordered w-full transition-all duration-200 ${
+                        hasAmount ? "font-bold text-xl" : "text-sm"
+                      } ${field.disabled ? "bg-white" : errors[field.name] ? "border-red-400": hasAmount ? "border-green-400": "border-gray-300"}`}
+                    />
+                    )}
+                    {errors[field.name] && (
+                      <p className="text-error text-xs mt-1">
+                        Amount must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{selectedProduct?.max_amount?.toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Term and Date Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {fields.slice(2, 4).map((gridField) => (
+                    <div key={gridField.name}>
+                      <label className="label text-xs font-medium text-gray-600 mb-1">{gridField.name === "term_months" ? "Term (Months)" : gridField.label}</label>
+
+                      {loanStatus ? (
+                        <div className="input input-bordered w-full bg-white flex items-center">
+                          {gridField.type === "select"
+                            ? gridField.dynamicOptions?.find((opt) => opt.value === watch(gridField.name))?.label || "—"
+                            : watch(gridField.name) || "—"}
+                        </div>
+                      ) : gridField.type === "select" ? (
+                        <select
+                          {...register(gridField.name, { required: gridField.required })}
+                          disabled={!selectedLoanProduct}
+                          className="select select-bordered w-full"
+                        >
+                          <option value="">Select Term</option>
+                          {gridField.dynamicOptions?.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                        </select>
+                      ) : (
+                        <input type={gridField.type} {...register(gridField.name, { required: gridField.required })} className="input input-bordered w-full"/>
+                      )}
+                      {errors[gridField.name] && (<p className="text-error text-xs mt-1">Required</p>)}
+                    </div>
                   ))}
-                </select>
-              )}
-              {field.type === "number" && (
-                <input
-                  type="number"
-                  {...register(field.name, {
-                    required: field.required,
-                    min: field.validation?.min,
-                    max: field.validation?.max,
-                  })}
-                  disabled={field.disabled}
-                  placeholder={field.placeholder}
-                  className={`input input-bordered w-full ${!selectedLoanProduct && field.name === "amount" ? "text-warning" : ""
-                    }`}
-                />
-              )}
-              {field.type === "textarea" && (
-                <textarea
-                  {...register(field.name, { required: field.required })}
-                  readOnly={field.disabled}
-                  rows={3}
-                  placeholder={field.placeholder}
-                  className="textarea textarea-bordered w-full"
-                />
-              )}
-              {field.type === "date" && (
-                <input
-                    type="date"
+                </div>
+                </div>
+              );
+            }
+
+            if (field.name === "purpose") {
+              return (
+                <div key={field.name} className="bg-white p-3 rounded-lg border border-gray-200">
+                  <h4 className="text-xs font-semibold text-gray-600 mb-2">Loan Purpose</h4>
+                  <textarea
                     {...register(field.name, { required: field.required })}
-                  readOnly={field.disabled}
-                  className="input input-bordered w-full"
-                />
-              )}
-              {errors[field.name] && (
-                <p className="text-error text-sm mt-1">
-                  {field.name === "amount" ? "Invalid amount range" : "Required"}
-                </p>
-              )}
-            </div>
-          ))}
+                    readOnly={loanStatus}
+                    rows={1}
+                    placeholder={field.placeholder}
+                    className={`textarea textarea-bordered w-full ${loanStatus ? "bg-white" : ""}`}
+                  />
+                  {errors[field.name] && (<p className="text-error text-xs mt-1">Please provide a purpose for this loan</p>)}
+                </div>
+              );
+            }
+            return null;
+          })}
         </MembersFormModal>
       </div>
     </div>

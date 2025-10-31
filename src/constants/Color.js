@@ -77,12 +77,21 @@ export const LOAN_PRODUCT_COLORS = {
   "Short Term Loan": "text-secondary",
 };
 
-export const LOAN_ACCOUNTS_STATUSES = ["Active", "Defaulted", "Renewed"];
+// export const LOAN_ACCOUNTS_STATUSES = ["Active", "Defaulted", "Renewed"];
+
+// export const LOAN_ACCOUNT_STATUS_COLORS = {
+//   Active: "badge-success",
+//   Defaulted: "badge-error",
+//   Renewed: "badge-warning",
+// };
+
+// LOAN ACCOUNT STATUSES
+export const LOAN_ACCOUNT_STATUSES = ["Active", "Closed", "Pending Release"];
 
 export const LOAN_ACCOUNT_STATUS_COLORS = {
   Active: "badge-success",
-  Defaulted: "badge-error",
-  Renewed: "badge-warning",
+  Closed: "badge-info",
+  "Pending Release": "badge-accent",
 };
 
 // SORT DIRECTION OPTIONS

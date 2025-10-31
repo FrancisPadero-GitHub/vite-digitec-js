@@ -16,6 +16,10 @@ import LoanScheduleCardList from "./components/LoanScheduleCardList";
 // icons
 import LockIcon from '@mui/icons-material/Lock';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+
+// constants
+import { LOAN_ACCOUNT_STATUS_COLORS } from "../../constants/Color";
 
 function LoanAccountDetails() {
   // ID params Grabber 
@@ -91,14 +95,17 @@ function LoanAccountDetails() {
                 <div className="flex items-center gap-4">
                   <div className={`w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold ${
                     accountData.status === "Active"
-                      ? "bg-green-100 text-green-700"
-                      : accountData.status === "Closed"
-                      ? "bg-gray-100 text-gray-600"
-                      : "bg-amber-100 text-amber-700"
+                    ? "bg-green-100 text-green-700"
+                    : accountData.status === "Closed"
+                    ? "bg-gray-100 text-gray-600"
+                    : accountData.status === "Pending Release"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-blue-100 text-blue-700"
                   }`}>
                     {accountData.status === "Active" ? (
                       <DoneAllIcon fontSize="large" color="green" />) : accountData.status === "Closed" ? (
                       <LockIcon fontSize="large" color="gray" />) : (
+                      <AccessTimeIcon fontSize="large" color="amber" />) || (
                       "●"
                     )}
                   </div>
@@ -108,11 +115,11 @@ function LoanAccountDetails() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`px-4 py-2 rounded-full font-semibold ${
-                    accountData.status === "Active" ? "bg-green-100 text-green-700"
-                      : accountData.status === "Closed" ? "bg-gray-200 text-gray-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}>
+                  <span
+                    className={`badge badge-soft font-semibold text-base ${
+                      LOAN_ACCOUNT_STATUS_COLORS[accountData.status] || "badge-neutral"
+                    }`}
+                  >
                     {accountData.status || "N/A"}
                   </span>
                   <p className="text-sm text-gray-600 mt-3">{accountData.loan_ref_number}</p>

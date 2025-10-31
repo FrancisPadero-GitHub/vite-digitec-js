@@ -23,7 +23,7 @@ import FilterToolbar from '../shared/components/FilterToolbar';
 import BoardFormModal from '../board/modal/BoardFormModal';
 
 // colors
-import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from '../../constants/Color';
+import { LOAN_ACCOUNT_STATUS_COLORS } from '../../constants/Color';
 import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 function CoopLoansReleases() {
@@ -258,20 +258,14 @@ function CoopLoansReleases() {
 
                 {/* Status */}
                 <td className="px-4 py-4 text-center">
-                  {row.status ? (
-                    <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[row.status]}`}>
-                      {row.status}
-                    </span>
-                  ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
-                  )}
+                  <span className={`badge badge-soft font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                    {row.status || "Not Provided"}
+                  </span>
                 </td>
 
                 {/* Release Date */}
-                <td>
-                  {row.release_date
-                    ? new Date(row.release_date).toLocaleDateString()
-                    : "Pending release"}
+                <td className="px-4 py-4 text-center">
+                  {row.release_date ? new Date(row.release_date).toLocaleDateString(): "—"}
                 </td>
 
               </tr>

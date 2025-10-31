@@ -101,7 +101,7 @@ function MemberLoanAcc() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Members Loan Accounts</h1>
+          <h1 className="text-2xl font-bold">My Loan Accounts</h1>
         </div>
         
         <FilterToolbar
@@ -207,7 +207,7 @@ function MemberLoanAcc() {
                 {/* Status */}
                 <td className="px-4 py-4 text-center">
                   {row.status ? (
-                    <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status]}`}>
+                    <span className={`badge badge-soft font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status]}`}>
                       {row.status}
                     </span>
                   ) : (
@@ -218,16 +218,13 @@ function MemberLoanAcc() {
                 <td className="px-4 py-4 text-center">
                   {row.release_date
                     ? new Date(row.release_date).toLocaleDateString()
-                    : "Pending release"}
+                    : "—"}
                 </td>
               </tr>
             );
           }}
         />
-
       </div>
-
-      
     </div>
   )
 }

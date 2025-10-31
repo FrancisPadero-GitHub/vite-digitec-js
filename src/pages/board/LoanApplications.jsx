@@ -429,7 +429,7 @@ function LoanApplications() {
       <Toaster position="bottom-left"/>
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Members Loan Applications</h1>
+          <h1 className="text-2xl font-bold">Loan Applications</h1>
         </div>
 
         <FilterToolbar

@@ -13,7 +13,7 @@ import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
 
 // constants
-import { LOAN_PRODUCT_COLORS } from "../../constants/Color";
+import { LOAN_PRODUCT_COLORS, LOAN_ACCOUNT_STATUS_COLORS } from "../../constants/Color";
 import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 function LoanAccounts() {
@@ -116,7 +116,7 @@ function LoanAccounts() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Members Loan Accounts</h1>
+          <h1 className="text-2xl font-bold">Loan Accounts</h1>
         </div>
         
         <FilterToolbar
@@ -215,7 +215,13 @@ function LoanAccounts() {
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
-                <td className="px-2 py-2 text-center">{row.status}</td>
+                
+                {/* Status */}
+                <td className="px-4 py-2 text-center">
+                  <span className={`badge badge-soft font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-neutral"}`}>
+                    {row.status}
+                  </span>
+                </td>
               </tr>
             );
           }}
