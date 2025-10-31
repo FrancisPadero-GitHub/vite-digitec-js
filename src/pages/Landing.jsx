@@ -42,13 +42,13 @@ const gallery = [
 
 const Landing = () => {
   const { memberRole: data } = useMemberRole();
+  const role = data ?? null;
+  console.log(`Role:`, role )
 
-  const role = data ?? "guest";
-  // console.log(`TEST`, { memberRole });
   const handleNavigation = (e) => {
     if (!role) {
       e.preventDefault();
-      toast.error("Please log in to access the dashboard.");
+      toast.error("Please log in first.");
       return;
     }
   };
@@ -109,7 +109,7 @@ const Landing = () => {
               {role ? (
                 <Link to={`/${role}`} className="text-sm md:text-base">Dashboard</Link>
               ) : (
-                <Link to="/" className="text-sm md:text-base">Home</Link>
+                <Link to="/" onClick={handleNavigation} className="text-sm md:text-base">Home</Link>
               )}
             </li>
             <li><button onClick={scrollToAbout} className="text-sm md:text-base">About ECTEC</button></li>

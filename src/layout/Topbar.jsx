@@ -64,6 +64,9 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
     setSession(null);
     setUser(null);
 
+    // Clear all cached data tied to the previous user
+    queryClient.clear();
+
     try {
       const { error } = await supabase.auth.signOut({scope: "local"}); // scope: "local" Persists login on other devices and has to logout manually each devices
       if (error) throw new Error(error.message);
@@ -72,11 +75,9 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
       const { data: sessionCheck } = await supabase.auth.getSession();
       console.log("Post-logout session check:", sessionCheck);
 
-      // Clear all cached data tied to the previous user
-      queryClient.clear();
-
-      // Optional: redirect or reset app state here
-      // navigate("/login");
+      // Redirect to landing page
+      navigate("/");
+      
     } catch (err) {
       console.error("Error signing out:", err.message);
     } finally {
