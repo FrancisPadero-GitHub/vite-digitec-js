@@ -29,7 +29,7 @@ function ClubExpenses() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
-  const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses({page, limit});
+  const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses({});
   const fundExpensesRaw = fundExpensesData?.data || [];
   const total = fundExpensesData?.count || 0;
 
@@ -39,9 +39,8 @@ function ClubExpenses() {
   const [monthFilter, setMonthFilter] = useState("");
 
   const TABLE_PREFIX = "EXP";
-
   const fundExpenses = fundExpensesRaw.filter((row) => {
-    const generatedId = `${TABLE_PREFIX}_${row.transaction_id}`;
+    const generatedId = `${TABLE_PREFIX}_${row?.transaction_id || ""}`;
     const matchesSearch =
       searchTerm === "" ||
       row.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||

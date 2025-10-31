@@ -38,10 +38,7 @@ function ClubFunds() {
 
   const { data: members_data } = useMembers();
   const members = members_data?.data || [];
-  const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds({
-    page,
-    limit,
-  });
+  const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds({});
 
   const clubFundsRaw = clubFundsData?.data || [];
   const total = clubFundsData?.count || 0;
@@ -58,17 +55,16 @@ function ClubFunds() {
     const member = members?.find(
       (m) => m.account_number === row.account_number
     );
-    const account_number = row.account_number;
+    const account_number = row?.account_number || "";
     const fullName = member
       ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
-    const generatedId = `${TABLE_PREFIX}_${row.contribution_id}`;
+    const generatedId = `${TABLE_PREFIX}_${row?.contribution_id || ""}`;
 
     const matchesSearch =
       searchTerm === "" ||
       fullName.includes(searchTerm.toLowerCase()) ||
       account_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase());
 

@@ -35,7 +35,7 @@ function CoopShareCapital() {
   const { data: members_data } = useMembers();
   const members = members_data?.data || [];
   
-  const { data: coopData, isLoading, isError, error } = useFetchCoop({ page, limit });
+  const { data: coopData, isLoading, isError, error } = useFetchCoop({});
   const total = coopData?.count || 0;
   const coopRaw = coopData?.data || [];
 
@@ -48,27 +48,44 @@ function CoopShareCapital() {
 
   const TABLE_PREFIX = "SCC";
   const coop = coopRaw.filter((row) => {
-    const member = members.find((m) => m.account_number === row.account_number);
-    const account_number = row.account_number;
+    const member = members?.find(
+      (m) => m.account_number === row.account_number
+    );
+    const account_number = row?.account_number || "";
     const fullName = member
-      ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
+      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
       : "";
+    const generatedId = `${TABLE_PREFIX}_${row?.coop_contri_id || ""}`;
 
-    const generatedId = `${TABLE_PREFIX}_${row.coop_contri_id}`;
-    const date = row.contribution_date ? new Date(row.contribution_date) : null;
+    const matchesSearch =
+      searchTerm === "" ||
+      fullName.includes(searchTerm.toLowerCase()) ||
+      account_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
+     
+    const matchesSource =
+      sourceFilter === "" || row.source === sourceFilter;
+
+    const matchesCategory =
+      categoryFilter === "" || row.category === categoryFilter;
+
+    const matchesMethod =
+      paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
+
+    const date = row.payment_date ? new Date(row.payment_date) : null;
+    const matchesYear =
+      yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
     return (
-      (searchTerm === "" ||
-        fullName.includes(searchTerm.toLowerCase()) ||
-        account_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.source?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        generatedId.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (categoryFilter === "" || row.category === categoryFilter) &&
-      (sourceFilter === "" || row.source === sourceFilter) &&
-      (paymentMethodFilter === "" || row.payment_method === paymentMethodFilter) &&
-      (yearFilter === "" || (date && date.getFullYear().toString() === yearFilter)) &&
-      (monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter))
+      matchesSearch &&
+      matchesCategory &&
+      matchesYear &&
+      matchesMonth &&
+      matchesMethod &&
+      matchesSource
     );
   });
 
