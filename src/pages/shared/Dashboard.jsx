@@ -229,7 +229,8 @@ function Dashboard() {
   return (
       <div className="mb-6 space-y-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex flex-col lg:flex-row gap-3">
+        <div className="flex flex-col md:flex-col lg:flex-row xl:flex-row gap-4">
+
           {/* LEFT SIDE */}
           <div className="flex-1 flex flex-col gap-3">
 
@@ -258,20 +259,22 @@ function Dashboard() {
             <DataTable
               title={"Share Capital / Coop"}
               linkPath={`/${memberRole}/coop-share-capital`}
-              headers={["Ref No.", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
+              headers={["Ref No.","Account No", "Name", "Amount", "Payment Category", "Date", "Payment Method"]}
               data={coopFunds} // share capital / coop
               isLoading={coopIsloading}
               renderRow={(row) => {
                 const TABLE_PREFIX = "SCC"; 
                 const matchedMember = members.find((member_column) => member_column.account_number === row.account_number);
+                const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "System";
                 const isDisabled = !matchedMember; // condition (you can adjust logic)
                 return (
-                  <tr key={`${TABLE_PREFIX}_${row.coop_contri_id}`} className={`text-center ${isDisabled ? "opacity-60" : "cursor-pointer hover:bg-base-200/50"}`}>
-                    <td className='text-xs'>{TABLE_PREFIX}_{row.coop_contri_id.toLocaleString() || "ID"}</td>
-                    <td>
-                      <span className={`gap-2`}>
-                        {matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System"}
-
+                  <tr key={`${TABLE_PREFIX}_${row.coop_contri_id}`}
+                       className={`text-center ${isDisabled ? "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}>
+                    <td className='px-4 py-2'>{TABLE_PREFIX}_{row.coop_contri_id.toLocaleString() || "ID"}</td>
+                    <td className='px-4 py-2'>{matchedMember?.account_number || "System"}</td>
+                    <td className='px-4 py-2'>
+                      <span className="flex items-center gap-2">
+                        <span className="truncate max-w-[120px]">{fullName}</span>
                         {isDisabled && (
                           <div className="tooltip tooltip-top" data-tip="System Generated">
                             <span className="badge badge-sm badge-ghost">?</span>
@@ -317,7 +320,7 @@ function Dashboard() {
               renderRow={(row) => {
                 const TABLE_PREFIX = "CFC";
                 const matchedMember = members.find((member_column) => member_column.member_id === row.member_id);
-                const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System";
+                const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
                 return (
                   <tr key={`${TABLE_PREFIX}_${row.contribution_id}`} className="text-center cursor-pointer hover:bg-base-200/50">
                     <td className='text-xs'>{TABLE_PREFIX}_{row.contribution_id?.toLocaleString() || "ID"}</td>
@@ -410,7 +413,7 @@ function Dashboard() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-3">
+        <div className="w-full md:w-full lg:w-[25%] xl:w-[35%] flex flex-col gap-3">
 
             {/* CLUB EXPENSES DONUT CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">

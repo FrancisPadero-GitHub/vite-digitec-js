@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import { Link } from "react-router";
@@ -295,41 +295,45 @@ function CoopShareCapital() {
             const amount = row?.amount || 0;
             const matchedMember = members.find((member) => member?.account_number === row?.account_number);
             const isDisabled = !matchedMember;
-            const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "Not Found";
-
+            const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "System";
             return (
               <tr
-                key={`${TABLE_PREFIX}${row?.coop_contri_id}`}
+                key={`${TABLE_PREFIX}${row?.coop_contri_id}` }
                 onClick={!isDisabled && memberRole !== "board" ? () => openEditModal(row) : undefined}
-                className={`transition-colors ${!isDisabled ? "cursor-pointer hover:bg-base-200/70" : "cursor-not-allowed opacity-80 bg-base-100/70"}`}
+                className={`transition-colors ${!isDisabled ? "cursor-pointer hover:bg-base-200/70" : "cursor-not-allowed opacity-90 bg-base-100/70"}`}
               >
                 <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.coop_contri_id}</td>
-                <td className="px-4 py-2 text-center font-medium text-xs">{matchedMember?.account_number || "Not Found"}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{matchedMember?.account_number || "System"}</td>
+                
                 <td className="px-4 py-4">
                   <span className="flex items-center gap-3">
-                    {matchedMember ? (
-                      <>
-                        {/* avatar for members */}
-                        <div className="avatar">
-                          <div className="mask mask-circle w-10 h-10">
-                            <img
-                              src={
-                                matchedMember?.avatar_url || placeHolderAvatar
-                              }
-                              alt={fullName}
-                            />
-                          </div>
+                    <Fragment>
+                      {/* avatar for members */}
+                      <div className="avatar">
+                        <div className="mask mask-circle w-10 h-10">
+                          <img
+                            src={
+                              matchedMember?.avatar_url || placeHolderAvatar
+                            }
+                            alt={fullName}
+                          />
                         </div>
-                        <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
-                      </>
-                    ) : (
-                      <>
-                        {/* system-generated row */}
-                        <div className="text-gray-800 italic">{fullName}</div>
-                      </>
-                    )}
+                      </div>
+
+                      <span className="flex items-center gap-2">
+                        <span className="truncate max-w-[120px]">{fullName}</span>
+                        {isDisabled && (
+                          <div className="tooltip tooltip-top" data-tip="System Generated">
+                            <span className="badge badge-sm badge-ghost">?</span>
+                          </div>
+                        )}
+                      </span>
+
+
+                    </Fragment>
                   </span>
                 </td>
+
                 <td className="px-4 py-2 font-semibold text-success text-center">₱ {display(amount)}</td>
                 <td className="px-4 py-2 text-center">
                   {row?.category ? (

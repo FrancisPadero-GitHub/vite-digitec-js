@@ -43,7 +43,7 @@ const gallery = [
 const Landing = () => {
   const { memberRole: data } = useMemberRole();
   const role = data ?? null;
-  console.log(`Role:`, role )
+  // console.log(`Role:`, role )
 
   const handleNavigation = (e) => {
     if (!role) {

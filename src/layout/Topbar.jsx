@@ -9,7 +9,8 @@ import { supabase } from "../backend/supabase";
 
 // fetch hooks
 import { useMembers } from "../backend/hooks/shared/useFetchMembers";
-import { useFetchAccountNumber } from "../backend/hooks/shared/useFetchAccountNumber";
+
+
 
 // icons 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
@@ -26,30 +27,30 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now
 import defaultAvatar from '../assets/placeholder-avatar.png';
 
-
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
   const placeHolderAvatar = defaultAvatar;
-
-  const {setSession, setUser} = useAuth();
+  const {setSession, setUser, user} = useAuth();
   
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // to fetch member name for the logged in id
-  const { data: loggedInAccountNumber} = useFetchAccountNumber();
-  const { data: members_data, isLoading, isError, error } = useMembers({});
-  const members = members_data?.data || [];
+
+  const loginId = user?.id;
+
+  const { data: members_data, isLoading, isError, error } = useMembers({login_id: loginId});
+  const member = members_data?.data[0] || [];
+
+  // console.log(`TEST`, member )
 
   // Find member linked to this user
-  const member = members?.find((m) => m.account_number === loggedInAccountNumber);
-
   const profile_pic = member?.avatar_url;
   
   // Renders fetched name and shortend the last name to single char
   const matchedMember = member
     ? [
-      member.f_name,
-      member.l_name ? `${member.l_name.charAt(0)}.` : null,
+      member?.f_name,
+      member?.l_name ? `${member?.l_name.charAt(0)}.` : null,
     ].filter(Boolean).join(" ")
     : null;
 
@@ -155,7 +156,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
             </div>
 
 
-            <span className="hidden sm:block font-medium">{matchedMember || error}</span>
+            <span className="hidden sm:block font-medium">{matchedMember || "Not Found"}</span>
             <ExpandMoreIcon />
           </button>
 
@@ -186,7 +187,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium text-base-content">{matchedMember || "Error"}</p>
+                    <p className="font-medium text-base-content">{matchedMember || "Not Found"}</p>
                     <p className="text-xs text-base-content/60">{getRoleLabel(role)}</p>
                   </div>
                 </>

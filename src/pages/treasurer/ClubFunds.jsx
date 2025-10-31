@@ -38,7 +38,7 @@ function ClubFunds() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
-  const { data: members_data } = useMembers();
+  const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
   const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds({});
 
