@@ -32,8 +32,8 @@ export const useDelete = (table) => {
     mutationFn: markAsDelete,
     onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
-      queryClient.invalidateQueries([table]);
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({queryKey: [table], exact: false});
+      queryClient.invalidateQueries({queryKey: ["rpc_totals"], exact: false});
 
       // log activity
       try {

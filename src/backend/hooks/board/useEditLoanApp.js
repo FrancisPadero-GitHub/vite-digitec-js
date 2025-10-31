@@ -40,7 +40,7 @@ export const useEditLoanApp = () => {
     mutationFn: updateLoanApp,
     onSuccess: (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries(["loan_applications", "member"]);
+      queryClient.invalidateQueries({queryKey: ["loan_applications"], exact: false});
     },
     onError: (error) => {
       console.error("Updating Loan Application failed", error.message);

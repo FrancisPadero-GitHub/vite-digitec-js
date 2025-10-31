@@ -57,8 +57,8 @@ export const useAddLoanAcc = () => {
     mutationFn: addLoanAcc,
     onSuccess: (data) => {
       console.log("✅ Loan Account Added!", data);
-      queryClient.invalidateQueries(["loan_accounts"]);
-      queryClient.invalidateQueries(["loan_accounts_view"]);
+      queryClient.invalidateQueries({queryKey: ["loan_accounts"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["loan_accounts_view"], exact: false});
     },
 
     onError: (error) => {

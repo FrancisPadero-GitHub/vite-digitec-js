@@ -160,11 +160,11 @@ export const useAddMember = () => {
     mutationFn: insertMember,
     onSuccess: async (data) => {
       console.log("New member created:", data);
-      queryClient.invalidateQueries(["members"]);
-      queryClient.invalidateQueries(["initial_payments"]);
-      queryClient.invalidateQueries(["club_funds_contributions"]);
-      queryClient.invalidateQueries(["coop_cbu_contributions"]);
-      queryClient.invalidateQueries(["rpc_totals"]);
+      queryClient.invalidateQueries({queryKey: ["members"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["initial_payments"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["club_funds_contributions"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["coop_cbu_contributions"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["rpc_totals"], exact: false});
 
       // log activity
       try {

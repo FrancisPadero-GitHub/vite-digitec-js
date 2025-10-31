@@ -25,7 +25,7 @@ export function useUpdateMember() {
 
   return useMutation({
     mutationFn: updateMember,
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries(["members"]);
 
       // log activity
