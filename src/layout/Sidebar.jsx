@@ -65,6 +65,7 @@ const sidebarConfig = {
           icon: HandshakeIcon,
           children: [
             { label: "Releases", path: "/treasurer/coop-loans/releases" },
+            { label: "Loan Accounts", path: "/treasurer/coop-loans/loan-accounts" },
             { label: "Payments", path: "/treasurer/coop-loans/payments" },
           ],
         },
