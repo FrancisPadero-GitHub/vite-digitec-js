@@ -63,6 +63,7 @@ function AppRoutes() {
     { path: "member-profile/:memberId", element: <MemberProfile /> },
     { path: "activity-logs", element: <ActivityLogs /> },
     { path: "reports", element: <Reports /> },
+    { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },   
   ];
 
   const boardSharedTreasurerPages = [
@@ -85,7 +86,6 @@ function AppRoutes() {
   const boardRoutes = [
     ...sharedRoutes,
     ...boardSharedTreasurerPages, 
-    { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },   
     { path: "coop-loans/loan-applications", element: <LoanApplications /> },
     { path: "coop-loans/loan-payments", element: <LoansPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },   

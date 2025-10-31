@@ -101,6 +101,7 @@ function CoopLoansReleases() {
     release_date: "",
     maturity_date: "",
     first_due: "",
+    loanProductName: "",
   };
 
   // React Hook Form setup for Loan Accounts
@@ -130,6 +131,7 @@ function CoopLoansReleases() {
     const loanTerm = Number(matchedLoanProduct?.max_term_months) || 0;
     const interestMethod = matchedLoanProduct?.interest_method ?? "";
     const interestRate = Number(matchedLoanProduct?.interest_rate) || 0;
+    const loanProductName = matchedLoanProduct?.name || "N/A";
 
     // This might confuse you but all this modal will update is the release_date column just refer to the hook
     reset({
@@ -138,6 +140,7 @@ function CoopLoansReleases() {
       loan_term: loanTerm,
       interest_rate: interestRate,
       interest_method: interestMethod,
+      loanProductName: loanProductName,
     });
   };
 
@@ -170,7 +173,7 @@ function CoopLoansReleases() {
       <Toaster position="bottom-left" />
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Loan Accounts</h1>
+          <h1 className="text-2xl font-bold">Loan Releases</h1>
         </div>
         
         <FilterToolbar
@@ -195,10 +198,7 @@ function CoopLoansReleases() {
             "Loan Ref No.",
             "Account No.",
             "Name",
-            "Principal",
-            "Interest",
-            "Amount Due",
-            "Loan Type",
+            "Amount Requested",
             "Status",
             "Release"
           ]}
@@ -215,12 +215,7 @@ function CoopLoansReleases() {
               (member) => member.account_number === row.account_number
             );
 
-            const matchedLoanProduct = loanProducts?.find(
-              (product) => product.product_id === row.product_id
-            );
-
             const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
-            const loanProductName = matchedLoanProduct?.name;
 
             return (
               <tr
@@ -256,32 +251,9 @@ function CoopLoansReleases() {
                 </td>
 
 
-
                 {/* Principal*/}
                 <td className="px-2 py-2 text-center font-semibold text-success">
                   ₱ {row.principal?.toLocaleString() || "0"}
-                </td>
-
-                {/* Total Interest */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.total_interest?.toLocaleString() || "0"}
-                </td>
-
-
-                {/*  Total amount due */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.total_amount_due?.toLocaleString() || "0"}
-                </td>
-
-                {/* Product Name*/}
-                <td className="px-4 py-2 text-center">
-                  {loanProductName ? (
-                    <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
-                      {loanProductName}
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-error">Not Provided</span>
-                  )}
                 </td>
 
                 {/* Status */}
@@ -319,7 +291,22 @@ function CoopLoansReleases() {
         >
           {/* Release dates */}
           <div className="p-3 bg-white rounded-lg border-2 border-gray-200 mb-4">
-            <h3 className="font-bold mb-2">Loan Release</h3>
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="font-bold mb-2">Loan Release</h3>
+
+               <div className="mb-3">
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
+                  ${watch("status") === "Active" 
+                    ? "bg-green-50 border-green-300 text-green-800" 
+                    : "bg-yellow-50 border-yellow-300 text-yellow-700"
+                  }`}>
+                  <span className={watch("status") === "Active" ? "text-green-600" : "text-yellow-500"}>●</span>
+                  {watch("status")}
+                </div>
+                <input type="hidden" value={watch("status")} />
+              </div>
+              
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
@@ -404,21 +391,11 @@ function CoopLoansReleases() {
 
           {/* Loan details */}
           <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <h4 className="text-xs font-bold text-gray-600 mb-2">Loan Details</h4>
               
-              {/* Status badge */}
-              <div className="mb-3">
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
-                  ${watch("status") === "Active" 
-                    ? "bg-green-50 border-green-300 text-green-800" 
-                    : "bg-yellow-50 border-yellow-300 text-yellow-700"
-                  }`}>
-                  <span className={watch("status") === "Active" ? "text-green-600" : "text-yellow-500"}>●</span>
-                  {watch("status")}
-                </div>
-                <input type="hidden" value={watch("status")} />
-              </div>
+              {/* Loan Type */}
+              <span className="text-xs font-semibold text-gray-700 badge badge-ghost">{watch("loanProductName") || "N/A"}</span>
             </div>
 
             {/* Principal */}
