@@ -29,7 +29,7 @@ import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../const
 import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
 
 /**
- * if loanAppsNo is more than 1 (ONLY DISABLES BUTTON) 
+ * if loanAppsNo is more than 2 pending and active (ONLY DISABLES BUTTON)
  * if loanAccFind returns true  (ONLY DISABLES BUTTON) 
  * 
  * if tenure is under 1 year                (DISABLES ACCESS TO UI)
@@ -133,21 +133,26 @@ function MemberLoanApp() {
   // Modal Handlers
 
   const openAddModal = () => {
-    // for the restriction of the button
-    const loanAppStatus = loanAppRaw.some(
+    // Count restrictions for loan applications and accounts
+    const pendingAppsCount = loanAppRaw.filter(
       (app) => app.status === "Pending"
-    ); 
+    ).length;
+
+    const activeLoansCount = loanAcc?.filter(
+      (loan) => loan.status === "Active"
+    ).length || 0;
+
+    const defaultedLoansCount = loanAcc?.filter(
+      (loan) => loan.status === "Defaulted"
+    ).length || 0;
 
     // Restriction parameters
-    // if a member has a defaulted loan acc which means he or she didn't paid all of the borrowed money
-    const loanAccFind = loanAcc?.some(
-      (loan) => loan.status === "Active" || loan.status === "Defaulted"
-    );
-
-    if (loanAppStatus) {
-      showPrompt("info", "You already have pending application")
-    } else if (loanAccFind) {
-      showPrompt("info", "Please settle your ongoing loans first")
+    if (pendingAppsCount >= 2) {
+      showPrompt("info", `You have reached the maximum limit of 2 pending applications (${pendingAppsCount}/2)`)
+    } else if (activeLoansCount >= 2) {
+      showPrompt("info", `You have reached the maximum limit of 2 active loans (${activeLoansCount}/2)`)
+    } else if (defaultedLoansCount > 0) {
+      showPrompt("info", "Please settle your defaulted loans first")
       // navigate("/regular-member/coop-loans/loan-accounts")
     } else {
       reset(defaultValues);
