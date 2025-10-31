@@ -50,8 +50,8 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
                       Loading...
                     </>
                   ) : (
-                    'Submit'
-                  )}
+                    action ? "Save Changes" : "Submit"
+                  )}  
                 </button>
               )}
             </div>

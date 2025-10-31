@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { createPortal } from 'react-dom';
 import WarningIcon from '@mui/icons-material/Warning';
 
-import { Link } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { Toaster, toast } from 'react-hot-toast';
 import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headlessui/react";
@@ -16,8 +15,9 @@ import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccV
 
 
 // mutation hooks
-import { useDelete } from '../../backend/hooks/shared/useDelete';
+import { useDeletePayment } from '../../backend/hooks/treasurer/useDeletePayment';
 import { useAddLoanPayments } from '../../backend/hooks/treasurer/useAddPayments';
+import { useEditLoanPayments } from '../../backend/hooks/treasurer/useEditPayments';
 
 
 // components
@@ -82,10 +82,12 @@ function CoopLoansPayments() {
     return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod && statusPaymentFilter;
   });
 
-  const { mutate: mutateDelete } = useDelete('loan_payments');
+  const { mutate: mutateDelete } = useDeletePayment('loan_payments');
 
   // React hook forms 
-  const {mutate: addLoanPayments, isPending} = useAddLoanPayments();
+  const {mutate: addLoanPayments, isPending: isAddPending} = useAddLoanPayments();
+  const {mutate: editLoanPayments, isPending: isEditPending} = useEditLoanPayments();
+  
   const today = new Date().toISOString().split("T")[0];
 
   const defaultValues = {
@@ -99,6 +101,12 @@ function CoopLoansPayments() {
       payment_date: today,
       // receipt_no: "",
       payment_type: "",
+
+      // non-db values just for the front end 
+      sched_id: "",
+      outstanding_balance: "",
+      status: "",
+
     }
   const {
     register,
@@ -148,21 +156,46 @@ function CoopLoansPayments() {
     setModalType("add");
   }
   
-  // const openEditModal = (data) => {
-  //   console.log(data)
-  //   reset(data)
-  //   setModalType("edit");
-  // };
-
   const closeModal = () => {
     setModalType(null);
   };
 
   // View modals
   const [viewPaymentData, setViewPaymentData] = useState(null);
+  const [showEditModal, setEditModal] = useState(false);  // receives a conditional to be opened or not base on loan acc
+
   const openViewModal = (data) => {
-    setViewPaymentData(data);
+    setViewPaymentData(data); // sets the data
+    // Fetch the loan account details based on the selected payment data
+    const selectedLoan = loanAcc.find(
+      (loan) => loan.loan_ref_number === data.loan_ref_number
+    );
+    
+    // Hide the modal if the loan is not active
+    setEditModal(selectedLoan?.status === "Active" ? true : false);
+
   };
+
+  const editModal = () => { 
+    if (!viewPaymentData) return;
+
+    // Fetch the loan account details based on the selected payment data
+    const selectedLoan = loanAcc.find(
+      (loan) => loan.loan_ref_number === viewPaymentData.loan_ref_number
+    );
+
+    // Populate the form fields with the loan account details
+    reset({
+      ...viewPaymentData,
+      loan_id: selectedLoan?.loan_id || null,
+      outstanding_balance: selectedLoan?.outstanding_balance || 0,
+      status: selectedLoan?.status || "",
+    });
+
+    closeViewModal();
+    setModalType("edit");
+  };
+
   const closeViewModal = () => {
     setViewPaymentData(null);
   };
@@ -184,18 +217,35 @@ function CoopLoansPayments() {
   // On confirm button
   const confirmPayment = () => {
     if (!pendingPaymentData) return;
-    addLoanPayments(pendingPaymentData, {
-      onSuccess: () => {
-        toast.success("Successfully added payment");
-        setShowPaymentConfirm(false);
-        setPendingPaymentData(null);
-        closeModal();
-      },
-      onError: () => {
-        toast.error("Something went wrong");
-        setShowPaymentConfirm(false);
-      },
-    });
+
+    if (modalType === "add") {
+      addLoanPayments(pendingPaymentData, {
+        onSuccess: () => {
+          toast.success("Successfully added payment");
+          setShowPaymentConfirm(false);
+          setPendingPaymentData(null);
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong");
+          setShowPaymentConfirm(false);
+        },
+      });
+    } else if (modalType === "edit") { 
+      editLoanPayments(pendingPaymentData, {
+        onSuccess: () => {
+          toast.success("Successfully edited payment");
+          setShowPaymentConfirm(false);
+          setPendingPaymentData(null);
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong");
+          setShowPaymentConfirm(false);
+        },
+      });
+    }
+
   };
   
   /**
@@ -476,8 +526,8 @@ function CoopLoansPayments() {
           close={closeModal}
           action={modalType === "edit"}
           onSubmit={handleSubmit(handlePaymentSubmit)} // <-- this now stores data
-          isPending={isPending}
-          status={isPending}
+          isPending={isAddPending || isEditPending}
+          status={isAddPending || isEditPending}
           deleteAction={() => handleDelete(watch("payment_id"))}
         >
           {/* ACCOUNT SELECTION */}
@@ -809,9 +859,9 @@ function CoopLoansPayments() {
                 <button
                   className="px-4 py-2 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white shadow-sm cursor-pointer"
                   onClick={confirmPayment}
-                  disabled={isPending}
+                  disabled={isAddPending || isEditPending}
                 >
-                  {isPending ? (
+                  {isAddPending || isEditPending ? (
                     <>
                       <span className="loading loading-spinner loading-sm mr-2"></span>
                       Processing...
@@ -913,9 +963,15 @@ function CoopLoansPayments() {
             </div>
 
             {/* Modal Actions */}
-            <div className="modal-action">
-              <button onClick={closeViewModal} className="btn btn-primary">Close</button>
+            <div className='flex justify-between' >
+                <div className="modal-action">
+                  {showEditModal && (<button onClick={editModal} className="btn btn-primary">Edit</button>)}
+                </div>
+                <div className="modal-action">
+                  <button onClick={closeViewModal} className="btn btn-primary">Close</button>
+                </div>
             </div>
+
           </div>
           <form method="dialog" className="modal-backdrop" onClick={closeViewModal}><button>close</button></form>
         </dialog>

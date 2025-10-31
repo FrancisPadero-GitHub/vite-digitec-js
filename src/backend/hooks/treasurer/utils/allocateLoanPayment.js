@@ -1,6 +1,64 @@
 import { updateLoanStatusFromView } from "./updateLoanStatusFromView";
 
 /**
+ * Reverses payment allocation when reducing a payment amount.
+ * Subtracts from the most recently paid schedules in reverse order.
+ */
+async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse) {
+  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+
+  let remaining = round(amountToReverse);
+
+  // Fetch all paid or partially paid schedules for this loan, sorted by due date (descending - most recent first)
+  const { data: schedules, error: schedErr } = await supabase
+    .from("loan_payment_schedules")
+    .select("*")
+    .eq("loan_id", targetLoanId)
+    .neq("amount_paid", 0) // Only schedules with some payment
+    .order("due_date", { ascending: false }); // Reverse order - most recent first
+
+  if (schedErr) throw schedErr;
+
+  // Process reversal across each paid schedule (in reverse order)
+  for (const sched of schedules) {
+    if (remaining <= 0) break; // Stop when full reversal is complete
+
+    const alreadyPaid = round(sched.amount_paid || 0);
+    if (alreadyPaid <= 0) continue; // Skip unpaid schedules
+
+    // Reverse up to the amount already paid for this schedule
+    const reversal = Math.min(remaining, alreadyPaid);
+    remaining = round(remaining - reversal);
+
+    // Calculate new amount paid after reversal
+    const newTotalPaid = round(alreadyPaid - reversal);
+    const fullyPaid = newTotalPaid >= sched.total_due;
+    const partiallyPaid = newTotalPaid > 0 && newTotalPaid < sched.total_due;
+
+    // Update this schedule's payment progress
+    const { error: updateErr } = await supabase
+      .from("loan_payment_schedules")
+      .update({
+        amount_paid: newTotalPaid,
+        paid: fullyPaid,
+        status: fullyPaid ? "PAID" : partiallyPaid ? "PARTIALLY PAID" : "UNPAID",
+        paid_at: newTotalPaid > 0 ? sched.paid_at : null, // Clear paid_at if fully reversed
+      })
+      .eq("schedule_id", sched.schedule_id);
+
+    if (updateErr) throw updateErr;
+
+    // Stop early if no reversal remains
+    if (remaining <= 0) break;
+  }
+
+  // Update loan status after reversal
+  updateLoanStatusFromView(supabase, targetLoanId);
+
+  return [];
+}
+
+/**
  * Allocates a loan payment across multiple scheduled payments.
  *
  * Note:
@@ -42,6 +100,11 @@ export async function allocateLoanPayment(
 
   // Will collect each allocation record for database insertion/logging
   let allocations = [];
+
+  // Handle negative amounts (payment reduction/reversal)
+  if (remaining < 0) {
+    return await reversePaymentAllocation(supabase, targetLoanId, Math.abs(remaining));
+  }
 
   // Fetch all unpaid or partially paid schedules for this loan, sorted by due date
   const { data: schedules, error: schedErr } = await supabase
