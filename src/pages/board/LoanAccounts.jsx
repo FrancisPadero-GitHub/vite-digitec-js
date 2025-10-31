@@ -14,12 +14,14 @@ import FilterToolbar from '../shared/components/FilterToolbar';
 
 // constants
 import { LOAN_PRODUCT_COLORS } from "../../constants/Color";
+import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 function LoanAccounts() {
-   const navigate = useNavigate();
+  const placeHolderAvatar = defaultAvatar;
+  const navigate = useNavigate();
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-   const { data: loanProducts } = useFetchLoanProducts();
+  const { data: loanProducts } = useFetchLoanProducts();
 
   // Data fetch on loan applications and pagination control
   const [page, setPage] = useState(1);
@@ -178,7 +180,7 @@ function LoanAccounts() {
                       <div className="mask mask-circle w-10 h-10">
                         <img
                           src={
-                            matchedMember.avatar_url || `https://i.pravatar.cc/40?u=${matchedMember.id || matchedMember.l_name}`
+                            matchedMember?.avatar_url || placeHolderAvatar
                           }
                           alt={fullName}
                         />
