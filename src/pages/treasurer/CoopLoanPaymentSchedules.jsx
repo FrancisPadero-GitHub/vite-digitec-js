@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { openLoanPaymentModal } from '../../features/redux/modalSlice';
 
 // fetch hooks
+import { useMemberRole } from '../../backend/context/useMemberRole';
 import { useFetchPaySchedView } from '../../backend/hooks/shared/useFetchPaySchedView'
 
 
@@ -15,6 +16,8 @@ import FilterToolbar from '../shared/components/FilterToolbar';
 
 
 function CoopLoanPaymentSchedules() {
+  const { memberRole } = useMemberRole(); // to hide the go to payments in board view
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -58,7 +61,8 @@ function CoopLoanPaymentSchedules() {
     // Dispatch the modal action
     dispatch(openLoanPaymentModal({ type: 'add', data: "Redux is GOATED" }));
     // Navigate to payments page
-    navigate('/treasurer/coop-loans/payments');
+    if (memberRole === 'board') return navigate(`/${memberRole}/coop-loans/loan-payments`);
+    if (memberRole === 'treasurer') return navigate(`/${memberRole}/coop-loans/payments`);
   };
 
 
