@@ -1,10 +1,14 @@
+import { useNavigate } from "react-router";
+
 // icons
-import {AccountBalance, MonetizationOn, CreditScore, EventNote, Savings, Wallet, ReceiptLong, AttachMoney, Payments} from "@mui/icons-material";
+import {AccountBalance, Savings, Wallet, Payments, AccountBalanceWalletOutlined, EventAvailableOutlined, ArrowForward} from "@mui/icons-material";
 import { useState } from "react";
 
 // Rpc Hooks
 import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";      // Club overview
 import { useFetchMemberTotal } from "../../backend/hooks/member/useFetchMemberTotals"; // Personal overview
+import { useFetchNextLoanPayment } from "../../backend/hooks/member/useFetchNextLoanPayment"; // Upcoming loan payment
+import { useFetchMonthlyDues } from "../../backend/hooks/member/useFetchMemberMonthyDues";
 
 // Fetch Hooks
 import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop"
@@ -13,19 +17,20 @@ import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds"
 import { useFetchLoanPayments } from "../../backend/hooks/shared/useFetchPayments";
 
 // Components
-import StatCardMember from "./modal/StatCardMember";
 import DataTableMember from "./modal/DataTableMember";
+import StatCard from "../shared/components/StatCard";
 
 // Constant Colors
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS } from "../../constants/Color";
 
 function MemberDashboard() {
+  const navigate = useNavigate();
   
   const { data: coopData, isLoading: coopIsLoading } = useFetchCoop({ page: 1, limit: 20, useLoggedInMember: true });
   const { data: clubFundData, isLoading: clubIsLoading } = useFetchClubFunds({ page: 1, limit: 20, useLoggedInMember: true });
   const { data: loanPayments, isLoading: loanPaymentsLoading } = useFetchLoanPayments({ page: 1, limit: 20, useLoggedInMember: true });
-
-
+  const { data: monthlyDues, isLoading: monthlyDuesLoading } = useFetchMonthlyDues({ year: new Date().getFullYear()});
+  const { data: nextPayment, isLoading: nextPaymentLoading } = useFetchNextLoanPayment();
 
   // const {data: loanAcc} = useFetchLoanAcc();
   // const loanAccRaw = loanAcc?.data || [];
@@ -136,11 +141,11 @@ function MemberDashboard() {
    */
 
 
-  const personalStats = [
+  const shareCapitalStats = [
     {
       icon: <Wallet />,
       iconBgColor: "bg-blue-400",
-      title: "My Share Capital",
+      statName: "My Coop Share Capital",
       amount: pscData ?? 0,
       growthPercent: pscGrowth,
       subtitle: filters.personalCoop.subtitle,
@@ -160,35 +165,9 @@ function MemberDashboard() {
       errorMessage: pscError?.message,
     },
     {
-      icon: <Payments />,
-      iconBgColor: "bg-green-400",
-      title: "My Club Funds",
-      amount: pcfData ?? 0,
-      growthPercent: pcfGrowth,
-      subtitle: filters.personalFunds.subtitle,
-      onSubtitleChange: (label) => {
-        setFilters((prev) => ({
-          ...prev,
-          personalFunds: {
-            subtitle: label,
-            month: label === "This Month" ? new Date().getMonth() + 1 : null,
-            year: label !== "All Time" ? new Date().getFullYear() : null,
-          },
-        }));
-      },
-
-      loading: pcfLoading,
-      error: pcfIsError,
-      errorMessage: pcfError?.message,
-    },
-  ]
-
-
-  const clubStats = [
-    {
       icon: <AccountBalance />,
       iconBgColor: "bg-sky-400",
-      title: "Total Coop Share Capital",
+      statName: "Total Coop Share Capital",
       amount: coopTotal ?? 0,
       growthPercent: coopGrowth,
       subtitle: filters.coopFunds.subtitle,
@@ -207,10 +186,35 @@ function MemberDashboard() {
       error: coopIsError,
       errorMessage: coopError?.message,
     },
+  ]
+
+  const clubFundsStats = [
+    {
+      icon: <Payments />,
+      iconBgColor: "bg-green-400",
+      statName: "My Club Funds",
+      amount: pcfData ?? 0,
+      growthPercent: pcfGrowth,
+      subtitle: filters.personalFunds.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          personalFunds: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+
+      loading: pcfLoading,
+      error: pcfIsError,
+      errorMessage: pcfError?.message,
+    },
     {
       icon: <Savings />,
       iconBgColor: "bg-lime-400",
-      title: "Total Club Funds",
+      statName: "Total Club Funds",
       amount: clubFundsBalance ?? 0,
       growthPercent: cfGrowth,
       subtitle: filters.clubFunds.subtitle,
@@ -231,42 +235,101 @@ function MemberDashboard() {
     },
   ]
 
-  return (
+
+  // To get member's total monthly dues for the year
+  const monthlyDuesAmount = monthlyDues?.total_amount ?? 0;
+
+  const monthlyDuesDate = monthlyDuesLoading ? null : monthlyDues?.latest_period
+    ? new Date(monthlyDues.latest_period).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+
+  // To display member's next loan payment
+  const nextPaymentAmount = nextPayment?.total_due ?? 0;
+
+  const nextPaymentDate = nextPayment?.due_date 
+    ? new Date(nextPayment.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'No upcoming payments';
+
+
+ return (
     <div className="p-0 min-h-screen">
-      <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-
-        {/* Personal Dashboard */}
-        <div className="card bg-base-100 shadow">
-          <div className="card-body">
-            <h2 className="card-title text-xl mb-4">My Personal Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              {personalStats.map((stats_items, stat_id) => (
-                <StatCardMember key={stat_id} {...stats_items} />
-              ))}
-
-            </div>
-          </div>
-        </div>
-
-        {/* Club Overview */}
-        <div className="card bg-base-100 shadow">
-          <div className="card-body">
-            <h2 className="card-title text-xl mb-4">Club Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              {clubStats.map((stats_items, stat_id) => (
-                <StatCardMember key={stat_id} {...stats_items} />
-              ))}
-
-            </div>
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6 xl:items-stretch">
+      {/* LEFT */}
+      <div className="xl:col-span-2">
+        <div className="bg-base-100 rounded-xl shadow-sm p-6">
+          {/* Stats grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {shareCapitalStats.map((stats_items, stat_id) => (<StatCard key={stat_id} {...stats_items} />))}
+            {clubFundsStats.map((stats_items, stat_id) => (<StatCard key={`club-${stat_id}`} {...stats_items} />))}
           </div>
         </div>
       </div>
 
-      
+      {/* RIGHT*/}
+      <div className="xl:col-span-1 flex">
+        <div className="bg-base-100 rounded-xl shadow-sm p-6 flex-1 flex flex-col gap-2">
+          {/* Monthly Dues Card */}
+          <div className="bg-blue-500 rounded-xl p-5 text-white mt-2 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <EventAvailableOutlined fontSize="small" />
+                <h3 className="text-lg font-medium">Monthly Dues (This Year)</h3>
+              </div>
+              <button onClick={() => navigate('/regular-member/club-funds')} className="btn btn-circle btn-sm btn-ghost text-white">
+                <ArrowForward fontSize="small" />
+              </button>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">
+                {monthlyDuesLoading ? (
+                  <span className="loading loading-spinner loading-md"></span>
+                ) : (
+                  `₱${monthlyDuesAmount.toLocaleString()}`
+                )}
+              </div>
+            </div>
+            
+            <p className="text-xs">
+              {monthlyDuesLoading ? ("Loading...") : (`As of ${monthlyDuesDate}`)}
+            </p>
+          </div>
+
+          {/* Next Loan Payment Card */}
+          <div className="bg-base-200 rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-2 text-base-content/70 justify-between">
+              <div className="flex items-center gap-2">
+                <AccountBalanceWalletOutlined fontSize="small" />
+                <h3 className="text-lg font-semibold">Next Loan Payment</h3>
+              </div>
+              <button onClick={() => navigate('/regular-member/coop-loans/loan-payments')} className="btn btn-circle btn-sm btn-ghost text-base-content/70">
+                <ArrowForward fontSize="small" />
+              </button>
+            </div>
+
+            {nextPaymentLoading ? (
+              <p className="text-sm text-base-content/50">Loading...</p>
+            ) : nextPaymentAmount > 0 ? (
+              <>
+                <div className="text-3xl font-bold text-red-500">₱{nextPaymentAmount.toLocaleString()}</div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block px-2 py-0.5 badge badge-soft badge-error text-xs font-medium">Due Soon:</span>
+                  <p className="text-xs text-base-content/70">{nextPaymentDate}</p>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-2">
+                <div className="text-lg font-medium text-base-content/60">No Active Loans</div>
+                <p className="text-xs text-base-content/50">You have no upcoming loan payments</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
       {/* Transaction History */}
       <div className="card bg-base-100 shadow">
         <div className="card-body p-4">
