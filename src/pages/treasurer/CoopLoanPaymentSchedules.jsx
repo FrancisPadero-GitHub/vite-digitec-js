@@ -154,7 +154,7 @@ function CoopLoanPaymentSchedules() {
           const fullName = row?.full_name || "System";
           const currentIndex = filteredPaySchedules.indexOf(row);
           const rowNumber = (page - 1) * limit + currentIndex + 1;
-          const isOverdue = (row?.mos_overdue ?? 0) > 0;
+          const isOverdue = row?.payment_status === "OVERDUE";
           const isPartiallyPaid = row?.payment_status === "PARTIALLY PAID";
           const isPaid = row?.payment_status === "PAID" || row?.payment_status === "FULLY PAID";
           
