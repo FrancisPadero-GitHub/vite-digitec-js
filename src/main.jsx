@@ -3,15 +3,22 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import AppRoutes from "./routes"
 
+import store from './store'
+import { Provider } from 'react-redux'
+
 // Only use StrictMode in development
 const isDev = import.meta.env.DEV;
 
 createRoot(document.getElementById('root')).render(
   isDev ? (
     <StrictMode>
-      <AppRoutes />
+      <Provider store={store}>
+        <AppRoutes />
+      </Provider>
     </StrictMode>
   ) : (
-    <AppRoutes />
+    <Provider store={store}>
+      <AppRoutes />
+    </Provider>
   ),
 )

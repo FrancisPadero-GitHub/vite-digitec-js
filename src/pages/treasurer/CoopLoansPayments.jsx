@@ -7,6 +7,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { Toaster, toast } from 'react-hot-toast';
 import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headlessui/react";
 
+// react redux stuff
+import { useSelector, useDispatch } from 'react-redux';
+import { openLoanPaymentModal, closeLoanPaymentModal, selectModalData } from '../../features/redux/modalSlice';
+
 // fetch hooks
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
@@ -30,6 +34,13 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 import defaultAvatar from '../../assets/placeholder-avatar.png';
 
 function CoopLoansPayments() {
+
+  // redux stuff to control the modal
+  const dispatch = useDispatch();
+  const loanPaymentModal = useSelector(selectModalData); // fetch the data from the store
+
+  // console.log(`Redux Fetched Data`, loanPaymentModal)
+
   const placeHolderAvatar = defaultAvatar;
   const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
   const { data: loan_acc_view } = useFetchLoanAccView({});
@@ -148,16 +159,15 @@ function CoopLoansPayments() {
 
 
   // Modal Controls
-  const [modalType, setModalType] = useState(null); // "add" | "edit" | null
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
   const openAddModal = () => {
     reset(defaultValues)
-    setModalType("add");
+    dispatch(openLoanPaymentModal({ type: 'add' }));
   }
   
   const closeModal = () => {
-    setModalType(null);
+    dispatch(closeLoanPaymentModal());
   };
 
   // View modals
@@ -193,7 +203,7 @@ function CoopLoansPayments() {
     });
 
     closeViewModal();
-    setModalType("edit");
+    dispatch(openLoanPaymentModal({ type: 'edit', data: viewPaymentData }));
   };
 
   const closeViewModal = () => {
@@ -218,7 +228,7 @@ function CoopLoansPayments() {
   const confirmPayment = () => {
     if (!pendingPaymentData) return;
 
-    if (modalType === "add") {
+    if (loanPaymentModal.type === "add") {
       addLoanPayments(pendingPaymentData, {
         onSuccess: () => {
           toast.success("Successfully added payment");
@@ -231,7 +241,7 @@ function CoopLoansPayments() {
           setShowPaymentConfirm(false);
         },
       });
-    } else if (modalType === "edit") { 
+    } else if (loanPaymentModal.type === "edit") { 
       editLoanPayments(pendingPaymentData, {
         onSuccess: () => {
           toast.success("Successfully edited payment");
@@ -527,9 +537,9 @@ function CoopLoansPayments() {
 
         <FormModal
           table="Loan Payment"
-          open={modalType !== null}
+          open={loanPaymentModal.isOpen}
           close={closeModal}
-          action={modalType === "edit"}
+          action={loanPaymentModal.type === "edit"}
           onSubmit={handleSubmit(handlePaymentSubmit)} // <-- this now stores data
           isPending={isAddPending || isEditPending}
           status={isAddPending || isEditPending}
@@ -851,10 +861,10 @@ function CoopLoansPayments() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold mb-2">
-                    {modalType === "edit" ? "Confirm Payment Modification" : "Confirm Payment Submission"}
+                    {loanPaymentModal.type === "edit" ? "Confirm Payment Modification" : "Confirm Payment Submission"}
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                    {modalType === "edit" 
+                    {loanPaymentModal.type === "edit" 
                       ? "You are about to modify an existing payment record. This action will update the payment schedules and recalculate loan balances. All changes will be logged for audit purposes and cannot be undone." 
                       : "You are about to process a new loan payment. Please verify all details are correct as this transaction will immediately update the borrower's payment schedule and outstanding balance. This action cannot be reversed once submitted."}
                   </p>
@@ -887,10 +897,10 @@ function CoopLoansPayments() {
                   {isAddPending || isEditPending ? (
                     <>
                       <span className="loading loading-spinner loading-sm mr-2"></span>
-                      {modalType === "edit" ? "Updating Payment..." : "Processing Payment..."}
+                      {loanPaymentModal.type === "edit" ? "Updating Payment..." : "Processing Payment..."}
                     </>
                   ) : (
-                    modalType === "edit" ? "Confirm Payment Update" : "Process Payment"
+                      loanPaymentModal.type === "edit" ? "Confirm Payment Update" : "Process Payment"
                   )}
                 </button>
               </div>

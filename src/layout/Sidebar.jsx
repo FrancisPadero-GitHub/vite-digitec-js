@@ -26,6 +26,7 @@ const financeBase = (role) => [
   { label: "Coop Share Capital", icon: AccountBalanceIcon, path: `/${role}/coop-share-capital` },
   { label: "Club Funds", icon: SavingsIcon, path: `/${role}/club-funds` },
   { label: "Club Expenses", icon: ReceiptLongIcon, path: `/${role}/club-expenses` },
+  
 ];
 
 // board and members
@@ -66,7 +67,9 @@ const sidebarConfig = {
           children: [
             { label: "Releases", path: "/treasurer/coop-loans/releases" },
             { label: "Loan Accounts", path: "/treasurer/coop-loans/loan-accounts" },
+            { label: "Schedules", path: "/treasurer/coop-loans/payment-schedules" },
             { label: "Payments", path: "/treasurer/coop-loans/payments" },
+
           ],
         },
       ],

@@ -30,6 +30,7 @@ import ClubFunds from "./pages/treasurer/ClubFunds";
 import ClubExpenses from "./pages/treasurer/ClubExpenses";
 import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases";
 import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
+import CoopLoanPaymentSchedules from "./pages/treasurer/CoopLoanPaymentSchedules";
 
 // BOD Pages
 import LoanApplications from "./pages/board/LoanApplications";
@@ -70,6 +71,7 @@ function AppRoutes() {
     { path: "coop-share-capital", element: <CoopShareCapital /> },
     { path: "club-funds", element: <ClubFunds /> },
     { path: "club-expenses", element: <ClubExpenses /> },
+    { path: "coop-loans/payment-schedules", element: <CoopLoanPaymentSchedules /> },
   ];
 
 
