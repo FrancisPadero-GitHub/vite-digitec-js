@@ -21,7 +21,10 @@ export const useDeleteMember = () => {
     mutationFn: deleteMember,
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ["members"], exact: false});
-     queryClient.invalidateQueries({queryKey: ["rpc_totals"], exact: false}); // kay apil ang tables sa dashboards ani
+     queryClient.invalidateQueries({
+       queryKey: ["get_funds_summary"],
+       exact: false,
+     }); // kay apil ang tables sa dashboards ani
     },
     onError: (error) => {
       console.error("Delete member failed:", error.message);

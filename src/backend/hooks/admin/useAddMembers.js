@@ -165,7 +165,7 @@ export const useAddMember = () => {
       queryClient.invalidateQueries({queryKey: ["initial_payments"], exact: false});
       queryClient.invalidateQueries({queryKey: ["club_funds_contributions"], exact: false});
       queryClient.invalidateQueries({queryKey: ["coop_cbu_contributions"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["rpc_totals"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false});
 
       // log activity
       try {

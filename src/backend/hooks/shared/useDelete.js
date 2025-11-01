@@ -33,7 +33,10 @@ export const useDelete = (table) => {
     onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
       queryClient.invalidateQueries({queryKey: [table], exact: false});
-      queryClient.invalidateQueries({queryKey: ["rpc_totals"], exact: false});
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
 
       // log activity
       try {

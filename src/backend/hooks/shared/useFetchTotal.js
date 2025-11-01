@@ -2,35 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
 /**
- * THIS IS AN RPC function that I do its available in supabase functions to view totals
- * A row is not included in the calculation of the total if its column
- * deleted_at has a date value
- * 
- * Also this is dynamic so it fetches what RPC you want in supabase
- * 
- * @param {string} rpcFN - the name of the function inside supabase (not a table)
- * @param {date} year - and the month
-
+ * Dynamic Supabase RPC fetcher
+ * Fetches totals based on the function name and time filters
  */
-
 async function fetchTotal({ queryKey }) {
-  const [_key, { rpcFn, year, month }] = queryKey;
-  const { data, error } = await supabase
-  .rpc(rpcFn, {
-    // p_year: year === "all" ? null : year, // if the p_year receives a "all" value it sets the default to null which fetches unfiltered total
-    // p_month: month === "all" ? null : month,
-    p_year: year,
-    p_month: month,
+  const [rpcFn, key, year, month] = queryKey; // ✅ matches new queryKey shape
+
+  if (!rpcFn && !key) throw new Error("rpcFn and key is missing or undefined");
+
+  const { data, error } = await supabase.rpc(rpcFn, {
+    p_year: year || null,
+    p_month: month || null,
   });
+
   if (error) throw new Error(error.message);
-  return data;
+  return data?.[0];
 }
 
-export function useFetchTotal({ rpcFn, year, month }) {
+export function useFetchTotal({ rpcFn, key, year, month }) {
   return useQuery({
-    // Temporary queyrKey might change it to something practical later on
-    queryKey: ["rpc_all_totals", { rpcFn, year, month }],
+    queryKey: [rpcFn, key, year, month], // ✅ unique and consistent
     queryFn: fetchTotal,
-    staleTime: 1000 * 60 * 1,
+    enabled: Boolean(rpcFn),
+    staleTime: 1000 * 60, // 1 minute
   });
 }

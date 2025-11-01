@@ -34,6 +34,10 @@
         // Refresh any component using this query
         queryClient.invalidateQueries({queryKey:["loan_payments"], exact: false});
         queryClient.invalidateQueries({queryKey:["loan_payment_schedules"], exact: false});
+        queryClient.invalidateQueries({
+          queryKey: ["get_funds_summary"],
+          exact: false,
+        });
       },
       onError: (error) => {
         console.error("❌ Add loan payment failed:", error.message);

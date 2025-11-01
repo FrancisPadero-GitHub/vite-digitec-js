@@ -52,7 +52,10 @@ export const useEditCoopContributions = () => {
     onSuccess: async (data) => {
       console.log(" Coop contribution Updated!", data);
       queryClient.invalidateQueries({queryKey:["coop_cbu_contributions"], exact: false}); // to reflect the change instantly
-      queryClient.invalidateQueries({queryKey:["rpc_totals"], exact: false});
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
 
       // log activity
       try {

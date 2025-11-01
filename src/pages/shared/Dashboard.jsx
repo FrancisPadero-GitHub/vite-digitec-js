@@ -7,8 +7,6 @@ import { useState } from 'react';
 import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal'; 
 
 // Hooks for the four quick recent tables
-import { useFetchIncome } from '../../backend/hooks/shared/useFetchIncome';
-
 // Fetch hooks on main tables
 import { useFetchExpenses } from '../../backend/hooks/shared/useFetchExpenses';
 import { useFetchClubFunds } from '../../backend/hooks/shared/useFetchClubFunds';
@@ -45,9 +43,6 @@ function Dashboard() {
   const { data: expenses_data, isLoading: expensesIsLoading } = useFetchExpenses({page: 1, limit: 10});
   const expenses = expenses_data?.data || [];
 
-  const { data: income_data, isLoading: incomeIsLoading } = useFetchIncome({page: 1, limit: 10});
-  const income = income_data?.data || [];
-
   // Filters for the cards
   const subText = "All Time";
   const [filters, setFilters] = useState({
@@ -55,6 +50,10 @@ function Dashboard() {
     fundsBalance: { month: null, year: null, subtitle: subText },
     expenses: { month: null, year: null, subtitle: subText },
     coop: { month: null, year: null, subtitle: subText },
+    overAll: { month: null, year: null, subtitle: subText },
+    releaseLoan: { month: null, year: null, subtitle: subText },
+    interestIncome: { month: null, year: null, subtitle: subText },
+    feeIncome: { month: null, year: null, subtitle: subText },
   });
 
   // Helper to compute previous period filter
@@ -72,69 +71,175 @@ function Dashboard() {
 
   // Helper to compute growth percent
   const calcGrowth = (current, previous, asString = false) => {
-    if (previous == null || previous === 0 || current == null) return null;
+    const c = Number(current);
+    const p = Number(previous);
 
-    const growth = ((current - previous) / previous) * 100;
-    const rounded = Math.round(growth); // ✅ no decimals
+    // Prevent divide-by-zero or invalid values
+    if (!isFinite(c) || !isFinite(p) || p === 0) return 0;
+
+    const growth = ((c - p) / p) * 100;
+    const rounded = Math.round(growth);
 
     return asString ? `${rounded}%` : rounded;
   };
 
   // =========================
-  // Income
+  // Coop Contributions
   // =========================
-  const { data: incomeTotal, isLoading: incomeLoading, isError: incomeIsError, error: incomeError } = useFetchTotal({
-    rpcFn: "get_club_income_total",
-    year: filters.income.year,
-    month: filters.income.month,
+  const { data: coopTotal, isLoading: coopLoading, isError: coopIsError, error: coopError } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.coop.year,
+    month: filters.coop.month,
+    key: "coop",
   });
-  const { data: incomePrevTotal } = useFetchTotal({
-    rpcFn: "get_club_income_total",
-    ...getPrevPeriod(filters.income.subtitle),
+  const currCoopVal = Number(coopTotal?.club_total_coop ?? 0);
+
+  const { data: coopPrevTotal } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "coop-prev", // ✅ give prev query a unique key
+    ...getPrevPeriod(filters.coop.subtitle),
   });
-  const incomeGrowth = calcGrowth(incomeTotal, incomePrevTotal);
+  const prevCoopVal = Number(coopPrevTotal?.club_total_coop ?? 0);
+  const coopGrowth = calcGrowth(currCoopVal, prevCoopVal);
+
 
   // =========================
   // Club Fund Balance
   // =========================
   const { data: clubFundsBalance, isLoading: cfBalLoading, isError: cfBalIsError, error: cfBalError } = useFetchTotal({
-    rpcFn: "get_club_funds_balance",
+    rpcFn: "get_funds_summary",
     year: filters.fundsBalance.year,
     month: filters.fundsBalance.month,
+    key: "fundsBalance",
   });
+  const currClubFundsVal = Number(clubFundsBalance?.club_balance ?? 0);
+
   const { data: cfPrevBal } = useFetchTotal({
-    rpcFn: "get_club_funds_balance",
+    rpcFn: "get_funds_summary",
+    key: "fundsBalance-prev", // ✅ unique cache key for prev
     ...getPrevPeriod(filters.fundsBalance.subtitle),
   });
-  const cfGrowth = calcGrowth(clubFundsBalance, cfPrevBal);
+  const prevClubFundsVal = Number(cfPrevBal?.club_balance ?? 0);
+  const cfGrowth = calcGrowth(currClubFundsVal, prevClubFundsVal);
+
 
   // =========================
   // Expenses
   // =========================
   const { data: expensesTotal, isLoading: expensesLoading, isError: expensesIsError, error: expensesError } = useFetchTotal({
-    rpcFn: "get_club_expenses_total",
+    rpcFn: "get_funds_summary",
     year: filters.expenses.year,
     month: filters.expenses.month,
+    key: "expenses",
   });
+  const currExpensesVal = Number(expensesTotal?.club_total_expenses ?? 0); // ✅ correct column name
   const { data: expensesPrevTotal } = useFetchTotal({
-    rpcFn: "get_club_expenses_total",
+    rpcFn: "get_funds_summary",
+    key: "expenses-prev", // ✅ again, unique key
     ...getPrevPeriod(filters.expenses.subtitle),
   });
-  const expensesGrowth = calcGrowth(expensesTotal, expensesPrevTotal);
+  const prevExpensesVal = Number(expensesPrevTotal?.club_total_expenses ?? 0);
+  const expensesGrowth = calcGrowth(currExpensesVal, prevExpensesVal);
+
 
   // =========================
-  // Coop Contributions
+  // Income
   // =========================
-  const { data: coopTotal, isLoading: coopLoading, isError: coopIsError, error: coopError } = useFetchTotal({
-    rpcFn: "get_coop_contributions_total",
-    year: filters.coop.year,
-    month: filters.coop.month,
+  const { data: incomeTotal, isLoading: incomeLoading, isError: incomeIsError, error: incomeError } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.income.year,
+    month: filters.income.month,
+    key: "income",
   });
-  const { data: coopPrevTotal } = useFetchTotal({
-    rpcFn: "get_coop_contributions_total",
-    ...getPrevPeriod(filters.coop.subtitle),
+  const currIncomeVal = Number(incomeTotal?.club_total_income ?? 0);
+
+  const { data: incomePrevTotal } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "income-prev", // ✅ unique key
+    ...getPrevPeriod(filters.income.subtitle),
   });
-  const coopGrowth = calcGrowth(coopTotal, coopPrevTotal);
+  const prevIncomeVal = Number(incomePrevTotal?.club_total_income ?? 0);
+  const incomeGrowth = calcGrowth(currIncomeVal, prevIncomeVal);
+
+  // =========================
+  // Loan Release To Members 
+  // =========================
+  const { data: loanReleaseTotal, isLoading: loanReleaseLoading, isError: loanReleaseIsError, error: loanReleaseError } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.releaseLoan.year,
+    month: filters.releaseLoan.month,
+    key: "releaseTotal",
+  });
+  const currLoanReleaseVal = Number(loanReleaseTotal?.coop_total_principal_released ?? 0);
+
+  const { data: loanReleasePrevTotal } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "releaseTotal-prev", // ✅ unique key
+    ...getPrevPeriod(filters.releaseLoan.subtitle),
+  });
+  const prevLoanReleaseVal = Number(loanReleasePrevTotal?.coop_total_principal_released ?? 0);
+  const loanReleaseGrowth = calcGrowth(currLoanReleaseVal, prevLoanReleaseVal);
+
+  // =========================
+  // Total Interest Income from Loans Released
+  // =========================
+  const { data: interestIncomeTotal, isLoading: interestIncomeLoading, isError: interestIncomeIsError, error: interestIncomeError } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.interestIncome.year,
+    month: filters.interestIncome.month,
+    key: "releaseTotal",
+  });
+  const currinterestIncomeVal = Number(interestIncomeTotal?.club_total_interest_income ?? 0);
+
+  const { data: interestIncomePrevTotal } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "releaseTotal-prev", // ✅ unique key
+    ...getPrevPeriod(filters.interestIncome.subtitle),
+  });
+  const previnterestIncomeVal = Number(interestIncomePrevTotal?.club_total_interest_income ?? 0);
+  const interestIncomeGrowth = calcGrowth(currinterestIncomeVal, previnterestIncomeVal);
+
+  // =========================
+  // Total Fee Income from Loans Released
+  // =========================
+  const { data: feeIncomeTotal, isLoading: feeIncomeLoading, isError: feeIncomeIsError, error: feeIncomeError } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.feeIncome.year,
+    month: filters.feeIncome.month,
+    key: "releaseTotal",
+  });
+  const currfeeIncomeVal = Number(feeIncomeTotal?.club_total_fees_income ?? 0);
+
+  const { data: feeIncomePrevTotal } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "releaseTotal-prev", // ✅ unique key
+    ...getPrevPeriod(filters.feeIncome.subtitle),
+  });
+  const prevfeeIncomeVal = Number(feeIncomePrevTotal?.club_total_fees_income ?? 0);
+  const feeIncomeGrowth = calcGrowth(currfeeIncomeVal, prevfeeIncomeVal);
+
+  // =========================
+  // Overall Total Cash
+  // =========================
+  const { data: overAllTotal, isLoading: overAllLoading, isError: overAllIsError, error: overAllError } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.overAll.year,
+    month: filters.overAll.month,
+    key: "overAll",
+  });
+  const curroverAllVal = Number(overAllTotal?.overall_total_cash ?? 0);
+
+  const { data: overAllPrevTotal } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "overAll-prev", // ✅ unique key
+    ...getPrevPeriod(filters.overAll.subtitle),
+  });
+  const prevoverAllVal = Number(overAllPrevTotal?.overall_total_cash ?? 0);
+  const overAllGrowth = calcGrowth(curroverAllVal, prevoverAllVal);
+
+
+
+
 
   /**
    * Stat Cards
@@ -145,7 +250,7 @@ function Dashboard() {
       iconBgColor: "bg-sky-400",
       statName: "Coop Share Capital",
       growthPercent: coopGrowth,
-      amount: coopTotal ?? 0,
+      amount: currCoopVal,
       subtitle: filters.coop.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
@@ -166,7 +271,7 @@ function Dashboard() {
       iconBgColor: "bg-lime-400",
       statName: "Club Fund Balance",
       growthPercent: cfGrowth,
-      amount: clubFundsBalance ?? 0,
+      amount: currClubFundsVal,
       subtitle: filters.fundsBalance.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
@@ -187,7 +292,7 @@ function Dashboard() {
       iconBgColor: "bg-red-400",
       statName: "Club Expenses",
       growthPercent: expensesGrowth,
-      amount: expensesTotal ?? 0,
+      amount: currExpensesVal,
       subtitle: filters.expenses.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
@@ -207,8 +312,8 @@ function Dashboard() {
       icon: <Wallet />,
       iconBgColor: "bg-purple-400",
       statName: "Club Income",
-      growthPercent: incomeGrowth,
-      amount: incomeTotal ?? 0,
+      growthPercent: incomeGrowth ?? 0,
+      amount: currIncomeVal ?? 0,
       subtitle: filters.income.subtitle,
       onSubtitleChange: (label) => {
         setFilters((prev) => ({
@@ -223,6 +328,90 @@ function Dashboard() {
       loading: incomeLoading,
       error: incomeIsError,
       errorMessage: incomeError?.message,
+    },
+    {
+      icon: <Wallet />,
+      iconBgColor: "bg-purple-400",
+      statName: "Total Interest Income",
+      growthPercent: interestIncomeGrowth ?? 0,
+      amount: currinterestIncomeVal,
+      subtitle: filters.interestIncome.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          interestIncome: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+      loading: interestIncomeLoading,
+      error: interestIncomeIsError,
+      errorMessage: interestIncomeError?.message,
+    },
+    {
+      icon: <Wallet />,
+      iconBgColor: "bg-purple-400",
+      statName: "Total Fee Income", 
+      growthPercent: feeIncomeGrowth ?? 0,
+      amount: currfeeIncomeVal,
+      subtitle: filters.feeIncome.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          feeIncome: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+      loading: feeIncomeLoading,
+      error: feeIncomeIsError,
+      errorMessage: feeIncomeError?.message,
+    },
+    {
+      icon: <Savings />,
+      iconBgColor: "bg-lime-400",
+      statName: "Total Loan Released",
+      growthPercent: loanReleaseGrowth,
+      amount: currLoanReleaseVal,
+      subtitle: filters.releaseLoan.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          releaseLoan: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+      loading: loanReleaseLoading,
+      error: loanReleaseIsError,
+      errorMessage: loanReleaseError?.message,
+    },
+    {
+      icon: <AccountBalance />,
+      iconBgColor: "bg-sky-400",
+      statName: "Overall Total Cash",
+      growthPercent: overAllGrowth,
+      amount: curroverAllVal,
+      subtitle: filters.overAll.subtitle,
+      onSubtitleChange: (label) => {
+        setFilters((prev) => ({
+          ...prev,
+          overAll: {
+            subtitle: label,
+            month: label === "This Month" ? new Date().getMonth() + 1 : null,
+            year: label !== "All Time" ? new Date().getFullYear() : null,
+          },
+        }));
+      },
+      loading: overAllLoading,
+      error: overAllIsError,
+      errorMessage: overAllError?.message,
     },
   ];
  
@@ -380,35 +569,6 @@ function Dashboard() {
                   )
                 }
               }
-            />
-
-            {/** 
-              * 
-              *  Income Recent Table
-               */}
-            <DataTable
-              title={"Income"}
-              linkPath={`/${memberRole}`} // will provide later on
-              headers={["Ref No.", "Title", "Amount", "Source", "Date"]}
-              data={income}
-              isLoading={incomeIsLoading}
-              renderRow={(row) => (
-                <tr key={row.income_id} className="text-center cursor-pointer hover:bg-base-200/50">
-                  <td className='text-xs'>IC_{row.income_id?.toLocaleString() || "ID"}</td>
-                  <td>
-                    {row.title}
-                  </td>
-                  <td className="px-4 py-2 font-semibold text-success">
-                    ₱ {row.amount?.toLocaleString() || "0"}
-                  </td>
-                  <td >
-                    <span className={`badge badge-soft font-semibold ${INCOME_SOURCE_COLORS[row.source]}`}>
-                      {row.source}
-                    </span>
-                  </td>
-                  <td>{row.date ? new Date(row.date).toLocaleDateString() : "Not Provided"}</td>
-                </tr>
-              )}
             />
           </div>
 

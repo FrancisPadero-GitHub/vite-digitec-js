@@ -72,10 +72,14 @@ function MemberDashboard() {
 
   // Helper to compute growth percent
   const calcGrowth = (current, previous, asString = false) => {
-    if (previous == null || previous === 0 || current == null) return null;
+    const c = Number(current);
+    const p = Number(previous);
 
-    const growth = ((current - previous) / previous) * 100;
-    const rounded = Math.round(growth); // ✅ no decimals
+    // Prevent divide-by-zero or invalid values
+    if (!isFinite(c) || !isFinite(p) || p === 0) return 0;
+
+    const growth = ((c - p) / p) * 100;
+    const rounded = Math.round(growth);
 
     return asString ? `${rounded}%` : rounded;
   };
@@ -95,16 +99,24 @@ function MemberDashboard() {
     });
   const pcfGrowth = calcGrowth(pcfData, pcfPrevBal);
 
+  // =========================
+  // Club Fund Balance
+  // =========================
   const { data: clubFundsBalance, isLoading: cfBalLoading, isError: cfBalIsError, error: cfBalError } = useFetchTotal({
-    rpcFn: "get_club_funds_balance",
+    rpcFn: "get_funds_summary",
     year: filters.clubFunds.year,
     month: filters.clubFunds.month,
+    key: "fundsBalance",
   });
+  const currClubFundsVal = Number(clubFundsBalance?.club_balance ?? 0);
+
   const { data: cfPrevBal } = useFetchTotal({
-    rpcFn: "get_club_funds_balance",
+    rpcFn: "get_funds_summary",
+    key: "fundsBalance-prev", // ✅ unique cache key for prev
     ...getPrevPeriod(filters.clubFunds.subtitle),
   });
-  const cfGrowth = calcGrowth(clubFundsBalance, cfPrevBal);
+  const prevClubFundsVal = Number(cfPrevBal?.club_balance ?? 0);
+  const cfGrowth = calcGrowth(currClubFundsVal, prevClubFundsVal);
 
   /**
    * End of Club Funds Personal and Club
@@ -125,20 +137,24 @@ function MemberDashboard() {
   });
   const pscGrowth = calcGrowth(pscData, pscPrevBal);
 
-  // Share Capital Coop
+  // =========================
+  // Coop Contributions
+  // =========================
   const { data: coopTotal, isLoading: coopLoading, isError: coopIsError, error: coopError } = useFetchTotal({
-    rpcFn: "get_coop_contributions_total",
+    rpcFn: "get_funds_summary",
     year: filters.coopFunds.year,
     month: filters.coopFunds.month,
+    key: "coop",
   });
+  const currCoopVal = Number(coopTotal?.club_total_coop ?? 0);
+
   const { data: coopPrevTotal } = useFetchTotal({
-    rpcFn: "get_coop_contributions_total",
+    rpcFn: "get_funds_summary",
+    key: "coop-prev", // ✅ give prev query a unique key
     ...getPrevPeriod(filters.coopFunds.subtitle),
   });
-  const coopGrowth = calcGrowth(coopTotal, coopPrevTotal);
-  /**
-   * End of Share / Coop Capital Personal and Club
-   */
+  const prevCoopVal = Number(coopPrevTotal?.club_total_coop ?? 0);
+  const coopGrowth = calcGrowth(currCoopVal, prevCoopVal);
 
 
   const shareCapitalStats = [
@@ -168,7 +184,7 @@ function MemberDashboard() {
       icon: <AccountBalance />,
       iconBgColor: "bg-sky-400",
       statName: "Total Coop Share Capital",
-      amount: coopTotal ?? 0,
+      amount: currCoopVal,
       growthPercent: coopGrowth,
       subtitle: filters.coopFunds.subtitle,
       onSubtitleChange: (label) => {
@@ -215,7 +231,7 @@ function MemberDashboard() {
       icon: <Savings />,
       iconBgColor: "bg-lime-400",
       statName: "Total Club Funds",
-      amount: clubFundsBalance ?? 0,
+      amount: currClubFundsVal,
       growthPercent: cfGrowth,
       subtitle: filters.clubFunds.subtitle,
       onSubtitleChange: (label) => {

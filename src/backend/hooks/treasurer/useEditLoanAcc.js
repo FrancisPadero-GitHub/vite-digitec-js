@@ -105,6 +105,10 @@ export const useEditLoanAcc = () => {
       queryClient.invalidateQueries({queryKey:["loan_accounts"], exact: false});
       queryClient.invalidateQueries({queryKey:["loan_accounts_view"], exact: false});
       queryClient.invalidateQueries({queryKey:["loan_payment_schedules"], exact: false});
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
     },
     onError: (error) => {
       console.error("Loan Failed Release", error.message);

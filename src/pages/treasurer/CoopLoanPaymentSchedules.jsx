@@ -23,7 +23,7 @@ function CoopLoanPaymentSchedules() {
 
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data, isLoading, isError, error } = useFetchPaySchedView({ page, limit })
+  const { data, isLoading, isError, error } = useFetchPaySchedView({}) // temporarily disabled pagination
   const total = data?.count || 0;
   const paySchedules = data?.data || [];
 
@@ -179,7 +179,7 @@ function CoopLoanPaymentSchedules() {
           return (
             <tr
               key={`${row?.schedule_id}`}
-              onClick={() => console.log(`Clicked on Schedule ID: LPS_${row}`)}
+              onClick={() => console.log(`Clicked on Schedule ID: LPS_${row?.schedule_id}`)}
               className={`transition-colors cursor-pointer ${getRowStyling()}`}
             >
               {/* Row Number */}

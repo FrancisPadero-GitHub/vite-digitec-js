@@ -56,8 +56,8 @@ export const useAddClubFunds = () => {
       });
 
       queryClient.invalidateQueries({
-        queryKey:["rpc_totals"],
-        exact: false
+        queryKey: ["get_funds_summary"],
+        exact: false,
       });
 
       // log activity
