@@ -414,8 +414,8 @@ function CoopLoansPayments() {
               value: statusFilter,
               onChange: setStatusFilter,
               options: [
-                { label: "Full", value: "full" },
-                { label: "Partial", value: "partial" },
+                { label: "Full", value: "Full" },
+                { label: "Partial", value: "Partial" },
               ],
             },
             {
@@ -465,7 +465,7 @@ function CoopLoansPayments() {
         />
 
         <MainDataTable 
-          headers={["Payment Ref.", "Loan Ref No.", "Name", "Amount", "Status", "Payment Method", "Date"]}
+          headers={["Payment Ref.", "Loan Ref No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
           data={loanPayments}
           isLoading={isLoading}
           isError={isError}
@@ -489,7 +489,7 @@ function CoopLoansPayments() {
                 <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.payment_id}</td>
                 
                 {/* Loan ID */}
-                <td className="px-4 py-2 text-center">{row?.loan_ref_number || "Not Found"}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{row?.loan_ref_number || "Not Found"}</td>
                  
                  {/* Name */}
                 <td className="px-4 py-4 text-center" >
@@ -514,9 +514,14 @@ function CoopLoansPayments() {
                 </td>
 
                 {/* Status */}
-                <td className="px-4 py-2 font-semibold text-info text-center">
-                  {row?.status|| "0"}
+                <td className="px-4 py-4 font-semibold text-center">
+                  <span className={`${row?.status === 'Partial' ? 'text-warning' : row?.status === 'Full' ? 'text-info' : 'text-base-content'}`}>
+                    {row?.status || "Unknown"}
+                  </span>
                 </td>
+
+                {/* Date */}
+                <td className="px-4 py-2 text-center">{row?.payment_date}</td>
 
                 {/* Method */}
                 <td className="px-4 py-2 text-center">
@@ -528,9 +533,6 @@ function CoopLoansPayments() {
                     <span> — </span>
                   )}
                 </td>
-                {/* Date */}
-                <td className="px-4 py-2 text-center">{row?.payment_date}</td>
-    
               </tr>
             )}}
         />

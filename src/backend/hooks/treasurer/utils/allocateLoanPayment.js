@@ -157,7 +157,7 @@ export async function allocateLoanPayment(
       fees,
       interest,
       principal,
-      status: fullyPaid ? "full" : "partial",
+      status: fullyPaid ? "Full" : "Partial",
     });
 
     // Update this schedule’s payment progress in the database

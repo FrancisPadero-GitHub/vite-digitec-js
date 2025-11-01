@@ -62,7 +62,7 @@ function LoanScheduleCardList({
                         ? "bg-red-200 text-red-800"
                         : "bg-amber-200 text-amber-800"
                     }`}>
-                      {item.paid ? "✓ PAID" : isOverdue ? "⚠ OVERDUE" : "UPCOMING"}
+                      {item.paid ? "✓ PAID" : isOverdue ? "OVERDUE" : "UPCOMING"}
                     </div>
                     {item.paid_at && (
                       <p className="text-xs text-green-600 font-medium">Paid on {dayjs(item.paid_at).format("MMM D, YYYY")}</p>

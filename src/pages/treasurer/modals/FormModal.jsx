@@ -22,10 +22,17 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
 
   // if open is false, don't render anything
   if (!open) return null
+
+  // Determine the title based on mode
+  let title = table;
+  if (onSubmit) {
+    title = action ? `Edit ${table}` : `Add ${table}`;
+  }
+
   return (
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
-        <h2 className="text-2xl font-semibold" >{action ? `Edit ${table}` : `Add ${table}`}</h2>
+        <h2 className="text-2xl font-semibold" >{title}</h2>
         <form onSubmit={onSubmit}>
           
           {children}

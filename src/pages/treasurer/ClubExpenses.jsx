@@ -250,7 +250,7 @@ function ClubExpenses() {
                 className="cursor-pointer hover:bg-base-200/50"
                 onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
               >
-                <td className="x-4 py-2 text-center font-medium text-xs">
+                <td className="px-4 py-2 text-center font-medium text-xs">
                   {TABLE_PREFIX}_{row?.transaction_id.toLocaleString() || "ID"}
                 </td>
                 <td className="px-4 py-4 text-center font-medium">{row?.title}</td>

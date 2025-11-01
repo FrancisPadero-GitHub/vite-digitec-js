@@ -45,11 +45,12 @@ export const CLUB_CATEGORY_COLORS = {
 
 
 // PAYMENT METHODS FROM MEMBERS
-export const PAYMENT_METHODS = ["GCash", "Cash"];
+export const PAYMENT_METHODS = ["GCash", "Cash", "Bank"];
 
 export const PAYMENT_METHOD_COLORS = {
   GCash: "badge-info",
   Cash: "badge-success",
+  Bank: "badge-neutral",
 };
 
 // ECTEC MEMBER TYPES
