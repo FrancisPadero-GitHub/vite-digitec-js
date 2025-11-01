@@ -145,6 +145,8 @@ function UserManagement() {
       fields: [
         { label: "Account Role / Type", value: selectedMember?.account_role || "N/A" },
         { label: "Account Status", value: selectedMember?.account_status || "N/A" },
+        { label: "Application Date", value: selectedMember?.application_date || "N/A" },
+        { label: "Joined Date", value: selectedMember?.joined_date || "N/A" },
       ],
     },
   ];
@@ -191,7 +193,7 @@ function UserManagement() {
         />
 
         <MainDataTable
-          headers={["Account No.", "User", "Role", "Joined date", "Tenure", "Account status", "Membership status"]}
+          headers={["Account No.", "User", "Role", "Joined date", "Tenure", "Account status"]}
           data={members}
           isLoading={isLoading}
           isError={isError}
@@ -203,13 +205,9 @@ function UserManagement() {
           renderRow={(row) => {
 
             // Calculte the years months and days since joined
-            let years = 0, months = 0, days = 0;
-            if (row.joined_date) {
-              const joined = new Date(row.joined_date);
-              if (!isNaN(joined)) {
-                ({ years, months, days } = getYearsMonthsDaysDifference(joined));
-              }
-            }
+            const { years, months, days } = row.joined_date
+              ? getYearsMonthsDaysDifference(row.joined_date)
+              : { years: 0, months: 0, days: 0 };
 
             return (
               <tr
@@ -271,7 +269,7 @@ function UserManagement() {
                   <td className="px-4 py-2 text-center">
                     {(years || months || days)
                       ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
-                      : <span className="text-gray-400 italic">Not available</span>}
+                      : <span className="text-gray-400 italic">Just joined</span>}
                   </td>
 
                 {/* Account Status */}
@@ -293,15 +291,6 @@ function UserManagement() {
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
-
-                {/* To sort out later on */}
-                {/* Membership Status */}
-                <td className="px-4 py-2 text-center">
-                  {row.membership_status
-                    ? row.membership_status
-                    : <span className="text-gray-400 italic">No status</span>}
-                </td>
-
               </tr>
             )
           }}
@@ -316,16 +305,18 @@ function UserManagement() {
         >
           {memberGroups.map((group) => (
             <div key={group.title} className="mb-6">
-              <h3 className="font-semibold text-lg mb-2">{group.title}</h3>
-              <hr className="border-gray-300 mb-4" />
+              <h3 className="font-semibold text-lg mb-2 text-base-content">{group.title}</h3>
+              <hr className="border-base-300 mb-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {group.fields.map((field) => {
+                  const isFullWidth = field.label === "Complete Address";
+
                   if (field.label === "Account Role / Type") {
                     return (
-                      <div key={field.label}>
-                        <p className="text-gray-500">{field.label}</p>
+                      <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
+                        <p className="text-base-content/70">{field.label}</p>
                         <select
-                          className="select select-bordered w-full mt-1"
+                          className="select select-bordered w-full mt-1 bg-base-100 text-base-content"
                           value={newRole}
                           onChange={(e) => setNewRole(e.target.value)}
                         >
@@ -339,9 +330,9 @@ function UserManagement() {
                     );
                   }
                   return (
-                    <div key={field.label}>
-                      <p className="text-gray-500">{field.label}</p>
-                      <p className="font-medium text-gray-900">{field.value || "N/A"}</p>
+                    <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
+                      <p className="text-base-content/70">{field.label}</p>
+                      <p className="font-medium text-base-content">{field.value || "N/A"}</p>
                     </div>
                   );
                 })}

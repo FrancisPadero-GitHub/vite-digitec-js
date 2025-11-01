@@ -81,6 +81,7 @@ const insertMember = async (formData) => {
     "account_role",
     "account_status",
     "application_date",
+    "joined_date",
   ];
 
   const paymentFields = [

@@ -55,6 +55,7 @@ function AddMember (){
       account_role: "",
       account_status: "",
       application_date: today,
+      joined_date: today,
       membership_fee: "",
       membership_fee_status: "",
       membership_payment_method: "",
@@ -158,6 +159,7 @@ function AddMember (){
     },
 
     { label: "Application Date", name: "application_date", type: "date", required: true, group: "Account Info" },
+    { label: "Joined Date", name: "joined_date", type: "date", required: false, group: "Account Info" },
 
     // Membership Fee
     { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: true },
@@ -238,7 +240,7 @@ function AddMember (){
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md">
+                  <div className="absolute bottom-0 right-0 bg-base-100 rounded-full p-2 shadow-md text-base-content">
                     <CameraAltIcon fontSize="small" />
                   </div>
                   <input
