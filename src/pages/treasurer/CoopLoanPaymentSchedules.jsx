@@ -58,13 +58,15 @@ function CoopLoanPaymentSchedules() {
   });
 
   const handleGoToPayments = () => {
-    // Dispatch the modal action
-    dispatch(openLoanPaymentModal({ type: 'add', data: "Redux is GOATED" }));
-    // Navigate to payments page
+    // do nothing for board role
     if (memberRole === 'board') return navigate(`/${memberRole}/coop-loans/loan-payments`);
-    if (memberRole === 'treasurer') return navigate(`/${memberRole}/coop-loans/payments`);
-  };
 
+    // for treasurer role, open the modal after navigating
+    if (memberRole === 'treasurer') {
+      navigate(`/${memberRole}/coop-loans/payments`);                                 // Navigate to payments page
+      dispatch(openLoanPaymentModal({ type: 'add', data: "Redux is GOATED" }));       // Dispatch the modal action
+    }
+  };
 
   return (
     <div>
