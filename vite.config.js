@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: "./", // this is for the vite to serve and show the image or something
 
   // so i don't have to wait for 5 mins every time i import an icon haha 
   // resolves the [vite] optimized deps changed, reloading...
