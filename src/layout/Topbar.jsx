@@ -130,6 +130,10 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
             <SearchIcon />
           </button>
         </div>
+        <div className="flex justify-center ml-6">
+          <span className="mr-2">Page : </span>
+          <span className="text-warning" title="Developemental, will be removed in the future">{getRoleLabel(role) || "Role Not Found"}</span>
+        </div>
       </div>
 
       {/* DATE, NOTIFS, PROFILE */}

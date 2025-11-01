@@ -66,12 +66,24 @@ function MemberLoanApp() {
   const [monthFilter, setMonthFilter] = useState("");
   const TABLE_PREFIX = "LAPP_";
 
-  const memberLoanApplications = loanAppRaw.filter((row) => {
+  const mergedLoanAccounts = loanAppRaw.map(baseRow => {
+    const viewRow = loanProducts.find(v => v.product_id === baseRow.product_id);
+
+    return {
+      ...baseRow,
+      ...viewRow,
+    };
+  });
+
+  // console.log(`Test`, mergedLoanAccounts )
+
+  const memberLoanApplications = mergedLoanAccounts.filter((row) => {
     const generatedId = `${TABLE_PREFIX}${row.application_id}`;
 
     const matchesSearch =
       searchTerm === "" ||
       row.amount?.toString().includes(searchTerm) ||
+      row.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase());
 

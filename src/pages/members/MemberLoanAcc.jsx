@@ -59,6 +59,8 @@ function MemberLoanAcc() {
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
   const TABLE_PREFIX = "LACC_";
 
   const memberLoanAccounts = mergedLoanAccounts.filter((row) => {
@@ -71,11 +73,19 @@ function MemberLoanAcc() {
     const matchesSearch =
       searchTerm === "" ||
       fullName.includes(searchTerm.toLowerCase()) ||
-      row.account_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.amount_req?.toString().includes(searchTerm) ||
+      row.total_amount_due?.toString().includes(searchTerm) ||
+      row.loan_ref_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.status?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === "" || row.status === statusFilter;
-    return matchesSearch && matchesStatus;
+
+    const date = row.release_date ? new Date(row.release_date) : null;
+    const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+
+    return matchesSearch && matchesStatus && matchesYear && matchesMonth;
   });
 
   const openModal = (row) => {
@@ -114,8 +124,37 @@ function MemberLoanAcc() {
               onChange: setStatusFilter,
               options: [
                 { label: "Active", value: "Active" },
+                { label: "Closed", value: "Closed" },
                 { label: "Defaulted", value: "Defaulted" },
-                { label: "Renewed", value: "Renewed" },
+              ],
+            },
+            {
+              label: "All Year",
+              value: yearFilter,
+              onChange: setYearFilter,
+              options: [
+                { label: "2025", value: "2025" },
+                { label: "2024", value: "2024" },
+                { label: "2023", value: "2023" },
+              ],
+            },
+            {
+              label: "All Month",
+              value: monthFilter,
+              onChange: setMonthFilter,
+              options: [
+                { label: "January", value: "1" },
+                { label: "February", value: "2" },
+                { label: "March", value: "3" },
+                { label: "April", value: "4" },
+                { label: "May", value: "5" },
+                { label: "June", value: "6" },
+                { label: "July", value: "7" },
+                { label: "August", value: "8" },
+                { label: "September", value: "9" },
+                { label: "October", value: "10" },
+                { label: "November", value: "11" },
+                { label: "December", value: "12" },
               ],
             },
           ]}

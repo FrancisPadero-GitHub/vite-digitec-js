@@ -10,6 +10,7 @@ import { useFetchMemberTotal } from "../../backend/hooks/member/useFetchMemberTo
 import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop"
 import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds"
 // import { useFetchMemberPaySched } from "../board/hooks/useFetchMemberPaySched";
+import { useFetchLoanPayments } from "../../backend/hooks/shared/useFetchPayments";
 
 // Components
 import StatCardMember from "./modal/StatCardMember";
@@ -22,6 +23,8 @@ function MemberDashboard() {
   
   const { data: coopData, isLoading: coopIsLoading } = useFetchCoop({ page: 1, limit: 20, useLoggedInMember: true });
   const { data: clubFundData, isLoading: clubIsLoading } = useFetchClubFunds({ page: 1, limit: 20, useLoggedInMember: true });
+  const { data: loanPayments, isLoading: loanPaymentsLoading } = useFetchLoanPayments({ page: 1, limit: 20, useLoggedInMember: true });
+
 
 
   // const {data: loanAcc} = useFetchLoanAcc();
@@ -276,7 +279,7 @@ function MemberDashboard() {
           </div>
           <DataTableMember
             title={"My Share Capital / Coop Contributions"}
-            linkPath={"/regular-member/regular-member-share-capital"}
+            linkPath={"/regular-member/share-capital"}
             headers={["Ref No.", "Amount", "Payment Category", "Date", "Payment Method"]}
 
             data={coopData?.data ?? []}
@@ -319,7 +322,7 @@ function MemberDashboard() {
 
           <DataTableMember
             title={"My Club Funds"}
-            linkPath={"/regular-member/regular-member-club-funds"} // will provide later on
+            linkPath={"/regular-member/club-funds"} // will provide later on
             headers={["Ref No.","Amount", "Category", "Date", "Payment Method"]}
             data={clubFundData?.data ?? []} // destructed it to get the data only not the count
             isLoading={clubIsLoading}
@@ -352,13 +355,51 @@ function MemberDashboard() {
 
           <DataTableMember
             title={"My Loan Payments"}
-            linkPath={"/regular-member"}
-            headers={["Ref No.", "Amount", "Payment Method", "Date", "Remarks"]}
-            data={[]}
-            isLoading={coopIsLoading}
-            renderRow={()=>("")}
-          /> 
+            linkPath={"/regular-member/coop-loans/loan-payments"}
+            headers={["Payment Ref.", "Loan Ref No.", "Amount", "Status", "Payment Method", "Date"]}
+            data={loanPayments?.data ?? []}
+            isLoading={loanPaymentsLoading}
+            renderRow={(row) => {
 
+
+              return (
+                <tr
+                  key={`${row?.payment_id}`}
+                  className="transition-colors cursor-pointer hover:bg-base-200/70"
+                >
+                  {/* Ref no */}
+                  <td className="px-4 py-2 text-center font-medium text-xs">LP_{row?.payment_id}</td>
+
+                  {/* Loan ID */}
+                  <td className="px-4 py-2 text-center">{row?.loan_ref_number || "Not Found"}</td>
+
+                  {/* Amount */}
+                  <td className="px-4 py-2 font-semibold text-success text-center">
+                    ₱ {row?.total_amount?.toLocaleString() || "0"}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-2 font-semibold text-info text-center">
+                    {row?.status || "0"}
+                  </td>
+
+                  {/* Method */}
+                  <td className="px-4 py-2 text-center">
+                    {row?.payment_method ? (
+                      <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}>
+                        {row?.payment_method}
+                      </span>
+                    ) : (
+                      <span> — </span>
+                    )}
+                  </td>
+                  {/* Date */}
+                  <td className="px-4 py-2 text-center">{row?.payment_date}</td>
+
+                </tr>
+              )
+            }}
+          /> 
         </div>
       </div>
     </div>
