@@ -1,5 +1,12 @@
 import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-material';
 
+/**
+ * CAUSES A LOT OF PERFORMANCE ISSUES DUE TO MULTIPLE FETCHES
+ * This is stached for reference only. Use DashboardV2.jsx instead.
+ * 
+ */
+
+
 // hooks
 import { useState } from 'react';
 // RPC FUNCTION ALL IN ONE (expenses, club funds, income, coop share capital)

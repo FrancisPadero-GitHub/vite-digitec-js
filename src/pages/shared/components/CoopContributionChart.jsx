@@ -1,28 +1,16 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-
-import { useFetchCoop } from '../../../backend/hooks/shared/useFetchCoop';
-
-function CoopContributionChart() {
-  const { data: coop_data, isLoading, isError, error } = useFetchCoop({}); // Fetch everything (no pagination)
-  const contributions = coop_data?.data || [];
-
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-64">Loading contributions…</div>;
-  }
-
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center h-64 text-red-500">
-        Error: {error?.message || "Failed to load contributions"}
-      </div>
-    );
-  }
+function CoopContributionChart({
+  data = [],
+  isLoading = false,
+  isError = false,
+  error = null
+}) {
 
   const currentYear = new Date().getFullYear();
   const monthlyTotals = {};
 
   // Aggregate contributions only for current year
-  contributions?.forEach((item) => {
+    data?.forEach((item) => {
     if (!item.contribution_date) return;
 
     const date = new Date(item.contribution_date);
@@ -37,7 +25,7 @@ function CoopContributionChart() {
   });
 
   // Convert into chart-friendly array
-  const data = Object.entries(monthlyTotals)
+  const data_converted = Object.entries(monthlyTotals)
     .map(([key, value]) => {
       const [year, monthIndex] = key.split("-").map(Number);
       const label = new Date(year, monthIndex).toLocaleString("default", {
@@ -48,8 +36,37 @@ function CoopContributionChart() {
     .sort((a, b) => a.monthIndex - b.monthIndex); // Jan → Dec
 
   // Final clean array for Recharts
-  const finalData = data.map(({ month, value }) => ({ month, value }));
+  const finalData = data_converted.map(({ month, value }) => ({ month, value }));
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 400 }}>
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 400 }}>
+        <div className="text-center text-error">
+          <p className="font-semibold">Error loading chart data</p>
+          {error && <p className="text-sm">{error.message || String(error)}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (finalData.length === 0) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 400 }}>
+        <p className="text-gray-400">No contribution data available for {currentYear}</p>
+      </div>
+    );
+  }
 
   return (
     <ResponsiveContainer width="100%" height={400}>

@@ -13,7 +13,7 @@ import Login from "./pages/auth/Login";
 import NotFound from "./pages/NotFound";
 
 // SHARED PAGES 
-import Dashboard from "./pages/shared/Dashboard";
+import DashboardV2 from "./pages/shared/DashboardV2";
 import MemberRecords from "./pages/shared/MemberRecords";
 import Reports from "./pages/shared/Reports";
 import MemberProfile from "./pages/shared/MemberProfile";
@@ -39,7 +39,7 @@ import LoanAccountDetails from "./pages/board/LoanAccountDetails";
 import LoansPayments from "./pages/board/LoanPayments";
 
 // REGULAR AND ASSOCIATE PAGES
-import MemberDashboard from "./pages/members/MemberDashboard";
+import MemberDashboardV2 from "./pages/members/MemberDashboardV2";
 import MemberCoopShareCapital from "./pages/members/MemberCoopShareCapital";
 import MemberPayments from "./pages/members/MemberPayments";
 import MemberLoanApp from "./pages/members/MemberLoanApp";
@@ -59,7 +59,7 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   // SHARED PAGES ROUTES
   const sharedRoutes = [
-    { index: true, element: <Dashboard /> },
+    { index: true, element: <DashboardV2 /> },
     { path: "member-records", element: <MemberRecords /> },
     { path: "member-profile/:memberId", element: <MemberProfile /> },
     { path: "activity-logs", element: <ActivityLogs /> },
@@ -102,7 +102,7 @@ function AppRoutes() {
   ];
 
   const regularMemberRoutes = [
-    { index: true, element: <MemberDashboard /> },
+    { index: true, element: <MemberDashboardV2 /> },
     { path: "club-funds", element: <MemberClubFunds /> },
     { path: "share-capital", element: <MemberCoopShareCapital /> },
     { path: "coop-loans/loan-accounts", element: <MemberLoanAcc /> },
@@ -116,7 +116,7 @@ function AppRoutes() {
   ];
 
   const associateMemberRoutes = [
-    { index: true, element: <MemberDashboard /> },
+    { index: true, element: <MemberDashboardV2 /> },
     { path: "share-capital", element: <MemberCoopShareCapital /> },
     { path: "coop-loans", element: <MemberLoanApp /> },
     { path: "reports", element: <MemberReports /> },

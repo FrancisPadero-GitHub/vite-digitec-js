@@ -103,7 +103,7 @@ export const useEditLoanAcc = () => {
         console.warn("Schedule insertion error:", result.scheduleResult.error);
       }
       queryClient.invalidateQueries({queryKey:["loan_accounts"], exact: false});
-      queryClient.invalidateQueries({queryKey:["loan_accounts_view"], exact: false});
+      queryClient.invalidateQueries({queryKey:["view_loan_accounts"], exact: false});
       queryClient.invalidateQueries({queryKey:["loan_payment_schedules"], exact: false});
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],

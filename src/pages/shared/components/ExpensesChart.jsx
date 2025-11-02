@@ -7,7 +7,6 @@ import {
   Legend,
   Label,
 } from "recharts";
-import { useFetchExpenses } from "../../../backend/hooks/shared/useFetchExpenses";
 
 const COLORS = [
   "#6366F1",
@@ -18,47 +17,64 @@ const COLORS = [
   "#14B8A6",
 ];
 
-function ExpensesChart() {
-  const { data: expenses_data, isLoading, isError, error } = useFetchExpenses();
-  const fundExpenses = expenses_data?.data || [];
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-72">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center h-72 text-red-500 font-medium">
-        Error: {error?.message || "Failed to load expenses"}
-      </div>
-    );
-  }
+function ExpensesChart({
+  data = [],
+  isLoading = false,
+  isError = false,
+  error = null
+}) {
 
   // Group and sum by category
   const grouped =
-    fundExpenses?.reduce((acc, exp) => {
+    data?.reduce((acc, exp) => {
       const key = exp.category || exp.description || "Uncategorized";
       acc[key] = (acc[key] || 0) + (exp.amount ?? 0);
       return acc;
     }, {}) ?? {};
 
-  const data = Object.entries(grouped).map(([name, value]) => ({
+  const data_converted = Object.entries(grouped).map(([name, value]) => ({
     name,
     value,
   }));
 
-  const total = data.reduce((sum, entry) => sum + entry.value, 0);
+  const total = data_converted.reduce((sum, entry) => sum + entry.value, 0);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 400 }}>
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 400 }}>
+        <div className="text-center text-error">
+          <p className="font-semibold">Error loading chart data</p>
+          {error && <p className="text-sm">{error.message || String(error)}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (data_converted.length === 0) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 300 }}>
+        <p className="text-gray-400">No expense data available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-auto px-4 py-6">
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
-            data={data}
+            data={data_converted}
             dataKey="value"
             nameKey="name"
             innerRadius="55%"
@@ -67,7 +83,7 @@ function ExpensesChart() {
             cornerRadius={6}
             labelLine={false}
           >
-            {data.map((_, index) => (
+            {data_converted.map((_, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={COLORS[index % COLORS.length]}

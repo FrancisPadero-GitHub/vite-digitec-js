@@ -3,7 +3,7 @@ import { supabase } from "../../supabase.js";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 /**
- * Fetches data from the loan_accounts_view (computed outstanding balance). VIEW ONLY can't do mutations on this table ok?
+ * Fetches data from the view_loan_accounts (computed outstanding balance). VIEW ONLY can't do mutations on this table ok?
  *
  * If accountNumber is provided, filters by that accountNumber.
  * If useLoggedInMember is true, uses the logged-in accountNumber.
@@ -12,7 +12,7 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 async function fetchLoanAccountsView({ accountNumber, page, limit }) {
   let query = supabase
-    .from("loan_accounts_view") // ← points to your SQL VIEW
+    .from("view_loan_accounts") // ← points to your SQL VIEW
     .select("*", { count: "exact" })
     .order("loan_id", { ascending: false });
 
@@ -34,7 +34,7 @@ async function fetchLoanAccountsView({ accountNumber, page, limit }) {
 }
 
 /**
- * Custom React hook to consume loan_accounts_view with TanStack Query.
+ * Custom React hook to consume view_loan_accounts with TanStack Query.
  */
 export function useFetchLoanAccView({
   page = null,
@@ -50,7 +50,7 @@ export function useFetchLoanAccView({
     : accountNumber;
 
   return useQuery({
-    queryKey: ["loan_accounts_view", effectiveAccountNumber, page, limit],
+    queryKey: ["view_loan_accounts", effectiveAccountNumber, page, limit],
     queryFn: () =>
       fetchLoanAccountsView({
         accountNumber: effectiveAccountNumber,

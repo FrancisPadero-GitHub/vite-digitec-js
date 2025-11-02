@@ -1,6 +1,3 @@
-import { useFetchExpenses } from "../../../backend/hooks/shared/useFetchExpenses";
-import { useFetchClubFunds } from '../../../backend/hooks/shared/useFetchClubFunds';
-
 import {
   LineChart,
   Line,
@@ -12,18 +9,40 @@ import {
   CartesianGrid,
 } from "recharts";
 
-function ComparisonChart() {
-  const { data: expenses_data } = useFetchExpenses();
-  const fundExpenses = expenses_data?.data || [];
+function ComparisonChart({
+  clubFundsData = [],
+  expensesData = [],
+  isLoading = false,
+  isError = false,
+  error = null
+}) {
 
-  const { data: club_fund_data } = useFetchClubFunds({});
-  const clubFunds = club_fund_data?.data || [];
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 300 }}>
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 300 }}>
+        <div className="text-center text-error">
+          <p className="font-semibold">Error loading chart data</p>
+          {error && <p className="text-sm">{error.message || String(error)}</p>}
+        </div>
+      </div>
+    );
+  }
 
   // Aggregate and normalize both datasets by date
   const mergedData = {};
 
   // Add club funds
-  clubFunds?.forEach((item) => {
+  clubFundsData?.forEach((item) => {
     if (!item.payment_date) return;
     const date = new Date(item.payment_date).toLocaleDateString("en-US", {
       month: "short",
@@ -36,7 +55,7 @@ function ComparisonChart() {
   });
 
   // Add expenses
-  fundExpenses?.forEach((item) => {
+  expensesData?.forEach((item) => {
     if (!item.transaction_date) return;
     const date = new Date(item.transaction_date).toLocaleDateString("en-US", {
       month: "short",
@@ -52,6 +71,15 @@ function ComparisonChart() {
   const data = Object.values(mergedData).sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
+
+  // No data state
+  if (data.length === 0) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 300 }}>
+        <p className="text-gray-400">No comparison data available</p>
+      </div>
+    );
+  }
 
   return (
     <ResponsiveContainer width="100%" height={300}>

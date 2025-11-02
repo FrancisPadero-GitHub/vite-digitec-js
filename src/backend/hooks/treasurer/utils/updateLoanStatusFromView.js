@@ -12,7 +12,7 @@ export async function updateLoanStatusFromView(supabase, loanId) {
 
   // Fetch the latest data from the view
   const { data: viewData, error: fetchErr } = await supabase
-    .from("loan_accounts_view")
+    .from("view_loan_accounts")
     .select("loan_id, outstanding_balance")
     .eq("loan_id", loanId)
     .single();
@@ -54,7 +54,7 @@ export async function updateLoanStatusFromView(supabase, loanId) {
  * Always updates the status, no matter what the outstanding balance is:
  * 
  * Updates the loan_accounts status based on the outstanding_balance
- * fetched from the loan_accounts_view.
+ * fetched from the view_loan_accounts.
  */
 
 // export async function updateLoanStatusFromView(supabase, loanId) {
@@ -62,7 +62,7 @@ export async function updateLoanStatusFromView(supabase, loanId) {
 
 //   // Fetch the latest data from the view
 //   const { data: viewData, error: fetchErr } = await supabase
-//     .from("loan_accounts_view")
+//     .from("view_loan_accounts")
 //     .select("loan_id, outstanding_balance")
 //     .eq("loan_id", loanId)
 //     .single();

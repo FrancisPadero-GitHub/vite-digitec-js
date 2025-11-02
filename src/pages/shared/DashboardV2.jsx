@@ -1,0 +1,538 @@
+import {useState, Fragment, useMemo} from 'react'
+import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-material';
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
+
+// fetch hooks
+// view tables
+import { useFetchClubFundsView } from '../../backend/hooks/shared/view/useFetchClubFundsView';
+import { useFetchCoopView } from '../../backend/hooks/shared/view/useFetchCoopView';
+
+// base tables
+import { useFetchExpenses } from '../../backend/hooks/shared/useFetchExpenses';
+
+// rpc fetch
+import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal';
+
+// helper 
+import { useMemberRole } from '../../backend/context/useMemberRole';
+
+// components
+import DataTable from './components/DataTable';
+import CoopContributionChart from './components/CoopContributionChart';
+import ExpensesChart from './components/ExpensesChart';
+import ComparisonChart from './components/ComparisonChart';
+import StatCardV2 from './components/StatCardV2';
+
+// constants
+import { CLUB_CATEGORY_COLORS, CAPITAL_CATEGORY_COLORS} from '../../constants/Color';
+import placeHolderAvatar from '../../assets/placeholder-avatar.png';
+
+function DashboardV2() {
+  const { memberRole } = useMemberRole();
+
+  // The pagination and data fetching of these 3 tables is handled inside each DataTable component instance using .slice(0,5)
+  // to limit to 5 recent entries.
+  const { data: coop_data, isLoading: coopIsloading, isError: coopIsError, error: coopError } = useFetchCoopView({});
+  const coopFunds = coop_data?.data || [];
+
+  const { data: club_funds_data, isLoading: clubFundsIsLoading, isError: clubFundsIsError, error: clubFundsError } = useFetchClubFundsView({});
+  const clubFunds = club_funds_data?.data || [];
+
+  const { data: expenses_data, isLoading: expensesIsLoading, isError: expensesIsError, error: expensesError } = useFetchExpenses({});
+  const expenses = expenses_data?.data || [];
+
+
+  // Filters state for the start cards and totals
+  const [filters, setFilters] = useState({
+    overAll: { month: null, year: null, subtitle: "All Time"},
+  });
+
+  // Helper to get previous period based on subtitle
+  // Helper to compute previous period filter
+  const getPrevPeriod = (subtitle) => {
+    if (subtitle === "This Month") {
+      const now = new Date();
+      const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return { month: prev.getMonth() + 1, year: prev.getFullYear() };
+    }
+    if (subtitle === "This Year") {
+      return { month: null, year: new Date().getFullYear() - 1 };
+    }
+    return { month: null, year: null }; // All Time → no comparison
+  };
+
+  // Helper to compute growth percent
+  const calcGrowth = (current, previous, asString = false) => {
+    const c = Number(current);
+    const p = Number(previous);
+
+    // Prevent divide-by-zero or invalid values
+    if (!isFinite(c) || !isFinite(p) || p === 0) return 0;
+
+    const growth = ((c - p) / p) * 100;
+    const rounded = Math.round(growth);
+
+    return asString ? `${rounded}%` : rounded;
+  };
+
+
+  // RPC totals 
+  const {
+    data: currentSummary,
+    isLoading: currentLoading,
+    isError: currentError,
+    error: currentErrorMsg,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: filters.overAll.year,
+    month: filters.overAll.month,
+    key: "funds-summary-current",
+  });
+
+  const {
+    data: prevSummary,
+    isLoading: prevLoading,
+    isError: prevError,
+    error: prevErrorMsg,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    ...getPrevPeriod(filters.overAll.subtitle),
+    key: "funds-summary-prev",
+  });
+
+
+  const loading = currentLoading || prevLoading;
+  const error = currentError || prevError;
+  const errorMessage = currentErrorMsg?.message || prevErrorMsg?.message || "Failed to load totals";
+
+  // --- Compute Stats ---
+  const stats = useMemo(() => {
+    const c = currentSummary || {};
+    const p = prevSummary || {};
+
+    return [
+      {
+        statName: "Coop Share Capital",
+        amount: Number(c.club_total_coop ?? 0),
+        growthPercent: calcGrowth(c.club_total_coop, p.club_total_coop),
+        iconBgColor: "bg-sky-400",
+        icon: <AccountBalance />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: " Interest Income",
+        amount: Number(c.club_total_interest_income ?? 0),
+        growthPercent: calcGrowth(c.club_total_interest_income, p.club_total_interest_income),
+        iconBgColor: "bg-indigo-400",
+        icon: <Wallet />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: " Fee Income",
+        amount: Number(c.club_total_fees_income ?? 0),
+        growthPercent: calcGrowth(c.club_total_fees_income, p.club_total_fees_income),
+        iconBgColor: "bg-indigo-300",
+        icon: <Wallet />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: "Club Income",
+        amount: Number(c.club_total_income ?? 0),
+        growthPercent: calcGrowth(c.club_total_income, p.club_total_income),
+        iconBgColor: "bg-purple-400",
+        icon: <Wallet />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: " Loan Released",
+        amount: Number(c.coop_total_principal_released ?? 0),
+        growthPercent: calcGrowth(c.coop_total_principal_released, p.coop_total_principal_released),
+        iconBgColor: "bg-lime-400",
+        icon: <Savings />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: "Club Fund Balance",
+        amount: Number(c.club_balance ?? 0),
+        growthPercent: calcGrowth(c.club_balance, p.club_balance),
+        iconBgColor: "bg-lime-400",
+        icon: <Savings />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: "Club Expenses",
+        amount: Number(c.club_total_expenses ?? 0),
+        growthPercent: calcGrowth(c.club_total_expenses, p.club_total_expenses),
+        iconBgColor: "bg-red-400",
+        icon: <ReceiptLong />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+      {
+        statName: "Overall Total Cash",
+        amount: Number(c.overall_total_cash ?? 0),
+        growthPercent: calcGrowth(c.overall_total_cash, p.overall_total_cash),
+        iconBgColor: "bg-sky-400",
+        icon: <AccountBalance />,
+        loading: loading,
+        error: error,
+        errorMessage: errorMessage,
+      },
+    ];
+  }, [currentSummary, prevSummary, loading, error, errorMessage]);
+
+
+
+
+  return (
+    <div className="mb-6 space-y-6">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex flex-col md:flex-col lg:flex-row xl:flex-row gap-4">
+
+          {/* LEFT SIDE */}
+          <div className="flex-1 flex flex-col gap-3">
+
+          {/* Total Card Stats  */}
+          <section className="mb-4">
+            <div className="flex items-center mb-2">
+              <h2 className="text-xl font-semibold mr-2">Overall Totals</h2>
+
+              {/* Universal Filter */}
+              <div className="dropdown dropdown-right">
+                <label tabIndex={0} className="btn btn-sm">
+                   <MoreHorizOutlinedIcon />
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-sm"
+                >
+                  {["All Time", "This Month", "This Year"].map((date_label) => (
+                    <li key={date_label}>
+                      <button
+                        className={`text-sm ${filters.overAll.subtitle === date_label
+                            ? "text-primary font-semibold"
+                            : "text-gray-500"
+                          }`}
+                        onClick={() =>
+                          setFilters({
+                            overAll: {
+                              ...filters.overAll,
+                              subtitle: date_label,
+                              ...(date_label === "All Time"
+                                ? { month: null, year: null }
+                                : date_label === "This Month"
+                                  ? {
+                                    month: new Date().getMonth() + 1,
+                                    year: new Date().getFullYear(),
+                                  }
+                                  : { month: null, year: new Date().getFullYear() }),
+                            },
+                          })
+                        }
+                      >
+                        {date_label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {stats.map((s, i) => (
+                <StatCardV2 key={i} {...s} subtitle={filters.overAll.subtitle} />
+              ))}
+            </div>
+
+          </section>
+
+
+
+
+
+
+            {/* Share Capital Area Chart */}
+            <section className="border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
+              <div className="p-6 flex flex-col h-full">
+                <div>
+                  <span className="text-xl font-semibold">Share Capital Activity</span>
+                  <span className="text-gray-400"> | This Year</span>
+                  <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
+                </div>
+
+                <div className="w-full min-w-0">
+                  <CoopContributionChart
+                    data={coopFunds}
+                    isLoading={coopIsloading}
+                    isError={coopIsError}
+                    error={coopError}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <DataTable
+              title={"Share Capital / Coop"}
+              linkPath={`/${memberRole}/coop-share-capital`}
+              headers={["Ref No.", "Account No", "Name", "Amount", "Payment Category", "Date"]}
+              data={coopFunds} // share capital / coop
+              isLoading={coopIsloading}
+              renderRow={(row) => {
+                const TABLE_PREFIX = "SCC_";
+                const id = row?.coop_contri_id;
+                const accountNo = row?.account_number;
+                const avatarUrl = row?.avatar_url;
+                const fullName = row?.full_name;
+                const amount = row?.amount;
+                const paymentCategory = row?.category;
+                const contributionDate = row?.contribution_date;
+
+                const isDisabled = !row?.full_name; // condition (you can adjust logic)
+
+                return (
+                  <tr key={id}
+                      className={`text-center ${isDisabled ?
+                      "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
+                  >
+                    {/* Ref no. */}
+                    <td className=" text-center font-medium text-xs">
+                      {TABLE_PREFIX}{id}
+                    </td>
+                    {/* Account No */}
+                    <td className=" text-center font-medium text-xs">
+                      {accountNo || "System"}
+                    </td>
+
+                    {/* Full name and avatar */}
+                    <td>
+                      <span className="flex items-center gap-3">
+                      <Fragment>
+                        {/* Avatar */}
+                        <div className="avatar">
+                          <div className="mask mask-circle w-10 h-10">
+                            <img
+                              src={avatarUrl || placeHolderAvatar}
+                              alt={fullName}
+                            />
+                          </div>
+                        </div>
+                        {/* Full name */}
+                        <span className="flex items-center gap-2">
+                          <span className="truncate max-w-[120px]">{fullName || "Not Found"}</span>
+                          {isDisabled && (
+                            <div className="tooltip tooltip-top" data-tip="System Generated">
+                              <span className="badge badge-sm badge-ghost">?</span>
+                            </div>
+                          )}
+                        </span>
+                      </Fragment>
+                      </span>
+                    </td>
+
+                    {/* Amount */}
+                    <td className="font-semibold text-success">
+                      ₱ {amount?.toLocaleString() || "0"}
+                    </td>
+
+                    {/* Payment Category */}
+                    <td>
+                      {paymentCategory ? (
+                        <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
+                          {paymentCategory}
+                        </span>
+                      ) : (
+                        <span className="badge font-semibold badge-error">Not Found</span>
+                      )}
+                    </td>
+
+                    {/* Contribution Date */}
+                    <td className=''>
+                      {contributionDate ? new Date(contributionDate).toLocaleDateString() : "Not Found"}
+                    </td>
+      
+                  </tr>
+                )
+              }} 
+            />
+
+            <DataTable
+              title={"Club Funds"}
+              linkPath={`/${memberRole}/club-funds`}
+              headers={["Ref No.", "Account No.", "Name", "Amount", "Category", "Date"]}
+              data={clubFunds}
+              isLoading={clubFundsIsLoading}
+              renderRow={(row) => {
+
+                const TABLE_PREFIX = "CFC_"
+                const id = row?.contribution_id;
+                const accountNo = row?.account_number;
+                const fullName = row?.full_name;
+                const avatarUrl = row?.avatar_url;
+                const amount = row?.amount;
+                const clubCategory = row?.category;
+                const paymentDate = row?.payment_date;
+
+                return (
+                  <tr key={id} 
+                    className="text-center cursor-pointer hover:bg-base-200/50"
+                  >
+                    {/* Ref no. */}
+                    <td className=" text-center font-medium text-xs">
+                      {TABLE_PREFIX}{id}
+                    </td>
+
+                    {/* Account No */}
+                    <td className=" text-center font-medium text-xs">
+                      {accountNo || "Not Found"}
+                    </td>
+                    
+                    {/* Full name and avatar */}
+                    <td>
+                      <span className="flex items-center gap-3">
+                        <Fragment>
+                          {/* Avatar */}
+                          <div className="avatar">
+                            <div className="mask mask-circle w-10 h-10">
+                              <img
+                                src={avatarUrl || placeHolderAvatar}
+                                alt={fullName}
+                              />
+                            </div>
+                          </div>
+                          {/* Full name */}
+                          <span className="truncate max-w-[120px]">{fullName || "Not Found"}</span>
+                        </Fragment>
+                      </span>
+                    </td>
+
+                    {/* Amount */}
+                    <td className="font-semibold text-success">
+                      ₱ {amount?.toLocaleString() || "0"}
+                    </td>
+                    {/* Category */}
+                    <td>
+                      <span
+                        className={`font-semibold ${CLUB_CATEGORY_COLORS[clubCategory]}`}
+                      >
+                        {clubCategory || "Not Found"}
+                      </span>
+                    </td>
+                    {/* Payment Date */}
+                    <td>
+                      {paymentDate ? new Date(paymentDate).toLocaleDateString() : "Not Found"}
+                    </td>
+                  </tr>
+                )
+              }}
+            />
+
+            <DataTable
+              title={"Club Expenses"}
+              linkPath={`/${memberRole}/club-expenses`}
+              headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
+              data={expenses}
+              isLoading={expensesIsLoading}
+              renderRow={(row) => {
+                const TABLE_PREFIX = "EXP_";
+                const id = row?.transaction_id;
+                const title = row?.title;
+                const amount = row?.amount;
+                const category = row?.category;
+                const transactionDate = row?.transaction_date;
+                return (
+                  <tr key={id} 
+                    className="text-center cursor-pointer hover:bg-base-200/50"
+                  >
+                    {/* Ref no. */}
+                    <td className=" text-center font-medium text-xs">
+                      {TABLE_PREFIX}{id}
+                    </td>
+                    {/* Title */}
+                    <td className=" text-center font-medium text-xs">
+                      {title}
+                    </td>
+                    {/* Amount */}
+                    <td className=" font-semibold text-error">
+                      ₱ {amount?.toLocaleString() || "0"}
+                    </td>
+                    {/* Category */}
+                    <td>
+                      <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
+                        {category || "Not Found"}
+                      </span>
+                    </td>
+                    {/* Transaction Date */}
+                    <td>
+                      {transactionDate ? new Date(transactionDate).toLocaleDateString() : "Not Found"}
+                    </td>
+                  </tr>
+                )
+              }
+              }
+            />
+          </div>
+
+          {/* RIGHT SIDE */}
+        <div className="w-full md:w-full lg:w-[25%] xl:w-[35%] flex flex-col gap-3">
+
+            {/* CLUB EXPENSES DONUT CHART */}
+            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+              <div className="flex flex-col h-full">
+                <div>
+                  <span className="text-2xl font-semibold">Club Expenses Breakdown</span>
+                  <span className="text-gray-400"> | All Time</span>
+                  <p className="mt-1 text-sm text-base-content/70">
+                    Distribution of club expenses by category
+                  </p>
+                </div>
+                <div className="flex-grow">
+                  <ExpensesChart
+                    data={expenses}
+                    isLoading={expensesIsLoading}
+                    isError={expensesIsError}
+                    error={expensesError}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* CLUB FUNDS VS EXPENSES DUAL LINE CHART */}
+            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+              <div className="flex flex-col h-full">
+                <div>
+                  <span className="text-2xl font-semibold">Club Funds vs. Expenses</span>
+                  <span className="text-gray-400"> | This Year</span>
+                  <p className="mt-1 text-sm text-base-content/70">Track the yearly trends between club fund contributions and expenses.</p>
+                </div>
+                <div className="flex-grow">
+                  <ComparisonChart
+                    clubFundsData={clubFunds}
+                    expensesData={expenses}
+                    isLoading={clubFundsIsLoading || expensesIsLoading}
+                    isError={clubFundsIsError || expensesIsError}
+                    error={clubFundsError || expensesError}
+                  />
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+    </div>
+  )
+}
+
+export default DashboardV2
