@@ -17,7 +17,7 @@ import React from 'react'
  * 
  */
 
-function LoanAccModal({ title, open, close, children, onSubmit, status, }) { // deleteAction
+function LoanAccModal({ title, open, close, children, onSubmit, status, isPending }) { // deleteAction
 
 
   // if open is false, don't render anything
@@ -26,15 +26,38 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, }) { // 
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[50rem] max-w-full">
         <h2 className="text-2xl font-semibold">{`${title}`}</h2>
-        <form onSubmit={onSubmit}>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            // Prevent double submit if already processing
+            if (status || isPending) {
+              return;
+            }
+            onSubmit(e);
+          }}
+        >
           {children}
 
           <div className="flex justify-between items-center gap-2 mt-6">
             <div className="flex gap-2 ml-auto">
-              <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Back" : "Close"}</button>
+              <button 
+                type="button" 
+                className="btn btn-ghost" 
+                onClick={close} 
+                disabled={status || isPending}
+              >
+                {onSubmit ? "Back" : "Close"}
+              </button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status}>
-                  Submit
+                <button type="submit" className="btn btn-primary" disabled={status || isPending}>
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
                 </button>
               )}
             </div>

@@ -107,7 +107,7 @@ function LoanApplications() {
   });
 
   // mutations
-  const { mutate: mutateEdit } = useEditLoanApp();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditLoanApp();
   const { mutate: mutateDelete } = useDelete("loan_applications"); 
 
   const [showLoanAccModal, setShowLoanAccModal] = useState(false);
@@ -330,6 +330,11 @@ function LoanApplications() {
    * now the values here in resetLoanAcc will be set to the loanAccFormModal
    */
   const onSubmit = (data) => {
+    // Prevent double submission
+    if (isEditPending) {
+      return;
+    }
+
     const generateAccountNumber = (appId) => {
       const now = new Date();
       const year = now.getFullYear();
@@ -742,6 +747,7 @@ function LoanApplications() {
         }}
         status={isCalculating}
         onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)}
+        isPending={isEditPending}
       >
         {/* Hidden fields */}
         <input type="hidden" {...registerLoanAcc("loan_id")} />

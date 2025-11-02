@@ -97,8 +97,8 @@ function CoopShareCapital() {
       maximumFractionDigits: 2,
     }) ?? "0.00";
 
-  const { mutate: mutateAdd } = useAddCoopContributions();
-  const { mutate: mutateEdit } = useEditCoopContributions();
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddCoopContributions();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditCoopContributions();
   const { mutate: mutateDelete } = useDelete("coop_cbu_contributions");
 
   const [modalType, setModalType] = useState(null);
@@ -147,6 +147,11 @@ function CoopShareCapital() {
   };
 
   const onSubmit = (data) => {
+    // Prevent double submission
+    if (isAddPending || isEditPending) {
+      return;
+    }
+
     // console.log(`coop test`, data )
     if (modalType === "add") {
       mutateAdd(data,
@@ -361,6 +366,8 @@ function CoopShareCapital() {
         close={closeModal}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
+        isPending={isAddPending || isEditPending}
+        status={isAddPending || isEditPending}
         deleteAction={() => handleDelete(control._formValues.coop_contri_id)}
       >
         <div className="form-control w-full">

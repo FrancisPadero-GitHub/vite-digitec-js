@@ -63,8 +63,8 @@ function ClubExpenses() {
       maximumFractionDigits: 2,
     }) ?? "0.00";
 
-  const { mutate: mutateAdd } = useAddExpenses();
-  const { mutate: mutateEdit } = useEditExpenses();
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddExpenses();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditExpenses();
   const { mutate: mutateDelete } = useDelete("club_funds_expenses");
 
   const [modalType, setModalType] = useState(null); // "add" | "edit" | null
@@ -115,6 +115,11 @@ function ClubExpenses() {
 
   // ✅ Form submission through RHF
   const onSubmit = (data) => {
+    // Prevent double submission
+    if (isAddPending || isEditPending) {
+      return;
+    }
+
     const parsedData = { ...data, amount: Number(data.amount) };
 
     if (modalType === "add") {
@@ -279,6 +284,8 @@ function ClubExpenses() {
         close={closeModal}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
+        isPending={isAddPending || isEditPending}
+        status={isAddPending || isEditPending}
         deleteAction={() => handleDelete(control._formValues.transaction_id)}
       >
         {fields.map(({ label, name, type, options }) => (

@@ -1,7 +1,5 @@
 
-
-
-function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction, type }) { 
+function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction, type, isPending }) { 
 
   // if open is false, don't render anything
   if (!open) return null
@@ -9,7 +7,16 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
         <h2 className="text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
-        <form onSubmit={onSubmit}>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            // Prevent double submit if already processing
+            if (status || isPending) {
+              return;
+            }
+            onSubmit(e);
+          }}
+        >
           {children}
 
           <div className="flex justify-between items-center gap-2 mt-6">
@@ -17,7 +24,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
               <button
                 type="button"
                 className="btn btn-error"
-                disabled={status}
+                disabled={status || isPending}
                 onClick={deleteAction}
               >
                 Delete
@@ -26,8 +33,15 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status}>
-                  {type ? "Next" : "Submit"}
+                <button type="submit" className="btn btn-primary" disabled={status || isPending}>
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Loading...
+                    </>
+                  ) : (
+                    type ? "Next" : "Submit"
+                  )}
                 </button>
               )}
             </div>

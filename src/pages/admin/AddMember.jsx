@@ -31,7 +31,7 @@ function AddMember (){
 
   // used react hook form instead of manual usestate and onchange handlers
   //register links input fields to useForm; trigger validates specific fields; formState.errors track validation errors
-  const {register, handleSubmit, trigger, formState: { errors, isSubmitting }} = useForm({
+  const {register, handleSubmit, trigger, formState: { errors }} = useForm({
     defaultValues: {
       f_name: "",
       m_name: "",
@@ -85,6 +85,11 @@ function AddMember (){
 
   // form submission
   const onSubmit = (data) => {
+    // Prevent double submission
+    if (isPending) {
+      return;
+    }
+
     // console.log("data", data )
     const normalized = { //normalize date fields before sending it to backend
       ...data,
@@ -225,7 +230,12 @@ function AddMember (){
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {isError && <p className="text-red-500">{error.message}</p>}
           {isSuccess && (<p className="text-green-600">Member registered successfully!</p>)}
-          {isPending && <p>Saving member...</p>}
+          {isPending && (
+            <div className="alert alert-info">
+              <span className="loading loading-spinner loading-sm"></span>
+              <span>Saving member...</span>
+            </div>
+          )}
 
           {/* PERSONAL DETAILS TAB */}
           {activeTab === 0 && (
@@ -451,9 +461,16 @@ function AddMember (){
                 <button
                   title="Submit button"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isPending}
                   className="btn btn-success">
-                  {isSubmitting ? "Submitting..." : "Submit"}
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
                 </button>
               </div>
             </>

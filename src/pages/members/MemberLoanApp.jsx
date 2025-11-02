@@ -67,7 +67,7 @@ function MemberLoanApp() {
   const TABLE_PREFIX = "LAPP_";
 
   const mergedLoanAccounts = loanAppRaw.map(baseRow => {
-    const viewRow = loanProducts.find(v => v.product_id === baseRow.product_id);
+    const viewRow = loanProducts?.find(v => v.product_id === baseRow.product_id);
 
     return {
       ...baseRow,
@@ -98,8 +98,8 @@ function MemberLoanApp() {
   });
 
   // mutations
-  const { mutate: mutateAdd } = useAddLoanApp();
-  const { mutate: mutateEdit } = useEditLoanApp();
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddLoanApp();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditLoanApp();
   const { mutate: mutateDelete } = useDelete();
 
 
@@ -218,6 +218,10 @@ function MemberLoanApp() {
 
   // Submit handler (add/edit)
   const onSubmit = (data) => {
+    if (isAddPending || isEditPending) {
+      return;
+    }
+
     /**
      * Matches the name of the data.loan_product TO THE NAME of the product.name 
      * this is very inefficient in so many ways
@@ -294,12 +298,14 @@ function MemberLoanApp() {
         ? [{ label: `${selectedProduct.max_term_months} months`, value: selectedProduct.max_term_months }]
         : [],
     },
-    {
+    // Only include application date if modalType is edit
+    ...(modalType === "edit" ? [{
       label: "Application Date",
       name: "application_date",
       type: "date",
       required: true,
     },
+    ] : []),
     {
       label: "Purpose",
       name: "purpose",
@@ -466,17 +472,18 @@ function MemberLoanApp() {
           status={loanStatus}
           action={modalType === "edit"}
           onSubmit={handleSubmit(onSubmit)}
+          isPending={isAddPending || isEditPending}
           deleteAction={() => handleDelete(watch("application_id"))}
         >
           {fields.map((field) => {
             // Loan Product
             if (field.name === "loan_product") {
               return (
-                <div key={field.name} className="bg-white p-3 rounded-lg border-2 border-gray-200 mb-3">
+                <div key={field.name} className="bg-base-100 p-3 rounded-lg border-2 border-gray-200 mb-3">
                   <div className="form-control w-full">
-                    <label className="label text-xs font-medium text-gray-600 mb-1">{field.label}</label>
+                    <label className="label text-xs font-medium text-base-content/70 mb-1">{field.label}</label>
                     {loanStatus ? (
-                      <div className="input input-bordered w-full bg-white flex items-center">
+                      <div className="input input-bordered w-full bg-base-100 flex items-center">
                         {field.dynamicOptions?.find(opt => opt.value === watch(field.name))?.label || 'Select Loan Product'}
                       </div>
                     ) : (
@@ -490,40 +497,35 @@ function MemberLoanApp() {
 
                   {/* Show loan product terms (interest, penalty, service, loan range) when selected */}
                   {selectedProduct && (
-                  <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
-                    <h5 className="text-xs font-semibold text-gray-600 mb-2">Loan Terms & Conditions</h5>
-                    <div className="grid grid-cols-2 gap-y-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">Interest Rate:</span>
-                        <span className="font-semibold text-blue-900">{selectedProduct.interest_rate}%</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">Interest Method:</span>
-                        <span className="font-semibold">{selectedProduct.interest_method}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">Penalty Rate:</span>
-                        <span className="font-semibold text-red-700">{selectedProduct.penalty_rate}%</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">Repayment Frequency:</span>
-                        <span className="font-semibold">{selectedProduct.repayment_freq}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">Service Fee:</span>
-                        <span className="font-semibold text-purple-900">{selectedProduct.service_fee}%</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">Loan Range:</span>
-                        <span className="font-bold text-green-700">₱{selectedProduct.min_amount?.toLocaleString()} - ₱{selectedProduct.max_amount?.toLocaleString()}</span>
+                    <div className="mt-3 p-3 bg-base-100 rounded-lg border border-gray-200">
+                      <h5 className="text-xs font-semibold text-base-content/70 mb-2">Loan Terms & Conditions</h5>
+                      <div className="grid grid-cols-2 gap-y-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base-content/70">Interest Rate:</span>
+                          <span className="font-semibold text-blue-700">{selectedProduct.interest_rate}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base-content/70">Interest Method:</span>
+                          <span className="font-semibold">{selectedProduct.interest_method}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base-content/70">Penalty Rate:</span>
+                          <span className="font-semibold text-red-500">{selectedProduct.penalty_rate}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base-content/70">Repayment Frequency:</span>
+                          <span className="font-semibold">{selectedProduct.repayment_freq}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base-content/70">Service Fee:</span>
+                          <span className="font-semibold text-purple-700">{selectedProduct.service_fee}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base-content/70">Loan Range:</span>
+                          <span className="font-bold text-green-700">₱{selectedProduct.min_amount?.toLocaleString()} - ₱{selectedProduct.max_amount?.toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   )}
                 </div>
               );
@@ -532,27 +534,33 @@ function MemberLoanApp() {
             // Application details (amount, term, date)
             if (field.name === "amount") {
               const hasAmount = watch("amount");
+              const termField = fields?.find(f => f.name === "term_months");
+              const dateField = fields?.find(f => f.name === "application_date");
+              
               return (
-                <div key="application-details" className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+                <div key="application-details" className="bg-base-100 p-3 rounded-lg border border-gray-200 mb-3">
                   {/* Amount */}
-                  <div>
-                    <label className="label text-xs font-medium text-gray-600 mb-1">{field.label} Requested</label>
+                  <div className="mb-3">
+                    <label className="label text-xs font-medium text-base-content/70 mb-1">{field.label} Requested</label>
                     {loanStatus ? (
-                      <div className="input input-bordered w-full bg-white flex items-center">₱{Number(watch("amount")).toLocaleString()}</div>
+                      <div className="input input-bordered w-full bg-base-100 flex items-center">₱{Number(watch("amount")).toLocaleString()}</div>
                     ) : (
-                    <input
-                      type="number"
-                      {...register(field.name, {
-                        required: field.required,
-                        min: field.validation?.min,
-                        max: field.validation?.max,
-                      })}
-                      disabled={field.disabled}
-                      placeholder={field.placeholder}
-                      className={`input input-bordered w-full transition-all duration-200 ${
-                        hasAmount ? "font-bold text-xl" : "text-sm"
-                      } ${field.disabled ? "bg-white" : errors[field.name] ? "border-red-400": hasAmount ? "border-green-400": "border-gray-300"}`}
-                    />
+                      <input
+                        type="number"
+                        {...register(field.name, {
+                          required: field.required,
+                          min: field.validation?.min,
+                          max: field.validation?.max,
+                        })}
+                        disabled={field.disabled}
+                        placeholder={field.placeholder}
+                        className={`input input-bordered w-full transition-all duration-200 ${
+                          hasAmount ? "font-bold text-xl" : "text-sm"
+                        } ${
+                          field.disabled 
+                            ? "bg-base-100" : errors[field.name] ? "border-red-400" : hasAmount ? "border-green-400" : "border-gray-300"
+                        }`}
+                      />
                     )}
                     {errors[field.name] && (
                       <p className="text-error text-xs mt-1">
@@ -562,47 +570,52 @@ function MemberLoanApp() {
                   </div>
 
                   {/* Term and Date Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {fields.slice(2, 4).map((gridField) => (
-                    <div key={gridField.name}>
-                      <label className="label text-xs font-medium text-gray-600 mb-1">{gridField.name === "term_months" ? "Term (Months)" : gridField.label}</label>
+                  <div className={`grid grid-cols-1 gap-3 ${dateField && modalType === "edit" ? "md:grid-cols-2" : ""}`}>
+                    {termField && (
+                      <div>
+                        <label className="label text-xs font-medium text-base-content/70 mb-1">Term (Months)</label>
+                        {loanStatus ? (
+                          <div className="input input-bordered w-full bg-base-100 flex items-center">
+                            {termField.dynamicOptions?.find(opt => opt.value === watch(termField.name))?.label || "—"}
+                          </div>
+                        ) : (
+                          <select
+                            {...register(termField.name, { required: termField.required })}
+                            disabled={!selectedLoanProduct}
+                            className="select select-bordered w-full"
+                          >
+                            <option value="">Select Term</option>
+                            {termField.dynamicOptions?.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                          </select>
+                        )}
+                        {errors[termField.name] && (<p className="text-error text-xs mt-1">Required</p>)}
+                      </div>
+                    )}
 
-                      {loanStatus ? (
-                        <div className="input input-bordered w-full bg-white flex items-center">
-                          {gridField.type === "select"
-                            ? gridField.dynamicOptions?.find((opt) => opt.value === watch(gridField.name))?.label || "—"
-                            : watch(gridField.name) || "—"}
+                    {/* Application Date (when modal is in edit mode) */}
+                    {dateField && modalType === "edit" && (
+                      <div>
+                        <label className="label text-xs font-medium text-base-content/70 mb-1">{dateField.label}</label>
+                        <div className="input input-bordered w-full bg-base-100 flex items-center">
+                          {watch(dateField.name) ? new Date(watch(dateField.name)).toLocaleDateString() : "—"}
                         </div>
-                      ) : gridField.type === "select" ? (
-                        <select
-                          {...register(gridField.name, { required: gridField.required })}
-                          disabled={!selectedLoanProduct}
-                          className="select select-bordered w-full"
-                        >
-                          <option value="">Select Term</option>
-                          {gridField.dynamicOptions?.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-                        </select>
-                      ) : (
-                        <input type={gridField.type} {...register(gridField.name, { required: gridField.required })} className="input input-bordered w-full"/>
-                      )}
-                      {errors[gridField.name] && (<p className="text-error text-xs mt-1">Required</p>)}
-                    </div>
-                  ))}
-                </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             }
 
             if (field.name === "purpose") {
               return (
-                <div key={field.name} className="bg-white p-3 rounded-lg border border-gray-200">
-                  <h4 className="text-xs font-semibold text-gray-600 mb-2">Loan Purpose</h4>
+                <div key={field.name} className="bg-base-100 p-3 rounded-lg border border-gray-200">
+                  <h4 className="text-xs font-semibold text-base-content/70 mb-2">Loan Purpose</h4>
                   <textarea
                     {...register(field.name, { required: field.required })}
                     readOnly={loanStatus}
-                    rows={1}
+                    rows={3}
                     placeholder={field.placeholder}
-                    className={`textarea textarea-bordered w-full ${loanStatus ? "bg-white" : ""}`}
+                    className={`textarea textarea-bordered w-full ${loanStatus ? "bg-base-100" : ""}`}
                   />
                   {errors[field.name] && (<p className="text-error text-xs mt-1">Please provide a purpose for this loan</p>)}
                 </div>

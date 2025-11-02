@@ -33,7 +33,16 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
         <h2 className="text-2xl font-semibold" >{title}</h2>
-        <form onSubmit={onSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            // Prevent double submit if already processing
+            if (isPending || status) {
+              return;
+            }
+            onSubmit(e);
+          }}
+        >
           
           {children}
 

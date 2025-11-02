@@ -99,8 +99,8 @@ function ClubFunds() {
     }) ?? "0.00";
 
   // mutations
-  const { mutate: mutateAdd } = useAddClubFunds();
-  const { mutate: mutateEdit } = useEditClubFunds();
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddClubFunds();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditClubFunds();
   const { mutate: mutateDelete } = useDelete("club_funds_contributions");
 
   const [modalType, setModalType] = useState(null);
@@ -157,6 +157,11 @@ function ClubFunds() {
   };
 
   const onSubmit = (data) => {
+    // Prevent double submission
+    if (isAddPending || isEditPending) {
+      return;
+    }
+
     if (modalType === "add") {
       mutateAdd(data,
         {onSuccess: () => {
@@ -411,6 +416,8 @@ function ClubFunds() {
         close={closeModal}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
+        isPending={isAddPending || isEditPending}
+        status={isAddPending || isEditPending}
         deleteAction={() =>
           handleDelete(control._formValues.contribution_id)
         }

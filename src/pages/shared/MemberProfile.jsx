@@ -160,7 +160,7 @@ function MemberProfile() {
       label: "Share Capital",
       value: `₱${totalShareCapital.toLocaleString()}`,
       passed: totalShareCapital > 5000,
-      rule: "₱5,000 share capital required",
+      rule: "Over ₱5,000 share capital required",
     },
   ]
   
