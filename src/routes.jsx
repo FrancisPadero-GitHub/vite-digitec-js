@@ -31,6 +31,8 @@ import ClubExpenses from "./pages/treasurer/ClubExpenses";
 import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases";
 import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
 import CoopLoanPaymentSchedules from "./pages/treasurer/CoopLoanPaymentSchedules";
+import LoanProducts from "./pages/treasurer/LoanProducts";
+import Settings from "./pages/treasurer/Settings";
 
 // BOD Pages
 import LoanApplications from "./pages/board/LoanApplications";
@@ -74,9 +76,6 @@ function AppRoutes() {
     { path: "coop-loans/payment-schedules", element: <CoopLoanPaymentSchedules /> },
   ];
 
-
-  
-
   // Role-specific routes
   const adminRoutes = [
     { index: true, element: <UserManagement /> },
@@ -99,6 +98,8 @@ function AppRoutes() {
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "coop-loans/releases", element: <CoopLoansReleases /> },
     { path: "coop-loans/payments", element: <CoopLoansPayments /> },
+    { path: "settings/loan-products", element: <LoanProducts /> },
+    { path: "settings", element: <Settings /> },
   ];
 
   const regularMemberRoutes = [

@@ -9,7 +9,7 @@ import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headl
 
 // react redux stuff
 import { useSelector, useDispatch } from 'react-redux';
-import { openLoanPaymentModal, closeLoanPaymentModal, selectModalData } from '../../features/redux/modalSlice';
+import { openLoanPaymentModal, closeLoanPaymentModal, selectModalData } from '../../features/redux/paymentModalSlice';
 
 // fetch hooks
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';

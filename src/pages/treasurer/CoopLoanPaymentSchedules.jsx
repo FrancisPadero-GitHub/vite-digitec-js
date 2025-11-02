@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 
 // react redux stuff
 import { useDispatch } from 'react-redux';
-import { openLoanPaymentModal } from '../../features/redux/modalSlice';
+import { openLoanPaymentModal } from '../../features/redux/paymentModalSlice';
 
 // fetch hooks
 import { useMemberRole } from '../../backend/context/useMemberRole';

@@ -16,6 +16,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import InventoryIcon from '@mui/icons-material/Inventory';
 
 
 
@@ -81,6 +82,12 @@ const sidebarConfig = {
 
           ],
         },
+      ],
+    },
+    {
+      section: "Settings",
+      items: [
+        { label: "Loan Products", icon: InventoryIcon, path: "/treasurer/settings/loan-products" },
       ],
     },
   ],
