@@ -1,4 +1,5 @@
-function StatCardV2({
+import React from "react";
+const StatCardV2 = ({
   icon,
   iconBgColor,
   statName,
@@ -9,7 +10,7 @@ function StatCardV2({
   loading,
   error,
   errorMessage,
-}) {
+}) => {
   let resolvedType;
   if (typeof growthPercent === "number") {
     if (growthPercent > 0) resolvedType = "increase";
@@ -72,4 +73,4 @@ function StatCardV2({
   );
 }
 
-export default StatCardV2;
+export default React.memo(StatCardV2);

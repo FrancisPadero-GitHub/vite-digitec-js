@@ -1,42 +1,38 @@
+
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-function CoopContributionChart({
+import React, { useMemo } from "react";
+
+const CoopContributionChart = ({
   data = [],
   isLoading = false,
   isError = false,
   error = null
-}) {
-
+}) => {
   const currentYear = new Date().getFullYear();
-  const monthlyTotals = {};
 
-  // Aggregate contributions only for current year
+  // Memoize data processing
+  const finalData = useMemo(() => {
+    const monthlyTotals = {};
     data?.forEach((item) => {
-    if (!item.contribution_date) return;
-
-    const date = new Date(item.contribution_date);
-    const year = date.getFullYear();
-
-    if (year !== currentYear) return; // skip anything not this year
-
-    const monthIndex = date.getMonth(); // 0 = Jan, 11 = Dec
-    const key = `${year}-${monthIndex}`;
-
-    monthlyTotals[key] = (monthlyTotals[key] || 0) + (item.amount || 0);
-  });
-
-  // Convert into chart-friendly array
-  const data_converted = Object.entries(monthlyTotals)
-    .map(([key, value]) => {
-      const [year, monthIndex] = key.split("-").map(Number);
-      const label = new Date(year, monthIndex).toLocaleString("default", {
-        month: "short",
-      });
-      return { month: label, value, year, monthIndex };
-    })
-    .sort((a, b) => a.monthIndex - b.monthIndex); // Jan → Dec
-
-  // Final clean array for Recharts
-  const finalData = data_converted.map(({ month, value }) => ({ month, value }));
+      if (!item.contribution_date) return;
+      const date = new Date(item.contribution_date);
+      const year = date.getFullYear();
+      if (year !== currentYear) return;
+      const monthIndex = date.getMonth();
+      const key = `${year}-${monthIndex}`;
+      monthlyTotals[key] = (monthlyTotals[key] || 0) + (item.amount || 0);
+    });
+    const data_converted = Object.entries(monthlyTotals)
+      .map(([key, value]) => {
+        const [year, monthIndex] = key.split("-").map(Number);
+        const label = new Date(year, monthIndex).toLocaleString("default", {
+          month: "short",
+        });
+        return { month: label, value, year, monthIndex };
+      })
+      .sort((a, b) => a.monthIndex - b.monthIndex);
+    return data_converted.map(({ month, value }) => ({ month, value }));
+  }, [data, currentYear]);
 
   // Loading state
   if (isLoading) {
@@ -90,6 +86,6 @@ function CoopContributionChart({
       </AreaChart>
     </ResponsiveContainer>
   );
-}
+};
 
-export default CoopContributionChart;
+export default React.memo(CoopContributionChart);
