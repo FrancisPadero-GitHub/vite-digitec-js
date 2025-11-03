@@ -35,7 +35,7 @@ import LoanProducts from "./pages/treasurer/LoanProducts";
 import Settings from "./pages/treasurer/Settings";
 
 // BOD Pages
-import LoanApplications from "./pages/board/LoanApplications";
+import LoanApplicationsV2 from "./pages/board/LoanApplicationsV2";
 import LoanAccounts from "./pages/board/LoanAccounts";
 import LoanAccountDetails from "./pages/board/LoanAccountDetails";
 import LoansPayments from "./pages/board/LoanPayments";
@@ -87,7 +87,7 @@ function AppRoutes() {
   const boardRoutes = [
     ...sharedRoutes,
     ...boardSharedTreasurerPages, 
-    { path: "coop-loans/loan-applications", element: <LoanApplications /> },
+    { path: "coop-loans/loan-applications", element: <LoanApplicationsV2 /> },
     { path: "coop-loans/loan-payments", element: <LoansPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },   
   ];

@@ -18,7 +18,7 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
-
+import { display } from "../../constants/numericFormat";
 
 
 function ClubExpenses() {
@@ -56,12 +56,6 @@ function ClubExpenses() {
     return matchesSearch && matchesCategory && matchesYear && matchesMonth;
   });
 
-  // helper to format numbers
-  const display = (num) =>
-    Number(num).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) ?? "0.00";
 
   const { mutate: mutateAdd, isPending: isAddPending } = useAddExpenses();
   const { mutate: mutateEdit, isPending: isEditPending } = useEditExpenses();

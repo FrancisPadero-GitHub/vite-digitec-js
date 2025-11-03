@@ -25,6 +25,8 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 // Constants
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 import defaultAvatar from "../../assets/placeholder-avatar.png";
+import { display } from "../../constants/numericFormat";
+
 
 function CoopShareCapital() {
   const placeHolderAvatar = defaultAvatar;
@@ -90,12 +92,6 @@ function CoopShareCapital() {
     );
   });
 
-  // helper to format numbers
-  const display = (num) =>
-    Number(num).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) ?? "0.00";
 
   const { mutate: mutateAdd, isPending: isAddPending } = useAddCoopContributions();
   const { mutate: mutateEdit, isPending: isEditPending } = useEditCoopContributions();
@@ -456,8 +452,7 @@ function CoopShareCapital() {
                         const value = Number(raw);
                         field.onChange(value < 0 ? 0 : value);
                       }}
-                      className={`input input-bordered w-full ${error ? "input-error" : ""
-                        }`}
+                      className={`input input-bordered w-full ${error ? "input-error" : ""}`}
                     />
                     {error && (
                       <span className="text-sm text-error mt-1 block">

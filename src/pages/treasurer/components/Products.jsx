@@ -1,5 +1,6 @@
 import React from 'react'
 import EditIcon from '@mui/icons-material/Edit';
+import { display } from '../../../constants/numericFormat';
 
 function Products({
   data = [],
@@ -9,12 +10,6 @@ function Products({
   onEdit,
 }) {
 
-  // helper to format numbers
-  const display = (num) =>
-    Number(num).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) ?? "0.00";
 
   // Loading State
   if (isLoading) {

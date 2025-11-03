@@ -31,6 +31,7 @@ import {
   PAYMENT_METHOD_COLORS,
 } from "../../constants/Color";
 import defaultAvatar from "../../assets/placeholder-avatar.png";
+import { display } from "../../constants/numericFormat";
 
 function ClubFunds() {
     const placeHolderAvatar = defaultAvatar;
@@ -90,13 +91,6 @@ function ClubFunds() {
       matchesMethod
     );
   });
-
-  // helper to format numbers
-  const display = (num) =>
-    Number(num).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) ?? "0.00";
 
   // mutations
   const { mutate: mutateAdd, isPending: isAddPending } = useAddClubFunds();

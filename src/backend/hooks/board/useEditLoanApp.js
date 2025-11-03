@@ -9,6 +9,7 @@ const updateLoanApp = async (formData) => {
   const {
     application_id,
     reviewed_by = null,
+    updated_at = null,
     status = null,
   } = formData;
 
@@ -18,6 +19,7 @@ const updateLoanApp = async (formData) => {
 
   const payload = {
     reviewed_by,
+    updated_at,
     status,
   };
 
@@ -40,7 +42,7 @@ export const useEditLoanApp = () => {
     mutationFn: updateLoanApp,
     onSuccess: (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries({queryKey: ["loan_applications"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["view_loan_applications"], exact: false});
     },
     onError: (error) => {
       console.error("Updating Loan Application failed", error.message);

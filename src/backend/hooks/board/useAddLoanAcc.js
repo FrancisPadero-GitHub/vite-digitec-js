@@ -58,7 +58,7 @@ export const useAddLoanAcc = () => {
     onSuccess: (data) => {
       console.log("✅ Loan Account Added!", data);
       queryClient.invalidateQueries({queryKey: ["loan_accounts"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["view_loan_accounts"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["view_loan_accounts_v2"], exact: false});
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,
