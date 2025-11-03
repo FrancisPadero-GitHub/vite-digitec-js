@@ -125,21 +125,6 @@ function LoanScheduleCardList({
           })
         )}
       </div>
-
-      {/* Progress*/}
-      <div className="p-4 border-t border-base-content/5 bg-gradient-to-r from-green-50 to-blue-50 rounded-b-2xl space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-semibold text-gray-700">Repayment Progress</span>
-          <span className="text-lg font-bold text-blue-900">
-            {data.length > 0 ? Math.round((data.filter(i => i.paid).length / data.length) * 100) : 0}%
-          </span>
-        </div>
-        <progress className="progress progress-success w-full h-3" value={data.filter(i => i.paid).length} max={data.length}></progress>
-        <div className="flex justify-between text-xs text-gray-600">
-          <span>{data.filter(i => i.paid).length} of {data.length} payments completed</span>
-          <span>{data.filter(i => !i.paid).length} remaining</span>
-        </div>
-      </div>
     </section>
   );
 }

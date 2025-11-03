@@ -38,7 +38,7 @@ html {
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(98% 0.01 100);
+  --color-base-100: oklch(99% 0.01 100);
   --color-base-200: oklch(95% 0.015 100);
   --color-base-300: oklch(90% 0.03 100);
   --color-base-content: oklch(0% 0 0);
