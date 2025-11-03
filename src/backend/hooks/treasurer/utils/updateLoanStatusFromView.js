@@ -12,7 +12,7 @@ export async function updateLoanStatusFromView(supabase, loanId) {
 
   // Fetch the latest data from the view
   const { data: viewData, error: fetchErr } = await supabase
-    .from("view_loan_accounts")
+    .from("view_loan_accounts_v2")
     .select("loan_id, outstanding_balance")
     .eq("loan_id", loanId)
     .single();

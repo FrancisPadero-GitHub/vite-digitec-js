@@ -134,11 +134,18 @@ export async function allocateLoanPayment(
     const totalDue = round(sched.total_due);
     const feePortion = sched.fee_due / totalDue;
     const interestPortion = sched.interest_due / totalDue;
-    const principalPortion = sched.principal_due / totalDue;
 
+    // Calculate fees and interest first
+    // We let principal absorb any rounding difference so sums always match
     const fees = round(allocation * feePortion);
     const interest = round(allocation * interestPortion);
-    const principal = round(allocation * principalPortion);
+    const principal = round(allocation - fees - interest); // Ensures exact sum
+
+    // Verify the sum equals the allocation (safety check)
+    const calculatedSum = fees + interest + principal;
+    if (Math.abs(calculatedSum - allocation) > 0.01) {
+      console.warn(`Allocation mismatch: ${calculatedSum} vs ${allocation}`);
+    }
 
     // Determine if this schedule is now fully paid
     const newTotalPaid = round(alreadyPaid + allocation);

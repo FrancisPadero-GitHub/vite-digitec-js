@@ -21,13 +21,19 @@ export default function calculateLoanAndScheduleReducing({
   const amount = Number(principal);
   const months = Number(termMonths);
   const serviceFee = amount * (Number(serviceFeeRate) / 100);
-  const netPrincipal = amount - serviceFee; // Deduct service fee from principal
 
   /**
-   * Alternative approach (do not deduct service fee from principal)
+   * Approach 1 (do not deduct service fee from principal) -- LET'S USE THIS FOR NOW
    *
    * const netPrincipal = amount; // do not deduct service fee from principal
-   * const totalPayable = netPrincipal + totalInterest + serviceFee;
+   * const totalPayable = netPrincipal + totalInterest;
+   */
+
+  /**
+   * Approach 2 (deduct service fee from principal) -- NOT USING THIS FOR NOW
+   *
+   * const netPrincipal = amount - serviceFee;
+   * const totalPayable = netPrincipal + totalInterest;
    */
 
   // Validation
@@ -55,10 +61,10 @@ export default function calculateLoanAndScheduleReducing({
   // Monthly amortization formula:
   // Payment = P * [r(1+r)^n] / [(1+r)^n - 1]
   const monthlyPayment =
-    (netPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+    (amount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
     (Math.pow(1 + monthlyRate, months) - 1);
 
-  let balance = netPrincipal;
+  let balance = amount;
   let totalInterest = 0;
   
   // Helper function to ensure consistent two-decimal rounding
@@ -94,7 +100,7 @@ export default function calculateLoanAndScheduleReducing({
     }
   }
 
-  const totalPayable = netPrincipal + totalInterest + serviceFee;
+  const totalPayable = amount + totalInterest;
 
   return {
     totalInterest: round(totalInterest),

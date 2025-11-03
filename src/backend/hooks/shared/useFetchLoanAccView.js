@@ -12,7 +12,7 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 async function fetchLoanAccountsView({ accountNumber, page, limit }) {
   let query = supabase
-    .from("view_loan_accounts") // ← points to your SQL VIEW
+    .from("view_loan_accounts_v2") // ← points to your SQL VIEW
     .select("*", { count: "exact" })
     .order("loan_id", { ascending: false });
 
