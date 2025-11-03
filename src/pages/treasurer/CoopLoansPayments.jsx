@@ -784,12 +784,16 @@ function CoopLoansPayments() {
                       required: true,
                       validate: (value) => {
                         if (value <= 0) return "Amount cannot be zero or negative";
-                        const minRequiredAmount = totalDue * 0.3; // Require minimum 30% of monthly due
-                        if (value < minRequiredAmount)
-                          return `Amount must be at least 30% of monthly payment (₱${round(minRequiredAmount).toLocaleString()})`;
-                        if (value > totalDue)
-                          return `Amount cannot exceed monthly total payment of ₱${round(totalDue).toLocaleString()}`;
-                        if (value > balance)
+                        
+                        const remainingMonthlyDue = round(totalDue - amountPaid); // Calculate remaining amount for this month
+                        const minRequiredAmount = round(remainingMonthlyDue * 0.3); // 30% of remaining amount
+                        const inputValue = round(value); // Round the input value too (to avoid js floating point issues huhu)
+                        
+                        if (inputValue < minRequiredAmount)
+                          return `Amount must be at least 30% of remaining monthly payment (₱${minRequiredAmount.toLocaleString()})`;
+                        if (inputValue > remainingMonthlyDue)
+                          return `Amount cannot exceed remaining monthly payment of ₱${remainingMonthlyDue.toLocaleString()}`;
+                        if (inputValue > balance)
                           return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
                         return true;
                       },
