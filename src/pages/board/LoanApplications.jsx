@@ -13,7 +13,6 @@ import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
 import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
-import { useFetchSettings } from "../../backend/hooks/shared/useFetchSettings";
 import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // mutation hooks
@@ -44,9 +43,6 @@ function LoanApplications() {
   const [limit] = useState(20);
 
   // Fetches data 
-  const { data: settingsData } = useFetchSettings();
-  const serviceFeeRate = settingsData?.loan_service_fee || 0;
-
   const {data: auth_member_id} = useFetchMemberId();    // used by the one who reviewed the loan application
 
   const { data: members_data } = useMembers({});
@@ -191,6 +187,8 @@ function LoanApplications() {
   const loanTermValue = watchLoanAcc("loan_term");
   const startDateValue = watchLoanAcc("first_due");
 
+  const serviceFeeValue = watchLoanAcc("service_fee");
+
   // detect the changes of principal then calculate on the go
   const calculatedLoan = useMemo(() => {
     if (!principalValue || principalValue <= 0) return null;
@@ -204,7 +202,7 @@ function LoanApplications() {
         interestRate: Number(interestRateValue),
         principal: Number(principalValue),
         termMonths: Number(loanTermValue),
-        serviceFeeRate: Number(serviceFeeRate),
+        serviceFeeRate: Number(serviceFeeValue),
       });
       totalPayable = result.totalPayable;
       totalInterest = result.totalInterest;
@@ -214,7 +212,7 @@ function LoanApplications() {
         interestRate: Number(interestRateValue),
         principal: Number(principalValue),
         termMonths: Number(loanTermValue),
-        serviceFeeRate: Number(serviceFeeRate),
+        serviceFeeRate: Number(serviceFeeValue),
       });
       totalPayable = result.totalPayable;
       totalInterest = result.totalInterest;
@@ -222,7 +220,7 @@ function LoanApplications() {
     }
 
     return { totalPayable, totalInterest, serviceFee };
-  }, [principalValue, interestMethod, interestRateValue, loanTermValue, serviceFeeRate]);
+  }, [principalValue, interestMethod, interestRateValue, loanTermValue, serviceFeeValue]);
 
   useEffect(() => {
     if (calculatedLoan) {
@@ -356,7 +354,10 @@ function LoanApplications() {
 
       const interestRate = Number(matchedLoanProduct?.interest_rate) || 0;
       const interestMethod = matchedLoanProduct?.interest_method ?? "";
+      const serviceFee = Number(matchedLoanProduct?.service_fee) || 0;
       const loanTerm = Number(matchedLoanProduct?.max_term_months);
+
+      // console.log(`Service Fee`, serviceFee )
 
       resetLoanAcc({
         ...data,
@@ -367,6 +368,7 @@ function LoanApplications() {
         interest_rate: interestRate,
         interest_method: interestMethod,
         loan_term: loanTerm,
+        service_fee: serviceFee,
         status: "Pending Release",
         release_date: null,
         approved_date: today,
