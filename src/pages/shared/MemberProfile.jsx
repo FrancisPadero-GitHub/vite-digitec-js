@@ -69,7 +69,7 @@ function MemberProfile() {
 
   // Past (Closed) loans — could be multiple
   const pastLoans = loanAccount?.filter(
-    (row) => row.applicant_id === parsedId && row.status === "Closed"
+    (row) => row.account_number === accountNo && row.status === "Closed"
   );
 
 
@@ -144,7 +144,7 @@ function MemberProfile() {
   ];
 
   const eligibilityInfo = [
-     {
+    {
       label: "Tenure",
       value: `${membershipMonths} months`,
       passed: membershipMonths >= 12,
@@ -368,7 +368,13 @@ function MemberProfile() {
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 {personalInfo.map(({ name, label, optional }) => {
-                  if (optional) return null;
+                  // Show optional fields only if they have values
+                  if (optional) {
+                    const value = name === "displayName" ? displayName : memberInfo?.[name];
+                    const displayValue = name === "displayName" ? displayName : (memberInfo?.[name] || "—");
+                    if (value == null || displayValue === "—") {return null;}
+                  }
+                  
                   return (
                     <div key={name}>
                       <p className="text-xs text-gray-500 uppercase">{label}</p>
@@ -401,12 +407,8 @@ function MemberProfile() {
               isDefault={true}
               renderRow={(entry) => (
                 <tr key={entry.coop_contri_id} className="text-center">
-                  <td className="text-info font-medium">
-                    SCC_{entry.coop_contri_id}
-                  </td>
-                  <td className="font-semibold text-success">
-                    ₱{entry.amount.toLocaleString()}
-                  </td>
+                  <td className="text-info font-medium text-xs">SCC_{entry.coop_contri_id}</td>
+                  <td className="font-semibold text-success">₱{entry.amount.toLocaleString()}</td>
                   <td>
                     {entry.category ? (
                       <span
@@ -420,8 +422,16 @@ function MemberProfile() {
                       </span>
                     )}
                   </td>
-                  <td>{entry.contribution_date}</td>
-                  <td>{entry.remarks}</td>
+                  <td className="font-medium text-xs">{entry.contribution_date}</td>
+                  <td className="font-medium text-xs" style={{ width: '100px', maxWidth: '100px' }}>
+                    <div 
+                      className="cursor-help" 
+                      title={entry.remarks || "No remarks provided"}
+                      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',maxWidth: '100px'}}
+                    >
+                      {entry.remarks || "—"}
+                    </div>
+                  </td>
                 </tr>
               )}
             />
@@ -440,7 +450,7 @@ function MemberProfile() {
 
               renderRow={(entry) => (
                 <tr key={entry.contribution_id} className="text-center">
-                  <td className="text-info font-medium">
+                  <td className="text-info font-medium text-xs">
                     CFC_{entry.contribution_id}
                   </td>
                   <td className="font-semibold text-success">
@@ -460,33 +470,35 @@ function MemberProfile() {
                       {entry.payment_method || "Not Provided"}
                     </span>
                   </td>
-                  <td className="text-xs">{entry.payment_date}</td>
-                  <td className="text-center px-4 py-2 w-50">
+                  <td className="text-xs font-medium">{entry.payment_date}</td>
+                  <td className="text-center px-4 py-2 w-50 text-xs">
                     {entry.period_start && entry.period_end ? (
-                      <span className="px-3 py-1 text-xs">
-                        {new Date(entry.period_start).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          }
-                        )}{" "}
+                      <span className="px-2 py-1 text-xs">
+                        {new Date(entry.period_start).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}{" "}
                         -{" "}
-                        {new Date(entry.period_end).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          }
-                        )}
+                        {new Date(entry.period_end).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </span>
                     ) : (
                       <span className="italic">Not Provided</span>
                     )}
                   </td>
-                  <td>{entry.remarks}</td>
+                  <td className="font-medium text-xs" style={{ width: '100px', maxWidth: '100px' }}>
+                    <div 
+                      className="cursor-help" 
+                      title={entry.remarks || "No remarks provided"}
+                      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',maxWidth: '100px'}}
+                    >
+                      {entry.remarks || "—"}
+                    </div>
+                  </td>
                 </tr>
               )}
             />
@@ -497,13 +509,11 @@ function MemberProfile() {
               icon={<HandshakeIcon className="mr-2" />}
               headers={[
                 "Loan Ref No.",
-                "Status",
                 "Principal",
-                "Total Amount Due",
-                "Outstanding Balance",
+                "Total Repayable",
                 "Total Paid",
-                // "Release Date",
-                // "Maturity Date",
+                "Release Date",
+                "Maturity Date",
               ]}
               data={activeLoans}
               page={page}
@@ -517,26 +527,20 @@ function MemberProfile() {
                   className="cursor-pointer hover:bg-base-200/50"
                   onClick={() => openModal(loan)}
                 >
-                  <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
-                  <td>
-                    <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                      {loan.status}
-                    </span>
-                  </td>
-                  <td>₱{Number(loan.principal || 0).toLocaleString()}</td>
-                  <td>₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
-                  <td>₱{Number(loan.outstanding_balance || 0).toLocaleString()}</td>
-                  <td>₱{Number(loan.total_paid || 0).toLocaleString()}</td>
-                  {/* <td>
+                  <td className="font-medium text-info text-xs text-center">{loan.loan_ref_number}</td>
+                  <td className="font-medium text-xs text-center">₱{Number(loan.principal || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs text-center">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs text-center text-success">₱{Number(loan.total_paid || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs text-center">
                     {loan.release_date
                       ? dayjs(loan.release_date).format("MMM D, YYYY")
                       : "—"}
-                  </td> */}
-                  {/* <td>
+                  </td>
+                  <td className="font-medium text-xs text-center">
                     {loan.maturity_date
                       ? dayjs(loan.maturity_date).format("MMM D, YYYY")
                       : "—"}
-                  </td> */}
+                  </td>
                 </tr>
               )}
             />
@@ -546,10 +550,9 @@ function MemberProfile() {
               label="Past Loans"
               icon={<HandshakeIcon className="mr-2" />}
               headers={[
-                "Account No.",
-                "Status",
+                "Loan Ref No.",
                 "Principal",
-                "Outstanding Balance",
+                "Total Repayable",
                 "Release Date",
                 "Maturity Date",
               ]}
@@ -561,20 +564,15 @@ function MemberProfile() {
 
               renderRow={(loan) => (
                 <tr key={loan.loan_id} className="text-center">
-                  <td className="font-medium text-info text-xs">{loan.account_number}</td>
-                  <td>
-                    <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
-                      {loan.status}
-                    </span>
-                  </td>
-                  <td>₱{Number(loan.principal || 0).toLocaleString()}</td>
-                  <td>₱{Number(loan.outstanding_balance || 0).toLocaleString()}</td>
-                  <td>
+                  <td className="font-medium text-info text-xs text-center">{loan.loan_ref_number}</td>
+                  <td className="font-medium text-xs text-center">₱{Number(loan.principal || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs text-center">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs text-center">
                     {loan.release_date
                       ? dayjs(loan.release_date).format("MMM D, YYYY")
                       : "—"}
                   </td>
-                  <td>
+                  <td className="font-medium text-xs text-center">
                     {loan.maturity_date
                       ? dayjs(loan.maturity_date).format("MMM D, YYYY")
                       : "—"}
