@@ -1,5 +1,7 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
+
 // Removed schedule generation imports
 
 const addLoanAcc = async (formData) => {
@@ -52,17 +54,25 @@ const addLoanAcc = async (formData) => {
 
 export const useAddLoanAcc = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog();
 
   return useMutation({
     mutationFn: addLoanAcc,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("✅ Loan Account Added!", data);
       queryClient.invalidateQueries({queryKey: ["loan_accounts"], exact: false});
       queryClient.invalidateQueries({queryKey: ["view_loan_accounts_v2"], exact: false});
-      queryClient.invalidateQueries({
-        queryKey: ["get_funds_summary"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false,});
+      queryClient.invalidateQueries({queryKey: ["activity_logs"], exact: false});
+      // log activity
+      try {
+        await logActivity({
+          action: `Created and approved a member loan: Loan application_id: ${data.application_id}`,
+          type: "CREATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
 
     onError: (error) => {

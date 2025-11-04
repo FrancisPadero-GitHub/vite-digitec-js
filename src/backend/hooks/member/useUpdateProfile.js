@@ -1,7 +1,7 @@
 import { supabase } from "../../supabase.js";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
-
+import { useAddActivityLog } from "../shared/useAddActivityLog.js";
 
 
 const updateProfile = async (formData) => {
@@ -114,6 +114,7 @@ const updateProfile = async (formData) => {
 export function useUpdateProfile() {
 
   const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
+  const { mutateAsync: logActivity } = useAddActivityLog();
 
   const queryClient = useQueryClient();
 
@@ -121,13 +122,24 @@ export function useUpdateProfile() {
     mutationFn: (formData) =>
       updateProfile({ ...formData, account_number: loggedInAccountNumber }),
     enabled: !!loggedInAccountNumber && !accountLoading,
-    onSuccess: (updatedMember) => {
+    onSuccess: async (updatedMember) => {
       queryClient.setQueryData(
         ["member_profile", updatedMember.account_number],
         updatedMember
       );
       queryClient.invalidateQueries(["members"]);
+      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
       console.log("Profile updated successfully:", updatedMember);
+
+      // log activity
+      try {
+        await logActivity({
+          action: `Member updated profile: ${updatedMember.account_number}`,
+          type: "UPDATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Failed to update profile:", error.message);

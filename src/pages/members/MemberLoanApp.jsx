@@ -128,7 +128,7 @@ function MemberLoanApp() {
     reset,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     defaultValues
   });
@@ -146,15 +146,15 @@ function MemberLoanApp() {
 
   const openAddModal = () => {
     // Count restrictions for loan applications and accounts
-    const pendingAppsCount = loanAppRaw.filter(
+    const pendingAppsCount = loanAppRaw.filter(   // loan applications status check
       (app) => app.status === "Pending"
     ).length;
 
-    const activeLoansCount = loanAcc?.filter(
+    const activeLoansCount = loanAcc?.filter(   // loan applications status check
       (loan) => loan.status === "Active"
     ).length || 0;
 
-    const defaultedLoansCount = loanAcc?.filter(
+    const defaultedLoansCount = loanAcc?.filter(  // loan accounts status check
       (loan) => loan.status === "Defaulted"
     ).length || 0;
 
@@ -471,8 +471,9 @@ function MemberLoanApp() {
           close={closeModal}
           status={loanStatus}
           action={modalType === "edit"}
+          isAnyChanges={!isDirty} // only enable submit if there are changes
           onSubmit={handleSubmit(onSubmit)}
-          isPending={isAddPending || isEditPending}
+          isPending={isAddPending || isEditPending }
           deleteAction={() => handleDelete(watch("application_id"))}
         >
           {fields.map((field) => {
@@ -488,7 +489,7 @@ function MemberLoanApp() {
                       </div>
                     ) : (
                       <select {...register(field.name, { required: field.required })} className="select select-bordered w-full">
-                        <option value="">Select Loan Product</option>
+                        <option value="" disabled>Select Loan Product</option>
                         {field.dynamicOptions?.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                       </select>
                     )}
@@ -584,7 +585,7 @@ function MemberLoanApp() {
                             disabled={!selectedLoanProduct}
                             className="select select-bordered w-full"
                           >
-                            <option value="">Select Term</option>
+                            <option value="" disabled>Select Term</option>
                             {termField.dynamicOptions?.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                           </select>
                         )}

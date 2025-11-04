@@ -1,6 +1,7 @@
 import { supabase } from "../../supabase";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog.js";
 
 const insertLoanApp = async (formData, accountNumber) => {
   const {
@@ -34,15 +35,25 @@ const insertLoanApp = async (formData, accountNumber) => {
 export const useAddLoanApp = () => {
   const queryClient = useQueryClient();
   const { data: loggedInAccountNumber } = useFetchAccountNumber();
+  const { mutateAsync: logActivity } = useAddActivityLog();
+
 
   return useMutation({
     mutationFn: (formData) => insertLoanApp(formData, loggedInAccountNumber),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Loan Application Added!: ", data);
-      queryClient.invalidateQueries([
-        "loan_applications",
-        loggedInAccountNumber,
-      ]);
+      queryClient.invalidateQueries(["loan_applications", loggedInAccountNumber,]);
+      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      
+      // log activity
+      try {
+        await logActivity({
+          action: `Member created loan application. Account No: ${data.account_number} | Application ID: ${data.application_id}`,
+          type: "CREATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Adding Loan Application failed", error.message);

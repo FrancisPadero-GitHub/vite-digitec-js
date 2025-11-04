@@ -1,6 +1,8 @@
 import { supabase } from "../../supabase";
-  import { useQueryClient, useMutation } from "@tanstack/react-query";
-  import { allocateLoanPayment } from "./utils/allocateLoanPayment";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { allocateLoanPayment } from "./utils/allocateLoanPayment";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
+
 
   // --- Insert function ---
   const updateLoanPayments = async (formData) => {
@@ -51,19 +53,25 @@ import { supabase } from "../../supabase";
   // --- React hook ---
   export const useEditLoanPayments = () => {
     const queryClient = useQueryClient();
-
+    const { mutateAsync: logActivity } = useAddActivityLog();
     return useMutation({
       mutationFn: updateLoanPayments,
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         console.log("✅ Loan payment updated:", data);
         // Refresh any component using this query
         queryClient.invalidateQueries({ queryKey: ["loan_payments"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["loan_accounts"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["loan_payment_schedules"], exact: false });
-        queryClient.invalidateQueries({
-          queryKey: ["get_funds_summary"],
-          exact: false,
-        });
+        queryClient.invalidateQueries({ queryKey: ["get_funds_summary"], exact: false });
+        // Log activity
+        try {
+          await logActivity({
+            action: `Updated member payment loan ID: ${data.loan_id} for Schedule ID: ${data.schedule_id}`,
+            type: "UPDATE",
+          });
+        } catch (err) {
+          console.warn("Failed to log activity:", err.message);
+        }
       },
       onError: (error) => {
         console.error("❌ Updated loan payment failed:", error.message);

@@ -1,5 +1,5 @@
 
-function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction, type, isPending }) { 
+function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction, type, isPending, isAnyChanges }) { 
 
   // if open is false, don't render anything
   if (!open) return null
@@ -33,7 +33,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status || isPending}>
+                <button type="submit" className="btn btn-primary" disabled={status || isPending || isAnyChanges}>
                   {isPending ? (
                     <>
                       <span className="loading loading-spinner loading-sm"></span>

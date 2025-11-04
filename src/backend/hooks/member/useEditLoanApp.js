@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const updateLoanApp = async (formData) => {
   const {
@@ -36,11 +37,23 @@ const updateLoanApp = async (formData) => {
 
 export const useEditLoanApp = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: logActivity } = useAddActivityLog();
+
   return useMutation({
     mutationFn: updateLoanApp,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries(["loan_applications", "member"]);
+      queryClient.invalidateQueries({ queryKey: ["loan_applications"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      // log activity
+      try {
+        await logActivity({
+          action: `Member updated loan application. Application ID: ${data.application_id}`,
+          type: "UPDATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
     },
     onError: (error) => {
       console.error("Updating Loan Application failed", error.message);

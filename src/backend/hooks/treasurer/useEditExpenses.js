@@ -46,11 +46,9 @@ export const useEditExpenses = () => {
     mutationFn: updateExpenses,
     onSuccess: async (data) => {
       console.log("Expenses Updated!: ", data);
-      queryClient.invalidateQueries({queryKey:["club_funds_expenses"], exact: false});
-      queryClient.invalidateQueries({
-        queryKey: ["get_funds_summary"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({queryKey: ["club_funds_expenses"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false,});
+      queryClient.invalidateQueries({queryKey: ["activity_logs"], exact: false});
 
       // log activity
       try {
