@@ -32,11 +32,9 @@ export const useDelete = (table) => {
     mutationFn: markAsDelete,
     onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
-      queryClient.invalidateQueries({queryKey: [table], exact: false});
-      queryClient.invalidateQueries({
-        queryKey: ["get_funds_summary"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({queryKey: [table], exact: false});   // invalidate base table query
+      queryClient.invalidateQueries({ queryKey: [`view_${table}`], exact: false }); // invalidate view query
+      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false});
 
       // log activity
       try {

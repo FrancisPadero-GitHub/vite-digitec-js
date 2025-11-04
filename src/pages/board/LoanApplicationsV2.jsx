@@ -23,6 +23,7 @@ import { useFetchMemberId } from "../../backend/hooks/shared/useFetchMemberId";
 // mutation hooks
 import { useEditLoanApp } from "../../backend/hooks/board/useEditLoanApp";
 import { useAddLoanAcc } from "../../backend/hooks/board/useAddLoanAcc";
+import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // component
 import MainDataTable from "../treasurer/components/MainDataTable";
@@ -94,7 +95,9 @@ function LoanApplicationsV2() {
   // mutation hooks
   const { mutate: mutateUpdateLoanApp, isPending: isUpdateLoanAppPending } = useEditLoanApp();
   const { mutate: mutateAddLoanAcc, isPending: isAddLoanAccPending } = useAddLoanAcc();
-
+  // the value here is for only queryInvalidation after deletion
+  // it is different from the mutation call below from its values
+  const { mutate: mutateDeleteLoanApp } = useDelete("loan_applications");  
 
   /**
    * Form Controls
@@ -168,7 +171,8 @@ function LoanApplicationsV2() {
   const principalInput = parseFloat(watchLoanAcc("principal")) ?? 0;
 
   // fetch to the loan product base on the data fetched from redux for min and max amount validation
-  const selectedProduct = loanProducts?.find(product => product.product_id === redux_data?.product_id) || null;
+  const loan_product_id = redux_data?.product_id || null;
+  const selectedProduct = loanProducts?.find(product => product.product_id === loan_product_id) || null;
   // console.log("Selected Product: ", selectedProduct);
 
 
@@ -265,6 +269,17 @@ function LoanApplicationsV2() {
     console.log(`Data final submit`, formDataLoanAcc);
   };
 
+  // Mark as delete Loan Application
+  const loan_app_id = redux_data?.application_id || null;   // used below for delete function arguments
+  const deleteLoanApp = (application_id) => {
+    mutateDeleteLoanApp({
+      table: "loan_applications",   // do not mark as delete form the view_loan_applications VIEW TABLE that is only for READ operations
+      column_name: "application_id",
+      id: Number(application_id),
+    });
+    closeLoanAppModal();
+  };
+
   // Close Loan Application Modal
   const closeLoanAppModal = () => {
     resetLoanApp();
@@ -272,6 +287,8 @@ function LoanApplicationsV2() {
     dispatch(closeModal());
   };
 
+
+  // Close Loan Account Modal
   const closeLoanAccModal = () => {
     // Clear the account form
     resetLoanAcc();
@@ -478,12 +495,13 @@ function LoanApplicationsV2() {
           title={"Loan Application Details"}
           open={state && mode === 'loanApplication'}
           close={closeLoanAppModal}
-          // disable form delete and submit/save button if loan is already approved or form is not dirty or update is pending
-          status={isLoanAlreadyApproved|| isUpdateLoanAppPending || !isDirtyLoanApp} 
+          // disable form delete and submit/save button if loan is already approved or update is pending
+          status={isLoanAlreadyApproved|| isUpdateLoanAppPending } 
           action={action === "edit"}
+          deleteAction={() => deleteLoanApp(loan_app_id)}  // pass the application id to delete function
           onSubmit={handleSubmitLoanApp(onSubmitLoanApp)}
           isPending={isUpdateLoanAppPending}
-          isDisabled={isLoanAlreadyApproved}
+          isDisabled={isLoanAlreadyApproved || !isDirtyLoanApp}
           // These two is to determine button text in the modal
           type={isLoanApproved} 
           memberRole={memberRole}
