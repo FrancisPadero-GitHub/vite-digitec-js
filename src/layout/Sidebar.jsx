@@ -17,6 +17,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InventoryIcon from '@mui/icons-material/Inventory';
+import CampaignIcon from '@mui/icons-material/Campaign';
 
 
 
@@ -98,6 +99,7 @@ const sidebarConfig = {
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/board" },
         { label: "Member Records", icon: PeopleIcon, path: "/board/member-records" },
+        { label: "Announcements", icon: CampaignIcon, path: "/board/announcements" },
         { label: "Reports", icon: AssessmentIcon, path: "/board/reports" },
         { label: "Activity Logs", icon: HistoryIcon, path: "/board/activity-logs" },
       ],

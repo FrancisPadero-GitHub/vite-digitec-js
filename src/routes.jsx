@@ -32,13 +32,15 @@ import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases";
 import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
 import CoopLoanPaymentSchedules from "./pages/treasurer/CoopLoanPaymentSchedules";
 import LoanProducts from "./pages/treasurer/LoanProducts";
-import Settings from "./pages/treasurer/Settings";
+import TreasurerSettings from "./pages/treasurer/Settings";
 
 // BOD Pages
 import LoanApplicationsV2 from "./pages/board/LoanApplicationsV2";
 import LoanAccounts from "./pages/board/LoanAccounts";
 import LoanAccountDetails from "./pages/board/LoanAccountDetails";
 import LoansPayments from "./pages/board/LoanPayments";
+import BoardSettings from "./pages/board/Settings";
+import Announcement from "./pages/board/Announcement";
 
 // REGULAR AND ASSOCIATE PAGES
 import MemberDashboardV2 from "./pages/members/MemberDashboardV2";
@@ -89,7 +91,9 @@ function AppRoutes() {
     ...boardSharedTreasurerPages, 
     { path: "coop-loans/loan-applications", element: <LoanApplicationsV2 /> },
     { path: "coop-loans/loan-payments", element: <LoansPayments /> },
-    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },   
+    { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
+    { path: "settings", element: <BoardSettings /> },
+    { path: "announcements", element: <Announcement /> },
   ];
 
   const treasurerRoutes = [
@@ -99,7 +103,7 @@ function AppRoutes() {
     { path: "coop-loans/releases", element: <CoopLoansReleases /> },
     { path: "coop-loans/payments", element: <CoopLoansPayments /> },
     { path: "settings/loan-products", element: <LoanProducts /> },
-    { path: "settings", element: <Settings /> },
+    { path: "settings", element: <TreasurerSettings /> },
   ];
 
   const regularMemberRoutes = [
