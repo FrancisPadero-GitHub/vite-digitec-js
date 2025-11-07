@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import React from "react";
 /**
- * 
+ * DEPRECATED - Use DataTableV2 instead
  * @param {*} param0 
  * @returns 
  */
-const DataTable = ({ title, linkPath, headers = [], data = [], isLoading, renderRow  }) => {
+const DataTable = ({ title, linkPath, headers = [], data = [], isLoading, renderRow }) => {
 
   return (
     <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md">

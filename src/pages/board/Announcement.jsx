@@ -6,7 +6,7 @@ import { useFetchAnnouncement } from '../../backend/hooks/board/useFetchAnnounce
 import { useSendAnnouncement } from '../../backend/hooks/board/useSendAnnouncemnt'
 
 // components
-import DataTableV2 from './components/DataTableV2';
+import DataTableV2 from '../shared/components/DataTableV2';
 import LoanAccModal from './modal/LoanAccModal';
 
 function Announcement() {

@@ -14,6 +14,7 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 // components
 import FormModal from "./modals/FormModal";
 import MainDataTable from "./components/MainDataTable";
+import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
@@ -25,12 +26,12 @@ function ClubExpenses() {
   const { memberRole } = useMemberRole();
 
   // front end pagination
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  // const [page, setPage] = useState(1);
+  // const [limit] = useState(20);
 
   const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses({});
   const fundExpensesRaw = fundExpensesData?.data || [];
-  const total = fundExpensesData?.count || 0;
+  // const total = fundExpensesData?.count || 0;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -45,16 +46,48 @@ function ClubExpenses() {
       row.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       generatedId.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesCategory = categoryFilter === "" || row.category === categoryFilter;
-
     const date = row.transaction_date ? new Date(row.transaction_date) : null;
     const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+    const monthNameToNumber = {
+      January: 1, February: 2,
+      March: 3, April: 4,
+      May: 5, June: 6,
+      July: 7, August: 8,
+      September: 9, October: 10,
+      November: 11, December: 12,
+    };
+    const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
     const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+      monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
 
     return matchesSearch && matchesCategory && matchesYear && matchesMonth;
   });
+
+  // Dynamically generate year options for the past 5 years and next 5 years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
+  });
+
+  // for the subtext of data table
+  const activeFiltersText = [
+    searchTerm ? `Search: "${searchTerm}"` : null,
+    categoryFilter ? `Category: ${categoryFilter}` : null,
+    yearFilter ? `Year: ${yearFilter}` : null,
+    monthFilter ? `Month: ${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all expenses";
+
+  // clear fitlters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+  }
 
 
   const { mutate: mutateAdd, isPending: isAddPending } = useAddExpenses();
@@ -165,9 +198,54 @@ function ClubExpenses() {
   return (
     <div>
       <Toaster position="bottom-left" />
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Club Expenses</h1>
+      <div className="space-y-4"> 
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Category",
+                value: categoryFilter,
+                onChange: setCategoryFilter,
+                options: [
+                  { label: "GMM", value: "GMM" },
+                  { label: "Activities", value: "Activities" },
+                  { label: "Alalayang Agila", value: "Alalayang Agila" },
+                  { label: "Community Service", value: "Community Service" },
+                  { label: "Others", value: "Others" },
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: setYearFilter,
+                options: yearOptions,
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: setMonthFilter,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
+
+
           <div className="flex flex-row items-center gap-3">
             {memberRole !== "board" && (
               <button
@@ -180,67 +258,16 @@ function ClubExpenses() {
           </div>
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Category",
-              value: categoryFilter,
-              onChange: setCategoryFilter,
-              options: [
-                { label: "GMM", value: "GMM" },
-                { label: "Activities", value: "Activities" },
-                { label: "Alalayang Agila", value: "Alalayang Agila" },
-                { label: "Community Service", value: "Community Service" },
-                { label: "Others", value: "Others" },
-              ],
-            },
-            {
-              label: "All Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-                { label: "2021", value: "2021" },
-                { label: "2020", value: "2020" },
-              ],
-            },
-            {
-              label: "All Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable
+        <DataTableV2
+          title="Club Expenses"
+          subtext={activeFiltersText}
+          showLinkPath={false}
           headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
+          filterActive={activeFiltersText !== "Showing all expenses"}
           data={fundExpenses}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
             const amount = row?.amount || 0;
             return (

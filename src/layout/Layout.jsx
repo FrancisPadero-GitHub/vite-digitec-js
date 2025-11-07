@@ -19,7 +19,7 @@ const Layout = () => {
     {/* PAGE CONTENT, HEADER, FOOTER */}
     <div className="bg-base-200 drawer-content flex flex-col min-h-screen">
       <Topbar role={memberRole} />
-      <main className="p-5 space-y-4 flex-grow">
+      <main className="p-4 flex-grow">
         <Outlet />
       </main>
       <Footer />

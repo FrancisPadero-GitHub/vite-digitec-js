@@ -17,7 +17,7 @@ import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal';
 import { useMemberRole } from '../../backend/context/useMemberRole';
 
 // components
-import DataTable from './components/DataTable';
+import DataTableV2 from './components/DataTableV2';
 import CoopContributionChart from './components/CoopContributionChart';
 import ExpensesChart from './components/ExpensesChart';
 import ComparisonChart from './components/ComparisonChart';
@@ -285,8 +285,9 @@ function DashboardV2() {
               </div>
             </section>
 
-            <DataTable
+            <DataTableV2
               title={"Share Capital / Coop"}
+              showLinkPath={true}
               linkPath={`/${memberRole}/coop-share-capital`}
               headers={["Ref No.", "Account No", "Name", "Amount", "Payment Category", "Date"]}
               data={coopFunds} // share capital / coop
@@ -369,8 +370,9 @@ function DashboardV2() {
               }} 
             />
 
-            <DataTable
+            <DataTableV2
               title={"Club Funds"}
+              showLinkPath={true}
               linkPath={`/${memberRole}/club-funds`}
               headers={["Ref No.", "Account No.", "Name", "Amount", "Category", "Date"]}
               data={clubFunds}
@@ -440,8 +442,10 @@ function DashboardV2() {
               }}
             />
 
-            <DataTable
+            <DataTableV2
               title={"Club Expenses"}
+              type={"compact"}
+              showLinkPath={true}
               linkPath={`/${memberRole}/club-expenses`}
               headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
               data={expenses}

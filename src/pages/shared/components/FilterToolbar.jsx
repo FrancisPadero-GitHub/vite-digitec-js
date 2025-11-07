@@ -1,8 +1,10 @@
 import SearchIcon from "@mui/icons-material/Search";
+import FilterAltOffOutlinedIcon from '@mui/icons-material/FilterAltOffOutlined';
 function FilterToolbar({
   searchTerm,
   onSearchChange,
   dropdowns = [],
+  onReset,
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -38,6 +40,16 @@ function FilterToolbar({
         </select>
 
       ))}
+
+      {onReset && (
+        <button
+          type="button"
+          className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10" 
+          onClick={onReset}
+        >
+          <FilterAltOffOutlinedIcon />
+        </button>
+      )}
     </div>
   );
 }

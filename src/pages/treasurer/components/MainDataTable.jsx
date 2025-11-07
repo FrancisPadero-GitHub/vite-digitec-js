@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
 /**
+ * DEPRECATED - Use DataTableV2 from shared/components instead
+ * 
+ * 
  * MainDataTable Component
   *
  * Renders a dynamic table with a header, body, and a built -in pagination footer.
