@@ -107,13 +107,7 @@ const insertMember = async (formData) => {
     await uploadAvatar(formData.avatarFile, newMember.member_id);
   }
 
-  // --- 4. Insert initial payment ---
-  const newPayment = await insertTable("initial_payments", {
-    ...payment,
-    account_number: newMember.account_number,
-  });
-
-  // --- 5. Insert club funds contribution ---
+  // --- 4. Insert club funds contribution ---
   const clubFunds = {
     amount: payment.membership_fee || 0,
     category: "Monthly Dues",
@@ -128,7 +122,7 @@ const insertMember = async (formData) => {
     account_number: newMember.account_number,
   });
 
-  // --- 6. Insert coop contribution ---
+  // --- 5. Insert coop contribution ---
   const coop = {
     source: "Member Contribution",
     amount: payment.initial_share_capital || 0,
@@ -144,7 +138,6 @@ const insertMember = async (formData) => {
 
   return {
     member: newMember,
-    payment: newPayment,
     clubFunds: newClubFunds,
     coop: newCoop,
   };
@@ -162,7 +155,6 @@ export const useAddMember = () => {
     onSuccess: async (data) => {
       console.log("New member created:", data);
       queryClient.invalidateQueries({queryKey: ["members"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["initial_payments"], exact: false});
       queryClient.invalidateQueries({queryKey: ["club_funds_contributions"], exact: false});
       queryClient.invalidateQueries({queryKey: ["coop_cbu_contributions"], exact: false});
       queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false});
