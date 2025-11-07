@@ -186,77 +186,79 @@ const Sidebar = ({ role }) => {
             <img src={logo} alt="DigiTEC Logo" />
           </div>
         </div>
+        <div className="h-full overflow-y-auto px-2 pb-4 flex flex-col">
+          <ul className="menu flex-grow">
+            {sections.map((section) => (
+              <li key={section.section}>
+                <div className="menu-title pb-3 uppercase text-xs text-gray-300 mt-5">
+                  {section.section}
+                </div>
+                <ul>
+                  {section.items.map((item, i) => {
+                    const isActive = location.pathname === item.path;
 
-        <ul className="menu flex-grow">
-          {sections.map((section) => (
-            <li key={section.section}>
-              <div className="menu-title pb-3 uppercase text-xs text-gray-300 mt-5">
-                {section.section}
-              </div>
-              <ul>
-                {section.items.map((item, i) => {
-                  const isActive = location.pathname === item.path;
-
-                  if (item.children) {
-                    const isOpen = openMenus[item.label] || false;
-                    return (
-                      <li key={i}>
-                        <button
-                          onClick={() => toggleMenu(item.label)}
-                          className="flex items-center justify-between w-full py-2 px-4 rounded-md text-base mb-2 hover:bg-green-950/30"
-                        >
-                          <div className="flex items-center gap-3">
-                            <item.icon fontSize="small" />
-                            <span>{item.label}</span>
-                          </div>
-                          {isOpen ? (
-                            <ExpandLessIcon fontSize="small" />
-                          ) : (
-                            <ExpandMoreIcon fontSize="small" />
-                          )}
-                        </button>
-                        {isOpen && (
-                          <ul className="ml-8 mt-1">
-                            {item.children.map((child, idx) => {
-                              const isChildActive = location.pathname === child.path;
-                              return (
-                                <li key={idx}>
-                                  <Link
-                                    to={child.path}
-                                    className={`flex items-center gap-2 py-1 px-3 rounded-md text-sm mb-1 ${isChildActive
+                    if (item.children) {
+                      const isOpen = openMenus[item.label] || false;
+                      return (
+                        <li key={i}>
+                          <button
+                            onClick={() => toggleMenu(item.label)}
+                            className="flex items-center justify-between w-full py-2 px-4 rounded-md text-base mb-2 hover:bg-green-950/30"
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon fontSize="small" />
+                              <span>{item.label}</span>
+                            </div>
+                            {isOpen ? (
+                              <ExpandLessIcon fontSize="small" />
+                            ) : (
+                              <ExpandMoreIcon fontSize="small" />
+                            )}
+                          </button>
+                          {isOpen && (
+                            <ul className="ml-8 mt-1">
+                              {item.children.map((child, idx) => {
+                                const isChildActive = location.pathname === child.path;
+                                return (
+                                  <li key={idx}>
+                                    <Link
+                                      to={child.path}
+                                      className={`flex items-center gap-2 py-1 px-3 rounded-md text-sm mb-1 ${isChildActive
                                         ? "bg-green-900 text-white"
                                         : "hover:bg-green-950/20"
-                                      }`}
-                                  >
-                                    <span>•</span>
-                                    {child.label}
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
+                                        }`}
+                                    >
+                                      <span>•</span>
+                                      {child.label}
+                                    </Link>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    }
+
+                    return (
+                      <li key={i}>
+                        <Link
+                          to={item.path}
+                          className={`flex items-center gap-3 py-2 px-4 rounded-md text-base mb-2 ${isActive ? "bg-green-950 text-white" : ""
+                            }`}
+                        >
+                          <item.icon fontSize="small" />
+                          <span>{item.label}</span>
+                        </Link>
                       </li>
                     );
-                  }
-
-                  return (
-                    <li key={i}>
-                      <Link
-                        to={item.path}
-                        className={`flex items-center gap-3 py-2 px-4 rounded-md text-base mb-2 ${isActive ? "bg-green-950 text-white" : ""
-                          }`}
-                      >
-                        <item.icon fontSize="small" />
-                        <span>{item.label}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </li>
-          ))}
-        </ul>
+                  })}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+     
       </div>
     </aside>
   );

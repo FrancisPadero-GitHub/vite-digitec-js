@@ -21,8 +21,8 @@ import { useAddLoanAcc } from "../../backend/hooks/board/useAddLoanAcc";
 import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
-import BoardFormModal from "./modal/BoardFormModal";
-import LoanAccModal from "./modal/LoanAccModal";
+import BoardFormModal from "../board/modal/BoardFormModal";
+import LoanAccModal from "../board/modal/LoanAccModal";
 import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
 

@@ -10,8 +10,6 @@ const insertClubfunds = async (formData) => {
     amount = 0,
     category = null,
     payment_date = null,
-    period_start = null,
-    period_end = null,
     payment_method = null,
     remarks = null,
   } = formData; // if the form data is empty it will fallback to these null values
@@ -21,8 +19,6 @@ const insertClubfunds = async (formData) => {
     amount,
     category,
     payment_date,
-    period_start,
-    period_end,
     payment_method,
     remarks,
   };

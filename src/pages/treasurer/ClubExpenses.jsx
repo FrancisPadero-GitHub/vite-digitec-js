@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, Fragment, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 // fetch hooks
 import { useMemberRole } from "../../backend/context/useMemberRole";
@@ -13,58 +14,124 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
 import FormModal from "./modals/FormModal";
-import MainDataTable from "./components/MainDataTable";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
+
+
+// utils
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
 
+// HELPER FUNCTIONS
+// To avoid timezone issues with date inputs, we convert dates to local date strings
+function getLocalDateString(date) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
+};
 
 function ClubExpenses() {
+  // date helper
+  const today = getLocalDateString(new Date());
+
+  // data fetch
   const { memberRole } = useMemberRole();
+  const { data: fund_expenses_data, isLoading, isError, error } = useFetchExpenses({});
 
-  // front end pagination
-  // const [page, setPage] = useState(1);
-  // const [limit] = useState(20);
+  // mutation hooks
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddExpenses();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditExpenses();
+  const { mutate: mutateDelete } = useDelete("club_funds_expenses");
 
-  const { data: fundExpensesData, isLoading, isError, error } = useFetchExpenses({});
-  const fundExpensesRaw = fundExpensesData?.data || [];
-  // const total = fundExpensesData?.count || 0;
-
+  /**
+   *  Search and filter for the filterbar
+   */
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   *
+   */
+  // Add useTransition
+  const [isPending, startTransition] = useTransition();
+
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleCategoryChange = (value) => {
+    startTransition(() => {
+      setCategoryFilter(value);
+    });
+  };
+  const handleYearChange = (value) => {
+    startTransition(() => {
+      setYearFilter(value);
+    });
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => {
+      setMonthFilter(value);
+    });
+  };
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
+
   const TABLE_PREFIX = "EXP";
-  const fundExpenses = fundExpensesRaw.filter((row) => {
-    const generatedId = `${TABLE_PREFIX}_${row?.transaction_id || ""}`;
-    const matchesSearch =
-      searchTerm === "" ||
-      row.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "" || row.category === categoryFilter;
-    const date = row.transaction_date ? new Date(row.transaction_date) : null;
-    const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const monthNameToNumber = {
-      January: 1, February: 2,
-      March: 3, April: 4,
-      May: 5, June: 6,
-      July: 7, August: 8,
-      September: 9, October: 10,
-      November: 11, December: 12,
-    };
-    const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
+  const fundExpenses = useMemo(() => {
+    /**
+     * you might be asking why not just use club_funds_data?.data directly?
+     * the reason is that useMemo will only recompute the filtered data when
+     * one of its dependencies change (club_funds_data, debouncedSearch, categoryFilter, methodFilter, yearFilter, monthFilter)
+     * this optimizes performance by avoiding unnecessary recalculations on every render
+     * especially when dealing with large datasets.
+     */
+    const fundExpensesRaw = fund_expenses_data?.data || [];
+    return fundExpensesRaw.filter((row) => {
+      const generatedId = `${TABLE_PREFIX}_${row?.transaction_id || ""}`;
+      const matchesSearch =
+        debouncedSearch === "" ||
+        row.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.description?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCategory = categoryFilter === "" || row.category === categoryFilter;
+      const date = row.transaction_date ? new Date(row.transaction_date) : null;
+      const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+      
+      // To avoid subtext displaying numbers instead of month names
+      // I had to convert the values from the monthFilter to numbers for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2,
+        March: 3, April: 4,
+        May: 5, June: 6,
+        July: 7, August: 8,
+        September: 9, October: 10,
+        November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
+    // just a nested return dont be confused
+    return (
+      matchesSearch &&
+      matchesCategory && 
+      matchesYear && 
+      matchesMonth
+    );
+    })
+  }, [fund_expenses_data, debouncedSearch, categoryFilter, yearFilter, monthFilter]);
 
-    return matchesSearch && matchesCategory && matchesYear && matchesMonth;
-  });
-
-  // Dynamically generate year options for the past 5 years and next 5 years
+  // Dynamically generate year options for the past 5 years and current year
+  // to get rid of the hard coded years
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const year = currentYear - i;
@@ -73,10 +140,10 @@ function ClubExpenses() {
 
   // for the subtext of data table
   const activeFiltersText = [
-    searchTerm ? `Search: "${searchTerm}"` : null,
-    categoryFilter ? `Category: ${categoryFilter}` : null,
-    yearFilter ? `Year: ${yearFilter}` : null,
-    monthFilter ? `Month: ${monthFilter}` : null,
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    categoryFilter ? `${categoryFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
   ]
     .filter(Boolean)
     .join(" - ") || "Showing all expenses";
@@ -89,35 +156,32 @@ function ClubExpenses() {
     setMonthFilter("");
   }
 
-
-  const { mutate: mutateAdd, isPending: isAddPending } = useAddExpenses();
-  const { mutate: mutateEdit, isPending: isEditPending } = useEditExpenses();
-  const { mutate: mutateDelete } = useDelete("club_funds_expenses");
-
-  const [modalType, setModalType] = useState(null); // "add" | "edit" | null
-
-  const defaultValues = {
-    transaction_id: null,
-    title: "",
-    category: "",
-    description: "",
-    amount: 0,
-    transaction_date: "",
-  }
-
-  // ✅ React Hook Form
+  // React Hook Form
   const {
+    control,
     register,
     handleSubmit,
     reset,
-    control,
+    getValues,
+    formState: { isDirty },
   } = useForm({
-    defaultValues
+    defaultValues: {
+      transaction_id: null,
+      title: "",
+      category: "",
+      description: "",
+      amount: 0,
+      transaction_date: today,
+    }
+
   });
 
-  // ✅ Modal Handlers
+  /**
+   *  Modal Handlers
+   */
+  const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
-    reset(defaultValues);
+    reset();
     setModalType("add");
   };
 
@@ -127,11 +191,12 @@ function ClubExpenses() {
   };
 
   const closeModal = () => {
-    setModalType(null);
     reset();
+    setModalType(null);
   };
 
   const handleDelete = (transaction_id) => {
+    reset();
     mutateDelete({
       table: "club_funds_expenses",
       column_name: "transaction_id",
@@ -140,7 +205,7 @@ function ClubExpenses() {
     closeModal();
   };
 
-  // ✅ Form submission through RHF
+  // Form submission through RHF
   const onSubmit = (data) => {
     // Prevent double submission
     if (isAddPending || isEditPending) {
@@ -184,7 +249,6 @@ function ClubExpenses() {
       type: "select",
       options: [
         { label: "GMM", value: "GMM" },
-        { label: "Monthly Dues", value: "Monthly Dues" },
         { label: "Activities", value: "Activities" },
         { label: "Community Service", value: "Community Service" },
         { label: "Alalayang Agila", value: "Alalayang Agila" },
@@ -202,13 +266,14 @@ function ClubExpenses() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
             onReset={handleClearFilters}
             dropdowns={[
               {
                 label: "All Category",
                 value: categoryFilter,
-                onChange: setCategoryFilter,
+                onChange: handleCategoryChange,
                 options: [
                   { label: "GMM", value: "GMM" },
                   { label: "Activities", value: "Activities" },
@@ -220,13 +285,13 @@ function ClubExpenses() {
               {
                 label: "All Year",
                 value: yearFilter,
-                onChange: setYearFilter,
+                onChange: handleYearChange,
                 options: yearOptions,
               },
               {
                 label: "All Month",
                 value: monthFilter,
-                onChange: setMonthFilter,
+                onChange: handleMonthChange,
                 options: [
                   { label: "January", value: "January" },
                   { label: "February", value: "February" },
@@ -244,18 +309,18 @@ function ClubExpenses() {
               },
             ]}
           />
-
-
-          <div className="flex flex-row items-center gap-3">
-            {memberRole !== "board" && (
-              <button
-                className="btn btn-neutral whitespace-nowrap"
-                onClick={openAddModal}
-              >
-                + Add Expenses
-              </button>
-            )}
-          </div>
+          {memberRole !== "board" && (
+            <button
+              className="btn btn-neutral whitespace-nowrap"
+              title="Add Expenses"
+              aria-label="Add Expenses"
+              type="button"
+              onClick={openAddModal}
+            >
+              <AddCircleIcon/>
+              Expenses
+            </button>
+          )}
         </div>
 
         <DataTableV2
@@ -269,29 +334,38 @@ function ClubExpenses() {
           isError={isError}
           error={error}
           renderRow={(row) => {
+            const id = row?.transaction_id || "Not Found";
+            const title = row?.title || "Not Found";
             const amount = row?.amount || 0;
+            const category = row?.category || "Not Found";
+            const transactionDate = row?.transaction_date || "Not Found";
             return (
-              <tr
-                key={`${TABLE_PREFIX}${row.transaction_id}`}
-                className="cursor-pointer hover:bg-base-200/50"
-                onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
+              <tr key={id}
+                onDoubleClick={() => openEditModal(row)}
+                className="text-center cursor-pointer hover:bg-base-200/50"
               >
-                <td className="px-4 py-2 text-center font-medium text-xs">
-                  {TABLE_PREFIX}_{row?.transaction_id.toLocaleString() || "ID"}
+                {/* Ref no. */}
+                <td className=" text-center font-medium text-xs">
+                  {TABLE_PREFIX}_{id}
                 </td>
-                <td className="px-4 py-4 text-center font-medium">{row?.title}</td>
-                <td className="px-4 py-2 font-semibold text-error text-center">
+                {/* Title */}
+                <td className=" text-center font-medium text-xs"
+                >
+                  {title}
+                </td>
+                {/* Amount */}
+                <td className=" font-semibold text-error">
                   ₱ {display(amount)}
                 </td>
-                <td className="px-4 py-2 text-center">
-                  <span className={`font-semibold ${CLUB_CATEGORY_COLORS[row?.category]}`}>
-                    {row?.category || "Not Provided"}
+                {/* Category */}
+                <td>
+                  <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
+                    {category}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {row?.transaction_date
-                    ? new Date(row?.transaction_date).toLocaleDateString()
-                    : "Not Provided"}
+                {/* Transaction Date */}
+                <td>
+                  {new Date(transactionDate).toLocaleDateString()}
                 </td>
               </tr>
             )
@@ -306,8 +380,8 @@ function ClubExpenses() {
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
         isPending={isAddPending || isEditPending}
-        status={isAddPending || isEditPending}
-        deleteAction={() => handleDelete(control._formValues.transaction_id)}
+        status={isAddPending || isEditPending || !isDirty}
+        deleteAction={() => handleDelete(getValues("contribution_id"))}
       >
         {fields.map(({ label, name, type, options }) => (
           <div key={name} className="form-control w-full mt-2">

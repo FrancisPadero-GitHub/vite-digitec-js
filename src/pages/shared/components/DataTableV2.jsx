@@ -1,10 +1,11 @@
 // cut down version of a reusable DataTable component with loading, error, and empty states
 // no pagination controls included since Im still looking for ways to implement it properly
 import { Link } from "react-router-dom";
+import React from "react";
 
 function DataTableV2({
   title,
-  subtext,
+  subtext, // only needed if showLinkPath is false to describe the table content
   type,
   headers = [],
   showLinkPath = false,
@@ -27,7 +28,8 @@ function DataTableV2({
       {title && (
       <div className="flex flex-row justify-between items-center">
         <h2 className="p-3">
-          <span className="text-xl font-semibold">{title}</span>
+          <span className="text-2xl font-bold">{title}</span>
+          {/* <span className={`text-xl font-semibold`}>{title}</span> */}
           {/* Only shows if showLinkPath is true which is associated with dashboard elements */}
           {showLinkPath ? (
             <span className="text-gray-400"> | Recent</span>
@@ -44,9 +46,9 @@ function DataTableV2({
 
       </div>)}
 
-      <div className="border border-base-content/5 bg-base-100/90 shadow-md overflow-hidden">
+      <div className="border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md overflow-hidden">
         {/* Scroll wrapper */}
-        <div className={`${type === "compact" ? "max-h-[40vh]" : "max-h-[75vh]"} min-h-[15vh] overflow-y-auto overflow-x-auto`}>
+        <div className={`${type === "compact" ? "max-h-[50vh]" : "max-h-[75vh]"} min-h-[17vh] overflow-y-auto overflow-x-auto`}>
           <table className="table w-full min-w-max">
             <thead className="sticky top-0 bg-base-200/80 backdrop-blur-md z-10">
               <tr>
@@ -62,7 +64,6 @@ function DataTableV2({
                 <tr>
                   <td colSpan={headers.length} className="py-10">
                     <div className="flex flex-col justify-center items-center">
-                      <span className="text-primary mb-5">Fetching data...</span>
                       <span className="loading loading-spinner loading-lg text-primary"></span>
                     </div>
                   </td>
@@ -106,4 +107,4 @@ function DataTableV2({
 }
 
 
-export default DataTableV2;
+export default React.memo(DataTableV2);

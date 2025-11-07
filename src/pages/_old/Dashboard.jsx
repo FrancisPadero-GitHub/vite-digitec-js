@@ -27,11 +27,11 @@ import { useMemberRole } from '../../backend/context/useMemberRole';
 import { PAYMENT_METHOD_COLORS, CLUB_CATEGORY_COLORS, INCOME_SOURCE_COLORS, CAPITAL_CATEGORY_COLORS} from '../../constants/Color';
 
 // components
-import StatCard from './components/StatCard';
-import ExpensesChart from './components/ExpensesChart';
-import CoopContributionChart from './components/CoopContributionChart';
-import ComparisonChart from './components/ComparisonChart';
-import DataTable from './components/DataTable';
+import StatCard from '../shared/components/StatCard';
+import ExpensesChart from '../shared/components/ExpensesChart';
+import CoopContributionChart from '../shared/components/CoopContributionChart';
+import ComparisonChart from '../shared/components/ComparisonChart';
+import DataTable from '../shared/components/DataTable';
 
 
 

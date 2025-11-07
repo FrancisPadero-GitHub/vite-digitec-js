@@ -4,12 +4,13 @@ function FilterToolbar({
   searchTerm,
   onSearchChange,
   dropdowns = [],
+  isFilterPending = false,
   onReset,
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {onSearchChange && (
-        <label className="input input-bordered flex items-center bg-base-100 md:w-64">
+        <label className="input input-bordered flex items-center bg-base-100 w-[25vh]">
           <SearchIcon className="text-base-content/50" />
           <input
             id="search_filter"
@@ -29,7 +30,7 @@ function FilterToolbar({
           id={`dropdown-${idx}`}              // satisfy the accessibility requirements 
           name={dropdown.value || idx}        // satisfy the accessibility requirements 
           key={idx}
-          className={`select select-bordered ${dropdown.className ?? "w-40"}`}
+          className={`select select-bordered ${dropdown.className ?? "w-[15vh]"}`}
           value={dropdown.value}
           onChange={(e) => dropdown.onChange(e.target.value)}
         >
@@ -40,15 +41,21 @@ function FilterToolbar({
         </select>
 
       ))}
-
+       
       {onReset && (
         <button
           type="button"
-          className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10" 
+          title="Clear Filter"
+          className="btn btn-ghost btn-square btn-sm text-error hover:bg-warning/10" 
           onClick={onReset}
         >
           <FilterAltOffOutlinedIcon />
         </button>
+      )}
+       
+      {/* For the useTransition filtering state pending MIGHT JITTER THOUGH*/}
+      {isFilterPending && (
+        <span className="loading loading-spinner loading-xs text-primary"></span>
       )}
     </div>
   );

@@ -1,19 +1,14 @@
-import { useState } from "react";
+import { useState, Fragment, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
-
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-} from "@headlessui/react";
-
+import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions} from "@headlessui/react";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { useNavigate } from "react-router-dom";
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useMemberRole } from "../../backend/context/useMemberRole";
-import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds";
+import { useFetchClubFundsView } from '../../backend/hooks/shared/view/useFetchClubFundsView';
 
 // mutation hooks
 import { useAddClubFunds } from "../../backend/hooks/treasurer/useAddClubFunds";
@@ -22,7 +17,7 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // components
 import FormModal from "./modals/FormModal";
-import MainDataTable from "./components/MainDataTable";
+import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
@@ -30,59 +25,126 @@ import {
   CLUB_CATEGORY_COLORS,
   PAYMENT_METHOD_COLORS,
 } from "../../constants/Color";
-import defaultAvatar from "../../assets/placeholder-avatar.png";
+import placeHolderAvatar from "../../assets/placeholder-avatar.png";
+
+// utils
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
 
-function ClubFunds() {
-    const placeHolderAvatar = defaultAvatar;
-  const { memberRole } = useMemberRole();
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+// HELPER FUNCTIONS
+// To avoid timezone issues with date inputs, we convert dates to local date strings
+function getLocalDateString(date) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
+};
 
+function ClubFunds() {
+  // helper
+  const today = getLocalDateString(new Date());
+  const navigate = useNavigate();
+
+  // data fetch
+  const { memberRole } = useMemberRole();
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-  const { data: clubFundsData, isLoading, isError, error } = useFetchClubFunds({});
+  const { data: club_funds_data, isLoading, isError, error } = useFetchClubFundsView({});
 
-  const clubFundsRaw = clubFundsData?.data || [];
-  const total = clubFundsData?.count || 0;
+  // mutation hooks 
 
-  // Search and filter
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddClubFunds();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditClubFunds();
+  const { mutate: mutateDelete } = useDelete("club_fund_contributions");
+
+  /**
+   *  Search and filter for the filterbar
+   */
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [methodFilter, setmethodFilter] = useState("");
+  const [methodFilter, setMethodFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   * 
+   */
+  // Add useTransition
+  const [isPending, startTransition] = useTransition();
+
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleCategoryChange = (value) => {
+    startTransition(() => {
+      setCategoryFilter(value);
+    });
+  };
+  const handleMethodChange = (value) => {
+    startTransition(() => {
+      setMethodFilter(value);
+    });
+  };
+  const handleYearChange = (value) => {
+    startTransition(() => {
+      setYearFilter(value);
+    });
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => {
+      setMonthFilter(value);
+    });
+  };
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
+
   const TABLE_PREFIX = "CFC";
-  const clubFunds = clubFundsRaw.filter((row) => {
-    const member = members?.find(
-      (m) => m.account_number === row.account_number
-    );
-    const account_number = row?.account_number || "";
-    const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
-      : "";
-    const generatedId = `${TABLE_PREFIX}_${row?.contribution_id || ""}`;
-
-    const matchesSearch =
-      searchTerm === "" ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      account_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesCategory =
-      categoryFilter === "" || row.category === categoryFilter;
-
-    const matchesMethod =
-      methodFilter === "" || row.payment_method === methodFilter;
-
-    const date = row.payment_date ? new Date(row.payment_date) : null;
-    const matchesYear =
-      yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
-
+  const clubFunds = useMemo(() => {
+    /**
+     * you might be asking why not just use club_funds_data?.data directly?
+     * the reason is that useMemo will only recompute the filtered data when
+     * one of its dependencies change (club_funds_data, debouncedSearch, categoryFilter, methodFilter, yearFilter, monthFilter)
+     * this optimizes performance by avoiding unnecessary recalculations on every render
+     * especially when dealing with large datasets.
+     */
+    const clubFundsRaw = club_funds_data?.data || [];
+    return clubFundsRaw.filter((row) => {
+      const generatedId = `${TABLE_PREFIX}_${row?.contribution_id || ""}`;
+      const matchesSearch =
+          debouncedSearch === "" ||
+          (row.full_name && row.full_name
+            .toLowerCase()
+            .includes(debouncedSearch
+              .toLowerCase())) ||
+        row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.category?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCategory =
+        categoryFilter === "" || row.category === categoryFilter;
+      const matchesMethod =
+        methodFilter === "" || row.payment_method === methodFilter;
+      const date = row.payment_date ? new Date(row.payment_date) : null;
+      const matchesYear =
+        yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+      
+      // To avoid subtext displaying numbers instead of month names
+      // I had to convert the values from the monthFilter to numbers for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2,
+        March: 3, April: 4,
+        May: 5, June: 6,
+        July: 7, August: 8,
+        September: 9, October: 10,
+        November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
+    // just a nested return dont be confused
     return (
       matchesSearch &&
       matchesCategory &&
@@ -90,58 +152,102 @@ function ClubFunds() {
       matchesMonth &&
       matchesMethod
     );
-  });
+    })
+  }, [club_funds_data, debouncedSearch, categoryFilter, methodFilter, yearFilter, monthFilter]);
 
-  // mutations
-  const { mutate: mutateAdd, isPending: isAddPending } = useAddClubFunds();
-  const { mutate: mutateEdit, isPending: isEditPending } = useEditClubFunds();
-  const { mutate: mutateDelete } = useDelete("club_funds_contributions");
-
-  const [modalType, setModalType] = useState(null);
-  const [query, setQuery] = useState("");
-  
   // This is used for the combobox selection of members upon searching for account_number
+  const [query, setQuery] = useState("");
+  // for smoothing out filtering
+  const debouncedQuery = useDebounce(query, 250); // 250ms delay feels natural
   const filteredMembers =
-    query === ""
+    debouncedQuery === ""
       ? members || []
       : members.filter((m) =>
         `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
           .toLowerCase()
-          .includes(query.toLowerCase())
+          .includes(debouncedQuery.toLowerCase())
       );
 
-  const defaultValues = {
-    contribution_id: null,
-    account_number: null,
-    amount: 0,
-    category: "",
-    payment_date: "",
-    payment_method: "",
-    period_start: "",
-    period_end: "",
-    remarks: "",
+
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
+  });
+
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    categoryFilter ? `${categoryFilter}` : null,
+    methodFilter ? `${methodFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all contributions";
+
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+    setMethodFilter("");
   }
 
   // react hook form
-  const { register, control, handleSubmit, reset } = useForm({
-    defaultValues
+  const { 
+    control,
+    register,
+    handleSubmit,
+    reset,
+    getValues,
+    formState: { isDirty }
+   } = useForm({
+    defaultValues: {
+      contribution_id: null,
+      account_number: null,
+      amount: 0,
+      category: "",
+      payment_date: today,
+      payment_method: "",
+      remarks: "",
+    }
   });
 
-
+  /**
+   * Modal handlers
+   */
+  const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
-    reset(defaultValues); 
+    reset(); 
     setModalType("add");
   };
 
   const openEditModal = (selectedRowData) => {
-    reset(selectedRowData); // preload RHF values
+    reset(selectedRowData);
     setModalType("edit");
   };
 
-  const closeModal = () => setModalType(null);
+  const openProfile = (memberId) => {
+    if (memberId) {
+      navigate(`/${memberRole}/member-profile/${memberId}`);
+    } else {
+      toast.error("Member ID not found");
+    }
+  };
 
+  const closeModal = () =>{
+    reset();
+    setModalType(null);
+  };
 
   const handleDelete = (contribution_id) => {
+    reset();
     mutateDelete({
       table: "club_funds_contributions",
       column_name: "contribution_id",
@@ -181,7 +287,6 @@ function ClubFunds() {
     }
   };
 
-
   const fields = [
     { label: "Amount", name: "amount", type: "number" },
     {
@@ -208,8 +313,6 @@ function ClubFunds() {
         { label: "Bank", value: "Bank" },
       ]
     },
-    { label: "Period Start", name: "period_start", type: "date" },
-    { label: "Period End", name: "period_end", type: "date" },
     { label: "Remarks", name: "remarks", type: "text" },
   ];
 
@@ -217,81 +320,81 @@ function ClubFunds() {
   return (
     <div>
       <Toaster position="bottom-left"/>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Club Funds Contribution</h1>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+            <FilterToolbar
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              isFilterPending={isPending}
+              onReset={handleClearFilters}
+              dropdowns={[
+                {
+                  label: "All Category",
+                  value: categoryFilter,
+                  onChange: handleCategoryChange,
+                  options: [
+                    { label: "Monthly Dues", value: "Monthly Dues" },
+                    { label: "Activities", value: "Activities" },
+                    { label: "Alalayang Agila", value: "Alalayang Agila" },
+                    { label: "Community Service", value: "Community Service" },
+                    { label: "Others", value: "Others" },
+                  ],
+                },
+                {
+                  label: "All Method",
+                  value: methodFilter,
+                  onChange: handleMethodChange,
+                  options: [
+                    { label: "Cash", value: "Cash" },
+                    { label: "GCash", value: "GCash" },
+                    { label: "Bank", value: "Bank" },
+                  ],
+                },
+                {
+                  label: "All Year",
+                  value: yearFilter,
+                  onChange: handleYearChange,
+                  options: yearOptions,
+                },
+                {
+                  label: "All Month",
+                  value: monthFilter,
+                  onChange: handleMonthChange,
+                  options: [
+                    { label: "January", value: "January" },
+                    { label: "February", value: "February" },
+                    { label: "March", value: "March" },
+                    { label: "April", value: "April" },
+                    { label: "May", value: "May" },
+                    { label: "June", value: "June" },
+                    { label: "July", value: "July" },
+                    { label: "August", value: "August" },
+                    { label: "September", value: "September" },
+                    { label: "October", value: "October" },
+                    { label: "November", value: "November" },
+                    { label: "December", value: "December" },
+                  ],
+                },
+              ]}
+            />
           {memberRole !== "board" && (
             <button
               className="btn btn-neutral whitespace-nowrap"
+              title="Add contribution"
+              aria-label="Add Contribution"
+              type="button"
               onClick={openAddModal}
             >
-              + Add Transaction
+              <AddCircleIcon/>
+              Fund Contribution
             </button>
           )}
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Method",
-              value: methodFilter,
-              onChange: setmethodFilter,
-              options: [
-                { label: "Cash", value: "Cash" },
-                { label: "GCash", value: "GCash" },
-                { label: "Bank", value: "Bank" },
-              ],
-            },
-            {
-              label: "All Category",
-              value: categoryFilter,
-              onChange: setCategoryFilter,
-              options: [
-                { label: "Monthly Dues", value: "Monthly Dues" },
-                { label: "Activities", value: "Activities" },
-                { label: "Alalayang Agila", value: "Alalayang Agila" },
-                { label: "Community Service", value: "Community Service" },
-                { label: "Others", value: "Others" },
-              ],
-            },
-            {
-              label: "All Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-                { label: "2021", value: "2021" },
-                { label: "2020", value: "2020" },
-              ],
-            },
-            {
-              label: "All Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable
+        <DataTableV2
+          title="Club Funds Contributions"
+          subtext={activeFiltersText}
+          showLinkPath={false}
           headers={[
             "Ref No.",
             "Account No.",
@@ -300,106 +403,84 @@ function ClubFunds() {
             "Category",
             "Date",
             "Method",
-            "Period Covered",
           ]}
+          filterActive={activeFiltersText !== "Showing all contributions"}
           data={clubFunds}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
+            const id = row?.contribution_id || "Not Found";
+            const memberId = row?.member_id || null;
+            const accountNo = row?.account_number || "Not Found";
+            const fullName = row?.full_name || "Not Found";
+            const avatarUrl = row?.avatar_url || placeHolderAvatar;
             const amount = row?.amount || 0;
-            const matchedMember = members?.find(
-              (member) => member?.account_number === row?.account_number
-            );
-            const fullName = matchedMember
-              ? `${matchedMember?.f_name ?? ""} ${matchedMember?.l_name ?? ""}`.trim()
-              : "Not Found";
-
+            const clubCategory = row?.category || "Not Found";
+            const paymentDate = row?.payment_date || "Not Found";
+            const paymentMethod = row?.payment_method || "Not Found";
             return (
-              <tr
-                key={`${TABLE_PREFIX}${row?.contribution_id}`}
-                onClick={
-                  memberRole !== "board" ? () => openEditModal(row) : undefined
-                }
-                className="transition-colors cursor-pointer hover:bg-base-200/70"
+              <tr key={id}
+                onDoubleClick={() => openEditModal(row)}
+                className="text-center cursor-pointer hover:bg-base-200/50"
               >
-                <td className="px-4 py-2 text-center font-medium text-xs">
-                  {TABLE_PREFIX}_{row?.contribution_id}
+                {/* Ref no. */}
+                <td className=" text-center font-medium text-xs">
+                  {TABLE_PREFIX}_{id}
                 </td>
-                <td className="px-4 py-2 text-center font-medium text-xs">
-                  {matchedMember?.account_number || "Not Found"}
+
+                {/* Account No */}
+                <td className=" text-center font-medium text-xs hover:underline"
+                  // you can only navigate if memberId is available
+                  onClick={() => openProfile(memberId)}
+                >
+                  {accountNo || "Not Found"}
                 </td>
-                <td className="px-4 py-4">
+                {/* Full name and avatar */}
+                <td>
                   <span className="flex items-center gap-3">
-                    {matchedMember ? (
-                      <>
-                        {/* avatar for members */}
-                        <div className="avatar">
-                          <div className="mask mask-circle w-10 h-10">
-                            <img
-                              src={
-                                matchedMember?.avatar_url || placeHolderAvatar
-                              }
-                              alt={fullName}
-                            />
-                          </div>
+                    <Fragment>
+                      {/* Avatar */}
+                      <div className="avatar">
+                        <div className="mask mask-circle w-10 h-10">
+                          <img
+                            src={avatarUrl}
+                            alt={fullName}
+                          />
                         </div>
-                        <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
-                      </>
-                    ) : (
-                      <>
-                        {/* system-generated row */}
-                        <div className="text-gray-800 italic">{fullName}</div>
-                      </>
-                    )}
+                      </div>
+                      {/* Full name */}
+                      <span className="truncate max-w-[120px]">{fullName}</span>
+                    </Fragment>
                   </span>
                 </td>
-                <td className="px-4 py-2 font-semibold text-success text-center">
+                {/* Amount */}
+                <td className="font-semibold text-success">
                   ₱ {display(amount)}
                 </td>
-                <td className="px-4 py-2 text-center">
+                {/* Category */}
+                <td>
                   <span
-                    className={`font-semibold ${CLUB_CATEGORY_COLORS[row?.category]}`}
+                    className={`font-semibold ${CLUB_CATEGORY_COLORS[clubCategory]}`}
                   >
-                    {row?.category || "Not Provided"}
+                    {clubCategory}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {row?.payment_date ? (
-                    <span>{new Date(row?.payment_date).toLocaleDateString()}</span>
-                  ) : (
-                    <span className="italic">Not Provided</span>
-                  )}
+                {/* Payment Date */}
+                <td>
+                  {new Date(paymentDate).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {row?.payment_date ? (
-                    <span
-                      className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}
-                    >
-                      {row?.payment_method}
-                    </span>
-                  ) : (
-                    <span className="badge font-semibold badge-error">
-                      Not Provided
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-2 text-center">
-                  {row?.period_start && row?.period_end ? (
-                    <span className="text-xs">
-                      {new Date(row.period_start).toLocaleDateString()} -<br />
-                      {new Date(row.period_end).toLocaleDateString()}
-                    </span>
-                  ) : (
-                    <span className="italic">Not Provided</span>
-                  )}
+
+                {/* Payment Method */}
+                <td>
+                  <span
+                    className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}
+                  >
+                    {paymentMethod}
+                  </span>
                 </td>
               </tr>
-            );
+            )
           }}
         />
       </div>
@@ -410,11 +491,9 @@ function ClubFunds() {
         close={closeModal}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
-        isPending={isAddPending || isEditPending}
-        status={isAddPending || isEditPending}
-        deleteAction={() =>
-          handleDelete(control._formValues.contribution_id)
-        }
+        isPending={isAddPending || isEditPending }
+        status={isAddPending || isEditPending || !isDirty}
+        deleteAction={() => handleDelete(getValues("contribution_id"))}
       >
         {/* Member Combobox with Controller */}
         <div className="form-control w-full">
@@ -434,7 +513,7 @@ function ClubFunds() {
                   displayValue={(member) => (member ? member.account_number : "")}
                   onChange={(e) => setQuery(e.target.value)}
                 />
-                <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-[50vh] overflow-auto border border-base-200">
                   {filteredMembers.length === 0 ? (
                     <div className="px-4 py-2 text-base-content/60">No members found.</div>
                   ) : (
@@ -467,7 +546,7 @@ function ClubFunds() {
           />
         </div>
 
-        {fields.map(({ label, name, type, options, autoComplete }) => (
+        {fields.map(({ label, name, type, options}) => (
           <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name}>
               <span className="label text-sm font-semibold mb-2">{label}</span>
@@ -517,7 +596,6 @@ function ClubFunds() {
             ) : type === "select" ? (
               <select
                 id={name}
-                autoComplete={autoComplete}
                 {...register(name, { required: true })}
                 className="select select-bordered w-full"
               >
@@ -533,7 +611,6 @@ function ClubFunds() {
             ) : (
               <input
                 id={name}
-                autoComplete={autoComplete}
                 type={type}
                 {...register(name, { required: true })}
                 className="input input-bordered w-full"
@@ -545,5 +622,4 @@ function ClubFunds() {
     </div>
   );
 }
-
 export default ClubFunds;

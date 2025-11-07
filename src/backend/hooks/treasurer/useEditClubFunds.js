@@ -9,8 +9,6 @@ const updateClubFunds = async (formData) => {
     amount = 0,
     category = null,
     payment_date = null,
-    period_start = null,
-    period_end = null,
     payment_method = null,
     remarks = null,
   } = formData; // if the form data is empty it will fallback to these null values
@@ -25,8 +23,6 @@ const updateClubFunds = async (formData) => {
     amount,
     category,
     payment_date,
-    period_start,
-    period_end,
     payment_method,
     remarks,
   };
@@ -54,7 +50,7 @@ export const useEditClubFunds = () => {
     mutationFn: updateClubFunds,
     onSuccess: async (data) => {
       console.log("Contribution Updated!", data);
-      queryClient.invalidateQueries({ queryKey: ["club_funds_contributions"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["view_club_fund_contributions"], exact: false });
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

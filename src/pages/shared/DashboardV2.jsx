@@ -1,6 +1,8 @@
 import {useState, Fragment, useMemo} from 'react'
 import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-material';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
+import { useNavigate } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 
 // fetch hooks
 // view tables
@@ -15,6 +17,7 @@ import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal';
 
 // helper 
 import { useMemberRole } from '../../backend/context/useMemberRole';
+import { display } from '../../constants/numericFormat';
 
 // components
 import DataTableV2 from './components/DataTableV2';
@@ -41,6 +44,15 @@ function DashboardV2() {
   const { data: expenses_data, isLoading: expensesIsLoading, isError: expensesIsError, error: expensesError } = useFetchExpenses({});
   const expenses = expenses_data?.data || [];
 
+  // Navigation
+  const navigate = useNavigate();
+  const openProfile = (memberId) => {
+    if (memberId) {
+      navigate(`/${memberRole}/member-profile/${memberId}`);
+    } else {
+      toast.error("Member ID not found");
+    }
+  };
 
   // Filters state for the start cards and totals
   const [filters, setFilters] = useState({
@@ -198,18 +210,17 @@ function DashboardV2() {
 
 
   return (
-    <div className="mb-6 space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div>
+      <Toaster position="bottom-left"/>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex flex-col md:flex-col lg:flex-row xl:flex-row gap-4">
-
           {/* LEFT SIDE */}
           <div className="flex-1 flex flex-col gap-3">
-
           {/* Total Card Stats  */}
           <section className="mb-4">
             <div className="flex items-center mb-2">
               <h2 className="text-xl font-semibold mr-2">Overall Totals</h2>
-
               {/* Universal Filter */}
               <div className="dropdown dropdown-right">
                 <label tabIndex={0} className="btn btn-sm">
@@ -250,21 +261,13 @@ function DashboardV2() {
                 </ul>
               </div>
             </div>
-
             {/* Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {stats.map((s, i) => (
                 <StatCardV2 key={i} {...s} subtitle={filters.overAll.subtitle} />
               ))}
             </div>
-
           </section>
-
-
-
-
-
-
             {/* Share Capital Area Chart */}
             <section className="border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
               <div className="p-6 flex flex-col h-full">
@@ -273,7 +276,6 @@ function DashboardV2() {
                   <span className="text-gray-400"> | This Year</span>
                   <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
                 </div>
-
                 <div className="w-full min-w-0">
                   <CoopContributionChart
                     data={coopFunds}
@@ -284,9 +286,9 @@ function DashboardV2() {
                 </div>
               </div>
             </section>
-
             <DataTableV2
               title={"Share Capital / Coop"}
+              type={"compact"}
               showLinkPath={true}
               linkPath={`/${memberRole}/coop-share-capital`}
               headers={["Ref No.", "Account No", "Name", "Amount", "Payment Category", "Date"]}
@@ -294,16 +296,15 @@ function DashboardV2() {
               isLoading={coopIsloading}
               renderRow={(row) => {
                 const TABLE_PREFIX = "SCC_";
-                const id = row?.coop_contri_id;
-                const accountNo = row?.account_number;
-                const avatarUrl = row?.avatar_url;
-                const fullName = row?.full_name;
-                const amount = row?.amount;
-                const paymentCategory = row?.category;
-                const contributionDate = row?.contribution_date;
-
+                const id = row?.coop_contri_id || "Not Found";
+                const memberId = row?.member_id || null;
+                const accountNo = row?.account_number || "System";
+                const avatarUrl = row?.avatar_url || placeHolderAvatar;
+                const fullName = row?.full_name || "Not Found";
+                const amount = row?.amount || 0;
+                const paymentCategory = row?.category || "Not Found";
+                const contributionDate = row?.contribution_date || "Not Found";
                 const isDisabled = !row?.full_name; // condition (you can adjust logic)
-
                 return (
                   <tr key={id}
                       className={`text-center ${isDisabled ?
@@ -314,10 +315,11 @@ function DashboardV2() {
                       {TABLE_PREFIX}{id}
                     </td>
                     {/* Account No */}
-                    <td className=" text-center font-medium text-xs">
-                      {accountNo || "System"}
+                    <td className=" text-center font-medium text-xs hover:underline"
+                      onClick={() => openProfile(memberId)}
+                    >
+                      {accountNo}
                     </td>
-
                     {/* Full name and avatar */}
                     <td>
                       <span className="flex items-center gap-3">
@@ -326,14 +328,14 @@ function DashboardV2() {
                         <div className="avatar">
                           <div className="mask mask-circle w-10 h-10">
                             <img
-                              src={avatarUrl || placeHolderAvatar}
+                              src={avatarUrl}
                               alt={fullName}
                             />
                           </div>
                         </div>
                         {/* Full name */}
                         <span className="flex items-center gap-2">
-                          <span className="truncate max-w-[120px]">{fullName || "Not Found"}</span>
+                          <span className="truncate max-w-[120px]">{fullName}</span>
                           {isDisabled && (
                             <div className="tooltip tooltip-top" data-tip="System Generated">
                               <span className="badge badge-sm badge-ghost">?</span>
@@ -343,12 +345,10 @@ function DashboardV2() {
                       </Fragment>
                       </span>
                     </td>
-
                     {/* Amount */}
                     <td className="font-semibold text-success">
-                      ₱ {amount?.toLocaleString() || "0"}
+                      ₱ {display(amount)}
                     </td>
-
                     {/* Payment Category */}
                     <td>
                       {paymentCategory ? (
@@ -359,49 +359,48 @@ function DashboardV2() {
                         <span className="badge font-semibold badge-error">Not Found</span>
                       )}
                     </td>
-
                     {/* Contribution Date */}
-                    <td className=''>
+                    <td>
                       {contributionDate ? new Date(contributionDate).toLocaleDateString() : "Not Found"}
                     </td>
       
                   </tr>
                 )
-              }} 
+              }}
             />
-
             <DataTableV2
               title={"Club Funds"}
+              type={"compact"}
               showLinkPath={true}
               linkPath={`/${memberRole}/club-funds`}
               headers={["Ref No.", "Account No.", "Name", "Amount", "Category", "Date"]}
               data={clubFunds}
               isLoading={clubFundsIsLoading}
               renderRow={(row) => {
-
                 const TABLE_PREFIX = "CFC_"
-                const id = row?.contribution_id;
-                const accountNo = row?.account_number;
-                const fullName = row?.full_name;
-                const avatarUrl = row?.avatar_url;
-                const amount = row?.amount;
-                const clubCategory = row?.category;
-                const paymentDate = row?.payment_date;
-
+                const id = row?.contribution_id || "Not Found";
+                const memberId = row?.member_id || null;
+                const accountNo = row?.account_number || "Not Found";
+                const fullName = row?.full_name || "Not Found";
+                const avatarUrl = row?.avatar_url || placeHolderAvatar;
+                const amount = row?.amount || 0;
+                const clubCategory = row?.category || "Not Found";
+                const paymentDate = row?.payment_date || "Not Found";
                 return (
-                  <tr key={id} 
+                  <tr key={id}
                     className="text-center cursor-pointer hover:bg-base-200/50"
                   >
                     {/* Ref no. */}
                     <td className=" text-center font-medium text-xs">
                       {TABLE_PREFIX}{id}
                     </td>
-
                     {/* Account No */}
-                    <td className=" text-center font-medium text-xs">
+                    <td className=" text-center font-medium text-xs hover:underline"
+                      onClick={() => openProfile(memberId)}
+                    >
                       {accountNo || "Not Found"}
                     </td>
-                    
+      
                     {/* Full name and avatar */}
                     <td>
                       <span className="flex items-center gap-3">
@@ -410,38 +409,36 @@ function DashboardV2() {
                           <div className="avatar">
                             <div className="mask mask-circle w-10 h-10">
                               <img
-                                src={avatarUrl || placeHolderAvatar}
+                                src={avatarUrl}
                                 alt={fullName}
                               />
                             </div>
                           </div>
                           {/* Full name */}
-                          <span className="truncate max-w-[120px]">{fullName || "Not Found"}</span>
+                          <span className="truncate max-w-[120px]">{fullName}</span>
                         </Fragment>
                       </span>
                     </td>
-
                     {/* Amount */}
                     <td className="font-semibold text-success">
-                      ₱ {amount?.toLocaleString() || "0"}
+                      ₱ {display(amount)}
                     </td>
                     {/* Category */}
                     <td>
                       <span
                         className={`font-semibold ${CLUB_CATEGORY_COLORS[clubCategory]}`}
                       >
-                        {clubCategory || "Not Found"}
+                        {clubCategory}
                       </span>
                     </td>
                     {/* Payment Date */}
                     <td>
-                      {paymentDate ? new Date(paymentDate).toLocaleDateString() : "Not Found"}
+                      {new Date(paymentDate).toLocaleDateString()}
                     </td>
                   </tr>
                 )
               }}
             />
-
             <DataTableV2
               title={"Club Expenses"}
               type={"compact"}
@@ -452,13 +449,13 @@ function DashboardV2() {
               isLoading={expensesIsLoading}
               renderRow={(row) => {
                 const TABLE_PREFIX = "EXP_";
-                const id = row?.transaction_id;
-                const title = row?.title;
-                const amount = row?.amount;
-                const category = row?.category;
-                const transactionDate = row?.transaction_date;
+                const id = row?.transaction_id || "Not Found";
+                const title = row?.title || "Not Found";
+                const amount = row?.amount || 0;
+                const category = row?.category || "Not Found";
+                const transactionDate = row?.transaction_date || "Not Found";
                 return (
-                  <tr key={id} 
+                  <tr key={id}
                     className="text-center cursor-pointer hover:bg-base-200/50"
                   >
                     {/* Ref no. */}
@@ -471,28 +468,25 @@ function DashboardV2() {
                     </td>
                     {/* Amount */}
                     <td className=" font-semibold text-error">
-                      ₱ {amount?.toLocaleString() || "0"}
+                      ₱ {display(amount)}
                     </td>
                     {/* Category */}
                     <td>
                       <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
-                        {category || "Not Found"}
+                        {category}
                       </span>
                     </td>
                     {/* Transaction Date */}
                     <td>
-                      {transactionDate ? new Date(transactionDate).toLocaleDateString() : "Not Found"}
+                      {new Date(transactionDate).toLocaleDateString()}
                     </td>
                   </tr>
                 )
-              }
-              }
+              }}
             />
           </div>
-
           {/* RIGHT SIDE */}
         <div className="w-full md:w-full lg:w-[25%] xl:w-[35%] flex flex-col gap-3">
-
             {/* CLUB EXPENSES DONUT CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
               <div className="flex flex-col h-full">
@@ -513,7 +507,6 @@ function DashboardV2() {
                 </div>
               </div>
             </section>
-
             {/* CLUB FUNDS VS EXPENSES DUAL LINE CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
               <div className="flex flex-col h-full">
@@ -535,6 +528,7 @@ function DashboardV2() {
             </section>
           </div>
         </div>
+      </div>
     </div>
   )
 }

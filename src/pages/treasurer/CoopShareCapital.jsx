@@ -1,16 +1,15 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
-
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
-
-// Context
 
 
 // Fetch Hooks
 import { useMemberRole } from "../../backend/context/useMemberRole";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
-import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
+import { useFetchCoopView } from "../../backend/hooks/shared/view/useFetchCoopView";
 
 // Mutation Hooks
 import { useAddCoopContributions } from "../../backend/hooks/treasurer/useAddCoopContributions";
@@ -19,29 +18,45 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 
 // Components
 import FormModal from "./modals/FormModal";
-import MainDataTable from "./components/MainDataTable";
+import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // Constants
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
-import defaultAvatar from "../../assets/placeholder-avatar.png";
+import placeHolderAvatar from "../../assets/placeholder-avatar.png";
+
+
+// utils
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
 
+// HELPER FUNCTIONS
+// To avoid timezone issues with date inputs, we convert dates to local date strings
+function getLocalDateString(date) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
+};
 
 function CoopShareCapital() {
-  const placeHolderAvatar = defaultAvatar;
+  // helper
+  const today = getLocalDateString(new Date());
+  const navigate = useNavigate();
+
+  // data fetch
   const { memberRole } = useMemberRole(); // used to hide button to add transaction like a treasurer kay board rani sya view view langs
-
-  // front end pagination
-  const [page, setPage] = useState(1);                    
-  const [limit] = useState(20);
-
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-  const { data: coopData, isLoading, isError, error } = useFetchCoop({});
-  const total = coopData?.count || 0;
-  const coopRaw = coopData?.data || [];
+  const { data: coop_data, isLoading, isError, error } = useFetchCoopView({});
 
+  // mutation hooks
+  const { mutate: mutateAdd, isPending: isAddPending } = useAddCoopContributions();
+  const { mutate: mutateEdit, isPending: isEditPending } = useEditCoopContributions();
+  const { mutate: mutateDelete } = useDelete("coop_share_capital_contributions");
+
+  /**
+   *  Search and filter for the filterbar
+   */
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
@@ -49,38 +64,81 @@ function CoopShareCapital() {
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   * 
+   */
+  // Add useTransition
+  const [isPending, startTransition] = useTransition();
+
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleCategoryChange = (value) => {
+    startTransition(() => {
+      setCategoryFilter(value);
+    });
+  };
+  const handlePaymentMethodChange = (value) => {
+    startTransition(() => {
+      setPaymentMethodFilter(value);
+    });
+  };
+  const handleYearChange = (value) => {
+    startTransition(() => {
+      setYearFilter(value);
+    });
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => {
+      setMonthFilter(value);
+    });
+  };
+
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
+
   const TABLE_PREFIX = "SCC";
-  const coop = coopRaw.filter((row) => {
-    const member = members?.find(
-      (m) => m.account_number === row.account_number
-    );
-    const account_number = row?.account_number || "";
-    const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
-      : "";
-    const generatedId = `${TABLE_PREFIX}_${row?.coop_contri_id || ""}`;
+  const coop = useMemo(() => {
+    const coopRaw = coop_data?.data || [];
+    return coopRaw.filter((row) => {
+      const generatedId = `${TABLE_PREFIX}_${row?.coop_contri_id || ""}`;
+      const matchesSearch =
+        debouncedSearch === "" ||
+        (row.full_name && row.full_name
+          .toLowerCase()
+          .includes(debouncedSearch
+            .toLowerCase())) ||
+        row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.category?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesSource =
+        sourceFilter === "" || row.source === sourceFilter;
+      const matchesCategory =
+        categoryFilter === "" || row.category === categoryFilter;
+      const matchesMethod =
+        paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
+      const date = row.contribution_date ? new Date(row.contribution_date) : null;
+      const matchesYear =
+        yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
 
-    const matchesSearch =
-      searchTerm === "" ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      account_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
-     
-    const matchesSource =
-      sourceFilter === "" || row.source === sourceFilter;
-
-    const matchesCategory =
-      categoryFilter === "" || row.category === categoryFilter;
-
-    const matchesMethod =
-      paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
-
-    const date = row.payment_date ? new Date(row.payment_date) : null;
-    const matchesYear =
-      yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+      // To avoid subtext displaying numbers instead of month names
+      // I had to convert the values from the monthFilter to numbers for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2,
+        March: 3, April: 4,
+        May: 5, June: 6,
+        July: 7, August: 8,
+        September: 9, October: 10,
+        November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
 
     return (
       matchesSearch &&
@@ -90,55 +148,103 @@ function CoopShareCapital() {
       matchesMethod &&
       matchesSource
     );
-  });
-
-
-  const { mutate: mutateAdd, isPending: isAddPending } = useAddCoopContributions();
-  const { mutate: mutateEdit, isPending: isEditPending } = useEditCoopContributions();
-  const { mutate: mutateDelete } = useDelete("coop_cbu_contributions");
-
-  const [modalType, setModalType] = useState(null);
-  const [query, setQuery] = useState("");
+    })
+  }, [coop_data, debouncedSearch, categoryFilter, yearFilter, monthFilter, paymentMethodFilter, sourceFilter]);
 
   // This is used for the combobox selection of members upon searching for account_number
+  const [query, setQuery] = useState("");
+  // for smoothing out filtering
+  const debouncedQuery = useDebounce(query, 250); // 250ms delay feels natural
+  // This is used for the combobox selection of members upon searching for account_number
   const filteredMembers =
-    query === ""
+    debouncedQuery === ""
       ? members || []
       : members.filter((m) =>
         `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
           .toLowerCase()
-          .includes(query.toLowerCase())
+          .includes(debouncedQuery.toLowerCase())
       );
 
-  const defaultValues = {
-    coop_contri_id: null,
-    account_number: null,
-    source: "Member Contribution",
-    category: "",
-    amount: 0,
-    contribution_date: "",
-    payment_method: "",
-    remarks: "",
-  };
-
-  const { handleSubmit, reset, control, register} = useForm({
-    defaultValues,
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
   });
 
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    sourceFilter ? `${sourceFilter}` : null,
+    categoryFilter ? `${categoryFilter}` : null,
+    paymentMethodFilter ? `${paymentMethodFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all contributions";
+
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSourceFilter("");
+    setPaymentMethodFilter("");
+    setCategoryFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+
+  }
+
+  // react hook form
+  const { handleSubmit, reset, control, register} = useForm({
+    defaultValues : {
+      coop_contri_id: null,
+      account_number: null,
+      source: "Member Contribution",
+      category: "",
+      amount: 0,
+      contribution_date: today,
+      payment_method: "",
+      remarks: "",
+    }
+  });
+
+  /**
+   * Modal handlers
+   */
+  const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
-    reset(defaultValues);
+    reset();
     setModalType("add");
   };
 
-  const openEditModal = (rowData) => {
-    reset(rowData);
+  const openEditModal = (selectedRowData) => {
+    reset(selectedRowData);
     setModalType("edit");
   };
 
-  const closeModal = () => setModalType(null);
+  const openProfile = (memberId) => {
+    if (memberId) {
+      navigate(`/${memberRole}/member-profile/${memberId}`);
+    } else {
+      toast.error("Member ID not found");
+    }
+  };
+
+  const closeModal = () =>{
+    reset();
+    setModalType(null);
+  };
 
   const handleDelete = (coop_contri_id) => {
-    mutateDelete({ table: "coop_cbu_contributions", column_name: "coop_contri_id", id: coop_contri_id });
+    reset();
+    mutateDelete({ 
+      table: "coop_cbu_contributions", 
+      column_name: "coop_contri_id", 
+      id: coop_contri_id });
     closeModal();
   };
 
@@ -194,164 +300,173 @@ function CoopShareCapital() {
   return (
     <div>
       <Toaster position="bottom-left"/>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Share Capital / Coop Contribution</h1>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Category",
+                value: categoryFilter,
+                onChange: handleCategoryChange,
+                options: [
+                  { label: "Initial", value: "Initial" },
+                  { label: "Monthly", value: "Monthly" },
+                  { label: "System", value: "System" },
+                ]
+              },
+              {
+                label: "All Method",
+                value: paymentMethodFilter,
+                onChange: handlePaymentMethodChange,
+                options: [
+                  { label: "Cash", value: "Cash" },
+                  { label: "GCash", value: "GCash" },
+                  { label: "Bank", value: "Bank" }
+                ]
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions,
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
           {memberRole !== "board" && (
-            <button className="btn btn-neutral whitespace-nowrap" onClick={openAddModal}>
-              + Add Contribution
+            <button
+              className="btn btn-neutral whitespace-nowrap"
+              title="Add contribution"
+              aria-label="Add Contribution"
+              type="button"
+              onClick={openAddModal}
+            >
+              <AddCircleIcon />
+              Coop Contribution
             </button>
           )}
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            { 
-              label: "All Source", 
-              value: sourceFilter, 
-              onChange: setSourceFilter, 
-              options: [
-                { label: "Member", value: "Member Contribution" }, 
-                { label: "System", value: "system" }
-              ]
-            },
-            { 
-              label: "All Category", 
-              value: categoryFilter, 
-              onChange: setCategoryFilter, 
-              options: [
-                { label: "Initial", value: "Initial" }, 
-                { label: "Monthly", value: "Monthly" }, 
-                { label: "System", value: "System" },
-              ]
-            },
-            {
-              label: "All Method", 
-              value: paymentMethodFilter, 
-              onChange: setPaymentMethodFilter, 
-              options: [
-                { label: "Cash", value: "Cash" }, 
-                { label: "GCash", value: "GCash" }, 
-                { label: "Bank", value: "Bank" }
-              ] 
-            },
-            { 
-              label: "All Year", 
-              value: yearFilter, 
-              onChange: setYearFilter, 
-              options: [
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-                { label: "2021", value: "2021" },
-                { label: "2020", value: "2020" },
-              ] 
-            },
-            { 
-              label: "All Month", 
-              value: monthFilter, 
-              onChange: setMonthFilter, 
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-               ], 
-             },
-          ]}
-        />
-
-        <MainDataTable
+        <DataTableV2
+          title="Coop Share Capital Contributions"
+          subtext={activeFiltersText}
+          showLinkPath={false}
           headers={[
             "Ref No.",
             "Account No.", 
             "Name",
             "Amount", 
-            "Payment Category", 
+            "Category",
             "Date", 
-            "Payment Method"
+            "Method"
           ]}
+          filterActive={activeFiltersText !== "Showing all contributions"}
           data={coop}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
-
+            const id = row?.coop_contri_id || "Not Found";
+            const memberId = row?.member_id || null;
+            const accountNo = row?.account_number || "System";
+            const avatarUrl = row?.avatar_url || placeHolderAvatar;
+            const fullName = row?.full_name || "Not Found";
             const amount = row?.amount || 0;
-            const matchedMember = members.find((member) => member?.account_number === row?.account_number);
-            const isDisabled = !matchedMember;
-            const fullName = matchedMember ? `${matchedMember?.f_name} ${matchedMember?.l_name}`.trim() : "System";
+            const paymentCategory = row?.category || "Not Found";
+            const contributionDate = row?.contribution_date || "Not Found";
+            const paymentMethod = row?.payment_method || "Not Found";
+            const isDisabled = !row?.full_name; // condition (you can adjust logic)
             return (
-              <tr
-                key={`${TABLE_PREFIX}${row?.coop_contri_id}` }
-                onClick={!isDisabled && memberRole !== "board" ? () => openEditModal(row) : undefined}
-                className={`transition-colors ${!isDisabled ? "cursor-pointer hover:bg-base-200/70" : "cursor-not-allowed opacity-90 bg-base-100/70"}`}
+              <tr key={id}
+                  onDoubleClick={() => openEditModal(row)}
+                  className={`text-center ${isDisabled ?
+                  "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
               >
-                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.coop_contri_id}</td>
-                <td className="px-4 py-2 text-center font-medium text-xs">{matchedMember?.account_number || "System"}</td>
-                
-                <td className="px-4 py-4">
+                {/* Ref no. */}
+                <td className=" text-center font-medium text-xs">
+                  {TABLE_PREFIX}_{id}
+                </td>
+                {/* Account No */}
+                <td className=" text-center font-medium text-xs hover:underline"
+                  onClick={() => openProfile(memberId)}
+                >
+                  {accountNo}
+                </td>
+                {/* Full name and avatar */}
+                <td> 
                   <span className="flex items-center gap-3">
-                    <Fragment>
-                      {/* avatar for members */}
-                      <div className="avatar">
-                        <div className="mask mask-circle w-10 h-10">
-                          <img
-                            src={
-                              matchedMember?.avatar_url || placeHolderAvatar
-                            }
-                            alt={fullName}
-                          />
-                        </div>
+                  <Fragment>
+                    {/* Avatar */}
+                    <div className="avatar">
+                      <div className="mask mask-circle w-10 h-10">
+                        <img
+                          src={avatarUrl}
+                          alt={fullName}
+                        />
                       </div>
-
-                      <span className="flex items-center gap-2">
-                        <span className="truncate max-w-[120px]">{fullName}</span>
-                        {isDisabled && (
-                          <div className="tooltip tooltip-top" data-tip="System Generated">
-                            <span className="badge badge-sm badge-ghost">?</span>
-                          </div>
-                        )}
-                      </span>
-
-
-                    </Fragment>
+                    </div>
+                    {/* Full name */}
+                    <span className="flex items-center gap-2">
+                      <span className="truncate max-w-[120px]">{fullName}</span>
+                      {isDisabled && (
+                        <div className="tooltip tooltip-top" data-tip="System Generated">
+                          <span className="badge badge-sm badge-ghost">?</span>
+                        </div>
+                      )}
+                    </span>
+                  </Fragment>
                   </span>
                 </td>
-
-                <td className="px-4 py-2 font-semibold text-success text-center">₱ {display(amount)}</td>
-                <td className="px-4 py-2 text-center">
-                  {row?.category ? (
-                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row?.category]}`}>{row?.category}</span>
+                {/* Amount */}
+                <td className="font-semibold text-success">
+                  ₱ {display(amount)}
+                </td>
+                {/* Payment Category */}
+                <td>
+                  {paymentCategory ? (
+                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
+                      {paymentCategory}
+                    </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">Not Found</span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-center">{row?.contribution_date ? new Date(row?.contribution_date).toLocaleDateString() : <span className="text-gray-400 italic">Not Provided</span>}</td>
-                <td className="px-4 py-2 text-center">
-                  {row?.payment_method ? (
-                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}>{row?.payment_method}</span>
-                  ) : (
-                    <span> — </span>
-                  )}
+                {/* Contribution Date */}
+                <td>
+                  {contributionDate ? new Date(contributionDate).toLocaleDateString() : "Not Found"}
+                </td>
+                {/* Payment Method */}
+                <td>
+                  <span
+                    className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}
+                  >
+                    {paymentMethod}
+                  </span>
                 </td>
               </tr>
-            );
+            )
           }}
         />
       </div>
@@ -383,7 +498,7 @@ function CoopShareCapital() {
                   displayValue={(member) => (member ? member.account_number : "")}
                   onChange={(e) => setQuery(e.target.value)}
                 />
-                <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-[50vh] overflow-auto border border-base-200">
                   {filteredMembers.length === 0 ? (
                     <div className="px-4 py-2 text-base-content/60">No members found.</div>
                   ) : (
