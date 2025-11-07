@@ -43,7 +43,7 @@ function MemberDashboardV2() {
 
   const navigate = useNavigate();
 
-  // The pagination and data fetching of these 2 tables is handled inside each DataTable component instance using .slice(0,5)
+  // The pagination and data fetching of these 2 tables is handled inside each DataTableV2 component instance using .slice(0,5)
   // to limit to 5 recent entries.
   const { data: coopData, isLoading: coopLoading } = useFetchCoopView({
     useLoggedInMember: true,

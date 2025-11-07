@@ -199,7 +199,13 @@ function CoopShareCapital() {
   }
 
   // react hook form
-  const { handleSubmit, reset, control, register} = useForm({
+  const { 
+    control, 
+    handleSubmit,
+    reset,
+    register,
+    formState: {isDirty}
+  } = useForm({
     defaultValues : {
       coop_contri_id: null,
       account_number: null,
@@ -478,7 +484,7 @@ function CoopShareCapital() {
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
         isPending={isAddPending || isEditPending}
-        status={isAddPending || isEditPending}
+        status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => handleDelete(control._formValues.coop_contri_id)}
       >
         <div className="form-control w-full">

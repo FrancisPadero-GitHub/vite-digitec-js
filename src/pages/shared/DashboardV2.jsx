@@ -33,7 +33,7 @@ import placeHolderAvatar from '../../assets/placeholder-avatar.png';
 function DashboardV2() {
   const { memberRole } = useMemberRole();
 
-  // The pagination and data fetching of these 3 tables is handled inside each DataTable component instance using .slice(0,5)
+  // The pagination and data fetching of these 3 tables is handled inside each DataTableV2 component instance using .slice(0,5)
   // to limit to 5 recent entries.
   const { data: coop_data, isLoading: coopIsloading, isError: coopIsError, error: coopError } = useFetchCoopView({});
   const coopFunds = coop_data?.data || [];

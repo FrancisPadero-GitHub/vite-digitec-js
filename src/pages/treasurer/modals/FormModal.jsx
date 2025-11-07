@@ -51,13 +51,14 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
               <button
                 type="button"
                 className="btn btn-error"
+                disabled={isPending}
                 onClick={deleteAction}
               >
                 Delete
               </button>
             )}
             <div className="flex gap-2 ml-auto">
-              <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
+              <button type="button" className="btn btn-ghost" onClick={close} disabled={isPending} >{onSubmit ? "Cancel" : "Close"}</button>
               {onSubmit && (
                 <button type="submit" className="btn btn-primary" disabled={status || isPending}>
                   {isPending ? (
