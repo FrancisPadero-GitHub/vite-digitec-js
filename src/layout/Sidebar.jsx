@@ -99,7 +99,7 @@ const sidebarConfig = {
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/board" },
         { label: "Member Records", icon: PeopleIcon, path: "/board/member-records" },
-        { label: "Announcements", icon: CampaignIcon, path: "/board/announcements" },
+        // { label: "Announcements", icon: CampaignIcon, path: "/board/announcements" },
         { label: "Reports", icon: AssessmentIcon, path: "/board/reports" },
         { label: "Activity Logs", icon: HistoryIcon, path: "/board/activity-logs" },
       ],
