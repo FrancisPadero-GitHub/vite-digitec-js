@@ -47,7 +47,7 @@ export const useAddClubFunds = () => {
       console.log("✅ Contribution added:", data);
 
       queryClient.invalidateQueries({
-        queryKey: ["club_funds_contributions"],
+        queryKey: ["view_club_fund_contributions"],
         exact: false
       });
 

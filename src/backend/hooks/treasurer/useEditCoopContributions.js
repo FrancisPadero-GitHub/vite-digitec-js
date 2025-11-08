@@ -51,7 +51,7 @@ export const useEditCoopContributions = () => {
     mutationFn: updateCoopContributions,
     onSuccess: async (data) => {
       console.log(" Coop contribution Updated!", data);
-      queryClient.invalidateQueries({queryKey:["coop_cbu_contributions"], exact: false}); // to reflect the change instantly
+      queryClient.invalidateQueries({queryKey:["view_coop_share_capital_contributions"], exact: false}); // to reflect the change instantly
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

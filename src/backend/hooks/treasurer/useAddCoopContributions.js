@@ -36,7 +36,7 @@ export const useAddCoopContributions = () => {
     mutationFn: insertCoopContributions,
     onSuccess: async (data) => {
       console.log("Successfully insert data: ", data);
-      queryClient.invalidateQueries({queryKey:["coop_cbu_contributions"], exact: false});
+      queryClient.invalidateQueries({queryKey:["view_coop_share_capital_contributions"], exact: false});
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

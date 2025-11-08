@@ -1,4 +1,4 @@
-import { useState, Fragment, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -198,6 +198,18 @@ function CoopShareCapital() {
 
   }
 
+  // extract default form values to reuse in modal resets and in rhf initialization
+  const defaultFormValues = {
+    coop_contri_id: null,
+    account_number: null,
+    source: "Member Contribution",
+    category: "Monthly",
+    amount: 0,
+    contribution_date: today,
+    payment_method: "",
+    remarks: "",
+  };
+
   // react hook form
   const { 
     control, 
@@ -206,16 +218,7 @@ function CoopShareCapital() {
     register,
     formState: {isDirty}
   } = useForm({
-    defaultValues : {
-      coop_contri_id: null,
-      account_number: null,
-      source: "Member Contribution",
-      category: "",
-      amount: 0,
-      contribution_date: today,
-      payment_method: "",
-      remarks: "",
-    }
+    defaultValues: defaultFormValues
   });
 
   /**
@@ -223,7 +226,7 @@ function CoopShareCapital() {
    */
   const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
-    reset();
+    reset(defaultFormValues); // used here and in closeModal (because if not, it retains last row's edited values)
     setModalType("add");
   };
 
@@ -241,12 +244,11 @@ function CoopShareCapital() {
   };
 
   const closeModal = () =>{
-    reset();
+    reset(defaultFormValues); 
     setModalType(null);
   };
 
   const handleDelete = (coop_contri_id) => {
-    reset();
     mutateDelete({ 
       table: "coop_cbu_contributions", 
       column_name: "coop_contri_id", 
@@ -300,7 +302,7 @@ function CoopShareCapital() {
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ]},
-    { label: "Remarks", name: "remarks", type: "text", autoComplete: "off" },
+    { label: "Remarks", name: "remarks", type: "text", optional: true },
   ];
 
   return (
@@ -423,7 +425,7 @@ function CoopShareCapital() {
                 {/* Full name and avatar */}
                 <td> 
                   <span className="flex items-center gap-3">
-                  <Fragment>
+                  <>
                     {/* Avatar */}
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
@@ -442,7 +444,7 @@ function CoopShareCapital() {
                         </div>
                       )}
                     </span>
-                  </Fragment>
+                  </>
                   </span>
                 </td>
                 {/* Amount */}
@@ -513,20 +515,25 @@ function CoopShareCapital() {
                         key={member.account_number}
                         value={member}
                         className={({ focus }) =>
-                          `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
-                          }`
+                        `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
                         }
                       >
-                        <div className="relative flex items-center justify-between">
-                          <span className="font-mono text-sm">{member.account_number}</span>
-
-                          <span className="absolute left-1/2 -translate-x-1/2 text-center truncate text-sm">
-                            {member.account_role}
-                          </span>
-
-                          <span className="truncate text-sm">
-                            {member.f_name} {member.m_name} {member.l_name}
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar">
+                            <div className="mask mask-circle w-10 h-10">
+                              <img
+                                src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
+                                alt={`${member.f_name} ${member.l_name}`}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="font-mono text-sm font-semibold">{member.account_number}</span>
+                            <div className="flex items-center gap-1">
+                            <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                            <span className="text-xs italic">({member.account_role})</span>
+                            </div>
+                          </div>
                         </div>
                       </ComboboxOption>
                     ))
@@ -537,10 +544,13 @@ function CoopShareCapital() {
           />
         </div>
 
-        {fields.map(({ label, name, type, options, autoComplete }) => (
+        {fields.map(({ label, name, type, options, autoComplete, optional }) => (
           <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name}>
-              <span className="label text-sm font-semibold mb-2">{label}</span>
+              <span className="label text-sm font-semibold mb-2">
+                {label}
+                {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
+              </span>
             </label>
 
             {name === "amount" ? (
@@ -560,7 +570,7 @@ function CoopShareCapital() {
                     <input
                       id="amount"
                       type="number"
-                      autoComplete="off"
+                      autoComplete={autoComplete}
                       value={field.value}
                       placeholder="Enter Amount"
                       onChange={(e) => {
@@ -587,7 +597,7 @@ function CoopShareCapital() {
               <select
                 id={name}
                 autoComplete={autoComplete}
-                {...register(name, { required: true })}
+                {...register(name, { required: name !== "remarks" })}
                 className="select select-bordered w-full"
               >
                 <option value="" disabled>
@@ -604,7 +614,7 @@ function CoopShareCapital() {
                 id={name}
                 autoComplete={autoComplete}
                 type={type}
-                {...register(name, { required: true })}
+                {...register(name, { required: name !== "remarks" })}
                 className="input input-bordered w-full"
               />
             )}

@@ -3,14 +3,13 @@ import { Savings, AccountBalance, Wallet, ReceiptLong } from '@mui/icons-materia
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
+import dayjs from 'dayjs';
 
 // fetch hooks
-// view tables
 import { useFetchClubFundsView } from '../../backend/hooks/shared/view/useFetchClubFundsView';
 import { useFetchCoopView } from '../../backend/hooks/shared/view/useFetchCoopView';
-
-// base tables
 import { useFetchExpenses } from '../../backend/hooks/shared/useFetchExpenses';
+import { useFetchActivityLogs } from '../../backend/hooks/shared/useFetchActivityLogs';
 
 // rpc fetch
 import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal';
@@ -27,7 +26,7 @@ import ComparisonChart from './components/ComparisonChart';
 import StatCardV2 from './components/StatCardV2';
 
 // constants
-import { CLUB_CATEGORY_COLORS, CAPITAL_CATEGORY_COLORS} from '../../constants/Color';
+import { CLUB_CATEGORY_COLORS, CAPITAL_CATEGORY_COLORS, ACTIVITY_LOGS_TYPE_COLORS} from '../../constants/Color';
 import placeHolderAvatar from '../../assets/placeholder-avatar.png';
 
 function DashboardV2() {
@@ -43,6 +42,9 @@ function DashboardV2() {
 
   const { data: expenses_data, isLoading: expensesIsLoading, isError: expensesIsError, error: expensesError } = useFetchExpenses({});
   const expenses = expenses_data?.data || [];
+
+  const { data: activity_logs_data, isLoading: activityLogsIsLoading, isError: activityLogsIsError, error: activityLogsError } = useFetchActivityLogs({});
+  const activityLogs = activity_logs_data?.data || [];
 
   // Navigation
   const navigate = useNavigate();
@@ -224,7 +226,7 @@ function DashboardV2() {
               {/* Universal Filter */}
               <div className="dropdown dropdown-right">
                 <label tabIndex={0} className="btn btn-sm">
-                   <MoreHorizOutlinedIcon />
+                  <MoreHorizOutlinedIcon />
                 </label>
                 <ul
                   tabIndex={0}
@@ -272,7 +274,7 @@ function DashboardV2() {
             <section className="border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
               <div className="p-6 flex flex-col h-full">
                 <div>
-                  <span className="text-xl font-semibold">Share Capital Activity</span>
+                  <span className="text-2xl font-semibold">Share Capital Activity</span>
                   <span className="text-gray-400"> | This Year</span>
                   <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
                 </div>
@@ -463,7 +465,7 @@ function DashboardV2() {
                       {TABLE_PREFIX}{id}
                     </td>
                     {/* Title */}
-                    <td className=" text-center font-medium text-xs">
+                    <td className=" text-center font-medium">
                       {title}
                     </td>
                     {/* Amount */}
@@ -485,8 +487,42 @@ function DashboardV2() {
               }}
             />
           </div>
+
           {/* RIGHT SIDE */}
-        <div className="w-full md:w-full lg:w-[25%] xl:w-[35%] flex flex-col gap-3">
+          <div className="w-full md:w-full lg:w-[20%] xl:w-[30%] flex flex-col gap-3">
+            {/* RECENT ACTIVITIES */}
+            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+              <div className="flex flex-row justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold">Recent Activity</h2>
+                <button onClick={() => navigate(`/${memberRole}/activity-logs`)} className="btn btn-link no-underline text-primary hover:underline">
+                  See More ➜
+                </button>
+              </div>
+              
+              {activityLogsIsLoading ? (
+                <div className="flex justify-center items-center h-64"><span className="loading loading-spinner"></span></div>
+              ) : activityLogsIsError ? (
+                <div className="text-center text-error py-8">{activityLogsError?.message || "Unknown error"}</div>
+              ) : (
+                <ul className="space-y-4 relative before:absolute before:top-0 before:bottom-0 before:left-2.5 before:w-px before:bg-base-300">      
+                  {activityLogs?.slice(0, 6).map((log, index) => {
+                    const dotColor = ACTIVITY_LOGS_TYPE_COLORS[log.type] || 'bg-primary';
+                    return (
+                      <li key={log.activity_log_id || index} className="relative pl-8">
+                        <span className={`badge ${dotColor} w-3 h-3 p-0 rounded-full absolute left-1 top-1.5`}></span>
+                        <div className="text-sm leading-tight">
+                          <p className="font-medium">{log.action}</p>
+                          <p className="text-xs text-base-content/50 mt-1">
+                            {dayjs(log.timestamp).format('MMMM D, YYYY h:mm A')}
+                          </p>
+                        </div>
+                        {index !== activityLogs.length - 1 && (<div className="mt-3 border-b border-base-200" />)}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
             {/* CLUB EXPENSES DONUT CHART */}
             <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
               <div className="flex flex-col h-full">
@@ -513,7 +549,7 @@ function DashboardV2() {
                 <div>
                   <span className="text-2xl font-semibold">Club Funds vs. Expenses</span>
                   <span className="text-gray-400"> | This Year</span>
-                  <p className="mt-1 text-sm text-base-content/70">Track the yearly trends between club fund contributions and expenses.</p>
+                  <p className="mt-1 text-sm text-base-content/70">Track yearly trends between club funds and expenses.</p>
                 </div>
                 <div className="flex-grow">
                   <ComparisonChart

@@ -1,4 +1,4 @@
-import { useState, Fragment, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions} from "@headlessui/react";
@@ -199,6 +199,17 @@ function ClubFunds() {
     setMethodFilter("");
   }
 
+  // extract default form values to reuse in modal resets and in rhf initialization
+  const defaultFormValues = {
+      contribution_id: null,
+      account_number: null,
+      amount: 0,
+      category: "",
+      payment_date: today,
+      payment_method: "",
+      remarks: "",
+  };
+
   // react hook form
   const { 
     control,
@@ -207,16 +218,8 @@ function ClubFunds() {
     reset,
     getValues,
     formState: { isDirty }
-   } = useForm({
-    defaultValues: {
-      contribution_id: null,
-      account_number: null,
-      amount: 0,
-      category: "",
-      payment_date: today,
-      payment_method: "",
-      remarks: "",
-    }
+  } = useForm({
+    defaultValues: defaultFormValues
   });
 
   /**
@@ -224,7 +227,7 @@ function ClubFunds() {
    */
   const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
-    reset(); 
+    reset(defaultFormValues); // used here and in closeModal (because if not, it retains last row's edited values)
     setModalType("add");
   };
 
@@ -242,12 +245,11 @@ function ClubFunds() {
   };
 
   const closeModal = () =>{
-    reset();
+    reset(defaultFormValues);
     setModalType(null);
   };
 
   const handleDelete = (contribution_id) => {
-    reset();
     mutateDelete({
       table: "club_funds_contributions",
       column_name: "contribution_id",
@@ -288,7 +290,7 @@ function ClubFunds() {
   };
 
   const fields = [
-    { label: "Amount", name: "amount", type: "number" },
+    { label: "Amount", name: "amount", type: "number", autoComplete: "off" },
     {
       label: "Category",
       name: "category",
@@ -302,7 +304,7 @@ function ClubFunds() {
         { label: "Others", value: "Others" },
       ]
     },
-    { label: "Payment Date", name: "payment_date", type: "date" },
+    { label: "Payment Date", name: "payment_date", type: "date", autoComplete: "off" },
     {
       label: "Payment Method",
       name: "payment_method",
@@ -313,9 +315,8 @@ function ClubFunds() {
         { label: "Bank", value: "Bank" },
       ]
     },
-    { label: "Remarks", name: "remarks", type: "text" },
+    { label: "Remarks", name: "remarks", type: "text", optional: true},
   ];
-
 
   return (
     <div>
@@ -439,7 +440,7 @@ function ClubFunds() {
                 {/* Full name and avatar */}
                 <td>
                   <span className="flex items-center gap-3">
-                    <Fragment>
+                    <>
                       {/* Avatar */}
                       <div className="avatar">
                         <div className="mask mask-circle w-10 h-10">
@@ -451,7 +452,7 @@ function ClubFunds() {
                       </div>
                       {/* Full name */}
                       <span className="truncate max-w-[120px]">{fullName}</span>
-                    </Fragment>
+                    </>
                   </span>
                 </td>
                 {/* Amount */}
@@ -522,20 +523,25 @@ function ClubFunds() {
                         key={member.account_number}
                         value={member}
                         className={({ focus }) =>
-                          `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
-                          }`
+                        `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
                         }
                       >
-                        <div className="relative flex items-center justify-between">
-                          <span className="font-mono text-sm">{member.account_number}</span>
-
-                          <span className="absolute left-1/2 -translate-x-1/2 text-center truncate text-sm">
-                            {member.account_role}
-                          </span>
-
-                          <span className="truncate text-sm">
-                            {member.f_name} {member.m_name} {member.l_name}
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar">
+                            <div className="mask mask-circle w-10 h-10">
+                              <img
+                                src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
+                                alt={`${member.f_name} ${member.l_name}`}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="font-mono text-sm font-semibold">{member.account_number}</span>
+                            <div className="flex items-center gap-1">
+                            <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                            <span className="text-xs italic">({member.account_role})</span>
+                            </div>
+                          </div>
                         </div>
                       </ComboboxOption>
                     ))
@@ -546,10 +552,12 @@ function ClubFunds() {
           />
         </div>
 
-        {fields.map(({ label, name, type, options}) => (
+        {fields.map(({ label, name, type, options, autoComplete, optional}) => (
           <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name}>
-              <span className="label text-sm font-semibold mb-2">{label}</span>
+              <span className="label text-sm font-semibold mb-2">{label}
+              {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
+              </span>
             </label>
 
             {name === "amount" ? (
@@ -569,7 +577,7 @@ function ClubFunds() {
                     <input
                       id="amount"
                       type="number"
-                      autoComplete="off"
+                      autoComplete={autoComplete}
                       value={field.value}
                       placeholder="Enter Amount"
                       onChange={(e) => {
@@ -596,7 +604,8 @@ function ClubFunds() {
             ) : type === "select" ? (
               <select
                 id={name}
-                {...register(name, { required: true })}
+                autoComplete={autoComplete}
+                {...register(name, { required: name !== "remarks" })}
                 className="select select-bordered w-full"
               >
                 <option value="" disabled>
@@ -611,8 +620,9 @@ function ClubFunds() {
             ) : (
               <input
                 id={name}
+                autoComplete={autoComplete}
                 type={type}
-                {...register(name, { required: true })}
+                {...register(name, { required: name !== "remarks" })}
                 className="input input-bordered w-full"
               />
             )}

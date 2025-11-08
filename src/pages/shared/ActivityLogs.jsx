@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useFetchActivityLogs } from "../../backend/hooks/shared/useFetchActivityLogs";
 import FilterToolbar from "./components/FilterToolbar.jsx";
+import { ACTIVITY_LOGS_TYPE_COLORS } from "../../constants/Color.js";
 
 export default function ActivityLogs() {
   const [page, setPage] = useState(1);
@@ -123,11 +124,7 @@ export default function ActivityLogs() {
                           </td>
 
                           <td className="px-4 py-2 text-center font-semibold w-[15%]">
-                            <span className={`badge badge-soft ${
-                              row.type === 'CREATE' ? 'badge-success' : 
-                              row.type === 'UPDATE' ? 'badge-info' : 
-                              'badge-error'
-                            }`}>
+                            <span className={`badge badge-soft ${ACTIVITY_LOGS_TYPE_COLORS[row.type] || 'badge-error'}`}>
                               {row.type}
                             </span>
                           </td>

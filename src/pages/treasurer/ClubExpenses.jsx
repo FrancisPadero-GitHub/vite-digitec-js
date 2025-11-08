@@ -1,4 +1,4 @@
-import { useState, Fragment, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -156,6 +156,16 @@ function ClubExpenses() {
     setMonthFilter("");
   }
 
+  // extract default form values to reuse in modal resets and in rhf initialization
+  const defaultFormValues = {
+    transaction_id: null,
+    title: "",
+    category: "",
+    description: "",
+    amount: 0,
+    transaction_date: today,
+  };
+
   // React Hook Form
   const {
     control,
@@ -165,15 +175,7 @@ function ClubExpenses() {
     getValues,
     formState: { isDirty },
   } = useForm({
-    defaultValues: {
-      transaction_id: null,
-      title: "",
-      category: "",
-      description: "",
-      amount: 0,
-      transaction_date: today,
-    }
-
+    defaultValues: defaultFormValues,
   });
 
   /**
@@ -181,7 +183,7 @@ function ClubExpenses() {
    */
   const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
-    reset();
+    reset(defaultFormValues); // used here and in closeModal (because if not, it retains last row's edited values)
     setModalType("add");
   };
 
@@ -191,12 +193,11 @@ function ClubExpenses() {
   };
 
   const closeModal = () => {
-    reset();
+    reset(defaultFormValues);
     setModalType(null);
   };
 
   const handleDelete = (transaction_id) => {
-    reset();
     mutateDelete({
       table: "club_funds_expenses",
       column_name: "transaction_id",
@@ -241,8 +242,8 @@ function ClubExpenses() {
   };
 
   const fields = [
-    { label: "Title", name: "title", type: "text" },
-    { label: "Amount", name: "amount", type: "number" },
+    { label: "Title", name: "title", type: "text", autoComplete: "off" },
+    { label: "Amount", name: "amount", type: "number", autoComplete: "off" },
     {
       label: "Category",
       name: "category",
@@ -256,7 +257,7 @@ function ClubExpenses() {
       ]
     },
     { label: "Date", name: "transaction_date", type: "date" },
-    { label: "Description", name: "description", type: "text" },
+    { label: "Description", name: "description", type: "text", optional: true },
   ];
 
   return (
@@ -349,7 +350,7 @@ function ClubExpenses() {
                   {TABLE_PREFIX}_{id}
                 </td>
                 {/* Title */}
-                <td className=" text-center font-medium text-xs"
+                <td className=" text-center font-medium"
                 >
                   {title}
                 </td>
@@ -383,10 +384,11 @@ function ClubExpenses() {
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => handleDelete(getValues("contribution_id"))}
       >
-        {fields.map(({ label, name, type, options }) => (
+        {fields.map(({ label, name, type, options, autoComplete, optional }) => (
           <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name} className="label mb-1">
               <span className="label-text font-medium text-gray-700">{label}</span>
+              {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
             </label>
 
             {name === "amount" ? (
@@ -406,7 +408,7 @@ function ClubExpenses() {
                     <input
                       id="amount"
                       type="number"
-                      autoComplete="off"
+                      autoComplete={autoComplete}
                       value={field.value}
                       placeholder="Enter Amount"
                       onChange={(e) => {
@@ -447,7 +449,7 @@ function ClubExpenses() {
               <textarea
                 id={name}
                 rows={4}
-                {...register(name, { required: true })}
+                {...register(name, { required: false })}
                 className="textarea textarea-bordered w-full"
                 placeholder={`Enter ${label}`}
               ></textarea>
@@ -458,6 +460,7 @@ function ClubExpenses() {
                 {...register(name, { required: true })}
                 className="input input-bordered w-full"
                 placeholder={`Enter ${label}`}
+                autoComplete={autoComplete}
               />
             )}
           </div>
