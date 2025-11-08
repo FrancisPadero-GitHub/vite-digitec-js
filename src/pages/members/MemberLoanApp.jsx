@@ -506,7 +506,7 @@ function MemberLoanApp() {
                           <span className="font-semibold text-blue-700">{selectedProduct.interest_rate}%</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-base-content/70">Interest Method:</span>
+                          <span className="text-base-content/70">Type:</span>
                           <span className="font-semibold">{selectedProduct.interest_method}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -522,7 +522,7 @@ function MemberLoanApp() {
                           <span className="font-semibold text-purple-700">{selectedProduct.service_fee}%</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-base-content/70">Loan Range:</span>
+                          <span className="text-base-content/70">Loan Entitlement:</span>
                           <span className="font-bold text-green-700">₱{selectedProduct.min_amount?.toLocaleString()} - ₱{selectedProduct.max_amount?.toLocaleString()}</span>
                         </div>
                       </div>

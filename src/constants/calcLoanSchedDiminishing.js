@@ -1,8 +1,14 @@
 import dayjs from "dayjs";
 
-// this version is for the flat rate
-
-export default function calculateLoanAndScheduleFlatRate({
+/**
+ * Diminishing balance loan calculator
+ *
+ * Each payment has:
+ * - decreasing interest
+ * - increasing principal
+ * - constant monthly amortization
+ */
+export default function calcLoanSchedDiminishing({
   interestRate,
   principal,
   termMonths,
@@ -11,7 +17,6 @@ export default function calculateLoanAndScheduleFlatRate({
   generateSchedule = false,
   serviceFeeRate = 0, // Add service fee rate (percent)
 }) {
-  // Convert to numbers safely
   const rate = Number(interestRate);
   const amount = Number(principal);
   const months = Number(termMonths);
@@ -45,47 +50,62 @@ export default function calculateLoanAndScheduleFlatRate({
       totalInterest: 0,
       totalPayable: 0,
       monthlyPayment: 0,
-      monthlyPrincipal: 0,
-      monthlyInterest: 0,
       serviceFee: 0,
       schedule: [],
     };
   }
 
-  // Flat interest logic
-  const totalInterest = amount * (rate / 100);
-  const totalPayable = amount + totalInterest;
+  // Convert annual rate to monthly decimal
+  const monthlyRate = rate / 100 / 12;
 
-  const monthlyPrincipal = amount / months;
-  const monthlyInterest = totalInterest / months;
-  const monthlyPayment = monthlyPrincipal + monthlyInterest;
+  // Monthly amortization formula:
+  // Payment = P * [r(1+r)^n] / [(1+r)^n - 1]
+  const monthlyPayment =
+    (amount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+    (Math.pow(1 + monthlyRate, months) - 1);
 
+  let balance = amount;
+  let totalInterest = 0;
+  
   // Helper function to ensure consistent two-decimal rounding
   const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
-  // Optional schedule generation
   let schedule = [];
+
   if (generateSchedule) {
     for (let i = 0; i < months; i++) {
+      const interestDue = balance * monthlyRate;
+      const principalDue = monthlyPayment - interestDue;
+      balance -= principalDue;
+      totalInterest += interestDue;
+
       const dueDate = dayjs(startDate).add(i, "month").format("YYYY-MM-DD");
+
       schedule.push({
         loan_id: loanId,
         installment_no: i,
         due_date: dueDate,
-        principal_due: round(monthlyPrincipal),
-        interest_due: round(monthlyInterest),
+        principal_due: round(principalDue),
+        interest_due: round(interestDue),
         total_due: round(monthlyPayment),
         paid: false,
       });
     }
+  } else {
+    for (let i = 0; i < months; i++) {
+      const interestDue = balance * monthlyRate;
+      const principalDue = monthlyPayment - interestDue;
+      balance -= principalDue;
+      totalInterest += interestDue;
+    }
   }
+
+  const totalPayable = amount + totalInterest;
 
   return {
     totalInterest: round(totalInterest),
     totalPayable: round(totalPayable),
     monthlyPayment: round(monthlyPayment),
-    monthlyPrincipal: round(monthlyPrincipal),
-    monthlyInterest: round(monthlyInterest),
     serviceFee: round(serviceFee),
     schedule,
   };

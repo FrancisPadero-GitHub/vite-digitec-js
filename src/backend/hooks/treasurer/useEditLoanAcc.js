@@ -1,9 +1,13 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import calculateLoanAndScheduleFlatRate from "../../../constants/calculateLoanAndScheduleFlatRate";
-import calculateLoanAndScheduleReducing from "../../../constants/calculateLoanAndScheduleReducing";
+import calcLoanSchedFlat from "../../../constants/calcLoanSchedFlat";
+import calcLoanSchedDiminishing from "../../../constants/calcLoanSchedDiminishing";
 
-// Used to release a Loan Accounts
+/**
+ * This is used to update loan account for release and generate payment schedules
+ * This is called when releasing a loan in treasurer
+ * 
+ */
 
 const updateLoanAcc = async (formData) => {
   const {
@@ -40,8 +44,8 @@ const updateLoanAcc = async (formData) => {
 
   // Generate payment schedules on release
   let scheduleData = [];
-  if (interest_method === "Flat Rate") {
-    const { schedule } = calculateLoanAndScheduleFlatRate({
+  if (interest_method === "flat") {
+    const { schedule } = calcLoanSchedFlat({
       loanId: loan_id,
       principal,
       interestRate: interest_rate,
@@ -50,8 +54,8 @@ const updateLoanAcc = async (formData) => {
       generateSchedule: true,
     });
     scheduleData = schedule;
-  } else if (interest_method === "Reducing") {
-    const { schedule } = calculateLoanAndScheduleReducing({
+  } else if (interest_method === "diminishing") {
+    const { schedule } = calcLoanSchedDiminishing({
       loanId: loan_id,
       principal,
       interestRate: interest_rate,

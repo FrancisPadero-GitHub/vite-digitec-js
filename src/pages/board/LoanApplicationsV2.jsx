@@ -36,8 +36,8 @@ import placeHolderAvatar from "../../assets/placeholder-avatar.png"
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
 // calculations
-import calculateLoanAndScheduleFlatRate from "../../constants/calculateLoanAndScheduleFlatRate";
-import calculateLoanAndScheduleReducing from "../../constants/calculateLoanAndScheduleReducing";
+import calcLoanSchedFlat from "../../constants/calcLoanSchedFlat";
+import calcLoanSchedDiminishing from "../../constants/calcLoanSchedDiminishing";
 
 
 // HELPER FUNCTIONS & VARIABLES
@@ -326,8 +326,8 @@ function LoanApplicationsV2() {
     let totalInterest = 0;
     let totalServiceFee = 0;
 
-    if (interestMethod === "Flat Rate") {
-      const result = calculateLoanAndScheduleFlatRate({
+    if (interestMethod === "flat") {
+      const result = calcLoanSchedFlat({
         interestRate: Number(interestRateValue),
         principal: Number(principalValue),
         termMonths: Number(loanTermValue),
@@ -336,8 +336,8 @@ function LoanApplicationsV2() {
       totalPayable = result.totalPayable;
       totalInterest = result.totalInterest;
       totalServiceFee = result.serviceFee;
-    } else if (interestMethod === "Reducing") {
-      const result = calculateLoanAndScheduleReducing({
+    } else if (interestMethod === "diminishing") {
+      const result = calcLoanSchedDiminishing({
         interestRate: Number(interestRateValue),
         principal: Number(principalValue),
         termMonths: Number(loanTermValue),
