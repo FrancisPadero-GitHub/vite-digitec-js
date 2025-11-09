@@ -90,7 +90,7 @@ function CoopLoansReleases() {
     application_id: "",
     applicant_name: "",
     account_number: "",
-    principal: "",
+    net_principal: "",
     outstanding_balance: "",
     total_interest: "",
     total_amount_due: "",
@@ -128,7 +128,7 @@ function CoopLoansReleases() {
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
     );
-    const loanTerm = Number(matchedLoanProduct?.max_term_months) || 0;
+    const loanTerm = row?.loan_term_approved || 0;
     const interestMethod = matchedLoanProduct?.interest_method ?? "";
     const interestRate = Number(matchedLoanProduct?.interest_rate) || 0;
     const loanProductName = matchedLoanProduct?.name || "N/A";
@@ -138,6 +138,7 @@ function CoopLoansReleases() {
       ...row,
       applicant_name: fullName,
       loan_term: loanTerm,
+      net_principal: row?.net_principal || 0,
       interest_rate: interestRate,
       interest_method: interestMethod,
       loanProductName: loanProductName,
@@ -253,7 +254,7 @@ function CoopLoansReleases() {
 
                 {/* Principal*/}
                 <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.principal?.toLocaleString() || "0"}
+                  ₱ {row?.net_principal?.toLocaleString() || "0"}
                 </td>
 
                 {/* Status */}
@@ -398,11 +399,11 @@ function CoopLoansReleases() {
                 <label className="block text-xs font-medium text-gray-500 mb-1">Principal</label>
                 <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
                   <div className="text-sm font-semibold">
-                    ₱{watch("principal") ? parseFloat(watch("principal")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                    ₱{watch("net_principal") ? parseFloat(watch("net_principal")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
                   </div>
                 </div>
-                <input type="hidden" {...register("principal", { required: true })} />
-                {errors.principal && (<p className="text-error text-xs mt-1">Required</p>)}
+                <input type="hidden" {...register("net_principal", { required: true })} />
+                {errors.net_principal && (<p className="text-error text-xs mt-1">Required</p>)}
               </div>
 
               {/* Total interest */}

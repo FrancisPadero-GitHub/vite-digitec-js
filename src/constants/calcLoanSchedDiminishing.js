@@ -21,16 +21,17 @@ export default function calcLoanSchedDiminishing({
   const amount = Number(principal);
   const months = Number(termMonths);
   const serviceFee = amount * (Number(serviceFeeRate) / 100);
+  const netPrincipal = amount - serviceFee; // Deduct service fee from principal
 
   /**
-   * Approach 1 (do not deduct service fee from principal) -- LET'S USE THIS FOR NOW
+   * Approach 1 (do not deduct service fee from principal) -- NOT USING THIS
    *
    * const netPrincipal = amount; // do not deduct service fee from principal
    * const totalPayable = netPrincipal + totalInterest;
    */
 
   /**
-   * Approach 2 (deduct service fee from principal) -- NOT USING THIS FOR NOW
+   * Approach 2 (deduct service fee from principal) -- CURRENTLY USING THIS
    *
    * const netPrincipal = amount - serviceFee;
    * const totalPayable = netPrincipal + totalInterest;
@@ -60,11 +61,12 @@ export default function calcLoanSchedDiminishing({
 
   // Monthly amortization formula:
   // Payment = P * [r(1+r)^n] / [(1+r)^n - 1]
+  // Use netPrincipal (after deducting service fee) for calculation
   const monthlyPayment =
-    (amount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+    (netPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
     (Math.pow(1 + monthlyRate, months) - 1);
 
-  let balance = amount;
+  let balance = netPrincipal;
   let totalInterest = 0;
   
   // Helper function to ensure consistent two-decimal rounding
@@ -74,10 +76,15 @@ export default function calcLoanSchedDiminishing({
 
   if (generateSchedule) {
     for (let i = 0; i < months; i++) {
-      const interestDue = balance * monthlyRate;
-      const principalDue = monthlyPayment - interestDue;
-      balance -= principalDue;
-      totalInterest += interestDue;
+      // 1. Round the interest calculation immediately
+      const interestDue = round(balance * monthlyRate);
+
+      // 2. Calculate principal (still might need adjustment for final payment)
+      let principalDue = round(monthlyPayment - interestDue);
+
+      // 3. Use these rounded values for all subsequent logic
+      balance = round(balance - principalDue);
+      totalInterest = round(totalInterest + interestDue);
 
       const dueDate = dayjs(startDate).add(i, "month").format("YYYY-MM-DD");
 
@@ -85,8 +92,8 @@ export default function calcLoanSchedDiminishing({
         loan_id: loanId,
         installment_no: i,
         due_date: dueDate,
-        principal_due: round(principalDue),
-        interest_due: round(interestDue),
+        principal_due: principalDue, // Already rounded
+        interest_due: interestDue, // Already rounded
         total_due: round(monthlyPayment),
         paid: false,
       });
@@ -100,7 +107,7 @@ export default function calcLoanSchedDiminishing({
     }
   }
 
-  const totalPayable = amount + totalInterest;
+  const totalPayable = netPrincipal + totalInterest;
 
   return {
     totalInterest: round(totalInterest),

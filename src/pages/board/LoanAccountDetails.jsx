@@ -21,23 +21,20 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 // constants
 import { LOAN_ACCOUNT_STATUS_COLORS } from "../../constants/Color";
 
+// utils
+import { display } from "../../constants/numericFormat";
+
 function LoanAccountDetails() {
   // ID params Grabber 
   const { loan_id } = useParams();
 
   const parsedId = Number(loan_id);
 
-  // Payment Schedules
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  const { data: loanSchedules, isLoading } = useFetchPaySched({page, limit, loanId: parsedId});
-  const loanSchedRaw = loanSchedules?.data || [];
-  const total = loanSchedules?.count || 0;
-
-  const { data: loanAcc } = useFetchLoanAcc();
+  // Merged Loan Accounts Data
+  const { data: loanAcc } = useFetchLoanAcc();            // base table
   const loanAccRaw = loanAcc?.data || [];
 
-  const { data: loanAccView } = useFetchLoanAccView();
+  const { data: loanAccView } = useFetchLoanAccView();    // view table
   const loanAccViewRaw = loanAccView?.data || [];
 
   // merges the data fetched on the two tables
@@ -49,10 +46,17 @@ function LoanAccountDetails() {
       ...viewRow,
     };
   });
-
   const accountData = mergedLoanAccounts?.find((row) => row.loan_id === parsedId);
   const applicant_id = accountData?.account_number;
 
+  // Payment Schedules
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const { data: loanSchedules, isLoading } = useFetchPaySched({page, limit, loanId: parsedId});
+  const loanSchedRaw = loanSchedules?.data || [];
+  const total = loanSchedules?.count || 0;
+
+  // Members Data to get the full name of the applicant
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
 
@@ -71,9 +75,9 @@ function LoanAccountDetails() {
     (product) => product.product_id === accountData?.product_id
   );
 
-  const loanTerm = matchedLoanProduct?.max_term_months;
   const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
-  const amountDisbursed = accountData ? (Number(accountData.principal || 0) - Number(accountData.service_fee || 0)).toLocaleString() : "0";
+  const loanTerm = accountData?.loan_term_approved || 0;
+  const net_principal = accountData?.net_principal || 0;
 
   const navigate = useNavigate();
 
@@ -87,7 +91,7 @@ function LoanAccountDetails() {
           </div>
         </div>
 
-{/* Loan Account Info Card */}
+         {/* Loan Account Info Card */}
         {accountData && (
           <div className="space-y-4">
             {/* Account Header */}
@@ -148,8 +152,8 @@ function LoanAccountDetails() {
                       <span className="font-semibold text-red-700">-₱{Number(accountData.service_fee || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center pt-1">
-                      <span className="text-blue-800 font-medium">Amount Disbursed</span>
-                      <span className="font-bold text-blue-900">₱{amountDisbursed}</span>
+                      <span className="text-blue-800 font-medium">Remaining</span>
+                      <span className="font-bold text-blue-900">₱{display(net_principal)}</span>
                     </div>
                   </div>
                 </div>
@@ -225,8 +229,8 @@ function LoanAccountDetails() {
                   </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-purple-700">Principal</span>
-                      <span className="font-bold text-purple-900">₱{Number(accountData.principal || 0).toLocaleString()}</span>
+                      <span className="text-sm text-purple-700">Released Amount</span>
+                      <span className="font-bold text-purple-900">₱{Number(accountData.net_principal || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-purple-700">Total Interest ({interestRate}%)</span>

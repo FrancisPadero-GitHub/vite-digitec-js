@@ -16,16 +16,17 @@ export default function calcLoanSchedFlat({
   const amount = Number(principal);
   const months = Number(termMonths);
   const serviceFee = amount * (Number(serviceFeeRate) / 100);
+  const netPrincipal = amount - serviceFee; // Deduct service fee from principal
 
   /**
-   * Approach 1 (do not deduct service fee from principal) -- LET'S USE THIS FOR NOW
+   * Approach 1 (do not deduct service fee from principal) -- NOT USING THIS
    *
    * const netPrincipal = amount; // do not deduct service fee from principal
    * const totalPayable = netPrincipal + totalInterest;
    */
 
   /**
-   * Approach 2 (deduct service fee from principal) -- NOT USING THIS FOR NOW
+   * Approach 2 (deduct service fee from principal) -- CURRENTLY USING THIS
    *
    * const netPrincipal = amount - serviceFee;
    * const totalPayable = netPrincipal + totalInterest;
@@ -53,10 +54,11 @@ export default function calcLoanSchedFlat({
   }
 
   // Flat interest logic
-  const totalInterest = amount * (rate / 100);
-  const totalPayable = amount + totalInterest;
+  // Use netPrincipal (after deducting service fee) for calculation
+  const totalInterest = netPrincipal * (rate / 100);
+  const totalPayable = netPrincipal + totalInterest;
 
-  const monthlyPrincipal = amount / months;
+  const monthlyPrincipal = netPrincipal / months;
   const monthlyInterest = totalInterest / months;
   const monthlyPayment = monthlyPrincipal + monthlyInterest;
 

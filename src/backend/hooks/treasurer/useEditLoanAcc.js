@@ -16,7 +16,7 @@ const updateLoanAcc = async (formData) => {
     interest_rate = 0,
     loan_term = 0,
     interest_method = null,
-    principal = 0,
+    net_principal = 0,
     first_due = null,
     loan_ref_number = null,
   } = formData;
@@ -47,7 +47,7 @@ const updateLoanAcc = async (formData) => {
   if (interest_method === "flat") {
     const { schedule } = calcLoanSchedFlat({
       loanId: loan_id,
-      principal,
+      principal: net_principal,
       interestRate: interest_rate,
       termMonths: loan_term,
       startDate: first_due,
@@ -57,7 +57,7 @@ const updateLoanAcc = async (formData) => {
   } else if (interest_method === "diminishing") {
     const { schedule } = calcLoanSchedDiminishing({
       loanId: loan_id,
-      principal,
+      principal: net_principal,
       interestRate: interest_rate,
       termMonths: loan_term,
       startDate: first_due,
@@ -107,7 +107,7 @@ export const useEditLoanAcc = () => {
         console.warn("Schedule insertion error:", result.scheduleResult.error);
       }
       queryClient.invalidateQueries({queryKey:["loan_accounts"], exact: false});
-      queryClient.invalidateQueries({queryKey:["view_loan_accounts_v2"], exact: false});
+      queryClient.invalidateQueries({queryKey:["view_loan_accounts"], exact: false});
       queryClient.invalidateQueries({queryKey:["loan_payment_schedules"], exact: false});
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],

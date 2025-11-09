@@ -154,7 +154,7 @@ function LoanApplicationsV2() {
 
       // Front End Only Fields
       interest_rate: 0,
-      loan_term: 0,
+      loan_term_approved: 0,
       interest_method: "",
       monthly_payment: 0,
     }
@@ -208,6 +208,7 @@ function LoanApplicationsV2() {
         ...formDataLoanApp,
         loan_ref_number: generateAccountNumber(formDataLoanApp.application_id),
         total_amount_due: 0, // to be calculated in the loan account modal
+        loan_term_approved: formDataLoanApp.loan_term,
         service_fee: 0,     // to be calculated in the loan account modal
         status: "Pending Release",
         release_date: null,
@@ -695,7 +696,6 @@ function LoanApplicationsV2() {
                 </div>
                 <input type="hidden" {...registerLoanAcc("amount_req", { required: true })} value={watchLoanApp("amount")} />
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
                 <input
@@ -714,74 +714,6 @@ function LoanApplicationsV2() {
                     Amount must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{selectedProduct?.max_amount?.toLocaleString()}
                   </p>
                 )}
-                {/**
-                 * ISSUES: It has a weird bug where it is trying to control an uncontrolled input
-                 * 
-                 * Using Controller to manage the principal input with validation
-                 * Rules:
-                 * - Required
-                 * - Min and Max based on selected product
-                 * - Must be a number greater than 0
-                 * 
-                 */}
-                {/* <Controller 
-                  name="principal"
-                  control={controlLoanAcc}
-                  rules={{
-                    required: "Principal amount is required",
-                    min: {
-                      value: selectedProduct?.min_amount || 1,
-                      message: `Minimum amount is ₱${selectedProduct?.min_amount?.toLocaleString() || '1'}`,
-                    },
-                    max: {
-                      value: selectedProduct?.max_amount || 9999999,
-                      message: `Maximum amount is ₱${selectedProduct?.max_amount?.toLocaleString() || '9,999,999'}`,
-                    },
-                    validate: (value) => {
-                      const numValue = Number(value);
-                      if (isNaN(numValue) || numValue <= 0) {
-                        return "Amount must be greater than 0";
-                      }
-                      return true;
-                    },
-                  }}
-                  render={({ field }) => (
-                    <>                     
-                      <input
-                        id="principal"
-                        type="number"
-                        autoComplete="off"
-                        value={field.value ?? ""}   // ← ensures it's never undefined
-                        step="0.01"
-                        min="1"
-                        placeholder={watchLoanApp("amount")}
-                        className={`input input-bordered w-full border-green-400
-                          focus:border-green-600 font-bold ${errorsLoanAcc.principal ? "input-error" : ""}`}
-                        {...field}
-                        onChange={(e) => {
-                          const raw = e.target.value;
-                          // Allow empty input for clearing
-                          if (raw === "") {
-                            field.onChange("");
-                            return;
-                          }
-                          // Parse and validate numeric input
-                          const numValue = parseFloat(raw);
-                          if (!isNaN(numValue) && numValue >= 0) {
-                            field.onChange(numValue);
-                          }
-                        }}
-                      />
-                      {errorsLoanAcc.principal && (
-                        <p className="text-error text-xs mt-2">
-                          {errorsLoanAcc.principal.message || 
-                            `Amount must be between ₱${selectedProduct?.min_amount?.toLocaleString() || '1'} - ₱${selectedProduct?.max_amount?.toLocaleString() || '9,999,999'}`
-                          }
-                        </p>
-                      )}
-                    </>
-                  )}
-                /> */}
               </div>
             </div>
           </div>
@@ -859,8 +791,8 @@ function LoanApplicationsV2() {
 
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
                 <span className="text-xs font-medium text-gray-500">Loan Term:</span>
-                <span className="text-xs font-bold">{watchLoanAcc("loan_term")} months</span>
-                <input type="hidden" {...registerLoanAcc("loan_term", { required: true })} />
+                <span className="text-xs font-bold">{watchLoanAcc("loan_term_approved")} months</span>
+                <input type="hidden" {...registerLoanAcc("loan_term_approved", { required: true })} />
               </div>
 
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-200">

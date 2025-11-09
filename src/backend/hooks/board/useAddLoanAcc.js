@@ -20,6 +20,7 @@ const addLoanAcc = async (formData) => {
     maturity_date = null,
     first_due = null,
     service_fee = 0,
+    loan_term_approved = 0,
   } = formData;
 
   const loanPayload = {
@@ -37,6 +38,7 @@ const addLoanAcc = async (formData) => {
     maturity_date,
     first_due,
     service_fee,
+    loan_term_approved,
   };
 
   const { data, error: loanError } = await supabase
@@ -61,7 +63,7 @@ export const useAddLoanAcc = () => {
     onSuccess: async (data) => {
       console.log("✅ Loan Account Added!", data);
       queryClient.invalidateQueries({queryKey: ["loan_accounts"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["view_loan_accounts_v2"], exact: false});
+      queryClient.invalidateQueries({queryKey: ["view_loan_accounts"], exact: false});
       queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false,});
       queryClient.invalidateQueries({queryKey: ["activity_logs"], exact: false});
       // log activity
