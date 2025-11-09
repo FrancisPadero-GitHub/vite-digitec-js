@@ -62,6 +62,8 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
         queryClient.invalidateQueries({ queryKey: ["loan_payments"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["loan_accounts"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["loan_payment_schedules"], exact: false });
+        queryClient.invalidateQueries({ queryKey: ["view_member_loan_schedules"], exact: false });
+        queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["get_funds_summary"], exact: false });
         // Log activity
         try {
