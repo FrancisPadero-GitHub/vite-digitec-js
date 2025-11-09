@@ -185,7 +185,7 @@ function LoanApplicationsV2() {
   // State for the condition to restrict the form to be deletable or editable if the loan is already approved
   const [isLoanAlreadyApproved, setIsLoanAlreadyApproved] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
-
+  const [isLoanCancelled, setIsLoanCancelled] = useState(false);
  
   /**
    * Modal Controls
@@ -194,6 +194,7 @@ function LoanApplicationsV2() {
   // Open Edit Modal
   const openEditModal = (selectedRow) => {
     resetLoanApp(selectedRow)
+    setIsLoanCancelled(selectedRow.status === "Cancelled" ? true : false);
     setIsLoanAlreadyApproved(selectedRow.status === "Approved" ? true : false);
     dispatch(editModal({mode: 'loanApplication', data: selectedRow }));
   };
@@ -522,10 +523,11 @@ function LoanApplicationsV2() {
             
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
               {STATUS_OPTIONS.map((status) => {
+                // this only determines the colors of the buttons based on status
                 const isSelected = watchLoanApp("status") === status;
                 const isApproved = status === "Approved";
                 const isDenied = status === "Denied";
-                
+
                 return (
                   <label
                     key={status}
@@ -545,7 +547,7 @@ function LoanApplicationsV2() {
                       type="radio"
                       value={status}
                       {...registerLoanApp("status", { required: true })}
-                      disabled={isLoanAlreadyApproved}
+                      disabled={isLoanCancelled || isLoanAlreadyApproved}
                       className="sr-only"
                     />
                     {status}
@@ -567,6 +569,14 @@ function LoanApplicationsV2() {
               <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
                 <p className="text-sm text-red-800">
                   <strong>Denied:</strong> This application will be declined. The applicant will be notified.
+                </p>
+              </div>
+            )}
+
+            {watchLoanApp("status") === "Cancelled" && (
+              <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
+                <p className="text-sm text-red-800">
+                  <strong>Cancelled:</strong> This application has been cancelled.
                 </p>
               </div>
             )}
