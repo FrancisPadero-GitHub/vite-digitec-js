@@ -320,41 +320,79 @@ function CoopLoansPayments() {
   const balance = loanAccViewData?.outstanding_balance || 0;
   const loan_id = loanAccViewData?.loan_id || null;
 
-
-
   /**
    * LOAN PAYMENT SCHEDULE FILTER
    */
-  // View the loan payment schedule total due of monthly payments
-  const { data: loan_sched } = useFetchPaySched({ loanId: loan_id});    // If this returns a null it wont return any schedules
-  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched])
+  // Schedules for the selected loan
+  const { data: loan_sched } = useFetchPaySched({ loanId: loan_id });
+  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched]);
 
-  // Get the current or next payment schedule dynamically
-  const paymentSchedule = useMemo(() => {
-    if (!selectedLoanRef || loanSchedRaw.length === 0) return { schedule: null };
+  // Compute schedule context:
+  // 1. If there are unpaid OVERDUE schedules => aggregate all of them (multi-month catch up)
+  // 2. Else fall back to the next unpaid schedule (treated as UPCOMING)
+  const { nextSchedule, totalPayableAll, scheduleMode } = useMemo(() => {
+    if (!selectedLoanRef || loanSchedRaw.length === 0) {
+      return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
+    }
 
-    // const today = dayjs();
-
-    const unpaidSchedules = loanSchedRaw
-      .filter(item => !item.paid)
+    // Unpaid overdue schedules
+    const unpaidOverdue = loanSchedRaw
+      .filter(s => !s.paid && s.status === "OVERDUE")
       .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
 
-    if (unpaidSchedules.length === 0) return { schedule: null };
+    if (unpaidOverdue.length > 0) {
+      const totalPayableAll = unpaidOverdue.reduce((sum, s) => {
+        const totalDue = Number(s.total_due ?? 0);
+        const amountPaid = Number(s.amount_paid ?? 0);
+        return sum + (totalDue - amountPaid);
+      }, 0);
+      return {
+        list: unpaidOverdue,
+        nextSchedule: unpaidOverdue[0] ?? null,
+        totalPayableAll,
+        scheduleMode: 'overdue'
+      };
+    }
 
-    // Return the first unpaid schedule (earliest due)
-    return unpaidSchedules[0];
+    // No unpaid overdue schedules: find next unpaid (upcoming) schedule
+    const unpaidUpcoming = loanSchedRaw
+      .filter(s => !s.paid) // any unpaid regardless of status
+      .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
+
+    if (unpaidUpcoming.length === 0) {
+      return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
+    }
+
+    // For upcoming we only care about the first schedule's remaining payable
+    const first = unpaidUpcoming[0];
+    const totalDue = Number(first.total_due ?? 0);
+    const amountPaid = Number(first.amount_paid ?? 0);
+    const remaining = totalDue - amountPaid;
+    return {
+      list: unpaidUpcoming,
+      nextSchedule: first,
+      totalPayableAll: remaining,
+      scheduleMode: 'upcoming'
+    };
   }, [selectedLoanRef, loanSchedRaw]);
 
+  // Derived single schedule fields
+  const schedId = nextSchedule?.schedule_id ?? null;
+  const totalDue = Number(nextSchedule?.total_due ?? 0);
+  const feeDue = Number(nextSchedule?.fee_due ?? 0);
+  const amountPaid = Number(nextSchedule?.amount_paid ?? 0);
+  // Show explicit UPCOMING if mode is upcoming and status isn't already set (or is not OVERDUE/PARTIALLY PAID)
+  const paymentStatus = scheduleMode === 'upcoming'
+    ? (nextSchedule?.status && nextSchedule.status !== 'OVERDUE' ? nextSchedule.status : 'UPCOMING')
+    : (nextSchedule?.status ?? "");
+  const dueDate = nextSchedule?.due_date ?? null;
+  const mosOverdue = Number(nextSchedule?.mos_overdue ?? 0);
 
-  // Variables extracted values on this is tied to the conditional inside which is either today month or next due
-  const schedId = paymentSchedule?.schedule_id || null;
-  const totalDue = paymentSchedule?.total_due || 0;
-  const feeDue = paymentSchedule?.fee_due || 0;
-  const amountPaid = paymentSchedule?.amount_paid || 0;
-  const paymentStatus = paymentSchedule?.status || "";
-  const dueDate = paymentSchedule?.due_date || null;
-  const mosOverdue = paymentSchedule?.mos_overdue || 0;
+  // const isOverdueMode = scheduleMode === 'overdue';
+  // const isUpcomingMode = scheduleMode === 'upcoming';
 
+  // Unified payable (either aggregated overdue months or single upcoming remaining)
+  const totalPayableAllOverdueUnpaid = totalPayableAll;
 
   // Only log when we have actual data (when a loan is selected)
   // if (selectedLoanRef && paymentSchedule) {
@@ -762,7 +800,7 @@ function CoopLoansPayments() {
               <div className={paymentStatus === "OVERDUE" || paymentStatus === "PARTIALLY PAID" ? "" : "md:col-span-2"}>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Total Payable</label>
                 <div className="px-2 py-1.5 bg-green-50 rounded border-2 border-green-400">
-                  <div className="text-base font-bold text-green-900">₱{round(totalDue - amountPaid).toLocaleString()}</div>
+                  <div className="text-base font-bold text-green-900">₱{round(totalPayableAllOverdueUnpaid).toLocaleString()}</div>
                 </div>
               </div>
             </div>
@@ -785,14 +823,19 @@ function CoopLoansPayments() {
                       validate: (value) => {
                         if (value <= 0) return "Amount cannot be zero or negative";
                         
-                        const remainingMonthlyDue = round(totalDue - amountPaid); // Calculate remaining amount for this month
-                        const minRequiredAmount = round(remainingMonthlyDue * 0.3); // 30% of remaining amount
-                        const inputValue = round(value); // Round the input value too (to avoid js floating point issues huhu)
-                        
+                        // Skip validation checks when editing an existing payment
+                        if (loanPaymentModal.type === "edit") {
+                          return true;
+                        }
+
+                        const remainingDue = round(totalPayableAllOverdueUnpaid); // unified remaining (overdue aggregate or upcoming)
+                        const minRequiredAmount = round(remainingDue * 0.3); // 30% of remaining amount
+                        const inputValue = round(value);
+
                         if (inputValue < minRequiredAmount)
-                          return `Amount must be at least 30% of remaining monthly payment (₱${minRequiredAmount.toLocaleString()})`;
-                        if (inputValue > remainingMonthlyDue)
-                          return `Amount cannot exceed remaining monthly payment of ₱${remainingMonthlyDue.toLocaleString()}`;
+                          return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toLocaleString()})`;
+                        if (inputValue > remainingDue)
+                          return `Amount cannot exceed remaining payable of ₱${remainingDue.toLocaleString()}`;
                         if (inputValue > balance)
                           return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
                         return true;
