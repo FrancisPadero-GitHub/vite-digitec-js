@@ -656,7 +656,7 @@ function LoanApplicationsV2() {
               <div className="text-sm text-gray-900 leading-relaxed px-3 py-2.5 bg-gray-50 rounded border border-gray-200">
                 {watchLoanApp("purpose") || "No purpose provided"}
               </div>
-              <textarea {...registerLoanApp("purpose", { required: true })} className="hidden" />
+              <textarea {...registerLoanApp("purpose", { required: false})} className="hidden" />
               {errorsLoanApp.purpose && (<p className="text-error text-xs mt-1">Required</p>)}
               </div>
           </div>
