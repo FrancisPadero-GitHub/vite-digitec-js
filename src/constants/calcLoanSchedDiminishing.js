@@ -69,22 +69,21 @@ export default function calcLoanSchedDiminishing({
   let balance = netPrincipal;
   let totalInterest = 0;
   
-  // Helper function to ensure consistent two-decimal rounding
-  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+
 
   let schedule = [];
 
   if (generateSchedule) {
     for (let i = 0; i < months; i++) {
       // 1. Round the interest calculation immediately
-      const interestDue = round(balance * monthlyRate);
+      const interestDue = balance * monthlyRate;
 
       // 2. Calculate principal (still might need adjustment for final payment)
-      let principalDue = round(monthlyPayment - interestDue);
+      let principalDue = monthlyPayment - interestDue;
 
       // 3. Use these rounded values for all subsequent logic
-      balance = round(balance - principalDue);
-      totalInterest = round(totalInterest + interestDue);
+      balance = balance - principalDue;
+      totalInterest = totalInterest + interestDue;
 
       const dueDate = dayjs(startDate).add(i, "month").format("YYYY-MM-DD");
 
@@ -94,7 +93,7 @@ export default function calcLoanSchedDiminishing({
         due_date: dueDate,
         principal_due: principalDue, // Already rounded
         interest_due: interestDue, // Already rounded
-        total_due: round(monthlyPayment),
+        total_due: monthlyPayment,
         paid: false,
       });
     }
@@ -110,10 +109,10 @@ export default function calcLoanSchedDiminishing({
   const totalPayable = netPrincipal + totalInterest;
 
   return {
-    totalInterest: round(totalInterest),
-    totalPayable: round(totalPayable),
-    monthlyPayment: round(monthlyPayment),
-    serviceFee: round(serviceFee),
+    totalInterest: totalInterest,
+    totalPayable: totalPayable,
+    monthlyPayment: monthlyPayment,
+    serviceFee: serviceFee,
     schedule,  // return schedule if generated  value is automatic in db
   };
 }

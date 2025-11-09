@@ -62,9 +62,6 @@ export default function calcLoanSchedFlat({
   const monthlyInterest = totalInterest / months;
   const monthlyPayment = monthlyPrincipal + monthlyInterest;
 
-  // Helper function to ensure consistent two-decimal rounding
-  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
-
   // Optional schedule generation
   let schedule = [];
   if (generateSchedule) {
@@ -74,21 +71,21 @@ export default function calcLoanSchedFlat({
         loan_id: loanId,
         installment_no: i,
         due_date: dueDate,
-        principal_due: round(monthlyPrincipal),
-        interest_due: round(monthlyInterest),
-        total_due: round(monthlyPayment),
+        principal_due: monthlyPrincipal,
+        interest_due: monthlyInterest,
+        total_due: monthlyPayment,
         paid: false,
       });
     }
   }
 
   return {
-    totalInterest: round(totalInterest),
-    totalPayable: round(totalPayable),
-    monthlyPayment: round(monthlyPayment),
-    monthlyPrincipal: round(monthlyPrincipal),
-    monthlyInterest: round(monthlyInterest),
-    serviceFee: round(serviceFee),
+    totalInterest: totalInterest,
+    totalPayable: totalPayable,
+    monthlyPayment: monthlyPayment,
+    monthlyPrincipal: monthlyPrincipal,
+    monthlyInterest: monthlyInterest,
+    serviceFee: serviceFee,
     schedule,
   };
 }

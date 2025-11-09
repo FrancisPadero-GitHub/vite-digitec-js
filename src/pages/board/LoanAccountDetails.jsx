@@ -28,7 +28,7 @@ function LoanAccountDetails() {
   // ID params Grabber 
   const { loan_id } = useParams();
 
-  const parsedId = Number(loan_id);
+  const parsedId = display(loan_id);
 
   // Merged Loan Accounts Data
   const { data: loanAcc } = useFetchLoanAcc();            // base table
@@ -139,17 +139,17 @@ function LoanAccountDetails() {
                 <div className="border border-blue-200 rounded-2xl bg-blue-50 p-6">
                   <p className="text-sm text-blue-600 font-semibold mb-2">Loan Overview</p>
                   <p className="text-2xl font-bold text-blue-900 mb-3">
-                    ₱{Number(accountData.principal || 0).toLocaleString()}
+                    ₱{display(accountData.principal)}
                   </p>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center pb-2 border-b border-blue-200">
                       <span className="text-blue-700">Principal Amount</span>
-                      <span className="font-semibold">₱{Number(accountData.principal || 0).toLocaleString()}</span>
+                      <span className="font-semibold">₱{display(accountData.principal)}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-blue-200">
                       <span className="text-blue-700">Service Fee</span>
-                      <span className="font-semibold text-red-700">-₱{Number(accountData.service_fee || 0).toLocaleString()}</span>
+                      <span className="font-semibold text-red-700">-₱{display(accountData.service_fee)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-1">
                       <span className="text-blue-800 font-medium">Remaining</span>
@@ -162,14 +162,14 @@ function LoanAccountDetails() {
                 <div className="border border-green-200 rounded-2xl bg-green-50 p-6">
                   <p className="text-sm font-semibold text-green-700 mb-2">Payment Progress</p>
                   <span className="text-2xl font-bold text-green-900">
-                    {((Number(accountData.total_paid || 0) / Number(accountData.total_amount_due || 1)) * 100).toFixed(1)}%
+                    {((display(accountData.total_paid || 0) / display(accountData.total_amount_due || 1)) * 100).toFixed(1)}%
                   </span>
                   
                   {/* Progress bar */}
                   <progress 
                     className="progress progress-success w-full h-3 mt-4" 
-                    value={Number(accountData.total_paid || 0)} 
-                    max={Number(accountData.total_amount_due || 1)}
+                    value={display(accountData.total_paid || 0)} 
+                    max={display(accountData.total_amount_due || 1)}
                   />
                   
                   <div className="flex justify-between text-xs text-green-600 mb-3">
@@ -180,11 +180,11 @@ function LoanAccountDetails() {
                   <div className="space-y-2 text-sm pt-2 border-t border-green-200 ">
                     <div className="flex justify-between">
                       <span className="text-green-700">Total Paid</span>
-                      <span className="font-bold text-green-800">₱{Number(accountData.total_paid || 0).toLocaleString()}</span>
+                      <span className="font-bold text-green-800">₱{display(accountData.total_paid)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Repayable</span>
-                      <span className="font-semibold">₱{Number(accountData.total_amount_due || 0).toLocaleString()}</span>
+                      <span className="font-semibold">₱{display(accountData.total_amount_due)}</span>
                     </div>
                   </div>
                 </div>
@@ -193,25 +193,25 @@ function LoanAccountDetails() {
                 <div className="border border-red-200 rounded-2xl bg-red-50 p-6">
                   <p className="text-sm text-red-600 font-semibold mb-2">Outstanding Balance</p>
                   <p className="text-2xl font-bold text-red-900 mb-3">
-                    ₱{Number(accountData.outstanding_balance || 0).toLocaleString()}
+                    ₱{display(accountData.outstanding_balance)}
                   </p>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center pb-2 border-b border-red-200">
                       <span className="text-red-700">Remaining Principal</span>
-                      <span className="font-semibold">₱{Number(accountData.remaining_principal || 0).toLocaleString()}</span>
+                      <span className="font-semibold">₱{display(accountData.remaining_principal)}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-red-200">
                       <span className="text-red-700">Remaining Interest</span>
-                      <span className="font-semibold">₱{Number(accountData.remaining_interest || 0).toLocaleString()}</span>
+                      <span className="font-semibold">₱{display(accountData.remaining_interest)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-1">
                       <span className="text-red-800 font-medium">+ Penalties</span>
-                      <span className="font-bold text-red-800">₱{Number(accountData.remaining_penalty_fees || 0).toLocaleString()}</span>
+                      <span className="font-bold text-red-800">₱{display(accountData.remaining_penalty_fees)}</span>
                     </div>
                   </div>
                   
-                  {Number(accountData.remaining_penalty_fees || 0) > 0 && (
+                  {display(accountData.remaining_penalty_fees || 0) > 0 && (
                     <div className="mt-3 p-2 bg-red-100 rounded-lg">
                       <p className="text-xs text-red-700">⚠️ Late payment fees</p>
                     </div>
@@ -230,15 +230,15 @@ function LoanAccountDetails() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-purple-700">Released Amount</span>
-                      <span className="font-bold text-purple-900">₱{Number(accountData.net_principal || 0).toLocaleString()}</span>
+                      <span className="font-bold text-purple-900">₱{display(accountData.net_principal)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-purple-700">Total Interest ({interestRate}%)</span>
-                      <span className="font-bold text-purple-900">₱{Number(accountData.total_interest || 0).toLocaleString()}</span>
+                      <span className="font-bold text-purple-900">₱{display(accountData.total_interest)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-purple-200">
                       <span className="text-sm text-purple-800 font-medium">Total Repayable</span>
-                      <span className="font-bold text-purple-900 text-2xl">₱{Number(accountData.total_amount_due || 0).toLocaleString()}</span>
+                      <span className="font-bold text-purple-900 text-2xl">₱{display(accountData.total_amount_due)}</span>
                     </div>
                   </div>
                 </div>
@@ -282,19 +282,19 @@ function LoanAccountDetails() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-amber-600">Total Penalties</span>
-                      <span className="font-semibold">₱{Number(accountData.total_penalty_fees || 0).toLocaleString()}</span>
+                      <span className="font-semibold">₱{display(accountData.total_penalty_fees)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-amber-600">Penalties Paid</span>
-                      <span className="font-semibold text-amber-700">₱{Number(accountData.penalty_fees_paid || 0).toLocaleString()}</span>
+                      <span className="font-semibold text-amber-700">₱{display(accountData.penalty_fees_paid)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                      <span className={`text-sm font-medium ${Number(accountData.remaining_penalty_fees || 0) === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-sm font-medium ${display(accountData.remaining_penalty_fees || 0) === 0 ? 'text-green-600' : 'text-red-600'}`}>
                         Remaining
                       </span>
-                      <span className={`font-bold ${Number(accountData.remaining_penalty_fees || 0) === 0 ? 'text-green-600' : 'text-red-900'}`}>
-                        ₱{Number(accountData.remaining_penalty_fees || 0).toLocaleString()}
-                        {Number(accountData.remaining_penalty_fees || 0) === 0 && Number(accountData.total_penalty_fees || 0) === 0 ? ' ✓' : ''}
+                      <span className={`font-bold ${display(accountData.remaining_penalty_fees || 0) === 0 ? 'text-green-600' : 'text-red-900'}`}>
+                        ₱{display(accountData.remaining_penalty_fees)}
+                        {display(accountData.remaining_penalty_fees || 0) === 0 && display(accountData.total_penalty_fees || 0) === 0 ? ' ✓' : ''}
                       </span>
                     </div>
                   </div>
