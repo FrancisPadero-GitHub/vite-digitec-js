@@ -28,7 +28,7 @@ function LoanAccountDetails() {
   // ID params Grabber 
   const { loan_id } = useParams();
 
-  const parsedId = display(loan_id);
+  const parsedId = Number(loan_id);
 
   // Merged Loan Accounts Data
   const { data: loanAcc } = useFetchLoanAcc();            // base table
@@ -54,7 +54,7 @@ function LoanAccountDetails() {
   const [limit] = useState(20);
   const { data: loanSchedules, isLoading } = useFetchPaySched({page, limit, loanId: parsedId});
   const loanSchedRaw = loanSchedules?.data || [];
-  const total = loanSchedules?.count || 0;
+  const total = loanSchedules?.count;
 
   // Members Data to get the full name of the applicant
   const { data: members_data } = useMembers({});
@@ -76,8 +76,8 @@ function LoanAccountDetails() {
   );
 
   const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
-  const loanTerm = accountData?.loan_term_approved || 0;
-  const net_principal = accountData?.net_principal || 0;
+  const loanTerm = accountData?.loan_term_approved;
+  const net_principal = accountData?.net_principal;
 
   const navigate = useNavigate();
 
@@ -99,35 +99,35 @@ function LoanAccountDetails() {
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-4">
                   <div className={`w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold ${
-                    accountData.status === "Active"
+                    accountData?.status === "Active"
                     ? "bg-green-100 text-green-700"
-                    : accountData.status === "Closed"
+                    : accountData?.status === "Closed"
                     ? "bg-gray-100 text-gray-600"
-                    : accountData.status === "Pending Release"
+                    : accountData?.status === "Pending Release"
                     ? "bg-amber-100 text-amber-700"
                     : "bg-blue-100 text-blue-700"
                   }`}>
-                    {accountData.status === "Active" ? (
-                      <DoneAllIcon fontSize="large" color="green" />) : accountData.status === "Closed" ? (
+                    {accountData?.status === "Active" ? (
+                      <DoneAllIcon fontSize="large" color="green" />) : accountData?.status === "Closed" ? (
                       <LockIcon fontSize="large" color="gray" />) : (
                       <AccessTimeIcon fontSize="large" color="amber" />) || (
                       "●"
                     )}
                   </div>
                   <div>
-                    <p className="text-xl font-bold">{accountData.account_number}</p>
+                    <p className="text-xl font-bold">{accountData?.account_number}</p>
                     <p className="text-gray-600 mt-1">{fullName || "Not Found"}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span
                     className={`badge badge-soft font-semibold text-base ${
-                      LOAN_ACCOUNT_STATUS_COLORS[accountData.status] || "badge-neutral"
+                      LOAN_ACCOUNT_STATUS_COLORS[accountData?.status] || "badge-neutral"
                     }`}
                   >
-                    {accountData.status || "N/A"}
+                    {accountData?.status || "N/A"}
                   </span>
-                  <p className="text-sm text-gray-600 mt-3">{accountData.loan_ref_number}</p>
+                  <p className="text-sm text-gray-600 mt-3">{accountData?.loan_ref_number}</p>
                 </div>
               </div>
             
@@ -139,17 +139,17 @@ function LoanAccountDetails() {
                 <div className="border border-blue-200 rounded-2xl bg-blue-50 p-6">
                   <p className="text-sm text-blue-600 font-semibold mb-2">Loan Overview</p>
                   <p className="text-2xl font-bold text-blue-900 mb-3">
-                    ₱{display(accountData.principal)}
+                    ₱{display(accountData?.principal)}
                   </p>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center pb-2 border-b border-blue-200">
                       <span className="text-blue-700">Principal Amount</span>
-                      <span className="font-semibold">₱{display(accountData.principal)}</span>
+                      <span className="font-semibold">₱{display(accountData?.principal)}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-blue-200">
                       <span className="text-blue-700">Service Fee</span>
-                      <span className="font-semibold text-red-700">-₱{display(accountData.service_fee)}</span>
+                      <span className="font-semibold text-red-700">-₱{display(accountData?.service_fee)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-1">
                       <span className="text-blue-800 font-medium">Remaining</span>
@@ -162,14 +162,14 @@ function LoanAccountDetails() {
                 <div className="border border-green-200 rounded-2xl bg-green-50 p-6">
                   <p className="text-sm font-semibold text-green-700 mb-2">Payment Progress</p>
                   <span className="text-2xl font-bold text-green-900">
-                    {((display(accountData.total_paid || 0) / display(accountData.total_amount_due || 1)) * 100).toFixed(1)}%
+                    {((Number(accountData.total_paid || 0) / Number(accountData.total_amount_due || 1)) * 100).toFixed(1)}%
                   </span>
                   
                   {/* Progress bar */}
                   <progress 
                     className="progress progress-success w-full h-3 mt-4" 
-                    value={display(accountData.total_paid || 0)} 
-                    max={display(accountData.total_amount_due || 1)}
+                    value={Number(accountData.total_paid || 0)} 
+                    max={Number(accountData.total_amount_due || 1)}
                   />
                   
                   <div className="flex justify-between text-xs text-green-600 mb-3">
@@ -180,11 +180,11 @@ function LoanAccountDetails() {
                   <div className="space-y-2 text-sm pt-2 border-t border-green-200 ">
                     <div className="flex justify-between">
                       <span className="text-green-700">Total Paid</span>
-                      <span className="font-bold text-green-800">₱{display(accountData.total_paid)}</span>
+                      <span className="font-bold text-green-800">₱{display(accountData?.total_paid)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Repayable</span>
-                      <span className="font-semibold">₱{display(accountData.total_amount_due)}</span>
+                      <span className="font-semibold">₱{display(accountData?.total_amount_due)}</span>
                     </div>
                   </div>
                 </div>
@@ -193,25 +193,25 @@ function LoanAccountDetails() {
                 <div className="border border-red-200 rounded-2xl bg-red-50 p-6">
                   <p className="text-sm text-red-600 font-semibold mb-2">Outstanding Balance</p>
                   <p className="text-2xl font-bold text-red-900 mb-3">
-                    ₱{display(accountData.outstanding_balance)}
+                    ₱{display(accountData?.outstanding_balance)}
                   </p>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center pb-2 border-b border-red-200">
                       <span className="text-red-700">Remaining Principal</span>
-                      <span className="font-semibold">₱{display(accountData.remaining_principal)}</span>
+                      <span className="font-semibold">₱{display(accountData?.remaining_principal)}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-red-200">
                       <span className="text-red-700">Remaining Interest</span>
-                      <span className="font-semibold">₱{display(accountData.remaining_interest)}</span>
+                      <span className="font-semibold">₱{display(accountData?.remaining_interest)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-1">
                       <span className="text-red-800 font-medium">+ Penalties</span>
-                      <span className="font-bold text-red-800">₱{display(accountData.remaining_penalty_fees)}</span>
+                      <span className="font-bold text-red-800">₱{display(accountData?.remaining_penalty_fees)}</span>
                     </div>
                   </div>
                   
-                  {display(accountData.remaining_penalty_fees || 0) > 0 && (
+                  {display(accountData?.remaining_penalty_fees) > 0 && (
                     <div className="mt-3 p-2 bg-red-100 rounded-lg">
                       <p className="text-xs text-red-700">⚠️ Late payment fees</p>
                     </div>
@@ -230,15 +230,15 @@ function LoanAccountDetails() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-purple-700">Released Amount</span>
-                      <span className="font-bold text-purple-900">₱{display(accountData.net_principal)}</span>
+                      <span className="font-bold text-purple-900">₱{display(accountData?.net_principal)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-purple-700">Total Interest ({interestRate}%)</span>
-                      <span className="font-bold text-purple-900">₱{display(accountData.total_interest)}</span>
+                      <span className="font-bold text-purple-900">₱{display(accountData?.total_interest)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-purple-200">
                       <span className="text-sm text-purple-800 font-medium">Total Repayable</span>
-                      <span className="font-bold text-purple-900 text-2xl">₱{display(accountData.total_amount_due)}</span>
+                      <span className="font-bold text-purple-900 text-2xl">₱{display(accountData?.total_amount_due)}</span>
                     </div>
                   </div>
                 </div>
@@ -252,13 +252,13 @@ function LoanAccountDetails() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-700">Approved</span>
                       <span className="font-semibold text-gray-900">
-                        {accountData.approved_date ? dayjs(accountData.approved_date).format("MMM D, YYYY") : "—"}
+                        {accountData?.approved_date ? dayjs(accountData?.approved_date).format("MMM D, YYYY") : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-700">Released</span>
                       <span className="font-semibold text-gray-900">
-                        {accountData.release_date ? dayjs(accountData.release_date).format("MMM D, YYYY") : "Pending"}
+                        {accountData?.release_date ? dayjs(accountData?.release_date).format("MMM D, YYYY") : "Pending"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -268,7 +268,7 @@ function LoanAccountDetails() {
                     <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                       <span className="text-sm text-gray-800 font-medium">Maturity</span>
                       <span className="font-bold text-gray-900">
-                        {accountData.maturity_date ? dayjs(accountData.maturity_date).format("MMM D, YYYY") : "—"}
+                        {accountData?.maturity_date ? dayjs(accountData?.maturity_date).format("MMM D, YYYY") : "—"}
                       </span>
                     </div>
                   </div>
@@ -282,19 +282,19 @@ function LoanAccountDetails() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-amber-600">Total Penalties</span>
-                      <span className="font-semibold">₱{display(accountData.total_penalty_fees)}</span>
+                      <span className="font-semibold">₱{display(accountData?.total_penalty_fees)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-amber-600">Penalties Paid</span>
-                      <span className="font-semibold text-amber-700">₱{display(accountData.penalty_fees_paid)}</span>
+                      <span className="font-semibold text-amber-700">₱{display(accountData?.penalty_fees_paid)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                      <span className={`text-sm font-medium ${display(accountData.remaining_penalty_fees || 0) === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-sm font-medium ${display(accountData?.remaining_penalty_fees) === 0 ? 'text-green-600' : 'text-red-600'}`}>
                         Remaining
                       </span>
-                      <span className={`font-bold ${display(accountData.remaining_penalty_fees || 0) === 0 ? 'text-green-600' : 'text-red-900'}`}>
-                        ₱{display(accountData.remaining_penalty_fees)}
-                        {display(accountData.remaining_penalty_fees || 0) === 0 && display(accountData.total_penalty_fees || 0) === 0 ? ' ✓' : ''}
+                      <span className={`font-bold ${display(accountData?.remaining_penalty_fees) === 0 ? 'text-green-600' : 'text-red-900'}`}>
+                        ₱{display(accountData?.remaining_penalty_fees)}
+                        {display(accountData?.remaining_penalty_fees) === 0 && display(accountData?.total_penalty_fees) === 0 ? ' ✓' : ''}
                       </span>
                     </div>
                   </div>

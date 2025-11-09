@@ -1,7 +1,15 @@
 import dayjs from "dayjs";
+import { Decimal } from "decimal.js";
 
-// this version is for the flat rate
+// ---
+// Helper function to round a Decimal to 2 decimal places
+// This uses "half up" rounding, which is standard for finance.
+// ---
+const round = (num) => num.toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
+/**
+ * Flat rate loan calculator (using precise decimal math)
+ */
 export default function calcLoanSchedFlat({
   interestRate,
   principal,
@@ -11,37 +19,37 @@ export default function calcLoanSchedFlat({
   generateSchedule = false,
   serviceFeeRate = 0, // Add service fee rate (percent)
 }) {
-  // Convert to numbers safely
-  const rate = Number(interestRate);
-  const amount = Number(principal);
-  const months = Number(termMonths);
-  const serviceFee = amount * (Number(serviceFeeRate) / 100);
-  const netPrincipal = amount - serviceFee; // Deduct service fee from principal
+  // Use regular Numbers for validation and counters
+  const rateNum = Number(interestRate);
+  const amountNum = Number(principal);
+  const monthsNum = Number(termMonths);
+  const serviceFeeRateNum = Number(serviceFeeRate);
 
-  /**
-   * Approach 1 (do not deduct service fee from principal) -- NOT USING THIS
-   *
-   * const netPrincipal = amount; // do not deduct service fee from principal
-   * const totalPayable = netPrincipal + totalInterest;
-   */
+  // --- Start Decimal Calculations ---
+  // Convert all inputs to Decimal objects for precise math
+  const D_rate = new Decimal(rateNum);
+  const D_amount = new Decimal(amountNum);
+  const D_serviceFeeRate = new Decimal(serviceFeeRateNum);
 
-  /**
-   * Approach 2 (deduct service fee from principal) -- CURRENTLY USING THIS
-   *
-   * const netPrincipal = amount - serviceFee;
-   * const totalPayable = netPrincipal + totalInterest;
-   */
+  // Calculate service fee and net principal using Decimals
+  const D_serviceFee = round(D_amount.times(D_serviceFeeRate).div(100));
+  const D_netPrincipal = D_amount.minus(D_serviceFee);
 
   // Validation
   if (
-    !rate ||
-    !amount ||
-    !months ||
-    isNaN(rate) ||
-    isNaN(amount) ||
-    isNaN(months)
+    !rateNum ||
+    !amountNum ||
+    !monthsNum ||
+    isNaN(rateNum) ||
+    isNaN(amountNum) ||
+    isNaN(monthsNum) ||
+    D_netPrincipal.isNegative()
   ) {
-    console.warn("Invalid calculation input:", { rate, amount, months });
+    console.warn("Invalid calculation input:", {
+      rate: rateNum,
+      amount: amountNum,
+      months: monthsNum,
+    });
     return {
       totalInterest: 0,
       totalPayable: 0,
@@ -53,39 +61,62 @@ export default function calcLoanSchedFlat({
     };
   }
 
-  // Flat interest logic
-  // Use netPrincipal (after deducting service fee) for calculation
-  const totalInterest = netPrincipal * (rate / 100);
-  const totalPayable = netPrincipal + totalInterest;
+  // --- Flat Interest Logic (with Decimals) ---
 
-  const monthlyPrincipal = netPrincipal / months;
-  const monthlyInterest = totalInterest / months;
-  const monthlyPayment = monthlyPrincipal + monthlyInterest;
+  // 1. Calculate totals (and round them, as they are final currency values)
+  const D_totalInterest = round(D_netPrincipal.times(D_rate).div(100));
+  const D_totalPayable = D_netPrincipal.plus(D_totalInterest);
+
+  // 2. Calculate standard monthly payments (and round them)
+  const D_monthlyPrincipal = round(D_netPrincipal.div(monthsNum));
+  const D_monthlyInterest = round(D_totalInterest.div(monthsNum));
+  const D_monthlyPayment = D_monthlyPrincipal.plus(D_monthlyInterest);
+
+  // 3. Handle remainders
+  // We must do this because (monthly * months) might not equal the total
+  // due to rounding (e.g., 33.33 * 3 = 99.99, not 100.00)
+  const D_totalPrincipalRounded = D_monthlyPrincipal.times(monthsNum);
+  const D_principalRemainder = D_netPrincipal.minus(D_totalPrincipalRounded);
+
+  const D_totalInterestRounded = D_monthlyInterest.times(monthsNum);
+  const D_interestRemainder = D_totalInterest.minus(D_totalInterestRounded);
+
+  // The last payment will be adjusted by these remainder amounts
+  const D_finalPrincipal = D_monthlyPrincipal.plus(D_principalRemainder);
+  const D_finalInterest = D_monthlyInterest.plus(D_interestRemainder);
+  const D_finalTotalDue = D_finalPrincipal.plus(D_finalInterest);
+
 
   // Optional schedule generation
   let schedule = [];
   if (generateSchedule) {
-    for (let i = 0; i < months; i++) {
+    for (let i = 0; i < monthsNum; i++) {
       const dueDate = dayjs(startDate).add(i, "month").format("YYYY-MM-DD");
+
+      // Is this the last payment?
+      const isLastPayment = i === monthsNum - 1;
+
       schedule.push({
         loan_id: loanId,
         installment_no: i,
         due_date: dueDate,
-        principal_due: monthlyPrincipal,
-        interest_due: monthlyInterest,
-        total_due: monthlyPayment,
+        // Use adjusted final payment values if this is the last installment
+        principal_due: (isLastPayment ? D_finalPrincipal : D_monthlyPrincipal).toNumber(),
+        interest_due: (isLastPayment ? D_finalInterest : D_monthlyInterest).toNumber(),
+        total_due: (isLastPayment ? D_finalTotalDue : D_monthlyPayment).toNumber(),
         paid: false,
       });
     }
   }
 
+  // Return the standard monthly amounts
   return {
-    totalInterest: totalInterest,
-    totalPayable: totalPayable,
-    monthlyPayment: monthlyPayment,
-    monthlyPrincipal: monthlyPrincipal,
-    monthlyInterest: monthlyInterest,
-    serviceFee: serviceFee,
+    totalInterest: D_totalInterest.toNumber(),
+    totalPayable: D_totalPayable.toNumber(),
+    monthlyPayment: D_monthlyPayment.toNumber(),
+    monthlyPrincipal: D_monthlyPrincipal.toNumber(),
+    monthlyInterest: D_monthlyInterest.toNumber(),
+    serviceFee: D_serviceFee.toNumber(),
     schedule,
   };
 }
