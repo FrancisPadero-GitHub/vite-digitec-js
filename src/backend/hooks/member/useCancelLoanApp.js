@@ -2,15 +2,19 @@ import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAddActivityLog } from "../shared/useAddActivityLog";
 
-const updateLoanApp = async (formData) => {
+/**
+ * Reason that this is a separate hook is to simplify the mutation function
+ * since cancelling a loan application only requires updating the status field.
+ * and if I use the useEditLoanApp hook, it would require passing all fields again.
+ * If I not pass value to it while not using the onSubmit form, it will overwrite existing values with null.
+ * 
+ * Im still gonna find a way to optimize the passing of formData in payloads in the future.
+ */
+
+const cancelLoanApp = async (formData) => {
   const {
     application_id,
-    amount = null,
-    purpose = null,
-    product_id = null,
-    loan_term = null,
     status = null,
-    application_date = null,
   } = formData;
 
     if (!application_id) {
@@ -18,12 +22,7 @@ const updateLoanApp = async (formData) => {
     }
 
   const payload = {
-    product_id,
-    amount,
-    loan_term,
-    purpose,
     status,
-    application_date,
   };
 
   const { data, error } = await supabase
@@ -39,12 +38,12 @@ const updateLoanApp = async (formData) => {
   return data;
 };
 
-export const useEditLoanApp = () => {
+export const useCancelLoanApp = () => {
   const queryClient = useQueryClient();
   const { mutateAsync: logActivity } = useAddActivityLog();
 
   return useMutation({
-    mutationFn: updateLoanApp,
+    mutationFn: cancelLoanApp,
     onSuccess: async (data) => {
       console.log("Loan Application Updated!: ", data);
       queryClient.invalidateQueries({ queryKey: ["loan_applications"], exact: false });

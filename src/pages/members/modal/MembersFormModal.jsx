@@ -1,12 +1,18 @@
-
-function MembersFormModal({title, open, close, action, children, onSubmit, status, deleteAction, type, isPending, isAnyChanges }) { 
+import CloseIcon from '@mui/icons-material/Close';
+function MembersFormModal({title, open, close, action, children, onSubmit, status, cancelAction, type, isPending, isAnyChanges }) { 
 
   // if open is false, don't render anything
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
       <div className="modal-box space-y-6 overflow-visible w-[40rem] max-w-full">
-        <h2 className="text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
+        <div className="flex gap-2 justify-between" >
+          <h2 className="text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
+          <button type="button" className="btn btn-ghost" onClick={close}>
+            <CloseIcon />
+          </button>
+        </div>
+        
         <form 
           onSubmit={(e) => {
             e.preventDefault();
@@ -25,13 +31,13 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
                 type="button"
                 className="btn btn-error"
                 disabled={status || isPending}
-                onClick={deleteAction}
+                onClick={cancelAction}
               >
-                Delete
+                Cancel loan
               </button>
             )}
             <div className="flex gap-2 ml-auto">
-              <button type="button" className="btn btn-ghost" onClick={close}>{onSubmit ? "Cancel" : "Close"}</button>
+
               {onSubmit && (
                 <button type="submit" className="btn btn-primary" disabled={status || isPending || isAnyChanges}>
                   {isPending ? (

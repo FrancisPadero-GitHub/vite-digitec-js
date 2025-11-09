@@ -107,6 +107,6 @@ export default function calcLoanSchedDiminishing({
     totalPayable: round(totalPayable),
     monthlyPayment: round(monthlyPayment),
     serviceFee: round(serviceFee),
-    schedule,
+    schedule,  // return schedule if generated  value is automatic in db
   };
 }

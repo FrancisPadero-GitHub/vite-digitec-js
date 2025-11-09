@@ -31,7 +31,6 @@ import BoardFormModal from "./modal/BoardFormModal";
 import LoanAccModal from "./modal/LoanAccModal";
 
 // constants
-import { display } from "../../constants/numericFormat";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png"
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 
@@ -39,6 +38,8 @@ import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../const
 import calcLoanSchedFlat from "../../constants/calcLoanSchedFlat";
 import calcLoanSchedDiminishing from "../../constants/calcLoanSchedDiminishing";
 
+// utils
+import { display } from "../../constants/numericFormat";
 
 // HELPER FUNCTIONS & VARIABLES
 // To avoid timezone issues with date inputs, we convert dates to local date strings
@@ -155,6 +156,7 @@ function LoanApplicationsV2() {
       interest_rate: 0,
       loan_term: 0,
       interest_method: "",
+      monthly_payment: 0,
     }
   });
 
@@ -325,6 +327,7 @@ function LoanApplicationsV2() {
     let totalPayable = 0;
     let totalInterest = 0;
     let totalServiceFee = 0;
+    let totalMonthlyPayment = 0;
 
     if (interestMethod === "flat") {
       const result = calcLoanSchedFlat({
@@ -336,6 +339,7 @@ function LoanApplicationsV2() {
       totalPayable = result.totalPayable;
       totalInterest = result.totalInterest;
       totalServiceFee = result.serviceFee;
+      totalMonthlyPayment = result.monthlyPayment;
     } else if (interestMethod === "diminishing") {
       const result = calcLoanSchedDiminishing({
         interestRate: Number(interestRateValue),
@@ -346,11 +350,11 @@ function LoanApplicationsV2() {
       totalPayable = result.totalPayable;
       totalInterest = result.totalInterest;
       totalServiceFee = result.serviceFee;
+      totalMonthlyPayment = result.monthlyPayment;
     } else {
       return null;
     }
-
-    return { totalPayable, totalInterest, totalServiceFee };
+    return { totalPayable, totalInterest, totalServiceFee, totalMonthlyPayment };
   }, [principalValue, interestMethod, interestRateValue, loanTermValue, serviceFeeValue]);
 
 
@@ -363,23 +367,26 @@ function LoanApplicationsV2() {
     if (!calculatedLoan) return;
     setIsCalculating(false);
 
-    const { totalPayable, totalInterest, totalServiceFee } = calculatedLoan;
+    // function useMemo above returns these values
+    const { totalPayable, totalInterest, totalServiceFee, totalMonthlyPayment } = calculatedLoan;
 
     const currentTotal = watchLoanAcc("total_amount_due");
     const currentInterest = watchLoanAcc("total_interest");
     const currentFee = watchLoanAcc("service_fee");
-
+    const currentMonthlyPayment = watchLoanAcc("monthly_payment");
 
     if (
       currentTotal !== totalPayable ||
       currentInterest !== totalInterest ||
-      currentFee !== totalServiceFee
+      currentFee !== totalServiceFee ||
+      currentMonthlyPayment !== totalMonthlyPayment
     ) {
       setIsCalculating(true);
       const timer = setTimeout(() => {
         setLoanAccValue("total_amount_due", totalPayable);
         setLoanAccValue("total_interest", totalInterest);
         setLoanAccValue("service_fee", totalServiceFee);
+        setLoanAccValue("monthly_payment", totalMonthlyPayment);
         setIsCalculating(false);
       }, 300); // debounce time 300ms for smooth update and not jittery
 
@@ -840,6 +847,12 @@ function LoanApplicationsV2() {
                 <input type="hidden" {...registerLoanAcc("interest_rate", { required: true })} />
               </div>
 
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
+                <span className="text-xs font-medium text-gray-500">Loan Term:</span>
+                <span className="text-xs font-bold">{watchLoanAcc("loan_term")} months</span>
+                <input type="hidden" {...registerLoanAcc("loan_term", { required: true })} />
+              </div>
+
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-200">
                 <span className="text-xs font-medium text-gray-500">Method:</span>
                 <span className="text-xs font-bold">{watchLoanAcc("interest_method")}</span>
@@ -853,20 +866,73 @@ function LoanApplicationsV2() {
               </div>
             </div>
 
-            {/* Total amount due */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Total Amount Due</label>
-              <div className={`relative px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 ${isCalculating ? "opacity-50" : ""}`}>
-                <div className="text-xl font-bold">
-                  ₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+            {/* GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Service fee */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Service Fee</label>
+                <div className={`relative px-4 py-2 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border-2 border-purple-300 ${isCalculating ? "opacity-50" : ""}`}>
+                  <div className="text-xl font-bold text-purple-900">
+                    ₱{display(watchLoanAcc("service_fee")) || "0.00"}
+                  </div>
+                  {isCalculating && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 animate-spin">
+                      <AiOutlineLoading3Quarters size={20} />
+                    </span>
+                  )}
                 </div>
-                {isCalculating && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 animate-spin">
-                    <AiOutlineLoading3Quarters size={20} />
-                  </span>
-                )}
+                <input type="hidden" {...registerLoanAcc("service_fee", { required: true })} />
               </div>
-              <input type="hidden" {...registerLoanAcc("total_amount_due", { required: true })} />
+
+              {/* Total interest */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
+                <div className={`relative px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300 ${isCalculating ? "opacity-50" : ""}`}>
+                  <div className="text-xl font-bold text-blue-900">
+                    ₱{display(watchLoanAcc("total_interest")) || "0.00"}
+                  </div>
+                  {isCalculating && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 animate-spin">
+                      <AiOutlineLoading3Quarters size={20} />
+                    </span>
+                  )}
+                </div>
+                <input type="hidden" {...registerLoanAcc("total_interest", { required: true })} />
+              </div>
+
+              {/* Monthly amount due */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Due</label>
+                <div className={`relative px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-300 ${isCalculating ? "opacity-50" : ""}`}>
+                  <div className="text-xl font-bold text-emerald-900">
+                    ₱{display(watchLoanAcc("monthly_payment")) || "0.00"}
+                  </div>
+                  {isCalculating && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-spin">
+                      <AiOutlineLoading3Quarters size={20} />
+                    </span>
+                  )}
+                </div>
+                <input type="hidden" {...registerLoanAcc("monthly_payment", { required: true })} />
+              </div>
+
+
+              {/* Total amount due */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Total Amount Due</label>
+                <div className={`relative px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 ${isCalculating ? "opacity-50" : ""}`}>
+                  <div className="text-xl font-bold">
+                    ₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                  </div>
+                  {isCalculating && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 animate-spin">
+                      <AiOutlineLoading3Quarters size={20} />
+                    </span>
+                  )}
+                </div>
+                <input type="hidden" {...registerLoanAcc("total_amount_due", { required: true })} />
+              </div>
+
             </div>
           </div>
         </LoanAccModal>  

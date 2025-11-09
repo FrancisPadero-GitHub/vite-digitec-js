@@ -8,6 +8,7 @@ const insertLoanApp = async (formData, accountNumber) => {
     product_id = null,
     amount = null,
     purpose = null,
+    loan_term = null,
   } = formData;
 
   const payload = {
@@ -16,6 +17,7 @@ const insertLoanApp = async (formData, accountNumber) => {
     purpose,
     application_date: new Date().toISOString().split('T')[0], // today is default
     status: "Pending",
+    loan_term,
     account_number: accountNumber,
   };
 
