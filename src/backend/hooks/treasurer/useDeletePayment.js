@@ -61,6 +61,7 @@ export const useDeletePayment = (table) => {
     onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
       queryClient.invalidateQueries({queryKey: [table], exact: false});
+      queryClient.invalidateQueries({queryKey: [`view_${table}`], exact: false});
       queryClient.invalidateQueries({queryKey: ["loan_payment_schedules"], exact: false});
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],

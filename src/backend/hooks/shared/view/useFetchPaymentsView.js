@@ -1,21 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../../supabase.js";
-import { useFetchAccountNumber } from "./useFetchAccountNumber.js";
-
+import { supabase } from "../../../supabase.js";
+import { useFetchAccountNumber } from "../useFetchAccountNumber.js";
 
 /**
  * Fetches loan payments with optional filters and pagination.
  */
-async function fetchLoanPayments({
+async function fetchLoanPaymentsView({
   page = null,
   limit = null,
   accountNumber = null,
   loanRefNumber = null,
 }) {
   let query = supabase
-    .from("loan_payments")
+    .from("view_loan_payments")
     .select("*", { count: "exact" })
-    .is("deleted_at", null)
     .order("payment_id", { ascending: false });
 
   // Optionals if values are null return all data no filters
@@ -37,7 +35,7 @@ async function fetchLoanPayments({
  * React Query hook for fetching payments.
  * Can optionally use the logged-in member’s account number.
  */
-export function useFetchLoanPayments({
+export function useFetchLoanPaymentsView({
   page = null,
   limit = null,
   accountNumber = null,
@@ -52,14 +50,14 @@ export function useFetchLoanPayments({
 
   return useQuery({
     queryKey: [
-      "loan_payments",
+      "view_loan_payments",
       effectiveAccountNumber,
       loanRefNumber,
       page,
       limit,
     ],
     queryFn: () =>
-      fetchLoanPayments({
+      fetchLoanPaymentsView({
         page,
         limit,
         accountNumber: effectiveAccountNumber,

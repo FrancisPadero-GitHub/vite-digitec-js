@@ -1,4 +1,4 @@
-import {useState, useMemo} from 'react'
+import {useState, useMemo, useTransition} from 'react'
 import dayjs from 'dayjs';
 import { createPortal } from 'react-dom';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -6,6 +6,8 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { useForm, Controller } from 'react-hook-form';
 import { Toaster, toast } from 'react-hot-toast';
 import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from "@headlessui/react";
+// utils
+import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
 
 // react redux stuff
 import { useSelector, useDispatch } from 'react-redux';
@@ -13,7 +15,7 @@ import { openLoanPaymentModal, closeLoanPaymentModal, selectModalData } from '..
 
 // fetch hooks
 import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
-import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
+import { useFetchLoanPaymentsView } from '../../backend/hooks/shared/view/useFetchPaymentsView';
 import { useFetchPaySched } from '../../backend/hooks/shared/useFetchPaySched';
 import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
 
@@ -26,12 +28,23 @@ import { useEditLoanPayments } from '../../backend/hooks/treasurer/useEditPaymen
 
 // components
 import FilterToolbar from '../shared/components/FilterToolbar';
-import MainDataTable from './components/MainDataTable';
+import DataTableV2 from '../shared/components/DataTableV2';
+
 import FormModal from './modals/FormModal';
 
 // constants
 import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
-import defaultAvatar from '../../assets/placeholder-avatar.png';
+import placeHolderAvatar from '../../assets/placeholder-avatar.png';
+
+// utils
+import { display } from '../../constants/numericFormat';
+
+// HELPER: To avoid timezone issues with date inputs
+function getLocalDateString(date) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
+}
 
 function CoopLoansPayments() {
 
@@ -39,20 +52,15 @@ function CoopLoansPayments() {
   const dispatch = useDispatch();
   const loanPaymentModal = useSelector(selectModalData); // fetch the data from the store
 
-  // console.log(`Redux Fetched Data`, loanPaymentModal)
-
-  const placeHolderAvatar = defaultAvatar;
-  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+  // fetch data hooks
   const { data: loan_acc_view } = useFetchLoanAccView({});
-
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
-   
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({page, limit});
-  const loanPaymentsRaw = loanPaymentsData?.data || [];
-  const total = loanPaymentsData?.count || 0;
+  const { data: view_loan_payments_data, isLoading, isError, error } = useFetchLoanPaymentsView({});
+
+  // React hook forms 
+  const { mutate: addLoanPayments, isPending: isAddPending } = useAddLoanPayments();
+  const { mutate: editLoanPayments, isPending: isEditPending } = useEditLoanPayments();
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState(""); // for the search bar
@@ -61,73 +69,138 @@ function CoopLoansPayments() {
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
-  const TABLE_PREFIX = "LP"; // You can change this per table, this for the the unique table ID but this is not included in the database
-  const loanPayments = loanPaymentsRaw.filter((row) => {
-    const member = members?.find((m) => m.account_number === row.account_number);
-    const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
-      : "";
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   *
+   */
+  // Add useTransition
+  const [isPending, startTransition] = useTransition();
 
-    const generatedId = `${TABLE_PREFIX}_${row.payment_id}`;
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  // Update filter handlers to use startTransition
+  const handleStatusChange = (value) => {
+    startTransition(() => {
+      setStatusFilter(value);
+    });
+  };
+  // Update filter handlers to use startTransition
+  const handlePaymentMethodChange = (value) => {
+    startTransition(() => {
+      setPaymentMethodFilter(value);
+    });
+  };
 
-    const matchesSearch =
-      searchTerm === "" ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      row.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.receipt_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.payment_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
+  const handleYearChange = (value) => {
+    startTransition(() => {
+      setYearFilter(value);
+    });
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => {
+      setMonthFilter(value);
+    });
+  };
 
-    const statusPaymentFilter =
-      statusFilter === "" || row.status === statusFilter;
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+    setPaymentMethodFilter("");
+  }
 
-    const matchesPaymentMethod =
-      paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
 
-    const date = row.contribution_date ? new Date(row.contribution_date) : null;
-    const matchesYear =
-      yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
-
-    return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod && statusPaymentFilter;
+  // Dynamically generate year options for past 5 years (including current)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
   });
+
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    statusFilter ? `${statusFilter}` : null,
+    paymentMethodFilter ? `${paymentMethodFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all payments";
+
+  const TABLE_PREFIX = "LP"; // You can change this per table, this for the the unique table ID but this is not included in the database
+  const loanPayments = useMemo(() => {
+    const loanPaymentsData = view_loan_payments_data?.data || [];
+    return loanPaymentsData.filter((row) => {
+      const generatedId = `${TABLE_PREFIX}_${row.payment_id}`;
+
+      const matchesSearch =
+        debouncedSearch === "" ||
+        (row.full_name && row.full_name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        (row.account_number && row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        (row.loan_ref_number && row.loan_ref_number.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase()); // <-- ID match
+      const statusPaymentFilter =
+        statusFilter === "" || row.status === statusFilter;
+
+      const matchesPaymentMethod =
+        paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
+
+      const date = row.payment_date ? new Date(row.payment_date) : null;
+      const matchesYear =
+        yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+
+      // Month filter uses month names -> convert to number for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+        July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
+
+      return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod && statusPaymentFilter;
+    })
+  }, [view_loan_payments_data, debouncedSearch, statusFilter, paymentMethodFilter, yearFilter, monthFilter]);
 
   const { mutate: mutateDelete } = useDeletePayment('loan_payments');
 
-  // React hook forms 
-  const {mutate: addLoanPayments, isPending: isAddPending} = useAddLoanPayments();
-  const {mutate: editLoanPayments, isPending: isEditPending} = useEditLoanPayments();
+  const today = getLocalDateString(new Date());
   
-  const today = new Date().toISOString().split("T")[0];
+  const defaultFormValues = {
+    payment_id: "",
+    loan_id: null,
+    loan_ref_number: "",
+    account_number: "",
+    member_id: null,
+    total_amount: "",
+    payment_method: "",
+    payment_date: today,
+    payment_type: "",
+    sched_id: "",
+    outstanding_balance: "",
+    status: "",
+  };
 
-  const defaultValues = {
-      payment_id: "",
-      loan_id: null,
-      loan_ref_number:  "", // or Account_number
-      account_number: "",
-      member_id: null,
-      total_amount: "",
-      payment_method: "",
-      payment_date: today,
-      // receipt_no: "",
-      payment_type: "",
-
-      // non-db values just for the front end 
-      sched_id: "",
-      outstanding_balance: "",
-      status: "",
-
-    }
   const {
-    register,
     control,
+    register,
     watch,
     handleSubmit,
     reset,
     setValue,
   } = useForm({
-    defaultValues
+    defaultValues: defaultFormValues,
   });
 
 
@@ -162,11 +235,12 @@ function CoopLoansPayments() {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
   const openAddModal = () => {
-    reset(defaultValues)
+    reset(defaultFormValues);
     dispatch(openLoanPaymentModal({ type: 'add' }));
   }
   
   const closeModal = () => {
+    reset(defaultFormValues);
     dispatch(closeLoanPaymentModal());
   };
 
@@ -176,14 +250,13 @@ function CoopLoansPayments() {
 
   const openViewModal = (data) => {
     setViewPaymentData(data); // sets the data
+
     // Fetch the loan account details based on the selected payment data
     const selectedLoan = loanAcc.find(
       (loan) => loan.loan_ref_number === data.loan_ref_number
     );
-    
-    // Hide the modal if the loan is not active
+    // Show the modal if the loan is active
     setEditModal(selectedLoan?.status === "Active" ? true : false);
-
   };
 
   const editModal = () => { 
@@ -201,6 +274,9 @@ function CoopLoansPayments() {
       outstanding_balance: selectedLoan?.outstanding_balance || 0,
       status: selectedLoan?.status || "",
     });
+
+    // put something here to trigger the shcedule id to be filtered
+    
 
     closeViewModal();
     dispatch(openLoanPaymentModal({ type: 'edit', data: viewPaymentData }));
@@ -229,6 +305,7 @@ function CoopLoansPayments() {
     if (!pendingPaymentData) return;
 
     if (loanPaymentModal.type === "add") {
+      // console.log("ADD",pendingPaymentData)
       addLoanPayments(pendingPaymentData, {
         onSuccess: () => {
           toast.success("Successfully added payment");
@@ -242,7 +319,20 @@ function CoopLoansPayments() {
         },
       });
     } else if (loanPaymentModal.type === "edit") { 
-      editLoanPayments(pendingPaymentData, {
+      // console.log("Payload", pendingPaymentData)
+
+      // custom payload for editing to avoid non-db fields error when inserting the whole form data
+      const customPayload = {
+        payment_id: pendingPaymentData?.payment_id,
+        loan_ref_number: pendingPaymentData?.loan_ref_number,
+        account_number: pendingPaymentData?.account_number,
+        total_amount: Number(pendingPaymentData?.total_amount) || 0,
+        payment_method: pendingPaymentData?.payment_method,
+        payment_date: pendingPaymentData?.payment_date,
+        receipt_no: pendingPaymentData?.receipt_no,
+      }
+      // console.log("Custom payload", customPayload)
+      editLoanPayments(customPayload, {
         onSuccess: () => {
           toast.success("Successfully edited payment");
           setShowPaymentConfirm(false);
@@ -254,8 +344,8 @@ function CoopLoansPayments() {
           setShowPaymentConfirm(false);
         },
       });
-    }
 
+    }
   };
   
   /**
@@ -263,13 +353,14 @@ function CoopLoansPayments() {
    */
   const [queryMem, setQueryMem] = useState("");
   // This is used for the search query on the form
+  const debouncedQueryMem = useDebounce(queryMem, 250); // 250ms delay feels natural
   const filteredMembers =
-    queryMem === ""
+    debouncedQueryMem === ""
       ? members
       : members.filter((m) =>
         `${m.account_number} ${m.f_name} ${m.l_name}`
           .toLowerCase()     
-          .includes(queryMem.toLowerCase())
+          .includes(debouncedQueryMem.toLowerCase())
       );
 
 
@@ -277,6 +368,7 @@ function CoopLoansPayments() {
    * LOAN ACC FILTER
    */
   const [queryLoan, setQueryLoan] = useState("");
+  const debouncedQueryLoan = useDebounce(queryLoan, 250); // 250ms delay feels natural
   const loanAcc = useMemo(() => {
     const data = loan_acc_view?.data || [];                     // Uses the view table version instead of the base table
     return data.filter((loan) => loan.status === "Active");     // Filter to only Active loan accounts
@@ -292,17 +384,17 @@ function CoopLoansPayments() {
       : [];
 
     // Then this is used for the search query on the form
-    if (queryLoan !== "") {
+    if (debouncedQueryLoan !== "") {
       return data.filter((loan) =>
         `${loan.loan_ref_number} ${loan.loan_id}`      // You can add columns here that you wanna search
           .toLowerCase()
-          .includes(queryLoan.toLowerCase())
+          .includes(debouncedQueryLoan.toLowerCase())
       );
     }
 
     // If no query, return all loans of the selected member
     return data;
-  }, [loanAcc, selectedMember, queryLoan]);
+  }, [loanAcc, selectedMember, debouncedQueryLoan]);
 
 
   // fetch the outstandanding balance base on the filtered member
@@ -325,12 +417,13 @@ function CoopLoansPayments() {
    */
   // Schedules for the selected loan
   const { data: loan_sched } = useFetchPaySched({ loanId: loan_id });
-  const loanSchedRaw = useMemo(() => loan_sched?.data || [], [loan_sched]);
 
   // Compute schedule context:
   // 1. If there are unpaid OVERDUE schedules => aggregate all of them (multi-month catch up)
   // 2. Else fall back to the next unpaid schedule (treated as UPCOMING)
   const { nextSchedule, totalPayableAll, scheduleMode } = useMemo(() => {
+    const loanSchedRaw = loan_sched?.data || [];
+
     if (!selectedLoanRef || loanSchedRaw.length === 0) {
       return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
     }
@@ -369,12 +462,14 @@ function CoopLoansPayments() {
     const amountPaid = Number(first.amount_paid ?? 0);
     const remaining = totalDue - amountPaid;
     return {
-      list: unpaidUpcoming,
+      list: unpaidUpcoming, // list of all upcoming unpaid schedules not bound to any specific id
       nextSchedule: first,
       totalPayableAll: remaining,
       scheduleMode: 'upcoming'
     };
-  }, [selectedLoanRef, loanSchedRaw]);
+  }, [selectedLoanRef, loan_sched]);
+
+
 
   // Derived single schedule fields
   const schedId = nextSchedule?.schedule_id ?? null;
@@ -430,104 +525,102 @@ function CoopLoansPayments() {
     <div>
       <Toaster position="bottom-left"/>
       <div className="mb-6 space-y-4">
+        <h1 className="text-2xl font-bold" >Member Loan Payments</h1>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold" >Member Loan Payments</h1>
-          <div className="flex flex-row items-center gap-3">
-            <button
-              className="btn btn-neutral whitespace-nowrap"
-              onClick={openAddModal}
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Status",
+                value: statusFilter,
+                onChange: handleStatusChange,
+                options: [
+                  { label: "Full", value: "Full" },
+                  { label: "Partial", value: "Partial" },
+                ],
+              },
+              {
+                label: "All Method",
+                value: paymentMethodFilter,
+                onChange: handlePaymentMethodChange,
+                options: [
+                  { label: "Cash", value: "Cash" },
+                  { label: "GCash", value: "GCash" },
+                  { label: "Bank", value: "Bank" },
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions,
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
+          <button
+            className="btn btn-neutral whitespace-nowrap"
+            onClick={openAddModal}
 
-            >
-              + Add Payments
-            </button>
-          </div>
+          >
+            Add Payments
+          </button>
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Status",
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: "Full", value: "Full" },
-                { label: "Partial", value: "Partial" },
-              ],
-            },
-            {
-              label: "All Method",
-              value: paymentMethodFilter,
-              onChange: setPaymentMethodFilter,
-              options: [
-                { label: "Cash", value: "Cash" },
-                { label: "GCash", value: "GCash" },
-                { label: "Bank", value: "Bank" },
-              ],
-            },
-            {
-              label: "All Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-   
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-                { label: "2021", value: "2021" },
-                { label: "2020", value: "2020" },
-              ],
-            },
-            {
-              label: "All Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable 
-          headers={["Payment Ref.", "Loan Ref No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
+        <DataTableV2 
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Payment Ref.", "Loan Ref No.", "Account No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
+          filterActive={activeFiltersText !== "Showing all payments"}
           data={loanPayments}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
-            const matchedMember = members?.find(
-              (member) => member.account_number === row.account_number // This is temporary so I don't have to create another shiz nga column .find or .filter kay kapoy HAHAHAHA
-            );
-            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "System";
+            const id = row?.payment_id || "Not Found";
+            const loanRefNo = row?.loan_ref_number || "Not Found";
+            const accountNo = row?.account_number || "Not Found";
+            const avatarUrl = row?.avatar_url || placeHolderAvatar;
+            const fullName = row?.full_name || "Not Found";
+            const amount = row?.total_amount || 0;
+            const status = row?.status || "Unknown";
+            const paymentDate = row?.payment_date ? dayjs(row.payment_date).format('MM/DD/YYYY') : "Not Found";
+            const paymentMethod = row?.payment_method || "Not Found";
             return (
               <tr
-                key={`${TABLE_PREFIX}${row?.payment_id}`}
+                key={id}
                 onClick={() => openViewModal(row)}
                 className="transition-colors cursor-pointer hover:bg-base-200/70"
               >
                 {/* Ref no */}
-                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.payment_id}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{id}</td>
                 
                 {/* Loan ID */}
-                <td className="px-4 py-2 text-center font-medium text-xs">{row?.loan_ref_number || "Not Found"}</td>
+                <td className="px-4 py-2 text-center font-medium text-xs">{loanRefNo}</td>
+                
+                {/* Account No. */}
+                <td className="px-4 py-2 text-center font-medium text-xs">{accountNo}</td>
                  
                  {/* Name */}
                 <td className="px-4 py-4 text-center" >
@@ -536,10 +629,9 @@ function CoopLoansPayments() {
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={
-                            matchedMember?.avatar_url || placeHolderAvatar
+                          src={ avatarUrl
                           }
-                          alt={fullName}
+                          alt={fullName || "Avatar"}
                         />
                       </div>
                     </div>
@@ -548,23 +640,23 @@ function CoopLoansPayments() {
                 </td>
                 {/* Amount */}
                 <td className="px-4 py-2 font-semibold text-success text-center">
-                  ₱ {row?.total_amount?.toLocaleString() || "0"}
+                  ₱ {display(amount)}
                 </td>
 
                 {/* Status */}
                 <td className="px-4 py-4 font-semibold text-center">
-                  <span className={`${row?.status === 'Partial' ? 'text-warning' : row?.status === 'Full' ? 'text-info' : 'text-base-content'}`}>
-                    {row?.status || "Unknown"}
+                  <span className={`${status === 'Partial' ? 'text-warning' : status === 'Full' ? 'text-info' : 'text-base-content'}`}>
+                    {status}
                   </span>
                 </td>
 
                 {/* Date */}
-                <td className="px-4 py-2 text-center">{row?.payment_date}</td>
+                <td className="px-4 py-2 text-center">{paymentDate}</td>
 
                 {/* Method */}
                 <td className="px-4 py-2 text-center">
-                  {row?.payment_method ? (
-                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}>
+                  {paymentMethod ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
                       {row?.payment_method}
                     </span>
                   ) : (
@@ -763,7 +855,7 @@ function CoopLoansPayments() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Amount</label>
                 <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
-                  <div className="text-sm font-bold text-blue-900">₱{round(totalDue - feeDue).toLocaleString()}</div>
+                  <div className="text-sm font-bold text-blue-900">₱{display(totalDue - feeDue)}</div>
                 </div>
               </div>
 
@@ -780,7 +872,7 @@ function CoopLoansPayments() {
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Penalty</label>
                     <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
-                      <div className="text-sm font-bold text-red-900">₱{round(feeDue).toLocaleString()}</div>
+                      <div className="text-sm font-bold text-red-900">₱{display(feeDue)}</div>
                     </div>
                   </div>
                 </>
@@ -791,7 +883,7 @@ function CoopLoansPayments() {
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Already Paid</label>
                   <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
-                    <div className="text-sm font-bold text-blue-900">₱{round(amountPaid).toLocaleString()}</div>
+                    <div className="text-sm font-bold text-blue-900">₱{display(amountPaid)}</div>
                   </div>
                 </div>
               )}
@@ -800,7 +892,7 @@ function CoopLoansPayments() {
               <div className={paymentStatus === "OVERDUE" || paymentStatus === "PARTIALLY PAID" ? "" : "md:col-span-2"}>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Total Payable</label>
                 <div className="px-2 py-1.5 bg-green-50 rounded border-2 border-green-400">
-                  <div className="text-base font-bold text-green-900">₱{round(totalPayableAllOverdueUnpaid).toLocaleString()}</div>
+                  <div className="text-base font-bold text-green-900">₱{display(totalPayableAllOverdueUnpaid)}</div>
                 </div>
               </div>
             </div>
@@ -828,9 +920,9 @@ function CoopLoansPayments() {
                           return true;
                         }
 
-                        const remainingDue = round(totalPayableAllOverdueUnpaid); // unified remaining (overdue aggregate or upcoming)
-                        const minRequiredAmount = round(remainingDue * 0.3); // 30% of remaining amount
-                        const inputValue = round(value);
+                        const remainingDue = display(totalPayableAllOverdueUnpaid); // unified remaining (overdue aggregate or upcoming)
+                        const minRequiredAmount = display(remainingDue * 0.3); // 30% of remaining amount
+                        const inputValue = display(value);
 
                         if (inputValue < minRequiredAmount)
                           return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toLocaleString()})`;
@@ -1047,7 +1139,9 @@ function CoopLoansPayments() {
             {/* Modal Actions */}
             <div className='flex justify-between' >
                 <div className="modal-action">
-                  {showEditModal && (<button onClick={editModal} className="btn btn-primary">Edit</button>)}
+                  {showEditModal && (
+                    <button onClick={editModal} className="btn btn-primary">Edit</button>
+                    )}
                 </div>
                 <div className="modal-action">
                   <button onClick={closeViewModal} className="btn btn-primary">Close</button>

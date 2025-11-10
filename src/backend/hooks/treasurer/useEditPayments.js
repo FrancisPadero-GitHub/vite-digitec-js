@@ -7,9 +7,9 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
   // --- Insert function ---
   const updateLoanPayments = async (formData) => {
     // Exclude non-database fields from the payload
-    const { sched_id, outstanding_balance, status, ...dbPayload } = formData;
+    const { ...dbPayload } = formData;
 
-    console.log("Columns Excluded", { sched_id, outstanding_balance, status });
+
 
     // Fetch the existing payment record
     const { data: existingPayment, error: fetchError } = await supabase
@@ -59,8 +59,8 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
       onSuccess: async (data) => {
         console.log("✅ Loan payment updated:", data);
         // Refresh any component using this query
-        queryClient.invalidateQueries({ queryKey: ["loan_payments"], exact: false });
-        queryClient.invalidateQueries({ queryKey: ["loan_accounts"], exact: false });
+        queryClient.invalidateQueries({ queryKey: ["view_loan_payments"], exact: false });
+        queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["loan_payment_schedules"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["view_member_loan_schedules"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });

@@ -34,7 +34,7 @@
       onSuccess: async (data) => {
         console.log("✅ Loan payment added:", data);
         // Refresh any component using this query
-        queryClient.invalidateQueries({queryKey:["loan_payments"], exact: false});
+        queryClient.invalidateQueries({queryKey:["view_loan_payments"], exact: false});
         queryClient.invalidateQueries({queryKey: ["activity_logs"], exact: false });
         queryClient.invalidateQueries({queryKey:["loan_payment_schedules"], exact: false});
         queryClient.invalidateQueries({ queryKey: ["view_member_loan_schedules"], exact: false});
