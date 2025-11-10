@@ -1,168 +1,176 @@
-import { useState } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useFetchActivityLogs } from "../../backend/hooks/shared/useFetchActivityLogs";
+import DataTableV2 from "./components/DataTableV2.jsx";
 import FilterToolbar from "./components/FilterToolbar.jsx";
 import { ACTIVITY_LOGS_TYPE_COLORS } from "../../constants/Color.js";
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce.js";
 
 export default function ActivityLogs() {
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20); // determines how many rows to render per page
+  const { data: logs, isLoading, isError, error } = useFetchActivityLogs({});
 
-  const { data: logs, isLoading, isError, error } = useFetchActivityLogs(page, limit);
-  const logsRaw = logs?.data || [];
-  const total = logs?.count || 0;
-
-  // Search state
-  const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [timeRangeFilter, setTimeRangeFilter] = useState("")
+
+  // add useTransition for smoother filtering
+  const [isPending, startTransition] = useTransition();
+
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleTypeChange = (value) => {
+    startTransition(() => {
+      setTypeFilter(value);
+    });
+  };
+  const handleTimeRangeChange = (value) => {
+    startTransition(() => {
+      setTimeRangeFilter(value);
+    })
+  }
+
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "LOG";
+  const logsData = useMemo(() => {
+    const logsRaw = logs?.data || [];
 
-  // Filter activity logs
-  const logsData = logsRaw.filter((row) => {
-    const member = row.members;
-    const fullName = member ? `${member.f_name} ${member.l_name} ${member.account_role}`.toLowerCase(): "";
+    // calculation to get cutofff time based on selected time range filter
+    let cutoffTime = null;
+    if (timeRangeFilter) {
+      const now = Date.now();
+      switch(timeRangeFilter) {
+        case "1h":
+          cutoffTime = now - (60 * 60 * 1000);
+          break;
+        case "24h":
+          cutoffTime = now - (24 * 60 * 60 * 1000);
+          break;
+        case "7d":
+          cutoffTime = now - (7 * 24 * 60 * 60 * 1000);
+          break;
+      }
+    }
 
-    const generatedId = `${TABLE_PREFIX}_${row.log_id}`;
-    const matchesSearch =
-      searchTerm === "" ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      row.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
+    return logsRaw.filter((row) => {
+      const generatedId = `${TABLE_PREFIX}_${row?.log_id || ""}`;
+      const matchesSearch =
+        debouncedSearch === "" ||
+        (row.full_name && row.full_name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        (row.type && row.type.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        (row.action && row.action.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
-    const matchesType = typeFilter === "" || row.type === typeFilter;
+      const matchesType = typeFilter === "" || row.type === typeFilter;
 
-    return matchesSearch && matchesType;
-  });
+      const matchesTimeRange = cutoffTime === null || (row.timestamp && Date.parse(row.timestamp) >= cutoffTime);
 
-  const totalPages = Math.ceil(total / limit);
+      return matchesSearch && matchesType && matchesTimeRange;
+    })
+  }, [logs, debouncedSearch, typeFilter, timeRangeFilter])
+
+  // for data table subtext when filters are active
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    typeFilter ? `${typeFilter}` : null,
+    timeRangeFilter? `${timeRangeFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all logs";
+
+  // clear all filters
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setTypeFilter("");
+    setTimeRangeFilter("");
+  }
 
   return (
     <div>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Activity Logs</h1>
-        </div>
-
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
         {/* Dropdown toolbar */}
         <FilterToolbar
           searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          onSearchChange={handleSearchChange}
+          isFilterPending={isPending}
+          onReset={handleClearFilters}
           dropdowns={[
             {
               label: "All Types",
               value: typeFilter,
-              onChange: setTypeFilter,
+              onChange: handleTypeChange,
               options: [
                 {label: "CREATE", value: "CREATE"},
                 {label: "UPDATE", value: "UPDATE"},
                 {label: "DELETE", value: "DELETE"},
               ]
+            },
+                        {
+              label: "All Time",
+              value: timeRangeFilter,
+              onChange: handleTimeRangeChange,
+              options: [
+                {label: "1 Hour", value: "1h"},
+                {label: "24 Hours", value: "24h"},
+                {label: "7 Days", value: "7d"},
+              ]
             }
           ]}
         />
+        </div>
 
-        {/* Activity Logs Table */}
-        <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md">
-          <div className="border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md">
-            {/* Table header */}
-            <table className="table w-full">
-              <thead>
-                <tr className="bg-base-200/30">
-                  <th className="text-center w-[7%]">Ref No.</th>
-                  <th className="text-center w-[20%]">Date and Time</th>
-                  <th className="text-left w-[10%]">Action Taken By</th>
-                  <th className="text-center w-[15%]">Type</th>
-                  <th className="text-left w-[50%]">Action</th>
-                </tr>
-              </thead>
-            </table>
+        <DataTableV2
+          title="Activity Logs"
+          subtext={activeFiltersText}
+          headers={["Ref No.", "Date and Time", "Action Taken By", "Type", "Action"]}
+          filterActive={activeFiltersText !== "Showing all logs"}
+          data={logsData}
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          renderRow={(row) => {
+            const id = row?.log_id || "Not found";
+            const timestamp = row?.timestamp ? new Date(row.timestamp).toLocaleString() : "Not found";
+            const fullName = row?.full_name || "Not found";
+            const accountRole = row?.account_role || "Not found";
+            const type = row?.type || "Not found";
+            const action = row?.action || "Not found";
 
-            {/* Table body */}
-            <div className="max-h-50 min-h-[550px] overflow-y-auto overflow-x-auto">
-              <table className="table w-full">
-                <tbody>
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={4} className="py-10">
-                        <div className="flex justify-center items-center">
-                          <span className="loading loading-spinner loading-lg text-primary"></span>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : isError ? (
-                    <tr>
-                      <td colSpan={4} className="py-10 text-center">
-                        <div className="text-red-500 font-semibold">
-                          {error?.message || "Something went wrong while loading data."}
-                        </div>
-                      </td>
-                    </tr>
-                  ) : logsData.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="py-10 text-center text-gray-500 italic">No data available.</td>
-                    </tr>
-                  ) : (
-                    logsData.map((row) => {
-                      const member = row.members;
-                      const fullName = member ? `${member.f_name ?? ""} ${member.l_name ?? ""}`.trim(): "Not Found";
-                      
-                      return (
-                        <tr key={`${TABLE_PREFIX}${row.log_id}`} className="cursor-pointer hover:bg-base-200/70 transition-colors">
-                          
-                          <td className="px-4 py-4 text-center font-medium text-xs w-[7%]">
-                            {TABLE_PREFIX}_{row.log_id?.toLocaleString() || "ID"}
-                          </td>
+            return (
+              <tr key={id} className="hover:bg-base-200/50">
+                {/* Ref No. */}
+                <td className="text-center font-medium text-xs w-[12%]">{TABLE_PREFIX}_{id}</td>
 
-                          <td className="px-4 py-2 text-center font-semibold w-[20%]">{new Date(row.timestamp).toLocaleString()}</td>
+                {/* Date and Time */}
+                <td className="text-center font-medium w-[20%]">{timestamp}</td>
 
-                          <td className="px-4 py-2 w-[10%]">
-                            <div className="flex flex-col items-left">
-                              <div className="font-medium">{fullName}</div>
-                              <span className="text-gray-600">{member?.account_role}</span>
-                            </div>
-                          </td>
+                {/* Action Taken By */}
+                <td className="w-[10%]">
+                  <div className="flex flex-col items-left">
+                    <div className="font-medium">{fullName}</div>
+                    <span className="text-gray-600">{accountRole}</span>
+                  </div>
+                </td>
 
-                          <td className="px-4 py-2 text-center font-semibold w-[15%]">
-                            <span className={`badge badge-soft ${ACTIVITY_LOGS_TYPE_COLORS[row.type] || 'badge-error'}`}>
-                              {row.type}
-                            </span>
-                          </td>
-                          
-                          <td className="px-4 py-2 break-words whitespace-pre-wrap w-[50%]">{row.action}</td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                {/* Type */}
+                <td className="text-center font-semibold w-[15%]">
+                  <span className={`badge badge-soft ${ACTIVITY_LOGS_TYPE_COLORS[type] || 'badge-error'}`}>
+                    {type}
+                  </span>
+                </td>
 
-            {/* Footer pagination */}
-            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
-              <div className="text-sm text-base-content/70">
-                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries
-              </div>
-              <div className="join">
-                <button
-                  className="join-item btn btn-sm"
-                  disabled={page === 1}
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                >
-                  «
-                </button>
-                <button className="join-item btn btn-sm">Page {page} of {totalPages || 1}</button>
-                <button
-                  className="join-item btn btn-sm"
-                  disabled={page === totalPages}
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                >
-                  »
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+                {/* Action */}
+                <td className="text-left w-[45%]">
+                  {action}
+                </td>
+              </tr>
+            );
+          }}
+        />
       </div>
     </div>
   );
