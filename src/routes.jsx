@@ -19,6 +19,14 @@ import Reports from "./pages/shared/Reports";
 import MemberProfile from "./pages/shared/MemberProfile";
 import ActivityLogs from "./pages/shared/ActivityLogs";
 
+import IncomeStatement from "./pages/shared/reports/IncomeStatement";
+import BalanceSheet from "./pages/shared/reports/BalanceSheet";
+import MemberStatements from "./pages/shared/reports/MemberStatements";
+import LoanReports from "./pages/shared/reports/LoanReports";
+import ClubCoopFunds from "./pages/shared/reports/ClubCoopFunds";
+import TransactionLogs from "./pages/shared/reports/TransactionLogs";
+import SummaryCharts from "./pages/shared/reports/SummaryCharts";
+
 // ADMIN
 import AddMember from "./pages/admin/AddMember";
 import SystemSettings from "./pages/admin/SystemSettings";
@@ -68,6 +76,13 @@ function AppRoutes() {
     { path: "member-profile/:memberId", element: <MemberProfile /> },
     { path: "activity-logs", element: <ActivityLogs /> },
     { path: "reports", element: <Reports /> },
+    { path: "reports/income-statement", element: <IncomeStatement /> },
+    { path: "reports/balance-sheet", element: <BalanceSheet /> },
+    { path: "reports/member-statements", element: <MemberStatements /> },
+    { path: "reports/loan-reports", element: <LoanReports /> },
+    { path: "reports/club-coop-funds", element: <ClubCoopFunds /> },
+    { path: "reports/transaction-logs", element: <TransactionLogs /> },
+    { path: "reports/summary-charts", element: <SummaryCharts /> },
     { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },   
   ];
 
