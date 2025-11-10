@@ -51,6 +51,8 @@ function CoopLoansPayments() {
   // redux stuff to control the modal
   const dispatch = useDispatch();
   const loanPaymentModal = useSelector(selectModalData); // fetch the data from the store
+  const payment_redux_data = loanPaymentModal?.data || [];
+
 
   // fetch data hooks
   const { data: loan_acc_view } = useFetchLoanAccView({});
@@ -421,18 +423,36 @@ function CoopLoansPayments() {
   // Compute schedule context:
   // 1. If there are unpaid OVERDUE schedules => aggregate all of them (multi-month catch up)
   // 2. Else fall back to the next unpaid schedule (treated as UPCOMING)
+  // If editing, use the schedule_id from the modal data
   const { nextSchedule, totalPayableAll, scheduleMode } = useMemo(() => {
     const loanSchedRaw = loan_sched?.data || [];
 
+    // If editing, grab the schedule by id from modal data from redux
+    // and show only that payment schedule details
+    if (loanPaymentModal.type === 'edit' && payment_redux_data?.schedule_id) {
+      const editSchedule = loanSchedRaw.find(s => s.schedule_id === payment_redux_data.schedule_id);
+      if (editSchedule) {
+        const totalDue = Number(editSchedule.total_due ?? 0);
+        const amountPaid = Number(editSchedule.amount_paid ?? 0);
+        // const feeDue = Number(editSchedule.fee_due ?? 0);
+        const remaining = totalDue - amountPaid;
+        return {
+          list: [editSchedule],
+          nextSchedule: editSchedule,
+          totalPayableAll: remaining,
+          scheduleMode: editSchedule.status === 'OVERDUE' ? 'overdue' : 'upcoming',
+        };
+      }
+    }
+
+    // Normal usage (add mode)
     if (!selectedLoanRef || loanSchedRaw.length === 0) {
       return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
     }
-
     // Unpaid overdue schedules
     const unpaidOverdue = loanSchedRaw
       .filter(s => !s.paid && s.status === "OVERDUE")
       .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
-
     if (unpaidOverdue.length > 0) {
       const totalPayableAll = unpaidOverdue.reduce((sum, s) => {
         const totalDue = Number(s.total_due ?? 0);
@@ -446,16 +466,13 @@ function CoopLoansPayments() {
         scheduleMode: 'overdue'
       };
     }
-
     // No unpaid overdue schedules: find next unpaid (upcoming) schedule
     const unpaidUpcoming = loanSchedRaw
       .filter(s => !s.paid) // any unpaid regardless of status
       .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
-
     if (unpaidUpcoming.length === 0) {
       return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
     }
-
     // For upcoming we only care about the first schedule's remaining payable
     const first = unpaidUpcoming[0];
     const totalDue = Number(first.total_due ?? 0);
@@ -467,15 +484,14 @@ function CoopLoansPayments() {
       totalPayableAll: remaining,
       scheduleMode: 'upcoming'
     };
-  }, [selectedLoanRef, loan_sched]);
-
-
+  }, [selectedLoanRef, loan_sched, loanPaymentModal.type, payment_redux_data?.schedule_id]);
 
   // Derived single schedule fields
   const schedId = nextSchedule?.schedule_id ?? null;
   const totalDue = Number(nextSchedule?.total_due ?? 0);
   const feeDue = Number(nextSchedule?.fee_due ?? 0);
   const amountPaid = Number(nextSchedule?.amount_paid ?? 0);
+
   // Show explicit UPCOMING if mode is upcoming and status isn't already set (or is not OVERDUE/PARTIALLY PAID)
   const paymentStatus = scheduleMode === 'upcoming'
     ? (nextSchedule?.status && nextSchedule.status !== 'OVERDUE' ? nextSchedule.status : 'UPCOMING')
@@ -487,6 +503,7 @@ function CoopLoansPayments() {
   // const isUpcomingMode = scheduleMode === 'upcoming';
 
   // Unified payable (either aggregated overdue months or single upcoming remaining)
+  // Like all overdue unpaid or next upcoming unpaid schedule is added here
   const totalPayableAllOverdueUnpaid = totalPayableAll;
 
   // Only log when we have actual data (when a loan is selected)
@@ -917,6 +934,7 @@ function CoopLoansPayments() {
                         
                         // Skip validation checks when editing an existing payment
                         if (loanPaymentModal.type === "edit") {
+                          
                           return true;
                         }
 
