@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import dayjs from "dayjs";
 
 // fetch hooks
@@ -18,26 +17,39 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import FinanceTab from "./components/FinanceTab";
 
 // constants
-import {
-  CLUB_CATEGORY_COLORS,
-  PAYMENT_METHOD_COLORS,
-  CAPITAL_CATEGORY_COLORS,
-} from "../../constants/Color";
-const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
+import {CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS,} from "../../constants/Color";
+import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
+// function to get membership duration in months based on joined_date
+function calculateMembershipMonths(joined_date) {
+  if (!joined_date) return 0;
+  const joined = new Date(joined_date);
+  const now = new Date();
+  const years = now.getFullYear() - joined.getFullYear();
+  const months = now.getMonth() - joined.getMonth();
+  return years * 12 + months;
+}
 
+// function to calculate age based on birthday
+function calculateAge(birthday) {
+  if (!birthday) return 0;
+  const birthdayDate = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birthdayDate.getFullYear();
+  const monthDiff = today.getMonth() - birthdayDate.getMonth();
+  const dayDiff = today.getDate() - birthdayDate.getDate();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+  return age;
+}
 
 function MemberProfile() {
-
   const navigate = useNavigate();
   const { memberId } = useParams();
   const parsedId = Number(memberId);
-
-  const [page, setPage] = useState(1);
-  const limit = 2; // or 20 — depends on your UI preference
   
-  // page limit somehow is messing up the calculation below not accountng all the transactions but only the 
-  // rows that is covered on the limiter
   const { data, isLoading, isError, error } = useFetchMemberDetails({
     memberId: parsedId,
   });
@@ -48,7 +60,7 @@ function MemberProfile() {
   const loanAccount = data?.loanAcc?.data || [];
 
   const accountNo = memberInfo?.account_number
-  const { data: loanAccView } = useFetchLoanAccView({ accountNumber: accountNo });    // loan acc view to view outstanding balance realtime
+  const { data: loanAccView } = useFetchLoanAccView({ accountNumber: accountNo }); // loan acc view to view outstanding balance realtime
   const loanAccViewRaw = loanAccView?.data || [];
 
   const mergedLoanAccounts = loanAccount.map(baseRow => {
@@ -61,8 +73,6 @@ function MemberProfile() {
     };
   });
 
-  // console.log("TEST", mergedLoanAccounts )
-
   const activeLoans = mergedLoanAccounts?.filter(
     (row) => row.account_number === accountNo && row.status === "Active"
   );
@@ -71,7 +81,6 @@ function MemberProfile() {
   const pastLoans = loanAccount?.filter(
     (row) => row.account_number === accountNo && row.status === "Closed"
   );
-
 
   // Full name display
   const displayName = `${memberInfo?.f_name ?? ""} ${memberInfo?.m_name ?? ""} ${memberInfo?.l_name ?? ""}`.trim();
@@ -82,48 +91,26 @@ function MemberProfile() {
     0
   );
 
-  // Calculate membership duration
-  const calculateMembershipMonths = (joined_date) => {
-    if (!joined_date) return 0;
-    const joined = new Date(joined_date);
-    const now = new Date();
-    const years = now.getFullYear() - joined.getFullYear();
-    const months = now.getMonth() - joined.getMonth();
-    return years * 12 + months;
-  };
-
+  // Membership duration
   const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
 
-  // Calculate member's age based on birthday
-  const birthday = new Date(memberInfo?.birthday);
-  const today = new Date();
+  // Age
+  const memberAge = calculateAge(memberInfo?.birthday);
 
-  let memberAge = today.getFullYear() - birthday.getFullYear();
-  const monthDiff = today.getMonth() - birthday.getMonth();
-  const dayDiff = today.getDate() - birthday.getDate();
-
-  // if birthday did not occur yet for the year, subtract 1
-  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-    memberAge--;
-  }
 
   const openModal = (row) => {
-    // console.log(`TEST`, row.loan_id)
     navigate(`../loan-account/details/${row.loan_id}`);
   }
 
 
   const topInfo = [
     { label: "Account No.", value: memberInfo?.account_number || "—" },
-    {
-      label: "Share Capital",
-      value: `₱${totalShareCapital.toLocaleString()}`,
-    },
+    { label: "Share Capital", value: `₱${totalShareCapital.toLocaleString()}` },
     { label: "Membership", value: `${membershipMonths} mos` },
   ];
 
   const personalInfo = [
-    { name: "member_id", label: "Member ID" },
+    { name: "account_number", label: "Account Number" },
     { name: "displayName", label: "Member Name" },
     { name: "email", label: "Email" },
     { name: "contact_number", label: "Contact Number" },
@@ -267,7 +254,7 @@ function MemberProfile() {
               <div className="flex justify-center mb-2">
                 <div className="relative w-28 h-28 mx-auto">
                   <img
-                    src={memberInfo?.avatar_url || catGif}
+                    src={memberInfo?.avatar_url || placeHolderAvatar}
                     alt="Profile Picture"
                     className="rounded-full ring-4 ring-base-200 w-full h-full object-cover"
                   />
@@ -400,10 +387,6 @@ function MemberProfile() {
               icon={<AccountBalanceIcon fontSize="small" className="mr-2" />}
               headers={["Ref No.", "Amount", "Payment Type", "Date", "Remarks"]}
               data={coopContributions}
-              page={page}
-              total={data?.coopContributions?.count || 0}
-              limit={limit}
-              setPage={setPage}
               isDefault={true}
               renderRow={(entry) => (
                 <tr key={entry.coop_contri_id} className="text-center">
@@ -423,11 +406,10 @@ function MemberProfile() {
                     )}
                   </td>
                   <td className="font-medium text-xs">{entry.contribution_date}</td>
-                  <td className="font-medium text-xs" style={{ width: '100px', maxWidth: '100px' }}>
+                  <td className="text-xs w-[200px] max-w-[200px]">
                     <div 
-                      className="cursor-help" 
+                      className="cursor-help truncate w-full" 
                       title={entry.remarks || "No remarks provided"}
-                      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',maxWidth: '100px'}}
                     >
                       {entry.remarks || "—"}
                     </div>
@@ -440,14 +422,8 @@ function MemberProfile() {
             <FinanceTab
               label="Club Funds"
               icon={<SavingsIcon fontSize="small" className="mr-2" />}
-              headers={["Ref No.", "Amount", "Category", "Method", "Date", "Period Covered", "Remarks"]}
-              
+              headers={["Ref No.", "Amount", "Category", "Method", "Date", "Remarks"]}         
               data={clubFunds}
-              page={page}
-              total={data?.clubFunds?.count || 0}
-              limit={limit}
-              setPage={setPage}
-
               renderRow={(entry) => (
                 <tr key={entry.contribution_id} className="text-center">
                   <td className="text-info font-medium text-xs">
@@ -471,30 +447,10 @@ function MemberProfile() {
                     </span>
                   </td>
                   <td className="text-xs font-medium">{entry.payment_date}</td>
-                  <td className="text-center px-4 py-2 w-50 text-xs">
-                    {entry.period_start && entry.period_end ? (
-                      <span className="px-2 py-1 text-xs">
-                        {new Date(entry.period_start).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}{" "}
-                        -{" "}
-                        {new Date(entry.period_end).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                    ) : (
-                      <span className="italic">Not Provided</span>
-                    )}
-                  </td>
-                  <td className="font-medium text-xs" style={{ width: '100px', maxWidth: '100px' }}>
+                  <td className="text-xs w-[200px] max-w-[200px]">
                     <div 
-                      className="cursor-help" 
+                      className="cursor-help truncate w-full" 
                       title={entry.remarks || "No remarks provided"}
-                      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',maxWidth: '100px'}}
                     >
                       {entry.remarks || "—"}
                     </div>
@@ -516,27 +472,22 @@ function MemberProfile() {
                 "Maturity Date",
               ]}
               data={activeLoans}
-              page={page}
-              total={activeLoans?.length || 0}
-              limit={limit}
-              setPage={setPage}
-
               renderRow={(loan) => (
                 <tr
                   key={loan.loan_id}
-                  className="cursor-pointer hover:bg-base-200/50"
+                  className="cursor-pointer hover:bg-base-200/50 text-center"
                   onClick={() => openModal(loan)}
                 >
-                  <td className="font-medium text-info text-xs text-center">{loan.loan_ref_number}</td>
-                  <td className="font-medium text-xs text-center">₱{Number(loan.principal || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs text-center">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs text-center text-success">₱{Number(loan.total_paid || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs text-center">
+                  <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
+                  <td className="font-medium text-xs">₱{Number(loan.principal || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs text-success">₱{Number(loan.total_paid || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs">
                     {loan.release_date
                       ? dayjs(loan.release_date).format("MMM D, YYYY")
                       : "—"}
                   </td>
-                  <td className="font-medium text-xs text-center">
+                  <td className="font-medium text-xs">
                     {loan.maturity_date
                       ? dayjs(loan.maturity_date).format("MMM D, YYYY")
                       : "—"}
@@ -557,22 +508,17 @@ function MemberProfile() {
                 "Maturity Date",
               ]}
               data={pastLoans}
-              page={page}
-              total={pastLoans?.length || 0}
-              limit={limit}
-              setPage={setPage}
-
               renderRow={(loan) => (
                 <tr key={loan.loan_id} className="text-center">
-                  <td className="font-medium text-info text-xs text-center">{loan.loan_ref_number}</td>
-                  <td className="font-medium text-xs text-center">₱{Number(loan.principal || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs text-center">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs text-center">
+                  <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
+                  <td className="font-medium text-xs">₱{Number(loan.principal || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
+                  <td className="font-medium text-xs">
                     {loan.release_date
                       ? dayjs(loan.release_date).format("MMM D, YYYY")
                       : "—"}
                   </td>
-                  <td className="font-medium text-xs text-center">
+                  <td className="font-medium text-xs">
                     {loan.maturity_date
                       ? dayjs(loan.maturity_date).format("MMM D, YYYY")
                       : "—"}

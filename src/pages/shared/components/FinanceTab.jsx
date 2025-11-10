@@ -1,19 +1,17 @@
 // USED IN MEMBER PROFILE; WHEN THE TREASURER/BOARD WANTS TO VIEW THE FINANCIAL RECORDS OF A MEMBER
 // 3 TABS; CONTAINS SHARE CAPITAL, CLUB FUND, AND LOANS (ONGOING/PAST AND THEIR PAYMENT SCHEDS)
 
- const FinanceTab = ({
+const FinanceTab = ({
   headers = [],
   data = [],
   label,
   icon,
   renderRow,
   isDefault = false,
-  page,
-  limit,
-  total,
-  setPage,
+  isLoading,
+  isError,
+  error,
 }) => {
-   const totalPages = Math.ceil(total / limit);
 
   return (
     <>
@@ -22,54 +20,46 @@
         {icon} {label}
       </label>
 
-      <div className="tab-content w-full bg-base-100 border-base-300 p-6 space-y-4">
+      <div className="tab-content w-full bg-base-100 shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold">{label}</h2>
 
-        {data.length ? (
-          <>
-            <table className="table w-full">
-              <thead>
-                <tr className="bg-base-200/30">
-                  {headers.map((header, key) => (
-                    <th key={key} className="text-center">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>{data.map((item) => renderRow(item))}</tbody>
-            </table>
-
-            {/* Footer pagination */}
-            <div className="flex justify-between items-center p-4 border-t border-base-content/5">
-              <div className="text-sm text-base-content/70">
-                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries
-              </div>
-              <div className="join">
-                <button
-                  className="join-item btn btn-sm"
-                  disabled={page === 1}
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                >
-                  «
-                </button>
-                <button className="join-item btn btn-sm">
-                  Page {page} of {totalPages || 1}
-                </button>
-                <button
-                  className="join-item btn btn-sm"
-                  disabled={page === totalPages}
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                >
-                  »
-                </button>
-              </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-16">
+            <div className="flex flex-col items-center gap-3">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+              <p className="text-sm text-gray-600">Loading {label.toLowerCase()}...</p>
             </div>
-          </>
+          </div>
+        ) : isError ? (
+          <div className="flex justify-center items-center py-16">
+            <div className="text-center text-error">
+              <p className="font-medium">Failed to load {label.toLowerCase()}</p>
+              <p className="text-sm text-gray-600">{error?.message || "Something went wrong"}</p>
+            </div>
+          </div>
+        ) : data.length > 0 ? (
+          <div className="border border-base-content/10 rounded-lg overflow-hidden">
+            <div className="max-h-[50vh] min-h-[50vh] overflow-y-auto overflow-x-auto">
+              <table className="table w-full">
+                <thead className="sticky top-0 bg-base-200/80 z-10">
+                  <tr>
+                    {headers.map((header, key) => (
+                      <th key={key} className="text-center">
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item) => renderRow(item))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         ) : (
-          <p className="text-sm text-gray-500">
-            No {label.toLowerCase()} records available.
-          </p>
+          <div className="flex justify-center items-center py-16">
+            <p className="text-gray-500">No {label.toLowerCase()} records available.</p>
+          </div>
         )}
       </div>
     </>
