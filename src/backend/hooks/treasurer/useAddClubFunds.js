@@ -12,6 +12,8 @@ const insertClubfunds = async (formData) => {
     payment_date = null,
     payment_method = null,
     remarks = null,
+    period_start = null,
+    period_end = null,
   } = formData; // if the form data is empty it will fallback to these null values
 
   const payload = {
@@ -21,6 +23,8 @@ const insertClubfunds = async (formData) => {
     payment_date,
     payment_method,
     remarks,
+    period_start,
+    period_end,
   };
 
   const { data, error } = await supabase

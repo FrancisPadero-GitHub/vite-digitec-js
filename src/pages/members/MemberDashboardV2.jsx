@@ -15,13 +15,11 @@ import {
 import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
 import { useFetchMemberTotal } from "../../backend/hooks/member/useFetchMemberTotals";
 import { useFetchNextLoanPayment } from "../../backend/hooks/member/useFetchNextLoanPayment";
-import { useFetchMonthlyDues } from "../../backend/hooks/member/useFetchMemberMonthyDues";
+import { useFetchMonthlyDues } from "../../backend/hooks/member/useFetchMemberMonthlyDues";
 
 // fetch hooks
-// view tables
 import { useFetchClubFundsView } from '../../backend/hooks/shared/view/useFetchClubFundsView';
 import { useFetchCoopView } from '../../backend/hooks/shared/view/useFetchCoopView';
-// base tables
 import { useFetchLoanPayments } from "../../backend/hooks/shared/useFetchPayments";
 
 // helpers
@@ -29,14 +27,11 @@ import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // components
 import StatCardV2 from "../shared/components/StatCardV2";
-import DataTableMember from "./modal/DataTableMember";
+import DataTableV2 from "../shared/components/DataTableV2";
 
 // constants
-import {
-  CLUB_CATEGORY_COLORS,
-  PAYMENT_METHOD_COLORS,
-  CAPITAL_CATEGORY_COLORS,
-} from "../../constants/Color";
+import {CLUB_CATEGORY_COLORS, CAPITAL_CATEGORY_COLORS,} from "../../constants/Color";
+import { display } from "../../constants/numericFormat";
 
 function MemberDashboardV2() {
   const { memberRole } = useMemberRole();
@@ -45,7 +40,7 @@ function MemberDashboardV2() {
 
   // The pagination and data fetching of these 2 tables is handled inside each DataTableV2 component instance using .slice(0,5)
   // to limit to 5 recent entries.
-  const { data: coopData, isLoading: coopLoading } = useFetchCoopView({
+  const { data: coopData, isLoading: coopLoading, } = useFetchCoopView({
     useLoggedInMember: true,
   });
   const coopFunds = coopData?.data || [];
@@ -104,7 +99,7 @@ function MemberDashboardV2() {
     isLoading: prevLoading,
     isError: prevError,
     error: prevErrorMsg,
-   } = useFetchTotal({
+  } = useFetchTotal({
     rpcFn: "get_funds_summary",
     ...getPrevPeriod(filters.overAll.subtitle),
     key: "member-funds-summary-prev",
@@ -313,32 +308,35 @@ function MemberDashboardV2() {
 
       {/* Recent Transactions */}
       <section className="bg-base-100 rounded-xl shadow-sm p-6 space-y-6">
-
-        <DataTableMember
-          title="My Share Capital / Coop Contributions"
+        <DataTableV2
+          title={"My Share Capital / Coop Contributions"}
+          type={"compact"}
+          showLinkPath={true}
           linkPath={`/${memberRole}/share-capital`}
-          headers={["Ref No.", "Amount", "Payment Category", "Date", "Payment Method"]}
-          data={coopFunds}
+          headers={["Ref No.", "Amount", "Payment Category", "Date"]}
+          data={coopFunds} // share capital / coop
           isLoading={coopLoading}
           renderRow={(row) => {
             const TABLE_PREFIX = "SCC_";
-            const id = row.coop_contri_id;
-            const amount = row.amount;
-            const paymentCategory = row.category;
-            const contributionDate = new Date(row.contribution_date).toLocaleDateString();
-            const paymentMethod = row.payment_method;
+            const id = row?.coop_contri_id || "Not Found";
+            const amount = row?.amount || 0;
+            const paymentCategory = row?.category;
+            const contributionDate = row?.contribution_date 
+              ? new Date(row.contribution_date).toLocaleDateString() 
+              : "Not Found";
 
             return (
               <tr key={id} className="text-center hover:bg-base-200/50">
-                 {/* Ref no. */}
+                {/* Ref no. */}
                 <td className=" text-center font-medium text-xs">
                   {TABLE_PREFIX}{id}
                 </td>
 
                 {/* Amount */}
                 <td className="font-semibold text-success">
-                  ₱ {amount?.toLocaleString() || "0"}
+                  ₱ {display(amount)}
                 </td>
+
                 {/* Payment Category */}
                 <td>
                   {paymentCategory ? (
@@ -349,94 +347,85 @@ function MemberDashboardV2() {
                     <span className="badge font-semibold badge-error">Not Found</span>
                   )}
                 </td>
-                {/* Payment Method */}
-                <td>
-                  <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
-                    {paymentMethod}
-                  </span>
-                </td>
+
                 {/* Contribution Date */}
-                <td className=''>
-                  {contributionDate ? new Date(contributionDate).toLocaleDateString() : "Not Found"}
+                <td>
+                  {contributionDate}
                 </td>
               </tr>
             )
           }}
         />
 
-        <DataTableMember
-          title="My Club Funds"
+        <DataTableV2
+          title={"My Club Fund Contributions"}
+          type={"compact"}
+          showLinkPath={true}
           linkPath={`/${memberRole}/club-funds`}
-          headers={["Ref No.", "Amount", "Category", "Date", "Payment Method"]}
+          headers={["Ref No.", "Amount", "Category", "Date"]}
           data={clubFunds}
           isLoading={clubLoading}
           renderRow={(row) => {
             const TABLE_PREFIX = "CFC_";
-            const id = row.contribution_id;
-            const amount = row.amount;
-            const category = row.category;
-            const paymentDate = new Date(row.payment_date).toLocaleDateString();
-            const paymentMethod = row.payment_method;
+            const id = row?.contribution_id || "Not Found";
+            const amount = row?.amount || 0;
+            const category = row?.category;
+            const paymentDate = row?.payment_date
+              ? new Date(row.payment_date).toLocaleDateString()
+              : "Not Found";
 
             return (
               <tr key={id} className="text-center hover:bg-base-200/50">
-                {/* Ref No. */}
-                <td className="text-center font-medium text-xs">
+                {/* Ref no. */}
+                <td className=" text-center font-medium text-xs">
                   {TABLE_PREFIX}{id}
                 </td>
 
                 {/* Amount */}
                 <td className="font-semibold text-success">
-                  ₱ {amount?.toLocaleString() || "0"}
+                  ₱ {display(amount)}
                 </td>
 
-                {/* Category */}
+                {/* Payment Category */}
                 <td>
-                  <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
-                    {category}
-                  </span>
+                  {category ? (
+                    <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
+                      {category}
+                    </span>
+                  ) : (
+                    <span className="font-semibold">Not Found</span>
+                  )}
                 </td>
 
-                {/* Payment Method */}
+                {/* Contribution Date */}
                 <td>
-                  <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
-                    {paymentMethod}
-                  </span>
-                </td>
-
-                {/* Payment Date */}
-                <td className="">
-                  {paymentDate || "Not Found"}
+                  {paymentDate}
                 </td>
               </tr>
             )
           }}
         />
 
-        <DataTableMember
-          title="My Loan Payments"
+        <DataTableV2
+          title={"My Loan Payments"}
+          type={"compact"}
+          showLinkPath={true}
           linkPath={`/${memberRole}/coop-loans/loan-payments`}
-          headers={[
-            "Payment Ref.",
-            "Loan Ref No.",
-            "Amount",
-            "Status",
-            "Payment Method",
-            "Date",
-          ]}
+          headers={["Payment Ref.", "Loan Ref No.", "Amount", "Status", "Date"]}
           data={payments}
           isLoading={loanPaymentsLoading}
           renderRow={(row) => {
             const TABLE_PREFIX = "LP_";
-            const id = row.payment_id;
-            const loanRefNumber = row.loan_ref_number;
-            const amount = row.total_amount;
-            const status = row.status;
-            const paymentMethod = row.payment_method;
-            const paymentDate = new Date(row.payment_date).toLocaleDateString();
+            const id = row?.payment_id || "Not Found";
+            const loanRefNumber = row?.loan_ref_number || "Not Found";
+            const amount = row?.total_amount || 0;
+            const status = row?.status || "Not Found";
+            const paymentDate = row?.payment_date
+              ? new Date(row.payment_date).toLocaleDateString()
+              : "Not Found";
 
             return (
-              <tr key={id} className="text-center hover:bg-base-200/70">
+              <tr key={id} className="text-center hover:bg-base-200/50">
                 {/* Payment Ref. */}
                 <td className="text-center font-medium text-xs">
                   {TABLE_PREFIX}{id}
@@ -444,12 +433,12 @@ function MemberDashboardV2() {
 
                 {/* Loan Ref No. */}
                 <td>
-                  {loanRefNumber || "Not Found"}
+                  {loanRefNumber}
                 </td>
 
                 {/* Amount */}
                 <td className="font-semibold text-success">
-                  ₱ {amount?.toLocaleString() || "0"}
+                  ₱ {display(amount)}
                 </td>
 
                 {/* Status */}
@@ -457,16 +446,9 @@ function MemberDashboardV2() {
                   {status}
                 </td>
 
-                {/* Payment Method */}
-                <td>
-                  <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
-                    {paymentMethod}
-                  </span>
-                </td>
-
                 {/* Payment Date */}
                 <td className="">
-                  {paymentDate || "Not Found"}
+                  {paymentDate}
                 </td>
               </tr>
             )

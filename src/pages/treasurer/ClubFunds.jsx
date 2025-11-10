@@ -1,5 +1,5 @@
 import { useState, useTransition, useMemo } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions} from "@headlessui/react";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -21,10 +21,7 @@ import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
-import {
-  CLUB_CATEGORY_COLORS,
-  PAYMENT_METHOD_COLORS,
-} from "../../constants/Color";
+import {CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS,} from "../../constants/Color";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
@@ -37,6 +34,11 @@ function getLocalDateString(date) {
   const d = new Date(date);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().split("T")[0];
+}
+
+// Format date string for month input
+function formatForMonthInput(dateString) {
+  return dateString?.substring(0, 7) || '';
 };
 
 function ClubFunds() {
@@ -208,6 +210,8 @@ function ClubFunds() {
       payment_date: today,
       payment_method: "",
       remarks: "",
+      period_start: "",
+      period_end: "",  
   };
 
   // react hook form
@@ -222,6 +226,13 @@ function ClubFunds() {
     defaultValues: defaultFormValues
   });
 
+  // Watch the category field for changes
+  const watchedCategory = useWatch({
+    control,
+    name: "category",
+    defaultValue: ""
+  });
+
   /**
    * Modal handlers
    */
@@ -232,7 +243,14 @@ function ClubFunds() {
   };
 
   const openEditModal = (selectedRowData) => {
-    reset(selectedRowData);
+    // Format data for period fields for month inputs
+    let formData = { ...selectedRowData };
+    
+    // Convert period fields to (YYYY-MM)
+    if (formData.period_start) {formData.period_start = formatForMonthInput(formData.period_start);}
+    if (formData.period_end) {formData.period_end = formatForMonthInput(formData.period_end);}
+    
+    reset(formData);
     setModalType("edit");
   };
 
@@ -264,8 +282,15 @@ function ClubFunds() {
       return;
     }
 
+    // Normalize month inputs; now (YYYY-MM-01)
+    const payload = {
+      ...data,
+      period_start: data.period_start ? `${data.period_start}-01` : null,
+      period_end: data.period_end ? `${data.period_end}-01` : null,
+    };
+
     if (modalType === "add") {
-      mutateAdd(data,
+      mutateAdd(payload,
         {onSuccess: () => {
             toast.success("Club fund contribution added")
             closeModal();
@@ -276,7 +301,7 @@ function ClubFunds() {
         }
       );
     } else if (modalType === "edit") {
-      mutateEdit(data,
+      mutateEdit(payload,
         {onSuccess: () => {
           toast.success("Successfully updated")
           closeModal();
@@ -418,7 +443,9 @@ function ClubFunds() {
             const avatarUrl = row?.avatar_url || placeHolderAvatar;
             const amount = row?.amount || 0;
             const clubCategory = row?.category || "Not Found";
-            const paymentDate = row?.payment_date || "Not Found";
+            const paymentDate = row?.payment_date
+              ? new Date(row.payment_date).toLocaleDateString()
+              : "Not Found";
             const paymentMethod = row?.payment_method || "Not Found";
             return (
               <tr key={id}
@@ -435,7 +462,7 @@ function ClubFunds() {
                   // you can only navigate if memberId is available
                   onClick={() => openProfile(memberId)}
                 >
-                  {accountNo || "Not Found"}
+                  {accountNo}
                 </td>
                 {/* Full name and avatar */}
                 <td>
@@ -469,7 +496,7 @@ function ClubFunds() {
                 </td>
                 {/* Payment Date */}
                 <td>
-                  {new Date(paymentDate).toLocaleDateString()}
+                  {paymentDate}
                 </td>
 
                 {/* Payment Method */}
@@ -628,6 +655,35 @@ function ClubFunds() {
             )}
           </div>
         ))}
+
+        {/* if category = Monthly Dues, show period fields (since members can pay in advance) */}
+        {watchedCategory === "Monthly Dues" && (
+          <div className="flex justify-between gap-4">
+            <div className="form-control w-full mt-2">
+              <label htmlFor="period_start">
+                <span className="label text-sm font-semibold mb-2">Starting Month</span>
+              </label>
+              <input
+                id="period_start"
+                type="month"
+                {...register("period_start", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div className="form-control w-full mt-2">
+              <label htmlFor="period_end">
+                <span className="label text-sm font-semibold mb-2">Ending Month</span>
+              </label>
+              <input
+                id="period_end"
+                type="month"
+                {...register("period_end", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+          </div>
+        )}
       </FormModal>
     </div>
   );
