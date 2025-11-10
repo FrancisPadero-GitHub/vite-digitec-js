@@ -28,6 +28,7 @@ const defaultValues = {
   repayment_freq: "",
   min_amount: "",
   max_amount: "",
+  min_term_months: "",
   max_term_months: "",
 };
 
@@ -129,8 +130,8 @@ function LoanProducts() {
       name: "interest_method",
       type: "select",
       options: [
-        { label: "Flat Rate", value: "Flat Rate" },
-        { label: "Reducing", value: "Reducing" }
+        { label: "Flat Rate", value: "flat" },
+        { label: "Diminishing Rate", value: "diminishing" }
       ],
     },
 
@@ -151,6 +152,7 @@ function LoanProducts() {
 
     { label: "Minimum Amount (₱)", name: "min_amount", type: "number" },
     { label: "Maximum Amount (₱)", name: "max_amount", type: "number" },
+    { label: "Minimum Term (Months)", name: "min_term_months", type: "number" },
     { label: "Maximum Term (Months)", name: "max_term_months", type: "number" },
   ];
 
