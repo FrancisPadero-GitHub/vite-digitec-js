@@ -15,7 +15,7 @@ async function fetchClubFunds({ accountNumber, page, limit }) {
   let query = supabase
     .from("view_club_fund_contributions")
     .select("*", { count: "exact" })
-    .order("payment_date", { ascending: false });
+    .order("contribution_id", { ascending: false });
 
   if (accountNumber) {
     query = query.eq("account_number", accountNumber);

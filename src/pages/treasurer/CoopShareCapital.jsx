@@ -402,8 +402,10 @@ function CoopShareCapital() {
             const avatarUrl = row?.avatar_url || placeHolderAvatar;
             const fullName = row?.full_name || "Not Found";
             const amount = row?.amount || 0;
-            const paymentCategory = row?.category || "Not Found";
-            const contributionDate = row?.contribution_date || "Not Found";
+            const paymentCategory = row?.category;
+            const contributionDate = row?.contribution_date 
+              ? new Date(row.contribution_date).toLocaleDateString() 
+              : "Not Found";
             const paymentMethod = row?.payment_method || "Not Found";
             const isDisabled = !row?.full_name; // condition (you can adjust logic)
             return (
@@ -463,7 +465,7 @@ function CoopShareCapital() {
                 </td>
                 {/* Contribution Date */}
                 <td>
-                  {contributionDate ? new Date(contributionDate).toLocaleDateString() : "Not Found"}
+                  {contributionDate}
                 </td>
                 {/* Payment Method */}
                 <td>

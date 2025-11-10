@@ -4,41 +4,41 @@ import { useState } from "react";
 import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 
 // components
-import MainDataTable from "../treasurer/components/MainDataTable";
+import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // constants
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 
+// utils
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
+import { display } from "../../constants/numericFormat";
 
 
 function MemberCoopShareCapital() {
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20); // determines how many rows to render per page
-
   // useQuery hook to fetch member's coop contributions
-  const { data: coopData, isLoading, error, isError } = useFetchCoop({ page, limit, useLoggedInMember: true });
-
-  // Get total count and raw data
-  const total = coopData?.count || 0;
-  const coopRaw = coopData?.data || [];
+  const { data: coopData, isLoading, error, isError } = useFetchCoop({ useLoggedInMember: true });
 
   // Search and filter states
-  const [searchTerm, setSearchTerm] = useState(""); // for the search bar
-  const [categoryFilter, setCategoryFilter] = useState(""); // Payment category filter
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState(""); //payment method filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
+
   const TABLE_PREFIX = "SCC"; // unique ID prefix
+  const coopRaw = coopData?.data || [];
+
   const coop = coopRaw.filter((row) => {
-    // Generate SCC_xxx ID
     const generatedId = `${TABLE_PREFIX}_${row.coop_contri_id}`;
 
-    // Match search (remarks, or generated ID)
+    // Match search (id)
     const matchesSearch =
-      searchTerm === "" ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
+      debouncedSearch === "" ||
+      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
     // Match filters
     const matchesCategory = categoryFilter === "" || row.category === categoryFilter;
@@ -46,122 +46,169 @@ function MemberCoopShareCapital() {
 
     const date = row.contribution_date ? new Date(row.contribution_date) : null;
     const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth = monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+
+    // To avoid subtext displaying numbers instead of month names
+    // I had to convert the values from the monthFilter to numbers for comparison
+    const monthNameToNumber = {
+      January: 1, February: 2,
+      March: 3, April: 4,
+      May: 5, June: 6,
+      July: 7, August: 8,
+      September: 9, October: 10,
+      November: 11, December: 12,
+    };
+    const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
 
     return matchesSearch && matchesCategory && matchesPaymentMethod && matchesYear && matchesMonth;
   });
 
-  if (isLoading) return <div>Loading Coop Contributions...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
+  });
+
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    categoryFilter ? `${categoryFilter}` : null,
+    paymentMethodFilter ? `${paymentMethodFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all contributions";
+
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setPaymentMethodFilter("");
+    setCategoryFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+  }
 
   return (
-     <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold" >My Share Capital / Coop Contributions</h1>
+    <div className="mb-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "Category",
+                value: categoryFilter,
+                onChange: setCategoryFilter,
+                options: [
+                  { label: "Initial", value: "Initial" },
+                  { label: "Monthly", value: "Monthly" },
+                ],
+              },
+              {
+                label: "Method",
+                value: paymentMethodFilter,
+                onChange: setPaymentMethodFilter,
+                options: [
+                  { label: "Cash", value: "Cash" },
+                  { label: "GCash", value: "GCash" },
+                  { label: "Bank", value: "Bank" },
+                ],
+              },
+              {
+                label: "Year",
+                value: yearFilter,
+                onChange: setYearFilter,
+                options: yearOptions
+              },
+              {
+                label: "Month",
+                value: monthFilter,
+                onChange: setMonthFilter,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "Category",
-              value: categoryFilter,
-              onChange: setCategoryFilter,
-              options: [
-                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
-                { label: "Initial", value: "Initial" },
-                { label: "GCash", value: "Monthly" },
-              ],
-            },
-            {
-              label: "Method",
-              value: paymentMethodFilter,
-              onChange: setPaymentMethodFilter,
-              options: [
-                { label: "All", value: "" }, // will be used also for the disabled label of the dropdown
-                { label: "Cash", value: "Cash" },
-                { label: "GCash", value: "GCash" },
-              ],
-            },
-            {
-              label: "Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-                { label: "All", value: "" },
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-                { label: "2021", value: "2021" },
-                { label: "2020", value: "2020" },
-              ],
-            },
-            {
-              label: "Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "All", value: "" },
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable
-          headers={["Ref No.", "Amount", "Payment Category", "Date", "Payment Method"]}
+        <DataTableV2
+          title="My Share Capital / Coop Contributions"
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Ref No.", "Amount", "Category", "Date", "Method"]}
+          filterActive={activeFiltersText !== "Showing all contributions"}
           data={coop}
           isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
+          isError={isError}
+          error={error}
           renderRow={(row) => {
+            const id = row?.coop_contri_id || "Not Found";
+            const amount = row?.amount || 0;
+            const paymentCategory = row?.category;
+            const contributionDate = row?.contribution_date 
+              ? new Date(row.contribution_date).toLocaleDateString() 
+              : "Not Found";
+            const paymentMethod = row?.payment_method || "Not Found";
+
             return (
-              <tr
-                key={`${TABLE_PREFIX}${row.coop_contri_id}`}
-                className={`transition-colors hover:bg-base-200/70`}
-              >
-                <td className="px-4 py-2 text-center font-medium text-xs">SCC_{row.coop_contri_id}</td>
-                <td className="px-4 py-4 font-semibold text-success text-center">₱ {row.amount?.toLocaleString() || "0"}</td>
-                <td className="px-4 py-2 text-center">
-                  {row.category ? (
-                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[row.category]}`}>
-                      {row.category} 
+              <tr key={id} className="text-center hover:bg-base-200/50">
+                {/* Ref no. */}
+                <td className=" text-center font-medium text-xs">
+                  {TABLE_PREFIX}_{id}
+                </td>
+              
+                {/* Amount */}
+                <td className="font-semibold text-success">
+                  ₱ {display(amount)}
+                </td>
+
+                {/* Payment Category */}
+                <td>
+                  {paymentCategory ? (
+                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
+                      {paymentCategory}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">Not Found</span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {row.contribution_date
-                    ? new Date(row.contribution_date).toLocaleDateString()
-                    : <span className="text-gray-400 italic">Not Provided</span>}
+
+                {/* Contribution Date */}
+                <td>
+                  {contributionDate}
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {row.payment_method ? (
-                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row.payment_method]}`}>
-                      {row.payment_method} 
+
+                {/* Payment Method */}
+                <td>
+                  {paymentMethod ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
+                      {paymentMethod}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">Not Found</span>
                   )}
                 </td>
               </tr>
-            );
+            )
           }}
         />
       </div>

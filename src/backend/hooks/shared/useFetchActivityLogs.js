@@ -1,11 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
+/**
+ * 
+ * fetchActivityLogs fetches activity logs from the view `view_activity_logs`.
+ * Includes activity log details + member info from member table
+ * 
+ */
+
 // Modify fetch function to support pagination
 const fetchActivityLogs = async ({ page, limit }) => {
     let query = supabase
-    .from("activity_logs")
-    .select(`*, members:action_member_id(f_name, l_name, account_role)`)
+    .from("view_activity_logs")
+    .select("*")
     .order("timestamp", { ascending: false });
 
   // If page and limit are provided, apply pagination

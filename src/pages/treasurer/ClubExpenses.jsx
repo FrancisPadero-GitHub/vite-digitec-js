@@ -339,7 +339,9 @@ function ClubExpenses() {
             const title = row?.title || "Not Found";
             const amount = row?.amount || 0;
             const category = row?.category || "Not Found";
-            const transactionDate = row?.transaction_date || "Not Found";
+            const transactionDate = row?.transaction_date 
+              ? new Date(row.transaction_date).toLocaleDateString() 
+              : "Not Found";
             return (
               <tr key={id}
                 onDoubleClick={() => openEditModal(row)}
@@ -366,7 +368,7 @@ function ClubExpenses() {
                 </td>
                 {/* Transaction Date */}
                 <td>
-                  {new Date(transactionDate).toLocaleDateString()}
+                  {transactionDate}
                 </td>
               </tr>
             )

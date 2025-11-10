@@ -5,55 +5,96 @@ import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayment
 
 // components
 import FilterToolbar from '../shared/components/FilterToolbar';
-import MainDataTable from '../treasurer/components/MainDataTable';
+import DataTableV2 from '../shared/components/DataTableV2';
 import FormModal from '../treasurer/modals/FormModal';
 
 // constants
 import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 
+// utils
+import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
+import { display } from '../../constants/numericFormat';
 
 function MemberPayments() {
-
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({ page, limit, useLoggedInMember: true });
-  const loanPaymentsRaw = loanPaymentsData?.data || [];
-  const total = loanPaymentsData?.count || 0;
-
+  const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({ useLoggedInMember: true });
+  
   // Search and filter states
-  const [searchTerm, setSearchTerm] = useState(""); // for the search bar
+  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
-  const TABLE_PREFIX = "LP"; // You can change this per table, this for the the unique table ID but this is not included in the database
-  const loanPayments = loanPaymentsRaw.filter((row) => {
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
 
+  const TABLE_PREFIX = "LP"; // unique ID prefix
+  const loanPaymentsRaw = loanPaymentsData?.data || [];
+
+  const loanPayments = loanPaymentsRaw.filter((row) => {
     const generatedId = `${TABLE_PREFIX}_${row.payment_id}`;
 
+    // Match search (id, status, payment type)
     const matchesSearch =
-      searchTerm === "" ||
-      row.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.receipt_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.payment_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase()); // <-- ID match
+      debouncedSearch === "" ||
+      row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      row.receipt_no?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      row.payment_type?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase()); // <-- ID match
 
-    const statusPaymentFilter =
-      statusFilter === "" || row.status === statusFilter;
-
-    const matchesPaymentMethod =
-      paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
+      // Match filters
+    const matchesStatusFilter = statusFilter === "" || row.status === statusFilter;
+    const matchesPaymentMethod = paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
 
     const date = row.contribution_date ? new Date(row.contribution_date) : null;
     const matchesYear =
       yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
 
-    return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod && statusPaymentFilter;
+    // To avoid subtext displaying numbers instead of month names
+    // I had to convert the values from the monthFilter to numbers for comparison
+    const monthNameToNumber = {
+      January: 1, February: 2,
+      March: 3, April: 4,
+      May: 5, June: 6,
+      July: 7, August: 8,
+      September: 9, October: 10,
+      November: 11, December: 12,
+    };
+    const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
+
+    return matchesSearch && matchesYear && matchesMonth && matchesPaymentMethod && matchesStatusFilter;
   });
 
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
+  });
+
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    statusFilter ? `${statusFilter}` : null,
+    paymentMethodFilter ? `${paymentMethodFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ].
+    filter(Boolean)
+    .join(" - ") || "Showing all payments";
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setPaymentMethodFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+  };
 
   // View modals
   const [viewPaymentData, setViewPaymentData] = useState(null);
@@ -68,115 +109,114 @@ function MemberPayments() {
     <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold" >My Loan Payments</h1>
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Status",
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: [
+                  { label: "Full", value: "Full" },
+                  { label: "Partial", value: "Partial" },
+                ],
+              },
+              {
+                label: "All Method",
+                value: paymentMethodFilter,
+                onChange: setPaymentMethodFilter,
+                options: [
+                  { label: "Cash", value: "Cash" },
+                  { label: "GCash", value: "GCash" },
+                  { label: "Bank", value: "Bank" },
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: setYearFilter,
+                options: yearOptions
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: setMonthFilter,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Status",
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: "Full", value: "Full" },
-                { label: "Partial", value: "Partial" },
-              ],
-            },
-            {
-              label: "All Method",
-              value: paymentMethodFilter,
-              onChange: setPaymentMethodFilter,
-              options: [
-                { label: "Cash", value: "Cash" },
-                { label: "GCash", value: "GCash" },
-                { label: "Bank", value: "Bank" },
-              ],
-            },
-            {
-              label: "All Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-                { label: "2022", value: "2022" },
-                { label: "2021", value: "2021" },
-                { label: "2020", value: "2020" },
-              ],
-            },
-            {
-              label: "All Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable
-          headers={["Payment Ref No.", "Loan Ref No.", "Amount", "Status", "Date", "Payment Method"]}
+        <DataTableV2
+          title={"My Loan Payments"}
+          filterActive={activeFiltersText !== "Showing all payments"}
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Payment Ref.", "Loan Ref No.", "Amount", "Status", "Date", "Payment Method"]}
           data={loanPayments}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
+            const id = row?.payment_id || "Not Found";
+            const loanRefNumber = row?.loan_ref_number || "Not Found";
+            const amount = row?.total_amount || 0;
+            const status = row?.status || "Not Found";
+            const paymentDate = row?.payment_date
+              ? new Date(row.payment_date).toLocaleDateString()
+              : "Not Found";
+            const paymentMethod = row?.payment_method;
 
             return (
-              <tr
-                key={`${TABLE_PREFIX}${row?.payment_id}`}
-                onClick={() => openViewModal(row)}
-                className="transition-colors cursor-pointer hover:bg-base-200/70"
-              >
-                {/* Ref no */}
-                <td className="px-4 py-4 text-center font-medium text-xs">{TABLE_PREFIX}_{row?.payment_id}</td>
+              <tr key={id} onClick={() => openViewModal(row)} className="text-center hover:bg-base-200/50">
+                {/* Payment Ref. */}
+                <td className="text-center font-medium text-xs">
+                  {TABLE_PREFIX}{id}
+                </td>
 
-                {/* Loan ID */}
-                <td className="px-4 py-4 text-center font-medium text-xs">{row?.loan_ref_number || "Not Found"}</td>
+                {/* Loan Ref No. */}
+                <td>
+                  {loanRefNumber}
+                </td>
 
                 {/* Amount */}
-                <td className="px-4 py-4 font-semibold text-success text-center">
-                  ₱ {row?.total_amount?.toLocaleString() || "0"}
+                <td className="font-semibold text-success">
+                  ₱ {display(amount)}
                 </td>
 
                 {/* Status */}
-                <td className="px-4 py-4 font-semibold text-center">
-                  <span className={`${row?.status === 'Partial' ? 'text-warning' : row?.status === 'Full' ? 'text-info' : 'text-base-content'}`}>
-                    {row?.status || "Unknown"}
-                  </span>
+                <td className="font-semibold text-info">
+                  {status}
                 </td>
 
-                {/* Date */}
-                <td className="px-4 py-4 text-center">{row?.payment_date}</td>
+                {/* Payment Date */}
+                <td className="">
+                  {paymentDate}
+                </td>
 
-                {/* Method */}
-                <td className="px-4 py-4 text-center">
-                  {row?.payment_method ? (
-                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[row?.payment_method]}`}>
-                      {row?.payment_method}
+                {/* Payment Method */}
+                <td>
+                  {paymentMethod ? (
+                    <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
+                      {paymentMethod}
                     </span>
                   ) : (
-                    <span> — </span>
+                    <span className="font-semibold">Not Found</span>
                   )}
                 </td>
               </tr>
@@ -237,47 +277,45 @@ function MemberPayments() {
                     {viewPaymentData.payment_method}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Amount Breakdown Section */}
+            <div className="bg-base-100 p-3 rounded-lg border border-base-300">
+              <h4 className="text-xs font-bold text-gray-600 mb-3">Payment Breakdown</h4>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Principal</span>
+                  <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200">
+                    <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
+                  </div>
+                </div>
                 
-
-              </div>
-            </div>
-
-        {/* Amount Breakdown Section */}
-        <div className="bg-base-100 p-3 rounded-lg border border-base-300">
-          <h4 className="text-xs font-bold text-gray-600 mb-3">Payment Breakdown</h4>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Principal</span>
-              <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200">
-                <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Interest</span>
-              <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200">
-                <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Fees</span>
-              <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200">
-                <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
-              </div>
-            </div>
-            
-            <div className="pt-2 border-t border-base-300">
-              <div className="flex justify-between items-center">
-                <span className="text-base font-bold">Total Amount</span>
-                <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
-                  <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Interest</span>
+                  <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200">
+                    <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Fees</span>
+                  <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200">
+                    <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-base-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-bold">Total Amount</span>
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                      <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
           </FormModal>
         )}
       </div>

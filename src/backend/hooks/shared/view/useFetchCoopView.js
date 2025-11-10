@@ -15,7 +15,7 @@ async function fetchCoopContributions({ accountNumber, page, limit }) {
   let query = supabase
     .from("view_coop_share_capital_contributions")
     .select("*", { count: "exact" })
-    .order("contribution_date", { ascending: false });
+    .order("coop_contri_id", { ascending: false });
 
   if (accountNumber) {
     query = query.eq("account_number", accountNumber);
