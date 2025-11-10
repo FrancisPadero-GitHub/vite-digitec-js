@@ -3,6 +3,7 @@ import { Edit, Check, VerifiedUserOutlined } from "@mui/icons-material";
 
 // fetch hooks
 import { useFetchProfile } from "../../backend/hooks/member/useFetchProfile";
+import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 
 // mutation hooks
 import { useUpdateProfile } from "../../backend/hooks/member/useUpdateProfile";
@@ -10,7 +11,9 @@ import { useChangePassword } from "../../backend/hooks/member/useChangePassword"
 
 // assets 
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
-const catGif = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTVsM3VoOHU1YWpqMjM0ajJ3bTBsODVxbnJsZDIzdTRyajBrazZ0MyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/qZgHBlenHa1zKqy6Zn/giphy.gif"
+
+// utils
+import { display } from "../../constants/numericFormat";
 
 const tips = [
   "Use a strong, unique password",
@@ -45,16 +48,40 @@ const formFields = [
   { name: "office_address", label: "Office Address", colSpan: "sm:col-span-2" },
 ];
 
+// function to get membership duration in months based on joined_date
+function calculateMembershipMonths(joined_date) {
+  if (!joined_date) return 0;
+  const joined = new Date(joined_date);
+  const now = new Date();
+  const years = now.getFullYear() - joined.getFullYear();
+  const months = now.getMonth() - joined.getMonth();
+  return years * 12 + months;
+}
+
 function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
 
-  const { data: myProfile } = useFetchProfile();
+  // use query hook to fetch profile data (and coop data for total share capital)
+  const { data: myProfile, isLoading, isError } = useFetchProfile();
+  const { data: coopData } = useFetchCoop();
+
+  const coopContributions = coopData?.data || [];
+  // Calculate total share capital
+  const totalShareCapital = coopContributions.reduce(
+    (sum, item) => sum + (item.amount || 0),
+    0
+  );
+
+  // mutation hook to update profile
   const { mutate: updateProfile} = useUpdateProfile();
   const [saving, setSaving] = useState(false);
 
+  // for displaying membership months and age
+  const membershipMonths = calculateMembershipMonths(myProfile?.application_date);
 
+  // form data state
   const [formData, setFormData] = useState({});
 
 
@@ -129,18 +156,8 @@ function Profile() {
     );
   };
 
-  // calculate membership duration in months (APPLICATION DATE FOR NOW, CHANGE TO JOINED DATE LATER SINCE JOINED DATE IN DB IS NULL ATM)
-  const calculateMembershipMonths = (application_date) => {
-    if (!application_date) return 0;
-    const joined = new Date(application_date);
-    const now = new Date();
-    const years = now.getFullYear() - joined.getFullYear();
-    const months = now.getMonth() - joined.getMonth();
-    return years * 12 + months;
-  };
-  const membershipMonths = calculateMembershipMonths(myProfile?.application_date);
-
-
+if (isLoading) return <div>Loading...</div>
+if (isError) return <div>Something went wrong, try refreshing</div>
 
   return (
     <div className="min-h-screen p-3 md:p-1">
@@ -152,7 +169,7 @@ function Profile() {
               <div className="flex justify-center mb-2">
                 <div className="relative w-28 h-28">
                   <img
-                    src={previewAvatar || myProfile?.avatar_url || catGif || placeholderAvatar}
+                    src={previewAvatar || myProfile?.avatar_url || placeholderAvatar}
                     className="rounded-full ring-4 ring-base-200 w-full h-full object-cover"
                   />
                   {isEditing && (
@@ -180,9 +197,6 @@ function Profile() {
               <span className="badge badge-neutral">
                 {myProfile?.account_type} Member
               </span>
-              {/* change this to joined date later, right now joined_date in the db is all null. 
-                      application_date is used in the meantime
-                    */}
               <p className="text-sm mt-2">
                 Member Since:{" "}
                 {myProfile?.application_date
@@ -192,11 +206,11 @@ function Profile() {
             </div>
             <div className="card-body p-4 grid grid-cols-3 text-center">
               <div>
-                <h3 className="text-lg font-bold">M-000{myProfile?.member_id}</h3>
+                <h3 className="text-lg font-bold">{myProfile?.account_number}</h3>
                 <p className="text-sm text-gray-500">ID NO.</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold">₱ 30,000</h3> {/* Hardcoded for now, might remove this entirely */}
+                <h3 className="text-lg font-bold">₱ {display(totalShareCapital)}</h3>
                 <p className="text-sm text-gray-500">Share Capital</p>
               </div>
               <div>
@@ -230,26 +244,16 @@ function Profile() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="card-title text-xl">Edit Profile</h2>
                 {!isEditing ? (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="btn btn-sm btn-primary text-white"
-                  >
-                    <Edit fontSize="small" className="mr-1" /> Edit
+                  <button onClick={() => setIsEditing(true)} className="btn btn-sm btn-primary text-white">
+                    <Edit fontSize="small"/> Edit
                   </button>
                 ) : (
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="btn btn-sm btn-ghost"
-                    >
+                    <button onClick={() => setIsEditing(false)} className="btn btn-sm btn-ghost">
                       Cancel
                     </button>
 
-                    <button
-                      onClick={handleSave}
-                      className="btn btn-sm btn-primary text-white"
-                      disabled={saving} // prevent double clicks
-                    >
+                    <button onClick={handleSave} className="btn btn-sm btn-primary text-white" disabled={saving}>
                       {saving ? (
                         <span className="loading loading-spinner loading-sm"></span>
                       ) : (
