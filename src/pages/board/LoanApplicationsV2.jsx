@@ -738,7 +738,7 @@ function LoanApplicationsV2() {
                 <label className="block text-xs font-medium text-blue-700 mb-1">Maturity Date</label>
                 <input
                   type="date"
-                  defaultValue={dayjs().add(12, 'month').format('YYYY-MM-DD')}
+                  defaultValue={dayjs().add(watchLoanAcc("loan_term_approved"), 'month').format('YYYY-MM-DD')}
                   {...registerLoanAcc("maturity_date", { required: true })}
                   className="input input-bordered w-full border-blue-400 focus:border-blue-600"
                 />

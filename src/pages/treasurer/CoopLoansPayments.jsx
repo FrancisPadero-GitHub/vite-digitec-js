@@ -608,7 +608,7 @@ function CoopLoansPayments() {
         <DataTableV2 
           subtext={activeFiltersText}
           showLinkPath={false}
-          headers={["Payment Ref.", "Loan Ref No.", "Account No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
+          headers={["Payment Ref.","Schedule ID", "Loan Ref No.", "Account No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
           filterActive={activeFiltersText !== "Showing all payments"}
           data={loanPayments}
           isLoading={isLoading}
@@ -617,6 +617,7 @@ function CoopLoansPayments() {
           renderRow={(row) => {
             const id = row?.payment_id || "Not Found";
             const loanRefNo = row?.loan_ref_number || "Not Found";
+            const scheduleId = row?.schedule_id || "Not Found";
             const accountNo = row?.account_number || "Not Found";
             const avatarUrl = row?.avatar_url || placeHolderAvatar;
             const fullName = row?.full_name || "Not Found";
@@ -633,6 +634,8 @@ function CoopLoansPayments() {
                 {/* Ref no */}
                 <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{id}</td>
                 
+                {/* Schedule ID */}
+                <td className="px-4 py-2 text-center font-medium text-xs">#{scheduleId}</td>
                 {/* Loan ID */}
                 <td className="px-4 py-2 text-center font-medium text-xs">{loanRefNo}</td>
                 
@@ -938,14 +941,18 @@ function CoopLoansPayments() {
                           return true;
                         }
 
-                        const remainingDue = display(totalPayableAllOverdueUnpaid); // unified remaining (overdue aggregate or upcoming)
-                        const minRequiredAmount = display(remainingDue * 0.3); // 30% of remaining amount
-                        const inputValue = display(value);
+                        const remainingDue = Number(totalPayableAllOverdueUnpaid); // unified remaining (overdue aggregate or upcoming)
+                        const minRequiredAmount = Number(remainingDue * 0.3); // 30% of remaining amount
+                        const inputValue = Number(value);
 
+                        if (paymentStatus === "OVERDUE"  && mosOverdue > 0) {
+                          if (inputValue < remainingDue)
+                            return `For OVERDUE payments, amount must cover the full remaining payable of ₱${remainingDue.toLocaleString()}`;
+                        }
                         if (inputValue < minRequiredAmount)
                           return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toLocaleString()})`;
                         if (inputValue > remainingDue)
-                          return `Amount cannot exceed remaining payable of ₱${remainingDue.toLocaleString()}`;
+                          return `Amount cannot exceed total payable of ₱${remainingDue.toLocaleString()}`;
                         if (inputValue > balance)
                           return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
                         return true;
@@ -957,6 +964,7 @@ function CoopLoansPayments() {
                           id="total_amount"
                           type="number"
                           autoComplete="off"
+                          steps="0.01"
                           value={field.value}
                           placeholder="Enter Payment Amount" //AMOUNT LIMIT TO BE ADDED
                           onChange={(e) => {

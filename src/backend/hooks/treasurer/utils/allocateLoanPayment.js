@@ -1,12 +1,17 @@
-import { updateLoanStatusFromView } from "./updateLoanStatusFromView";
 import Decimal from "decimal.js";
+import { updateLoanStatusFromView } from "./updateLoanStatusFromView";
+
+/**
+ * Rounds using Decimal.js to two decimal places.
+ */
+const round = (num) => new Decimal(num).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
 /**
  * Reverses payment allocation when reducing a payment amount.
  * Subtracts from the most recently paid schedules in reverse order.
  */
 async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse) {
-  let remaining = new Decimal(amountToReverse);
+  let remaining = round(amountToReverse);
 
   // Fetch all paid or partially paid schedules for this loan, sorted by due date (descending - most recent first)
   const { data: schedules, error: schedErr } = await supabase
@@ -21,22 +26,27 @@ async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse)
   for (const sched of schedules) {
     if (remaining.lte(0)) break;
 
-    const alreadyPaid = new Decimal(sched.amount_paid || 0);
+    const alreadyPaid = round(sched.amount_paid || 0);
     if (alreadyPaid.lte(0)) continue;
 
     const reversal = Decimal.min(remaining, alreadyPaid);
-    remaining = remaining.minus(reversal);
+    remaining = round(remaining.minus(reversal));
 
-    const newTotalPaid = alreadyPaid.minus(reversal);
+    const newTotalPaid = round(alreadyPaid.minus(reversal));
     const fullyPaid = newTotalPaid.gte(sched.total_due);
-    const partiallyPaid = newTotalPaid.gt(0) && newTotalPaid.lt(sched.total_due);
+    const partiallyPaid =
+      newTotalPaid.gt(0) && newTotalPaid.lt(sched.total_due);
 
     const { error: updateErr } = await supabase
       .from("loan_payment_schedules")
       .update({
         amount_paid: newTotalPaid.toNumber(),
         paid: fullyPaid,
-        status: fullyPaid ? "PAID" : partiallyPaid ? "PARTIALLY PAID" : "UNPAID",
+        status: fullyPaid
+          ? "PAID"
+          : partiallyPaid
+            ? "PARTIALLY PAID"
+            : "UNPAID",
         paid_at: newTotalPaid.gt(0) ? sched.paid_at : null,
       })
       .eq("schedule_id", sched.schedule_id);
@@ -47,22 +57,16 @@ async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse)
   }
 
   updateLoanStatusFromView(supabase, targetLoanId);
+
   return [];
 }
 
 /**
  * Allocates a loan payment across multiple scheduled payments.
- *
- * Note:
- *   This version previously supported splitting overpayments into two separate
- *   transactions, but that logic is currently disabled per ECTEC policy.
- *   Overpayments are not officially supported yet.
  */
-
 export async function allocateLoanPayment(
   supabase,
   {
-    // Extracted from formData – only the relevant payment fields are needed
     loan_ref_number,
     account_number,
     total_amount,
@@ -71,7 +75,6 @@ export async function allocateLoanPayment(
     receipt_no,
   }
 ) {
-  // Retrieve loan_id from the reference number to identify the target loan
   const { data: loanAccount, error: loanErr } = await supabase
     .from("loan_accounts")
     .select("loan_id")
@@ -82,13 +85,20 @@ export async function allocateLoanPayment(
     throw new Error("No loan_id found for this loan_ref_number.");
 
   const targetLoanId = loanAccount.loan_id;
-  let remaining = new Decimal(total_amount);
+
+  let remaining = round(total_amount);
   let allocations = [];
 
-  if (remaining.isNeg()) {
-    return await reversePaymentAllocation(supabase, targetLoanId, remaining.abs().toNumber());
+  // Handle negative amount (payment reversal)
+  if (remaining.lt(0)) {
+    return await reversePaymentAllocation(
+      supabase,
+      targetLoanId,
+      remaining.abs()
+    );
   }
 
+  // Fetch all unpaid or partially paid schedules
   const { data: schedules, error: schedErr } = await supabase
     .from("loan_payment_schedules")
     .select("*")
@@ -101,27 +111,29 @@ export async function allocateLoanPayment(
   for (const sched of schedules) {
     if (remaining.lte(0)) break;
 
-    const alreadyPaid = new Decimal(sched.amount_paid || 0);
-    const remainingDue = new Decimal(sched.total_due).minus(alreadyPaid);
+    const alreadyPaid = round(sched.amount_paid || 0);
+    const remainingDue = round(new Decimal(sched.total_due).minus(alreadyPaid));
     if (remainingDue.lte(0)) continue;
 
     const allocation = Decimal.min(remaining, remainingDue);
-    remaining = remaining.minus(allocation);
+    remaining = round(remaining.minus(allocation));
 
-    const totalDue = new Decimal(sched.total_due);
+    const totalDue = round(sched.total_due);
     const feePortion = new Decimal(sched.fee_due).div(totalDue);
     const interestPortion = new Decimal(sched.interest_due).div(totalDue);
 
-    const fees = allocation.mul(feePortion);
-    const interest = allocation.mul(interestPortion);
-    const principal = allocation.minus(fees).minus(interest);
+    const fees = round(allocation.times(feePortion));
+    const interest = round(allocation.times(interestPortion));
+    const principal = round(allocation.minus(fees).minus(interest));
 
     const calculatedSum = fees.plus(interest).plus(principal);
-    if (!calculatedSum.eq(allocation)) {
-      console.warn(`Allocation mismatch: ${calculatedSum.toNumber()} vs ${allocation.toNumber()}`);
+    if (calculatedSum.minus(allocation).abs().gt(0.01)) {
+      console.warn(
+        `Allocation mismatch: ${calculatedSum.toNumber()} vs ${allocation.toNumber()}`
+      );
     }
 
-    const newTotalPaid = alreadyPaid.plus(allocation);
+    const newTotalPaid = round(alreadyPaid.plus(allocation));
     const fullyPaid = newTotalPaid.gte(sched.total_due);
 
     allocations.push({
@@ -154,15 +166,17 @@ export async function allocateLoanPayment(
     if (remaining.lte(0)) break;
   }
 
-  // Handle any leftover amount that couldn’t be allocated normally (overpayment)
+  // Handle leftover (overpayment)
   if (remaining.gt(0)) {
     const nextSched = schedules.find((s) => s.status !== "PAID");
+
     if (nextSched) {
-      const nextPaid = new Decimal(nextSched.amount_paid || 0).plus(remaining);
       const { error: updateErr } = await supabase
         .from("loan_payment_schedules")
         .update({
-          amount_paid: nextPaid.toNumber(),
+          amount_paid: round(
+            new Decimal(nextSched.amount_paid || 0).plus(remaining)
+          ).toNumber(),
           status: "PARTIALLY PAID",
           paid_at: new Date().toISOString(),
         })
@@ -178,10 +192,10 @@ export async function allocateLoanPayment(
         payment_method,
         payment_date,
         receipt_no,
-        total_amount: remaining.toNumber(),
+        total_amount: round(remaining).toNumber(),
         fees: 0,
         interest: 0,
-        principal: remaining.toNumber(),
+        principal: round(remaining).toNumber(),
         status: "auto-applied",
       });
     } else {
@@ -192,16 +206,18 @@ export async function allocateLoanPayment(
         payment_method,
         payment_date,
         receipt_no,
-        total_amount: remaining.toNumber(),
+        total_amount: round(remaining).toNumber(),
         fees: 0,
         interest: 0,
-        principal: remaining.toNumber(),
+        principal: round(remaining).toNumber(),
         status: "overpayment",
       });
     }
+
     remaining = new Decimal(0);
   }
 
   updateLoanStatusFromView(supabase, targetLoanId);
+
   return allocations;
 }
