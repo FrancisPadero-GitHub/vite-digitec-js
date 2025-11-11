@@ -31,6 +31,7 @@ import SummaryCharts from "./pages/shared/reports/SummaryCharts";
 import AddMember from "./pages/admin/AddMember";
 import SystemSettings from "./pages/admin/SystemSettings";
 import UserManagement from "./pages/admin/UserManagement";
+import AdminCreateUserForm from "./pages/admin/AdminCreateUserForm";
 
 // TREASURER PAGES
 import CoopShareCapital from "./pages/treasurer/CoopShareCapital";
@@ -99,6 +100,7 @@ function AppRoutes() {
     { path: "add-member", element: <AddMember /> },
     { path: "system-settings", element: <SystemSettings /> },
     { path: "activity-logs", element: <ActivityLogs /> },
+    { path: "create-user-login", element: <AdminCreateUserForm /> },
   ];
 
   const boardRoutes = [
