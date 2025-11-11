@@ -16,8 +16,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InventoryIcon from '@mui/icons-material/Inventory';
-
-
+import LoginIcon from '@mui/icons-material/Login';
 
 // 🧩 Dynamic Pathings Items to be shared by other roles
 
@@ -152,7 +151,9 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Users", icon: ManageAccountsIcon, path: "/admin" },
+        { label: "Login Credentials", icon: LoginIcon, path: "/admin/create-user-login" },
         { label: "Activity Logs", icon: HistoryIcon, path: "/admin/activity-logs" },
+
       ],
     },
     {
