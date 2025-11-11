@@ -18,6 +18,7 @@ import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanPaymentsView } from '../../backend/hooks/shared/view/useFetchPaymentsView';
 import { useFetchPaySched } from '../../backend/hooks/shared/useFetchPaySched';
 import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
+import { useMemberRole } from '../../backend/context/useMemberRole';
 
 
 // mutation hooks
@@ -33,7 +34,7 @@ import DataTableV2 from '../shared/components/DataTableV2';
 import FormModal from './modals/FormModal';
 
 // constants
-import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
+import { PAYMENT_METHOD_COLORS, LOAN_PAYMENT_STATUS_COLORS } from '../../constants/Color';
 import placeHolderAvatar from '../../assets/placeholder-avatar.png';
 
 // utils
@@ -55,6 +56,7 @@ function CoopLoansPayments() {
 
 
   // fetch data hooks
+  const { memberRole } = useMemberRole();
   const { data: loan_acc_view } = useFetchLoanAccView({});
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
@@ -541,9 +543,8 @@ function CoopLoansPayments() {
   return (
     <div>
       <Toaster position="bottom-left"/>
-      <div className="mb-6 space-y-4">
-        <h1 className="text-2xl font-bold" >Member Loan Payments</h1>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -596,16 +597,22 @@ function CoopLoansPayments() {
               },
             ]}
           />
-          <button
-            className="btn btn-neutral whitespace-nowrap"
-            onClick={openAddModal}
-
-          >
-            Add Payments
-          </button>
+          {memberRole !== "board" && (
+            <button
+              className="btn btn-neutral whitespace-nowrap"
+              title="Add payment"
+              aria-label="Add Payment"
+              type="button"
+              onClick={openAddModal}
+            >
+              {/* <AddCircleIcon/> */}
+              Add Payments
+            </button>
+          )}
         </div>
 
-        <DataTableV2 
+        <DataTableV2
+          title="Member Loan Payments" 
           subtext={activeFiltersText}
           showLinkPath={false}
           headers={["Payment Ref.","Schedule ID", "Loan Ref No.", "Account No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
@@ -641,7 +648,7 @@ function CoopLoansPayments() {
                 
                 {/* Account No. */}
                 <td className="px-4 py-2 text-center font-medium text-xs">{accountNo}</td>
-                 
+                
                  {/* Name */}
                 <td className="px-4 py-4 text-center" >
                   <span className="flex items-center gap-3">
@@ -665,7 +672,7 @@ function CoopLoansPayments() {
 
                 {/* Status */}
                 <td className="px-4 py-4 font-semibold text-center">
-                  <span className={`${status === 'Partial' ? 'text-warning' : status === 'Full' ? 'text-info' : 'text-base-content'}`}>
+                  <span className={`font-semibold ${LOAN_PAYMENT_STATUS_COLORS[status]}`}>
                     {status}
                   </span>
                 </td>
@@ -1075,7 +1082,6 @@ function CoopLoansPayments() {
           </div>,
           document.body
         )}
-         
 
       {/* View Payment Details Modal */}
       {viewPaymentData && (

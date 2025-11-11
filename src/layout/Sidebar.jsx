@@ -10,14 +10,12 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import SavingsIcon from '@mui/icons-material/Savings';
-import StickyNote2Icon from '@mui/icons-material/StickyNote2';
 import HistoryIcon from '@mui/icons-material/History';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InventoryIcon from '@mui/icons-material/Inventory';
-import CampaignIcon from '@mui/icons-material/Campaign';
 
 
 
@@ -39,7 +37,7 @@ const loansBase = (role) => {
     // this is dynamically configured
     { label: "Applications", path: `/${role}/coop-loans/loan-applications` },
     { label: "Loan Accounts", path: `/${role}/coop-loans/loan-accounts` },
-    { label: "Payments", path: `/${role}/coop-loans/loan-payments` },
+    { label: "Payments", path: role === "board" ? "/board/coop-loans/payments" : `/${role}/coop-loans/loan-payments` },
   ];
 
   // Add shared "Schedules" to Board only (Treasurer has its own config; members don't show schedules)

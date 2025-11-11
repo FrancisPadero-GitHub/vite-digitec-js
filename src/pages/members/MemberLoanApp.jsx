@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo} from "react";
+import { useState, useEffect, useMemo, useTransition} from "react";
 import { useForm } from "react-hook-form";
 
-// import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Toaster, toast } from "react-hot-toast"
 
@@ -18,8 +17,8 @@ import { useCancelLoanApp } from "../../backend/hooks/member/useCancelLoanApp";
 
 // components
 import MembersFormModal from "./modal/MembersFormModal";
-import MainDataTable from "../treasurer/components/MainDataTable";
 import FilterToolbar from "../shared/components/FilterToolbar";
+import DataTableV2 from "../shared/components/DataTableV2";
 
 // component hook
 import { usePrompt } from "../shared/components/usePrompt";
@@ -31,6 +30,7 @@ import calcLoanSchedFlat from "../../constants/calcLoanSchedFlat";
 
 // utils
 import { display } from "../../constants/numericFormat";
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 
 // Restriction
 import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
@@ -47,16 +47,12 @@ import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction"
  */
 
 function MemberLoanApp() {
+  const today = new Date().toISOString().split("T")[0];
   const { showPrompt } = usePrompt(); // custom toaster
-  // const navigate = useNavigate();
   const { hasRestriction } = useLoanRestriction();
   const { data: loanProducts } = useFetchLoanProducts();
 
-  // Data fetch on loan applications and pagination control
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-
-  const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ page, limit, useLoggedInMember: true});
+  const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ useLoggedInMember: true});
   const loanAppRaw = memberLoanAppRaw?.data || [];
 
   // mutation hooks
@@ -65,17 +61,8 @@ function MemberLoanApp() {
   const { mutate: mutateCancel, isPending: isCancelPending } = useCancelLoanApp();
 
 
-  const total = loanAppRaw?.count || 0;
-
-  const { data: loanAccRaw } = useFetchLoanAcc({ page, limit, useLoggedInMember: true });
+  const { data: loanAccRaw } = useFetchLoanAcc({ useLoggedInMember: true });
   const loanAcc = loanAccRaw?.data || [];
-
-  // Filtered Table base on the filter toolbar
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [yearFilter, setYearFilter] = useState("");
-  const [monthFilter, setMonthFilter] = useState("");
-  const TABLE_PREFIX = "LAPP_";
 
   const mergedLoanAccounts = loanAppRaw.map(baseRow => {
     const viewRow = loanProducts?.find(v => v.product_id === baseRow.product_id);
@@ -86,32 +73,105 @@ function MemberLoanApp() {
     };
   });
 
-  // console.log(`Test`, mergedLoanAccounts )
+  // Filtered Table base on the filter toolbar
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
+  
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   * 
+   */
+  // Add useTransition
+  const [isPending, startTransition] = useTransition();
 
-  const memberLoanApplications = mergedLoanAccounts.filter((row) => {
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleStatusChange = (value) => {
+    startTransition(() => {
+      setStatusFilter(value);
+    });
+  };
+  const handleYearChange = (value) => {
+    startTransition(() => {
+      setYearFilter(value);
+    });
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => {
+      setMonthFilter(value);
+    });
+  };
+
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250); 
+
+  const TABLE_PREFIX = "LAPP_";
+  const memberLoanApplications = useMemo(() => {
+    return mergedLoanAccounts.filter((row) => {
     const generatedId = `${TABLE_PREFIX}${row.application_id}`;
 
     const matchesSearch =
-      searchTerm === "" ||
-      row.amount?.toString().includes(searchTerm) ||
-      row.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      generatedId.toLowerCase().includes(searchTerm.toLowerCase());
+      debouncedSearch === "" ||
+      row.amount?.toString().includes(debouncedSearch) ||
+      row.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
     const matchesStatus = statusFilter === "" || row.status === statusFilter;
-   
     const date = row.application_date ? new Date(row.application_date) : null;
     const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
+
+      // To avoid subtext displaying numbers instead of month names
+      // I had to convert the values from the monthFilter to numbers for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2,
+        March: 3, April: 4,
+        May: 5, June: 6,
+        July: 7, August: 8,
+        September: 9, October: 10,
+        November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
 
     return matchesSearch && matchesStatus && matchesYear && matchesMonth;
   });
+}, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter]);
 
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
+  });
 
-  const [modalType, setModalType] = useState(null);
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    statusFilter ? `${statusFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all loan applications";
 
-  const today = new Date().toISOString().split("T")[0];
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+  };
 
   const defaultValues = {
     application_id: null,
@@ -157,7 +217,7 @@ function MemberLoanApp() {
   const [loanStatus, setLoanStatus] = useState(false);
 
   // Modal Handlers
-
+    const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
     // Count restrictions for loan applications and accounts
     const pendingAppsCount = loanAppRaw.filter(   // loan applications status check
@@ -506,96 +566,95 @@ function MemberLoanApp() {
   return (
     <div>
       <Toaster position="bottom-left"/>
-      <div className="mb-6 space-y-4">
+      <div className="space-y-4">
         {/* Put a restriction here if a certain criteria is not met */}
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">My Loan Applications</h1>
-          <button
-            className="btn btn-neutral"
-            onClick={openAddModal}
-            aria-label="Apply for loan"
-          >
-            Apply For A Loan
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Status",
+                value: statusFilter,
+                onChange: handleStatusChange,
+                options: [
+                  { label: "Pending", value: "Pending"},
+                  { label: "On Review", value: "On Review" },
+                  { label: "Approved", value: "Approved" },
+                  { label: "Denied", value: "Denied" },
+        
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
+        <button className="btn btn-neutral whitespace-nowrap" onClick={openAddModal} aria-label="Apply for loan">
+          Apply For A Loan
+        </button>
         </div>
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Status",
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: "Pending", value: "Pending"},
-                { label: "On Review", value: "On Review" },
-                { label: "Approved", value: "Approved" },
-                { label: "Denied", value: "Denied" },
-      
-              ],
-            },
-            {
-              label: "All Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-              ],
-            },
-            {
-              label: "All Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-        <MainDataTable
-          headers={[
-            "Ref No.",
-            "Loan Product",
-            "Amount",
-            "Term",
-            "Application Date",
-            "Status",
-          ]}
+
+        <DataTableV2
+          title={"My Loan Applications"}
+          filterActive={activeFiltersText !== "Showing all loan applications"}
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Ref No.", "Loan Product", "Amount", "Term", "Application Date", "Status",]}
           data={memberLoanApplications}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
             const matchedLoanProduct = loanProducts?.find(
               (product_id) => product_id.product_id === row.product_id
             );
             const loanProductName = matchedLoanProduct?.name;
 
+            const id = row?.application_id || "Not Found";
+            const amount = row?.amount || 0;
+            const term = row?.loan_term || "Not Found";
+            const applicationDate = row?.application_date
+              ? new Date(row.application_date).toLocaleDateString()
+              : "Not Found";
+            const status = row?.status || "Not Found";
+
             return (
               <tr
                 key={`${row.application_id}`}
-                className="cursor-pointer hover:bg-base-200/50"
+                className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openEditModal(row)}
               >
-                <td className="text-center text-xs px-2 py-2">{TABLE_PREFIX}{row.application_id?.toLocaleString() || "ID"}</td>
-                <td className="px-4 py-2 text-center">
+                {/* Payment Ref. */}
+                <td className="font-medium text-xs">
+                  {TABLE_PREFIX}{id}
+                </td>
+
+                <td>
                   {loanProductName ? (
                     <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
                       {loanProductName}
@@ -604,27 +663,34 @@ function MemberLoanApp() {
                     <span className="font-semibold text-error">Not Provided</span>
                   )}
                 </td>
-                <td className="font-semibold text-success text-center">
-                  ₱ {row.amount?.toLocaleString() || "0"}
+
+                {/* Amount */}
+                <td className="font-semibold text-success">
+                  ₱ {display(amount)}
                 </td>
-      
-                <td className="text-center">{row.loan_term  || "Not Found"} Months</td>
-                <td className="text-center">
-                  {row.application_date
-                    ? new Date(row.application_date).toLocaleDateString()
-                    : "Not Found"}
+
+                {/* Term */}
+                <td>
+                  {term} Months
                 </td>
-                <td className="px-4 py-4 text-center">
-                  {row.status ? (
-                    <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[row.status]}`}>
-                      {row.status}
+
+                {/* Term */}
+                <td>
+                  {applicationDate}
+                </td>
+
+                {/* Status */}
+                <td>
+                  {status ? (
+                    <span className={`badge font-semibold ${LOAN_APPLICATION_STATUS_COLORS[status]}`}>
+                      {status}
                     </span>
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
               </tr>
-            );
+            )
           }}
         />
 

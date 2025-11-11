@@ -1,10 +1,10 @@
-import {useState} from 'react'
+import {useState, useMemo, useTransition} from 'react'
 import { useForm } from 'react-hook-form';
 import { Toaster, toast} from "react-hot-toast";
 import dayjs from 'dayjs';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import { createPortal } from 'react-dom'; // lets confirmation modal escape parent container (fixes z-index & overlay issues)
 import WarningIcon from '@mui/icons-material/Warning';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 
 // fetch hooks
 import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
@@ -13,43 +13,39 @@ import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
 import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
 import { useMemberRole } from '../../backend/context/useMemberRole';
 
-
 // mutation hooks
 import { useEditLoanAcc } from '../../backend/hooks/treasurer/useEditLoanAcc';
 
 // components
-import MainDataTable from '../treasurer/components/MainDataTable';
+import DataTableV2 from '../shared/components/DataTableV2';
 import FilterToolbar from '../shared/components/FilterToolbar';
 import BoardFormModal from '../board/modal/BoardFormModal';
 
 // colors
 import { LOAN_ACCOUNT_STATUS_COLORS } from '../../constants/Color';
-import defaultAvatar from '../../assets/placeholder-avatar.png';
+import placeHolderAvatar from '../../assets/placeholder-avatar.png';
+
+// utils
+import { display } from '../../constants/numericFormat';
+import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
 
 function CoopLoansReleases() {
-  const placeHolderAvatar = defaultAvatar;
   const {mutate: releaseLoan, isPending } = useEditLoanAcc();
 
   //  const navigate = useNavigate();
   const { data: members_data } = useMembers({});
-  const members = members_data?.data || [];
   const { data: loanProducts } = useFetchLoanProducts();
-
   const { memberRole } = useMemberRole();
-
-  // Data fetch on loan applications and pagination control
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // get the outstanding balance on this view table instead of the base table 
-  const { data: loanAccView } = useFetchLoanAccView({page, limit});
+  const { data: loanAccView } = useFetchLoanAccView();
   const loanAccViewRaw = loanAccView?.data || [];
 
-  const { data: loanAcc, isLoading, isError, error } = useFetchLoanAcc({ page, limit });
+  const { data: loanAcc, isLoading, isError, error } = useFetchLoanAcc();
   const loanAccRaw = loanAcc?.data || [];
-  const total = loanAccRaw?.count || 0;
+  const members = members_data?.data || [];
 
 
   // Merge view and base table by loan_id
@@ -65,9 +61,47 @@ function CoopLoansReleases() {
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const TABLE_PREFIX = "LACC_";
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
 
-  const memberLoanAccounts = mergedLoanAccounts.filter((row) => {
+    /**
+     * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+     * it needs to be paired with useMemo on the filtered data (clubFunds)
+     * 
+     */
+    // Add useTransition
+    const [isFilterPending, startTransition] = useTransition();
+  
+    // Update filter handlers to use startTransition
+    const handleSearchChange = (value) => {
+      startTransition(() => {
+        setSearchTerm(value);
+      });
+    };
+    const handleStatusChange = (value) => {
+      startTransition(() => {
+        setStatusFilter(value);
+      });
+    };
+    const handleYearChange = (value) => {
+      startTransition(() => {
+        setYearFilter(value);
+      });
+    };
+    const handleMonthChange = (value) => {
+      startTransition(() => {
+        setMonthFilter(value);
+      });
+    };
+  
+    // Reduces the amount of filtering per change so its good delay
+    const debouncedSearch = useDebounce(searchTerm, 250);
+
+  const TABLE_PREFIX = "LACC_";
+  const memberLoanAccounts = useMemo(() => {
+    const members = members_data?.data || [];
+    return mergedLoanAccounts.filter((row) => {
+    const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
 
     const member = members?.find((m) => m.account_number === row.account_number);
     const fullName = member
@@ -75,14 +109,62 @@ function CoopLoansReleases() {
       : "";
 
     const matchesSearch =
-      searchTerm === "" ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      row.account_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.status?.toLowerCase().includes(searchTerm.toLowerCase());
+      debouncedSearch === "" ||
+      (fullName && fullName.includes(debouncedSearch)) ||
+      row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
     const matchesStatus = statusFilter === "" || row.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const date = row.release_date ? new Date(row.release_date) : null;
+    const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+
+    // To avoid subtext displaying numbers instead of month names
+    // I had to convert the values from the monthFilter to numbers for comparison
+    const monthNameToNumber = {
+      January: 1, February: 2,
+      March: 3, April: 4,
+      May: 5, June: 6,
+      July: 7, August: 8,
+      September: 9, October: 10,
+      November: 11, December: 12,
+    };
+    const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+    const matchesMonth =
+      monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
+
+    return matchesSearch && matchesStatus && matchesYear && matchesMonth;
   });
+}, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter, members_data]);
+
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
+  });
+
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    statusFilter ? `${statusFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all loan releases";
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+  };
+
+  // Modal and Form setup
   const [modalType, setModalType] = useState(null);
   const defaultValues = {
     loan_id: "",
@@ -172,45 +254,62 @@ function CoopLoansReleases() {
   return (
     <div>
       <Toaster position="bottom-left" />
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Loan Releases</h1>
+      <div className="space-y-4">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-2">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isFilterPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Status",
+                value: statusFilter,
+                onChange: handleStatusChange,
+                options: [
+                  { label: "Pending Release", value: "Pending Release"},
+                  { label: "Active", value: "Active" },
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
         </div>
-        
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Status",
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: "Active", value: "Active" },
-                { label: "Defaulted", value: "Defaulted" },
-                { label: "Renewed", value: "Renewed" },
-              ],
-            },
-          ]}
-        />
 
-        <MainDataTable
-          headers={[
-            "Loan Ref No.",
-            "Account No.",
-            "Name",
-            "Amount Requested",
-            "Status",
-            "Release"
-          ]}
+        <DataTableV2
+          title={"Loan Releases"}
+          filterActive={activeFiltersText !== "Showing all loan releases"}
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Loan Ref No.", "Account No.", "Name", "Amount Requested", "Status", "Release"]}
           data={memberLoanAccounts}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
             const matchedMember = members?.find(
               (member) => member.account_number === row.account_number
@@ -218,61 +317,77 @@ function CoopLoansReleases() {
 
             const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
 
+            const id = row?.loan_id || "Not found";
+            const accountNo = row?.account_number || "Not found";
+            const avatarUrl = matchedMember?.avatar_url || placeHolderAvatar;
+            const principalAmount = row?.net_principal || 0;
+            const status = row?.status || "Not found";
+            const releaseDate = row?.release_date
+              ? new Date(row.release_date).toLocaleDateString()
+              : "Not Found";
+
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.loan_id}`}
-                className="cursor-pointer hover:bg-base-200/50"
+                className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openModal(row)}
               >
+
                 {/* Application ID */}
-                <td className="text-center px-2 py-2 text-xs font-medium">
-                  {TABLE_PREFIX}{row.loan_ref_number?.toLocaleString() || "ID"}
+                <td className="font-medium text-xs">
+                  {id}
                 </td>
 
-                {/* Account Number */}
-                <td className="text-center px-2 py-2 text-xs font-medium">
-                  {row.account_number || "Not Found"}
+                {/* Account No. */}
+                <td className="font-medium text-xs">
+                  {accountNo}
                 </td>
 
-                {/* Full name + avatar */}
-                <td className="px-4 py-4">
+                {/* Full Name */}
+                <td>
                   <span className="flex items-center gap-3">
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={
-                            matchedMember?.avatar_url || placeHolderAvatar
-                          }
+                          src={avatarUrl}
                           alt={fullName}
                         />
                       </div>
                     </div>
-                    <div className="truncate">{fullName || <span className="text-gray-400 italic">Not Provided</span>}</div>
+                    <div className="truncate">
+                      {fullName || 
+                      <span className="text-gray-400 italic">
+                        Not Provided
+                      </span>}
+                    </div>
                   </span>
                 </td>
 
-
-                {/* Principal*/}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row?.net_principal?.toLocaleString() || "0"}
+                {/* Principal */}
+                <td className="font-semibold text-success">
+                  ₱ {display(principalAmount)}
                 </td>
 
                 {/* Status */}
-                <td className="px-4 py-4 text-center">
-                  <span className={`badge badge-soft font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
-                    {row.status || "Not Provided"}
+                <td>
+                  {status ? (
+                  <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                      {row.status || "Not Provided"}
                   </span>
+                  ) : (
+                    <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
                 </td>
 
-                {/* Release Date */}
-                <td className="px-4 py-4 text-center">
-                  {row.release_date ? new Date(row.release_date).toLocaleDateString(): "—"}
+                {/* Application Date */}
+                <td>
+                  {releaseDate}
                 </td>
-
               </tr>
-            );
+            )
           }}
         />
+        
         
         <BoardFormModal
           title={"Loan Account"}
@@ -289,7 +404,7 @@ function CoopLoansReleases() {
             <div className="mb-2 flex items-center justify-between">
               <h3 className="font-bold mb-2">Loan Release</h3>
 
-               <div className="mb-3">
+              <div className="mb-3">
                 <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
                   ${watch("status") === "Active" 
                     ? "bg-green-50 border-green-300 text-green-800" 

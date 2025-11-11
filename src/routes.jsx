@@ -46,7 +46,6 @@ import TreasurerSettings from "./pages/treasurer/Settings";
 import LoanApplicationsV2 from "./pages/board/LoanApplicationsV2";
 import LoanAccounts from "./pages/board/LoanAccounts";
 import LoanAccountDetails from "./pages/board/LoanAccountDetails";
-import LoansPayments from "./pages/board/LoanPayments";
 import BoardSettings from "./pages/board/Settings";
 import Announcement from "./pages/board/Announcement";
 
@@ -91,6 +90,7 @@ function AppRoutes() {
     { path: "club-funds", element: <ClubFunds /> },
     { path: "club-expenses", element: <ClubExpenses /> },
     { path: "coop-loans/payment-schedules", element: <CoopLoanPaymentSchedules /> },
+    { path: "coop-loans/payments", element: <CoopLoansPayments /> },
   ];
 
   // Role-specific routes
@@ -105,7 +105,6 @@ function AppRoutes() {
     ...sharedRoutes,
     ...boardSharedTreasurerPages, 
     { path: "coop-loans/loan-applications", element: <LoanApplicationsV2 /> },
-    { path: "coop-loans/loan-payments", element: <LoansPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "settings", element: <BoardSettings /> },
     { path: "announcements", element: <Announcement /> },
@@ -116,7 +115,6 @@ function AppRoutes() {
     ...boardSharedTreasurerPages,
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "coop-loans/releases", element: <CoopLoansReleases /> },
-    { path: "coop-loans/payments", element: <CoopLoansPayments /> },
     { path: "settings/loan-products", element: <LoanProducts /> },
     { path: "settings", element: <TreasurerSettings /> },
   ];

@@ -87,6 +87,13 @@ export const LOAN_ACCOUNT_STATUS_COLORS = {
   "Pending Release": "badge-accent",
 };
 
+export const LOAN_PAYMENT_STATUS = ["Partial", "Full"];
+
+export const LOAN_PAYMENT_STATUS_COLORS = {
+  Partial: "text-warning",
+  Full: "text-info",
+};
+
 export const ACTIVITY_LOGS_TYPE = ["CREATE", "UPDATE", "DELETE"];
 
 // ACTIVITY LOGS TYPE COLORS
