@@ -55,6 +55,9 @@ export default function MemberRecords() {
   const users = useMemo(() => {
     const usersRaw = members?.data || [];
     return usersRaw.filter((row) => {
+      const allowedRoles = ["regular-member", "associate-member"];
+      if (!allowedRoles.includes(row.account_role)) return false;
+      
       const full_name = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
       const matchesSearch = 
         debouncedSearch === "" ||

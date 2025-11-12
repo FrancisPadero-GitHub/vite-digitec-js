@@ -54,6 +54,9 @@ function UserManagement() {
       };
     })
     .filter((row) => {
+      const doNotShowRoles = ["admin"];
+      if (doNotShowRoles.includes(row.account_role)) return false;
+      
       const matchesSearch =
         searchTerm === "" ||
         row.generatedId.toLowerCase().includes(searchTerm.toLowerCase()) ||
