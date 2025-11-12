@@ -1,63 +1,61 @@
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import { saveAs } from "file-saver";
 
-export default function ExcelExportButton({ data, fileName = "export.xlsx", sheetName = "Sheet1", disabled }) {
+/**
+ * Enhanced Excel export button with:
+ * - Styled headers
+ * - Auto column width
+ * - Multi-sheet or single-sheet support
+ */
+export default function ExcelExportButton({
+  data,
+  fileName = "export.xlsx",
+  sheetName = "Sheet1",
+  disabled,
+}) {
   const handleExport = () => {
-    // Check if data is valid
     if (!data) {
       alert("No data to export");
       return;
     }
 
-    // Check if data is an object with multiple sheets or a simple array
-    const isMultiSheet = typeof data === 'object' && !Array.isArray(data);
-    
+    const isMultiSheet = typeof data === "object" && !Array.isArray(data);
+
     if (isMultiSheet) {
-      // Handle multiple sheets
-      const hasData = Object.values(data).some(sheet => Array.isArray(sheet) && sheet.length > 0);
+      const hasData = Object.values(data).some(
+        (sheet) => Array.isArray(sheet) && sheet.length > 0
+      );
       if (!hasData) {
         alert("No data to export");
         return;
       }
 
-      // Create workbook
       const workbook = XLSX.utils.book_new();
 
-      // Add each sheet
       Object.entries(data).forEach(([key, sheetData]) => {
         if (Array.isArray(sheetData) && sheetData.length > 0) {
-          const worksheet = XLSX.utils.json_to_sheet(sheetData);
+          const worksheet = createStyledSheet(sheetData);
           const sheetTitle = key.charAt(0).toUpperCase() + key.slice(1);
           XLSX.utils.book_append_sheet(workbook, worksheet, sheetTitle);
         }
       });
 
-      // Convert workbook to binary array
       const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
-      // Create a blob and trigger download
       const blob = new Blob([excelBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, fileName.endsWith(".xlsx") ? fileName : `${fileName}.xlsx`);
     } else {
-      // Handle single sheet (original behavior)
       if (!Array.isArray(data) || data.length === 0) {
         alert("No data to export");
         return;
       }
 
-      // Create worksheet from data
-      const worksheet = XLSX.utils.json_to_sheet(data);
-
-      // Create workbook and append worksheet
+      const worksheet = createStyledSheet(data);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
-      // Convert workbook to binary array
       const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
-      // Create a blob and trigger download
       const blob = new Blob([excelBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -65,17 +63,14 @@ export default function ExcelExportButton({ data, fileName = "export.xlsx", shee
     }
   };
 
-  // Check if button should be disabled
   const isDisabled = () => {
     if (disabled) return true;
     if (!data) return true;
-    
-    // Check if data is an object with multiple sheets
-    if (typeof data === 'object' && !Array.isArray(data)) {
-      return !Object.values(data).some(sheet => Array.isArray(sheet) && sheet.length > 0);
+    if (typeof data === "object" && !Array.isArray(data)) {
+      return !Object.values(data).some(
+        (sheet) => Array.isArray(sheet) && sheet.length > 0
+      );
     }
-    
-    // Check if data is a simple array
     return !Array.isArray(data) || data.length === 0;
   };
 
@@ -89,4 +84,47 @@ export default function ExcelExportButton({ data, fileName = "export.xlsx", shee
       Export to Excel
     </button>
   );
+}
+
+/**
+ * Creates a worksheet with:
+ * - Styled headers
+ * - Auto column width
+ */
+function createStyledSheet(data) {
+  // Create worksheet from data (headers start at A2)
+  const worksheet = XLSX.utils.json_to_sheet(data, { origin: "A2" });
+
+  // Add headers manually (A1 row)
+  const headers = Object.keys(data[0]);
+  XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A1" });
+
+  // Apply header styles
+  headers.forEach((header, i) => {
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: i });
+    if (!worksheet[cellAddress]) return;
+    worksheet[cellAddress].s = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "4472C4" } },
+      alignment: { horizontal: "center", vertical: "center" },
+      border: {
+        top: { style: "thin", color: { rgb: "CCCCCC" } },
+        bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+        left: { style: "thin", color: { rgb: "CCCCCC" } },
+        right: { style: "thin", color: { rgb: "CCCCCC" } },
+      },
+    };
+  });
+
+  // Auto column width based on longest content
+  const columnWidths = headers.map((header) => {
+    const maxContent = data.reduce((max, row) => {
+      const value = row[header] ? row[header].toString() : "";
+      return Math.max(max, value.length);
+    }, header.length);
+    return { wch: Math.min(maxContent + 3, 50) };
+  });
+  worksheet["!cols"] = columnWidths;
+
+  return worksheet;
 }

@@ -39,23 +39,38 @@ function IncomeStatement() {
     ).join(' ') || '';
   };
 
-  // Prepare Excel data with both summary and details
+  // Prepare Excel data for export
   const prepareExcelData = () => {
+
+    // clean and format details
+    const detailsSheet = (detailsData || []).map(item => ({
+      Date: item.transaction_date
+        ? new Date(item.transaction_date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+        : "",
+      "Member Name": item.member_name || "",
+      "Account Number": item.account_number || "",
+      "Loan Reference": item.loan_ref_number || "",
+      Category: formatCategoryName(item.category),
+      Amount: Number(item.amount || 0).toFixed(2),
+    }));
+    // clean and format summary
+    const summarySheet = (summaryData || []).map(item => ({
+      Category: formatCategoryName(item.category),
+      "Total Amount": Number(item.total_amount || 0).toFixed(2),
+    }));
+
+
+    // Ensure no duplicated header rows are manually added
     return {
-      summary: summaryData?.map(item => ({
-        Category: formatCategoryName(item.category),
-        'Total Amount': item.total_amount
-      })) || [],
-      details: detailsData?.map(item => ({
-        Date: new Date(item.transaction_date).toLocaleDateString(),
-        'Member Name': item.member_name,
-        'Account Number': item.account_number,
-        'Loan Reference': item.loan_ref_number,
-        Category: formatCategoryName(item.category),
-        Amount: item.amount
-      })) || []
+      Details: detailsSheet,
+      Summary: summarySheet,
     };
   };
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -65,7 +80,9 @@ function IncomeStatement() {
         {!isLoading && (
           <ExcelExportButton
             data={prepareExcelData()}
-            fileName='income_statement.xlsx'
+            fileName={`income_statement_${new Date()
+              .toISOString()
+              .slice(0, 10)}.xlsx`}
             sheetName='Income Statement'
           />
         )}
@@ -144,7 +161,7 @@ function IncomeStatement() {
             data={detailsData}
             isLoading={isLoading}
             isError={isError}
-            renderRow={(item) => {
+            renderRow={(item, idx) => {
               const accountNo = item.account_number;
               const memberName = item.member_name;
               const loanRef = item.loan_ref_number;
@@ -157,7 +174,7 @@ function IncomeStatement() {
               const amount = formatCurrency(item.amount);
 
               return (
-                <tr key={item.id}>
+                <tr key={item.id || idx}>
                   <td className="text-center">{accountNo}</td>
                   <td className="text-center">{memberName}</td>
                   <td className="text-center">{loanRef}</td>
