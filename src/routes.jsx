@@ -22,6 +22,7 @@ import ActivityLogs from "./pages/shared/ActivityLogs";
 import IncomeStatement from "./pages/shared/reports/IncomeStatement";
 import BalanceSheet from "./pages/shared/reports/BalanceSheet";
 import MemberStatements from "./pages/shared/reports/MemberStatements";
+import MemStatementDetails from "./pages/shared/reports/components/MemStatementDetails";
 import LoanReports from "./pages/shared/reports/LoanReports";
 import ClubCoopFunds from "./pages/shared/reports/ClubCoopFunds";
 import TransactionLogs from "./pages/shared/reports/TransactionLogs";
@@ -78,7 +79,10 @@ function AppRoutes() {
     { path: "reports", element: <Reports /> },
     { path: "reports/income-statement", element: <IncomeStatement /> },
     { path: "reports/balance-sheet", element: <BalanceSheet /> },
+    
     { path: "reports/member-statements", element: <MemberStatements /> },
+    { path: "reports/member-statement-details/:member_id", element: <MemStatementDetails /> },
+
     { path: "reports/loan-reports", element: <LoanReports /> },
     { path: "reports/club-coop-funds", element: <ClubCoopFunds /> },
     { path: "reports/transaction-logs", element: <TransactionLogs /> },
