@@ -123,7 +123,7 @@ function CoopLoanPaymentSchedules() {
     monthFilter ? `${monthFilter}` : null,
   ]
     .filter(Boolean)
-    .join(" - ") || "Showing all all payment schedules";
+    .join(" - ") || "Showing all payment schedules";
 
   // clear filters button
   const handleClearFilters = () => {
