@@ -5,6 +5,14 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
 
+  // Test configuration
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+    css: true,
+  },
+
   // so i don't have to wait for 5 mins every time i import an icon haha 
   // resolves the [vite] optimized deps changed, reloading...
   optimizeDeps: {
