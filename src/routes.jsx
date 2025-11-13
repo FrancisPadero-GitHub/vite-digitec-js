@@ -33,6 +33,8 @@ import AddMember from "./pages/admin/AddMember";
 import SystemSettings from "./pages/admin/SystemSettings";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminCreateUserForm from "./pages/admin/AdminCreateUserForm";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // TREASURER PAGES
 import CoopShareCapital from "./pages/treasurer/CoopShareCapital";
@@ -153,7 +155,8 @@ function AppRoutes() {
   const router = createBrowserRouter([
     { path: "/", element: <Landing /> },
     { path: "/login", element: <Login /> },
-
+    { path: "/forgot-password", element: <ForgotPassword /> },
+    { path: "/reset-password", element: <ResetPassword /> },
     {
       path: "/admin",
       element: (

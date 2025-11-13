@@ -6,12 +6,14 @@ const AuthContext = createContext({
   user: null,
   session: null,
   loading: true,
+  event: null,
 });
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [event, setEvent] = useState(null);
 
 
   useEffect(() => {
@@ -20,14 +22,16 @@ export const AuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      setEvent(null);
     });
 
     // Listen for auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((evt, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setEvent(evt);
     });
 
     // Cleanup listener
@@ -37,7 +41,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, session, setSession, loading}}>
+    <AuthContext.Provider value={{ user, setUser, session, setSession, loading, event, setEvent }}>
       {children}
     </AuthContext.Provider>
   );

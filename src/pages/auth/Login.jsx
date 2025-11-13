@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Toaster, toast } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 
@@ -39,8 +39,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const notify = () => {
-    toast.error("Please contact administrator")
+  const redirect = () => {
+    navigate("/forgot-password");
   }
 
   const onSubmit = (form_data) => {
@@ -158,7 +158,7 @@ const Login = () => {
                 <button
                   title="Forgot password"
                   type="button" 
-                  onClick={() => notify()}
+                  onClick={() => redirect()}
                   className="link">
                   Forgot Password?
                 </button>
