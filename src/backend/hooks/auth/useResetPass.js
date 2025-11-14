@@ -15,6 +15,11 @@ export function useResetPass() {
 			if (error) throw error;
 			return true;
 		},
+		onSuccess: () => {
+			console.log("Password reset successful");
+			sessionStorage.removeItem("recovery_mode"); // removes the recovery mode flag from storage\
+			console.log("Recovery mode flag removed from session storage: STATE ", sessionStorage.getItem("recovery_mode"));
+		}
 	});
 	return mutation;
 }

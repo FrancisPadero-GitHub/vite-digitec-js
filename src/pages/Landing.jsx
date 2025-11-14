@@ -4,6 +4,7 @@ import { Toaster, toast } from "react-hot-toast";
 
 // custom hook
 import { useMemberRole } from "../backend/context/useMemberRole";
+import { useAuth } from "../backend/context/AuthProvider";
 
 import logo from "../assets/digitec-logo.png";
 import hero1 from "../assets/hero1.jpg";
@@ -42,6 +43,7 @@ const gallery = [
 
 const Landing = () => {
   const { memberRole: data } = useMemberRole();
+  const { recoveryMode } = useAuth();
   const role = data ?? null;
   // console.log(`Role:`, role )
 
@@ -106,7 +108,7 @@ const Landing = () => {
         <div className="hidden md:flex flex-none">
           <ul className="menu menu-horizontal px-1 gap-1 md:gap-2">
             <li>
-              {role ? (
+              {role && !recoveryMode ? (
                 <Link to={`/${role}`} className="text-sm md:text-base">Dashboard</Link>
               ) : (
                 <Link to="/" onClick={handleNavigation} className="text-sm md:text-base">Home</Link>
@@ -140,10 +142,10 @@ const Landing = () => {
               </p>
               <div className="flex justify-center lg:justify-start">
                 <Link 
-                  to={role ? `/${role}` : "/login"} 
+                  to={role && !recoveryMode ? `/${role}` : "/login"} 
                   className="bg-green-800 btn btn-primary px-6 py-4 md:px-8 md:py-6 text-base md:text-lg"
                 >
-                  {role ? 'Go to Dashboard' : 'Get Started'}
+                  {role && !recoveryMode ? 'Go to Dashboard' : 'Get Started'}
                   <LoginOutlinedIcon className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
               </div>

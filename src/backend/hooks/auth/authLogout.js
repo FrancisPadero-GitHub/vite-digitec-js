@@ -28,6 +28,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      sessionStorage.removeItem("recovery_mode");
       navigate("/", { replace: true });
     },
     onError: (err) => {

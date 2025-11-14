@@ -26,7 +26,7 @@ const LoadingContainer = ({ children }) => (
 );
 
 const ProtectedRoutes = ({ children, roleAllowed }) => {
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, recoveryMode } = useAuth();
   
   // Use the custom hook to get member role and loading state
   const { memberRole, loading: roleLoading } = useMemberRole();
@@ -42,6 +42,9 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
       </LoadingContainer>
     );
   }
+
+  // If in recovery mode, force redirect to reset password page
+  if (recoveryMode) return <Navigate to="/reset-password" replace />;
 
   // If not logged in, go to login
   if (!session) return <Navigate to="/" replace />;

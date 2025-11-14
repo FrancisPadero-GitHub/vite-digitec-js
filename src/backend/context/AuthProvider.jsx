@@ -7,6 +7,7 @@ const AuthContext = createContext({
   session: null,
   loading: true,
   event: null,
+  recoveryMode: false,
 });
 
 export const AuthProvider = ({ children }) => {
@@ -14,55 +15,105 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState(null);
-  const [recoveryMode, setRecoveryMode] = useState(false)
+  const [recoveryMode, setRecoveryMode] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    // This function checks for password recovery links and handles redirection
-    const handleRecoveryRedirect = async () => {
+    const initAuth = async () => {
+      setLoading(true);
+
       const { hash, pathname } = window.location;
+      const isRecoveryLink = hash.includes("type=recovery");
+      const isResetPasswordPage = pathname === "/reset-password";
+      const storedRecoveryMode = sessionStorage.getItem("recovery_mode") === "true";
 
-      // Supabase recovery links include "#access_token=..." and "type=recovery"
-      if (hash.includes("type=recovery") && pathname !== "/reset-password") {
-        // Sign out any temporary session to prevent auto-login
-        await supabase.auth.signOut();
+      // Handle recovery link or persisted recovery mode
+      if (isRecoveryLink || storedRecoveryMode) {
+        if (!storedRecoveryMode) sessionStorage.setItem("recovery_mode", "true");
+        setRecoveryMode(true);
 
-        // Redirect to reset password page (keep the hash)
-        window.location.replace("/reset-password" + hash);
-        return; // stop further processing
+        // Redirect if not on reset-password page
+        if (!isResetPasswordPage) {
+          window.location.replace("/reset-password" + hash);
+          return; // stop further processing
+        }
       }
+
+      // Fetch initial session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (sessionStorage.getItem("recovery_mode") === "true") {
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+
+      setLoading(false);
     };
-    handleRecoveryRedirect();
 
+    initAuth();
 
-    // Get current session from Supabase
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((evt, session) => {
+      setEvent(evt);
+
+      const recoveryActive = sessionStorage.getItem("recovery_mode") === "true";
+
+      switch (evt) {
+        case "PASSWORD_RECOVERY":
+          sessionStorage.setItem("recovery_mode", "true");
+          setRecoveryMode(true);
+          setSession(null);
+          setUser(null);
+          break;
+
+        case "USER_UPDATED":
+          if (recoveryActive) {
+            sessionStorage.removeItem("recovery_mode");
+            setRecoveryMode(false);
+            supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+          } else {
+            setSession(session);
+            setUser(session?.user ?? null);
+          }
+          break;
+
+        case "SIGNED_OUT":
+          sessionStorage.removeItem("recovery_mode");
+          setRecoveryMode(false);
+          setSession(null);
+          setUser(null);
+          break;
+
+        default:
+          // Ignore other events if recovery mode is active
+          if (!recoveryActive) {
+            setSession(session);
+            setUser(session?.user ?? null);
+          }
+          break;
+      }
+
       setLoading(false);
     });
 
-    // Listen for auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((evt, session) => {
-      if (evt === "PASSWORD_RECOVERY") {
-        setRecoveryMode(true)
-      }
-      setEvent(evt)
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Cleanup listener
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, session, setSession, loading, event, setEvent, recoveryMode, setRecoveryMode }}>
+    <AuthContext.Provider value={{
+      user,
+      setUser,
+      session,
+      setSession,
+      loading,
+      event,
+      setEvent,
+      recoveryMode,
+      setRecoveryMode
+    }}>
       {children}
     </AuthContext.Provider>
   );
