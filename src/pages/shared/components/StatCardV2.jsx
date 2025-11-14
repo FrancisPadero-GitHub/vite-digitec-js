@@ -4,6 +4,7 @@ const StatCardV2 = ({
   iconBgColor,
   statName,
   amount,
+  type,
   subtitle,
   growthPercent,
   growthType,
@@ -50,7 +51,7 @@ const StatCardV2 = ({
             ) : (
               <span
                 className={
-                  amount < 0
+                  amount < 0 || type === "expenses"
                     ? "text-error"
                     : amount === 0
                       ? "text-gray-400"

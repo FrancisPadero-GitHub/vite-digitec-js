@@ -138,6 +138,7 @@ function DashboardV2() {
       {
         statName: "Club Expenses",
         amount: Number(c.club_total_expenses ?? 0),
+        type: "expenses",
         growthPercent: calcGrowth(c.club_total_expenses, p.club_total_expenses),
         iconBgColor: "bg-rose-500",
         icon: <ReceiptLong />,
