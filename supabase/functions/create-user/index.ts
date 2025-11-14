@@ -3,23 +3,29 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
  * IF you make changes to this file, you need to redeploy the function:
- *  Sample:
- * 
  *  supabase functions deploy create-user
- * 
  */
 
-// avoids CORS issues when calling from frontend
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "http://localhost:5173", // or "*" for testing
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type",
-};
+// List of allowed origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ectec-digitec.vercel.app", // Example production origin
+  "https://ectec-digitec.com", // to be bought domain
+];
 
 serve(async (req) => {
-  // Handle preflight
+  const origin = req.headers.get("Origin") || "";
+
+  // Dynamically set CORS headers based on allowed origins
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, content-type",
+  };
+
+  // Handle preflight request
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   // Require Authorization header
@@ -31,10 +37,10 @@ serve(async (req) => {
     });
   }
 
-  // this should match the service role key in your .env file
+  // Supabase admin client
   const supabaseAdmin = createClient(
-    Deno.env.get("SUPABASE_URL")!,                
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!    
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
   try {
@@ -49,13 +55,13 @@ serve(async (req) => {
     if (error) throw error;
 
     return new Response(JSON.stringify({ data }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
