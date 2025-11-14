@@ -5,7 +5,6 @@ import { AuthProvider } from "./backend/context/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ProtectedRoutes from "./ProtectedRoutes";
 
-
 // Pages
 import Layout from "./layout/Layout";
 import Landing from "./pages/Landing";
@@ -209,7 +208,6 @@ function AppRoutes() {
 
     { path: "*", element: <NotFound /> },
   ]);
-
 
   return (
     <QueryClientProvider client={queryClient}>

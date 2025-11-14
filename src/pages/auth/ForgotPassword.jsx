@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+// context
+import { useAuth } from "../../backend/context/AuthProvider";
 
 // mutation hooks
 import { useForgetPass } from "../../backend/hooks/auth/useForgetPass";
@@ -15,8 +17,10 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import auth_bg from "../../assets/auth-bg.jpg";
 
 const ForgotPassword = () => {
+  const { user, loading } = useAuth();
   const [emailSent, setEmailSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [cooldown, setCooldown] = useState(0); // seconds remaining for resend
 
   // hooks
   const { mutate: sendResetEmail, isPending } = useForgetPass();
@@ -41,6 +45,7 @@ const ForgotPassword = () => {
       onSuccess: () => {
         setSubmittedEmail(form_data.email);
         setEmailSent(true);
+        setCooldown(60); // start 60s cooldown after first send
         toast.success("Password reset email sent successfully!");
       },
       onError: (err) => {
@@ -63,6 +68,35 @@ const ForgotPassword = () => {
   const handleBackToLogin = () => {
     navigate("/login");
   };
+
+  // cooldown timer for resend
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
+  const handleResend = () => {
+    if (cooldown > 0) return;
+    if (!submittedEmail) return;
+    sendResetEmail(submittedEmail, {
+      onSuccess: () => {
+        setCooldown(60);
+        toast.success("Reset email resent.");
+      },
+      onError: (err) => {
+        const uiMessage = err?.message || "Failed to resend reset email.";
+        toast.error(uiMessage);
+      },
+    });
+  };
+
+  // redirect logged-in users away from this page
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/", { replace: true });
+    }
+  }, [loading, user, navigate]);
 
   return (
     <div className="min-h-screen font-inter bg-base-200">
@@ -166,6 +200,20 @@ const ForgotPassword = () => {
                   Please check your inbox and click the link to reset your password.
                   If you don't see the email, check your spam folder.
                 </p>
+                <div className="space-y-2">
+                  <button
+                    title="Resend Email"
+                    type="button"
+                    onClick={handleResend}
+                    disabled={cooldown > 0}
+                    className="btn btn-outline w-full"
+                  >
+                    {cooldown > 0 ? `Resend available in ${cooldown}s` : "Resend Email"}
+                  </button>
+                  <p className="text-xs text-gray-400">
+                    You can resend after a short cooldown to prevent abuse.
+                  </p>
+                </div>
                 <button
                   title="Back to Login"
                   type="button"

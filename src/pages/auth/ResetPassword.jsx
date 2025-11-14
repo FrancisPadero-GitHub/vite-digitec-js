@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -19,8 +19,8 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import auth_bg from "../../assets/auth-bg.jpg";
 
 const ResetPassword = () => {
-  const { event } = useAuth();
-
+  const { recoveryMode, loading } = useAuth();
+  
   // states
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -48,12 +48,33 @@ const ResetPassword = () => {
 	});
 
   useEffect(() => {
-    if (event === "PASSWORD_RECOVERY") {
-      setReady(true);
+    if (!loading) {
+      if (recoveryMode) {
+        setReady(true);
+      } else {
+        navigate("/", { replace: true });
+      }
     }
-  }, [event]);
+  }, [recoveryMode, loading, navigate]);
 
 	const password = watch("password");
+
+	// password strength + requirements
+	const requirements = useMemo(() => {
+		const v = password || "";
+		return {
+			length: v.length >= 8,
+			upper: /[A-Z]/.test(v),
+			lower: /[a-z]/.test(v),
+			number: /\d/.test(v),
+			special: /[^A-Za-z0-9]/.test(v),
+		};
+	}, [password]);
+
+	const strength = useMemo(() => {
+		const score = Object.values(requirements).filter(Boolean).length;
+		return score; // 0-5
+	}, [requirements]);
 
 	const onSubmit = (form_data) => {
 		resetPassword(form_data.password, {
@@ -113,9 +134,31 @@ const ResetPassword = () => {
 								<h2 className="text-4xl font-bold text-center text-base-content mb-2">
 									Reset Password
 								</h2>
-								<p className="text-center text-gray-500 text-sm mb-6">
-									Enter your new password below.
-								</p>
+																<p className="text-center text-gray-500 text-sm mb-6">
+																		Enter your new password below.
+																</p>
+
+																{/* Strength meter */}
+																<div className="mb-2">
+																	<div className="flex items-center justify-between mb-1">
+																		<span className="text-xs text-gray-500">Password strength</span>
+																		<span className="text-xs text-gray-500">
+																			{strength <= 2 ? "Weak" : strength === 3 ? "Fair" : strength === 4 ? "Good" : "Strong"}
+																		</span>
+																	</div>
+																	<progress
+																		className={`progress w-full ${strength <= 2 ? "progress-error" : strength === 3 ? "progress-warning" : "progress-success"}`}
+																		value={Math.max(5, strength * 20)}
+																		max="100"
+																	/>
+																	<ul className="mt-2 grid grid-cols-2 gap-1 text-xs text-gray-500">
+																		<li className={requirements.length ? "text-success" : ""}>• At least 8 characters</li>
+																		<li className={requirements.upper ? "text-success" : ""}>• Uppercase letter</li>
+																		<li className={requirements.lower ? "text-success" : ""}>• Lowercase letter</li>
+																		<li className={requirements.number ? "text-success" : ""}>• Number</li>
+																		<li className={requirements.special ? "text-success" : ""}>• Special character</li>
+																	</ul>
+																</div>
 
 								<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 									{/* New Password Field */}
@@ -133,9 +176,13 @@ const ResetPassword = () => {
 											}`}
 											{...register("password", {
 												required: "Password is required",
-												minLength: {
-													value: 6,
-													message: "Password must have at least 6 characters",
+												validate: (v) => {
+												  if (!v || v.length < 8) return "At least 8 characters";
+												  if (!/[A-Z]/.test(v)) return "Include an uppercase letter";
+												  if (!/[a-z]/.test(v)) return "Include a lowercase letter";
+												  if (!/\d/.test(v)) return "Include a number";
+												  if (!/[^A-Za-z0-9]/.test(v)) return "Include a special character";
+												  return true;
 												},
 												onChange: () => clearErrors("root"),
 											})}

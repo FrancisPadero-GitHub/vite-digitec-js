@@ -1,19 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../backend/context/AuthProvider";
-
-// db for logout
-import { supabase } from "../backend/supabase";
 
 // fetch hooks
 import { useMembers } from "../backend/hooks/shared/useFetchMembers";
 import { useFetchNotifications } from "../backend/hooks/shared/useFetchNotifications";
 
-
 // mutation hooks
 import { useMarkAsRead } from "../backend/hooks/shared/useMarkAsRead";
+import { useLogout } from "../backend/hooks/auth/authLogout";
 
 
 // icons 
@@ -33,9 +29,9 @@ import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for n
 import placeHolderAvatar from '../assets/placeholder-avatar.png';
 
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
-
+  const navigate = useNavigate();
   // to fetch member name for the logged in id
-  const {setSession, setUser, user} = useAuth();
+  const {user} = useAuth();
   const loginId = user?.id;
 
   // fetch member data and details for the logged in user
@@ -67,13 +63,16 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
     return createdAt > oneMonthAgo;
   }) || [];
 
-
+  // logout hook
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  const handleLogout = () => {
+    logout();
+  }
 
   // notification mutation hook
   const {mutate: markAsReadMutation } = useMarkAsRead(); // single
   const {mutate: markAllAsReadMutation } = useMarkAsRead(); // all
   
-
 
   /**
    *  State variables
@@ -85,39 +84,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
 
   const [searchTerm, setSearchTerm] = useState("");
   const [dateTimeStr, setDateTimeStr] = useState("");
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  
-
-   // Sign out function
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const handleSignOut = async () => {
-    setIsLoggingOut(true);
-
-    // Clear the auth state immediately
-    setSession(null);
-    setUser(null);
-
-    // Clear all cached data tied to the previous user
-    queryClient.clear();
-
-    try {
-      const { error } = await supabase.auth.signOut({scope: "local"}); // scope: "local" Persists login on other devices and has to logout manually each devices
-      if (error) throw new Error(error.message);
-
-      // Confirm session is really gone
-      const { data: sessionCheck } = await supabase.auth.getSession();
-      console.log("Post-logout session check:", sessionCheck);
-
-      // Redirect to landing page
-      navigate("/");
-      
-    } catch (err) {
-      console.error("Error signing out:", err.message);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   /**
    * Use effects
@@ -524,7 +490,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
               <li className="mt-2 pt-2">
                 <button
                   title="Logout button"
-                  onClick={handleSignOut} disabled={isLoggingOut}
+                  onClick={() => handleLogout()} disabled={isLoggingOut}
                   className="btn btn-error w-full flex items-center"
                 >
                   <LogoutIcon fontSize="small" />
