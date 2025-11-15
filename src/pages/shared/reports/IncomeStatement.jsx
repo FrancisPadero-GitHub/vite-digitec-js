@@ -45,38 +45,66 @@ function IncomeStatement() {
 
   // Prepare Excel data for export - uses filtered data
   const prepareExcelData = () => {
-    // Use filteredDetails and filteredSummary which respect the date filters
     const detailsToExport = filteredDetails || [];
-    const summaryToExport = filteredSummary.length > 0 ? filteredSummary : (summaryData || []);
+    const summaryToExport =
+      filteredSummary.length > 0 ? filteredSummary : (summaryData || []);
 
-    // clean and format details
-    const detailsSheet = detailsToExport.map(item => ({
-      Date: item.transaction_date
-        ? new Date(item.transaction_date).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-        : "",
-      "Member Name": item.member_name || "",
-      "Account Number": item.account_number || "",
-      "Loan Reference": item.loan_ref_number || "",
-      Category: formatCategoryName(item.category),
-      Amount: Number(item.amount || 0).toFixed(2),
-    }));
-    
-    // clean and format summary
-    const summarySheet = summaryToExport.map(item => ({
-      Category: formatCategoryName(item.category),
-      "Total Amount": Number(item.total_amount || 0).toFixed(2),
-    }));
+    // DETAILS SHEET WITH TOTAL ROW
+    const detailsSheet = [
+      ...detailsToExport.map(item => ({
+        Date: item.transaction_date
+          ? new Date(item.transaction_date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          })
+          : "",
+        "Member Name": item.member_name || "",
+        "Account Number": item.account_number || "",
+        "Loan Reference": item.loan_ref_number || "",
+        Category: formatCategoryName(item.category),
+        Amount: Number(item.amount || 0).toFixed(2)
+      })),
 
-    // Ensure no duplicated header rows are manually added
+      { __type: "gap" },
+      { __type: "gap" },
+
+      {
+        __type: "total",
+        label: "Total Transaction Amount",
+        value: detailsToExport.reduce(
+          (a, b) => a + Number(b.amount || 0),
+          0
+        ).toFixed(2)
+      }
+    ];
+
+    // SUMMARY SHEET WITH TOTAL ROW
+    const summarySheet = [
+      ...summaryToExport.map(item => ({
+        Category: formatCategoryName(item.category),
+        "Total Amount": Number(item.total_amount || 0).toFixed(2)
+      })),
+
+      { __type: "gap" },
+      { __type: "gap" },
+
+      {
+        __type: "total",
+        label: "Grand Total Income",
+        value: summaryToExport.reduce(
+          (s, it) => s + Number(it.total_amount || 0),
+          0
+        ).toFixed(2)
+      }
+    ];
+
     return {
       Details: detailsSheet,
-      Summary: summarySheet,
+      Summary: summarySheet
     };
   };
+
 
     // --------------------------------------------------------------------------------
     // Date filtering logic

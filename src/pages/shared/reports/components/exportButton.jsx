@@ -92,45 +92,59 @@ export default function ExcelExportButton({
 function createStyledSheet(workbook, data, sheetName) {
   const worksheet = workbook.addWorksheet(sheetName);
 
-  if (data.length === 0) return;
+  if (!data.length) return;
 
-  // Get headers from first data object
-  const headers = Object.keys(data[0]);
+  const firstRealRow = data.find(row => !row.__type);
+  if (!firstRealRow) return;
 
-  // Add header row with styling
+  const headers = Object.keys(firstRealRow);
   const headerRow = worksheet.addRow(headers);
+
   headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
   headerRow.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FF4472C4" },
+    fgColor: { argb: "FF4472C4" }
   };
   headerRow.alignment = { horizontal: "center", vertical: "middle" };
   headerRow.border = {
     top: { style: "thin", color: { argb: "FFCCCCCC" } },
     bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
     left: { style: "thin", color: { argb: "FFCCCCCC" } },
-    right: { style: "thin", color: { argb: "FFCCCCCC" } },
+    right: { style: "thin", color: { argb: "FFCCCCCC" } }
   };
 
-  // Add data rows
-  data.forEach((item) => {
-    const row = [];
-    headers.forEach((header) => {
-      row.push(item[header] || "");
-    });
-    worksheet.addRow(row);
+  data.forEach(item => {
+    if (item.__type === "gap") {
+      worksheet.addRow([]);
+      return;
+    }
+
+    if (item.__type === "total") {
+      const row = worksheet.addRow([item.label, item.value]);
+
+      row.font = { bold: true };
+      row.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFF2F2F2" }
+      };
+      row.getCell(2).font = { bold: true, color: { argb: "FF000000" } };
+
+      return;
+    }
+
+    const row = worksheet.addRow(headers.map(h => item[h] || ""));
+    row.alignment = { vertical: "middle" };
   });
 
-  // Auto column width based on longest content
-  worksheet.columns = headers.map((header) => {
-    const maxContent = data.reduce((max, row) => {
-      const value = row[header] ? row[header].toString() : "";
-      return Math.max(max, value.length);
-    }, header.length);
-    return { 
-      key: header, 
-      width: Math.min(maxContent + 3, 50) 
-    };
+  worksheet.columns = headers.map(header => {
+    const max = Math.max(
+      header.length,
+      ...data.map(row =>
+        row[header] ? row[header].toString().length : 0
+      )
+    );
+    return { key: header, width: Math.min(max + 3, 50) };
   });
 }

@@ -156,62 +156,128 @@ function MemStatementDetails() {
 
   // Prepare data for Excel export (using filtered data)
   const prepareExportData = () => {
-    const memberName = memberInfo ? 
-      `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim() 
+    const memberName = memberInfo
+      ? `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim()
       : 'N/A';
+
     const accountNumber = memberInfo?.account_number || 'N/A';
+
     return {
-      shareCapital: filteredCoopContributions.map(contribution => ({
-        Name: memberName,
-        AccountNumber: accountNumber,
-        Date: new Date(contribution.contribution_date).toLocaleDateString(),
-        Description: contribution.description || 'Share Capital Contribution',
-        Amount: contribution.amount || 0,
-        Type: contribution.type || 'Contribution',
-        Total: coopContributionsTotal || 0
-      })),
-      clubFunds: filteredClubFunds.map(fund => ({
-        Name: memberName,
-        AccountNumber: accountNumber,
-        Date: new Date(fund.payment_date).toLocaleDateString(),
-        Description: fund.description || 'Club Fund Contribution',
-        Amount: fund.amount || 0,
-        Type: fund.type || 'Contribution',
-        Total: clubFundsTotal || 0
-      })),
+      shareCapital: [
+        ...filteredCoopContributions.map(c => ({
+          Name: memberName,
+          AccountNumber: accountNumber,
+          Date: new Date(c.contribution_date).toLocaleDateString(),
+          Description: c.description || 'Share Capital Contribution',
+          Amount: c.amount || 0,
+          Type: c.type || 'Contribution'
+        })),
+
+        { __type: "gap" },
+        { __type: "gap" },
+
+        {
+          __type: "total",
+          label: "Share Capital Total",
+          value: coopContributionsTotal || 0
+        }
+      ],
+
+      clubFunds: [
+        ...filteredClubFunds.map(f => ({
+          Name: memberName,
+          AccountNumber: accountNumber,
+          Date: new Date(f.payment_date).toLocaleDateString(),
+          Description: f.description || 'Club Fund Contribution',
+          Amount: f.amount || 0,
+          Type: f.type || 'Contribution'
+        })),
+
+        { __type: "gap" },
+        { __type: "gap" },
+
+        {
+          __type: "total",
+          label: "Club Funds Total",
+          value: clubFundsTotal || 0
+        }
+      ],
+
       onGoingLoansLoans: filteredOngoingLoans.map(loan => ({
         Name: memberName,
         AccountNumber: accountNumber,
+
         'Loan ID': loan.loan_id,
         'Loan Ref No': loan.loan_ref_number || 'N/A',
-        'Total Amount Due': loan.total_amount_due || 0,
+
+        Principal: loan.principal || 0,
+        'Net Principal': loan.net_principal || 0,
+        'Interest Paid': loan.interest_paid || 0,
+        'Penalty Fees Paid': loan.penalty_fees_paid || 0,
         'Total Paid': loan.total_paid || 0,
+
+        'Remaining Principal': loan.remaining_principal || 0,
+        'Remaining Interest': loan.remaining_interest || 0,
+
         'Outstanding Balance': loan.outstanding_balance || 0,
-        'Release Date': new Date(loan.release_date).toLocaleDateString()
+
+        'Service Fee': loan.service_fee || 0,
+        'Total Interest': loan.total_interest || 0,
+        'Total Penalty Fees': loan.total_penalty_fees || 0,
+
+        'Release Date': new Date(loan.release_date).toLocaleDateString(),
+        'Approved Date': loan.approved_date
+          ? new Date(loan.approved_date).toLocaleDateString()
+          : 'N/A',
+        'Maturity Date': loan.maturity_date
+          ? new Date(loan.maturity_date).toLocaleDateString()
+          : 'N/A'
       })),
+
       loanPayments: filteredLoanPayments.map(payment => ({
         Name: memberName,
         AccountNumber: accountNumber,
         Date: new Date(payment.payment_date).toLocaleDateString(),
+
         'Payment ID': payment.payment_id || 'N/A',
         Amount: payment.total_amount || 0,
         'Payment Method': payment.payment_method || 'N/A',
         'Loan Ref No': payment.loan_ref_number || 'N/A'
       })),
+
       ...(pastLoans.length > 0 && {
         closedLoans: pastLoans.map(loan => ({
           Name: memberName,
           AccountNumber: accountNumber,
+
           'Loan ID': loan.loan_id,
-          Product: loan.loan_product_name || 'N/A',
-          Principal: loan.principal_amount || 0,
+          'Loan Ref No': loan.loan_ref_number || 'N/A',
+
+          Principal: loan.principal || 0,
+          'Net Principal': loan.net_principal || 0,
+
+          'Interest Paid': loan.interest_paid || 0,
+          'Penalty Fees Paid': loan.penalty_fees_paid || 0,
           'Total Paid': loan.total_paid || 0,
+
+          'Total Interest': loan.total_interest || 0,
+          'Total Penalty Fees': loan.total_penalty_fees || 0,
+
+          'Service Fee': loan.service_fee || 0,
+
+          'Outstanding Balance': loan.outstanding_balance || 0,
+
           'Release Date': new Date(loan.release_date).toLocaleDateString(),
-          Status: loan.status
+          'Maturity Date': loan.maturity_date
+            ? new Date(loan.maturity_date).toLocaleDateString()
+            : 'N/A',
+
+          Status: loan.status || 'Closed'
         }))
       })
     };
   };
+
 
   // Loading and error states
   if (isLoading) {
@@ -231,8 +297,8 @@ function MemStatementDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div>
+      <div className="space-y-4">
         {/* Header Section */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
@@ -331,153 +397,192 @@ function MemStatementDetails() {
             <p className="text-xs mt-1 opacity-75">Total paid: {display(activeLoans?.total_paid || 0)}</p>
           </div>
         </div>
+        
+        <div className='grid sm:grid-cols-1 lg:grid-cols-2  gap-2' >
+          {/* Coop Contributions (Share Capital) */}
+          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Share Capital Contributions</h2>
 
-        {/* Coop Contributions (Share Capital) */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Share Capital Contributions</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCoopContributions.length > 0 ? (
-                  filteredCoopContributions.map((contribution, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(contribution.contribution_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {contribution.description || 'Share Capital Contribution'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-green-600">
-                        {display(contribution.amount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {contribution.type || 'Contribution'}
+            {/* HEADER stays fixed */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+
+            {/* BODY scrolls */}
+            <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
+              <table className="min-w-full divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCoopContributions.length > 0 ? (
+                    filteredCoopContributions.map((contribution, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(contribution.contribution_date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                          {contribution.description || 'Share Capital Contribution'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {contribution.category || 'Contribution'}
+                        </td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm font-semibold text-green-600">
+                          {display(contribution.amount)}
+                        </td>
+
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                        No share capital contributions found
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
-                      No share capital contributions found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-              {filteredCoopContributions.length > 0 && (
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total:</td>
-                    <td className="px-6 py-4 text-right font-bold text-green-600">{display(coopContributionsTotal || 0)}</td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* FOOTER stays fixed */}
+            {filteredCoopContributions.length !== 0 && (
+              <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200">
+                <table className="min-w-full">
+                  <tfoot>
+                    <tr>
+                      <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total:</td>
+                      <td className="px-6 py-4 text-right font-bold text-green-600">
+                        {display(coopContributionsTotal || 0)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Club Funds */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Club Funds History</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredClubFunds.length > 0 ? (
-                  filteredClubFunds.map((fund, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(fund.payment_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {fund.description || 'Club Fund Contribution'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600">
-                        {display(fund.amount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {fund.type || 'Contribution'}
+          {/* Club Funds */}
+          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Club Funds History</h2>
+
+            {/* HEADER stays fixed */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+
+            {/* BODY scrolls */}
+            <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
+              <table className="min-w-full divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredClubFunds.length > 0 ? (
+                    filteredClubFunds.map((fund, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(fund.payment_date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                          {fund.description || 'Club Fund Contribution'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {fund.category || 'Contribution'}
+                        </td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm font-semibold text-blue-600">
+                          {display(fund.amount)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                        No club fund transactions found
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
-                      No club fund transactions found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-              {filteredClubFunds.length > 0 && (
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total:</td>
-                    <td className="px-6 py-4 text-right font-bold text-blue-600">{display(clubFundsTotal || 0)}</td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* FOOTER stays fixed */}
+            {filteredClubFunds.length !== 0 && (
+              <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200">
+                <table className="min-w-full">
+                  <tfoot>
+                    <tr>
+                      <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total:</td>
+                      <td className="px-6 py-4 text-right font-bold text-blue-600">
+                        {display(clubFundsTotal || 0)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Active Loans */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Active Loan Balances</h2>
+          {/* HEADER stays fixed */}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount Due</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Net Principal</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Interest Paid</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Penalty Paid</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Paid</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Principal</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Interest</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
                 </tr>
               </thead>
+            </table>
+          </div>
+          {/* BODY scrolls */}
+          <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
+            <table className="min-w-full divide-y divide-gray-200">
               <tbody className="bg-white divide-y divide-gray-200">
-                {onGoingLoans.length > 0 ? (
-                  onGoingLoans.map((loan, index) => (
+                {filteredOngoingLoans.length > 0 ? (
+                  filteredOngoingLoans.map((loan, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {loan.loan_id}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {loan.loan_ref_number || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
-                        {display(loan.total_amount_due)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600">
-                        {display(loan.total_paid)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-orange-600">
-                        {display(loan.outstanding_balance)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(loan.release_date).toLocaleDateString()}
-                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_id}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_ref_number}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.principal)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.net_principal)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.interest_paid)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.penalty_fees_paid)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-green-600 font-semibold">{display(loan.total_paid)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.remaining_principal)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.remaining_interest)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-orange-600 font-semibold">{display(loan.outstanding_balance)}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{new Date(loan.release_date).toLocaleDateString()}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan="11" className="px-6 py-4 text-center text-sm text-gray-500">
                       No active loans
                     </td>
                   </tr>
@@ -490,36 +595,32 @@ function MemStatementDetails() {
         {/* Loan Payment History */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Loan Payment History</h2>
+          {/* HEADER stays fixed */}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
                 </tr>
               </thead>
+            </table>
+          </div>
+          {/* BODY scrolls */}
+          <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[20vh]">
+            <table className="min-w-full divide-y divide-gray-200">
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredLoanPayments.length > 0 ? (
                   filteredLoanPayments.map((payment, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(payment.payment_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {payment.payment_id || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-green-600">
-                        {display(payment.total_amount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {payment.payment_method || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {payment.loan_ref_number || 'N/A'}
-                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{new Date(payment.payment_date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">{payment.payment_id || 'N/A'}</td>
+                      <td className="px-6 py-4 text-right text-sm font-semibold text-green-600">{display(payment.total_amount)}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500">{payment.payment_method || 'N/A'}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500">{payment.loan_ref_number || 'N/A'}</td>
                     </tr>
                   ))
                 ) : (
@@ -530,60 +631,61 @@ function MemStatementDetails() {
                   </tr>
                 )}
               </tbody>
-              {filteredLoanPayments.length > 0 && (
-                <tfoot className="bg-gray-50">
+            </table>
+          </div>
+          {/* FOOTER stays fixed */}
+          {filteredLoanPayments.length > 0 && (
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200">
+              <table className="min-w-full">
+                <tfoot>
                   <tr>
                     <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total Payments:</td>
-                    <td className="px-6 py-4 text-right font-bold text-green-600">
-                      {display(activeLoans?.total_paid)}
-                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-green-600">{display(activeLoans?.total_paid)}</td>
                     <td colSpan="2"></td>
                   </tr>
                 </tfoot>
-              )}
-            </table>
-          </div>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Past Loans (Optional) */}
         {pastLoans.length > 0 && (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Closed Loans</h2>
+            {/* HEADER stays fixed */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Interest Paid</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Penalty Paid</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Paid</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Maturity Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
+              </table>
+            </div>
+            {/* BODY scrolls */}
+            <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[17vh]">
+              <table className="min-w-full divide-y divide-gray-200">
                 <tbody className="bg-white divide-y divide-gray-200">
                   {pastLoans.map((loan, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {loan.loan_id}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {loan.loan_product_name || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
-                        {display(loan.principal_amount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600">
-                        {display(loan.total_paid)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(loan.release_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                          {loan.status}
-                        </span>
-                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_id}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_ref_number}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.principal)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.interest_paid)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.penalty_fees_paid)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-green-600 font-semibold">{display(loan.total_paid)}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{new Date(loan.release_date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.maturity_date ? new Date(loan.maturity_date).toLocaleDateString() : 'N/A'}</td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.status}</td>
                     </tr>
                   ))}
                 </tbody>
