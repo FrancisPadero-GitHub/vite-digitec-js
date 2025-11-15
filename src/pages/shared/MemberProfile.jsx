@@ -73,14 +73,14 @@ function MemberProfile() {
     };
   });
 
-  const activeLoans = mergedLoanAccounts?.filter(
-    (row) => row.account_number === accountNo && row.status === "Active"
-  );
+  // Returns { activeLoans, pastLoans } for a given account number
+  function getLoansByStatus() {
+    const activeLoans = mergedLoanAccounts?.filter(row => row.status === "Active");
+    const pastLoans = mergedLoanAccounts?.filter(row => row.status === "Closed");
+    return { activeLoans, pastLoans };
+  }
 
-  // Past (Closed) loans — could be multiple
-  const pastLoans = loanAccount?.filter(
-    (row) => row.account_number === accountNo && row.status === "Closed"
-  );
+  const { activeLoans, pastLoans } = getLoansByStatus();
 
   // Full name display
   const displayName = `${memberInfo?.f_name ?? ""} ${memberInfo?.m_name ?? ""} ${memberInfo?.l_name ?? ""}`.trim();

@@ -14,6 +14,15 @@ import { ROLE_COLORS, ACCOUNT_STATUS_COLORS } from "../../../constants/Color.js"
 // utils
 import { useDebounce } from "../../../backend/hooks/treasurer/utils/useDebounce.js";
 
+/**
+ * 
+  Individual member contributions 
+  Loan balances and payment history
+  Share capital
+  Dividends or interest earned - OPTIONALL
+
+ */
+
 export default function MemberStatements() {
   const navigate = useNavigate();
   const { data: members, isLoading, isError, error } = useMembers({});
@@ -58,10 +67,10 @@ export default function MemberStatements() {
       const allowedRoles = ["regular-member", "associate-member"];
       if (!allowedRoles.includes(row.account_role)) return false;
 
-      const full_name = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
+      const full_name = `${row.f_name ?? ""} ${row.m_name ?? ""} ${row.l_name ?? ""}`.trim();
       const matchesSearch = 
         debouncedSearch === "" ||
-        (row.full_name && full_name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase())
 
       const matchesRole = roleFilter === "" || row.account_role === roleFilter;
@@ -137,7 +146,7 @@ export default function MemberStatements() {
           renderRow={(row) => {
             const id = row?.member_id || "Not Found"
             const accountNo = row?.account_number || "Not Found";
-            const full_name = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim() || "Not Provided";
+            const full_name = `${row.f_name ?? ""} ${row.m_name ?? ""} ${row.l_name ?? ""}`.trim() || "Not Provided";
             const role = row?.account_role || "Not Provided";
             const status = row?.account_status || "Not Provided";
 

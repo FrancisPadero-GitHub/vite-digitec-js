@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useState, useMemo } from 'react'
 
 // fetch hooks
 import { useIncomeStatementDetails } from '../../../backend/hooks/shared/view/useIncomeStatementDetails'
 import { useIncomeStatementSummary } from '../../../backend/hooks/shared/view/useIncomeStatementSummary'
 
 // component
-import ExcelExportButton from './components/exportButton'
+import ExcelExportButton from './components/ExportButton'
 import DataTableV2 from '../components/DataTableV2'
+import DateFilterReports from './components/DateFilterReports'
 
 /**
  * Service_fee - loan accounts
@@ -15,7 +16,10 @@ import DataTableV2 from '../components/DataTableV2'
  */
 
 function IncomeStatement() {
-  const { data: summaryData, isLoading: summaryLoading, isError: summaryError } = useIncomeStatementSummary();
+  // Date filter state
+  const [selectedYear, setSelectedYear] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const { data: summaryData, isLoading: summaryLoading, isError: summaryError } = useIncomeStatementSummary({ year: selectedYear, month: selectedMonth });
   const { data: detailsData, isLoading: detailsLoading, isError: detailsError } = useIncomeStatementDetails();
 
   const isLoading = summaryLoading || detailsLoading;
@@ -30,7 +34,7 @@ function IncomeStatement() {
   };
 
   // Calculate total income
-  const totalIncome = summaryData?.reduce((sum, item) => sum + parseFloat(item.total_amount || 0), 0) || 0;
+  const totalIncome = (summaryData || []).reduce((sum, item) => sum + parseFloat(item.total_amount || 0), 0) || 0;
 
   // Format category name for display
   const formatCategoryName = (category) => {
@@ -39,11 +43,14 @@ function IncomeStatement() {
     ).join(' ') || '';
   };
 
-  // Prepare Excel data for export
+  // Prepare Excel data for export - uses filtered data
   const prepareExcelData = () => {
+    // Use filteredDetails and filteredSummary which respect the date filters
+    const detailsToExport = filteredDetails || [];
+    const summaryToExport = filteredSummary.length > 0 ? filteredSummary : (summaryData || []);
 
     // clean and format details
-    const detailsSheet = (detailsData || []).map(item => ({
+    const detailsSheet = detailsToExport.map(item => ({
       Date: item.transaction_date
         ? new Date(item.transaction_date).toLocaleDateString("en-US", {
           year: "numeric",
@@ -57,12 +64,12 @@ function IncomeStatement() {
       Category: formatCategoryName(item.category),
       Amount: Number(item.amount || 0).toFixed(2),
     }));
+    
     // clean and format summary
-    const summarySheet = (summaryData || []).map(item => ({
+    const summarySheet = summaryToExport.map(item => ({
       Category: formatCategoryName(item.category),
       "Total Amount": Number(item.total_amount || 0).toFixed(2),
     }));
-
 
     // Ensure no duplicated header rows are manually added
     return {
@@ -71,13 +78,65 @@ function IncomeStatement() {
     };
   };
 
+    // --------------------------------------------------------------------------------
+    // Date filtering logic
+    // --------------------------------------------------------------------------------
+    const months = [
+      { value: '1', label: 'January' },
+      { value: '2', label: 'February' },
+      { value: '3', label: 'March' },
+      { value: '4', label: 'April' },
+      { value: '5', label: 'May' },
+      { value: '6', label: 'June' },
+      { value: '7', label: 'July' },
+      { value: '8', label: 'August' },
+      { value: '9', label: 'September' },
+      { value: '10', label: 'October' },
+      { value: '11', label: 'November' },
+      { value: '12', label: 'December' }
+    ];
+
+    const currentYear = new Date().getFullYear();
+    const yearOptions = Array.from({ length: 5 }, (_, i) => {
+      const year = currentYear - i;
+      return { label: year.toString(), value: year.toString() };
+    });
+
+    const filteredDetails = useMemo(() => {
+      const items = detailsData || [];
+      return items.filter(item => {
+        const d = item.transaction_date ? new Date(item.transaction_date) : null;
+        if (!d || isNaN(d.getTime())) return false;
+        const year = d.getFullYear().toString();
+        const month = (d.getMonth() + 1).toString();
+        const yearMatch = selectedYear === 'all' || year === selectedYear;
+        const monthMatch = selectedMonth === 'all' || month === selectedMonth;
+        return yearMatch && monthMatch;
+      });
+    }, [detailsData, selectedYear, selectedMonth]);
+
+    // Build a summary reducer from filteredDetails
+    const filteredSummary = useMemo(() => {
+      const groups = {};
+      (filteredDetails || []).forEach(item => {
+        const key = item.category || 'unknown';
+        const amount = Number(item.amount || 0);
+        if (!groups[key]) groups[key] = 0;
+        groups[key] += amount;
+      });
+
+      return Object.keys(groups).map(k => ({ category: k, total_amount: groups[k] }));
+    }, [filteredDetails]);
+
+    const filteredTotalIncome = filteredSummary.reduce((s, it) => s + Number(it.total_amount || 0), 0);
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Income Statement</h1>
-        {!isLoading && (
+        {!isLoading && (filteredDetails?.length > 0 || filteredSummary?.length > 0) && (
           <ExcelExportButton
             data={prepareExcelData()}
             fileName={`income_statement_${new Date()
@@ -87,6 +146,17 @@ function IncomeStatement() {
           />
         )}
       </div>
+
+      {/* Date Filter */}
+      <DateFilterReports
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+        onYearChange={(v) => setSelectedYear(v)}
+        onMonthChange={(v) => setSelectedMonth(v)}
+        yearOptions={yearOptions}
+        months={months}
+        onClear={() => { setSelectedYear('all'); setSelectedMonth('all'); }}
+      />
 
       {/* Summary Cards Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -104,11 +174,11 @@ function IncomeStatement() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-3xl font-bold">{formatCurrency(totalIncome)}</p>
+              <p className="text-3xl font-bold">{formatCurrency(filteredTotalIncome || totalIncome)}</p>
             </div>
 
             {/* Individual Category Cards */}
-            {summaryData?.map((item, index) => {
+            {(filteredSummary.length > 0 ? filteredSummary : summaryData)?.map((item, index) => {
               const colors = [
                 'from-green-500 to-green-600',
                 'from-purple-500 to-purple-600',
@@ -138,7 +208,11 @@ function IncomeStatement() {
                   </div>
                   <p className="text-3xl font-bold">{formatCurrency(item.total_amount)}</p>
                   <p className="text-sm mt-2 opacity-80">
-                    {((item.total_amount / totalIncome) * 100).toFixed(1)}% of total
+                    {(() => {
+                      const total = filteredSummary.length ? filteredTotalIncome : totalIncome;
+                      const percentage = total > 0 ? ((item.total_amount / total) * 100).toFixed(1) : '0.0';
+                      return `${percentage}% of total`;
+                    })()}
                   </p>
                 </div>
               );
@@ -155,10 +229,10 @@ function IncomeStatement() {
             <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : (
-          <DataTableV2
+            <DataTableV2
             showLinkPath={false}
             headers={["Account No", "Member Name", "Loan Reference", "Category", "Date", "Amount"]}
-            data={detailsData}
+            data={filteredDetails}
             isLoading={isLoading}
             isError={isError}
             renderRow={(item, idx) => {

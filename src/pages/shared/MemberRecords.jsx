@@ -58,10 +58,10 @@ export default function MemberRecords() {
       const allowedRoles = ["regular-member", "associate-member"];
       if (!allowedRoles.includes(row.account_role)) return false;
       
-      const full_name = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
+      const full_name = `${row.f_name ?? ""} ${row.m_name ?? ""} ${row.l_name ?? ""}`.trim();
       const matchesSearch = 
         debouncedSearch === "" ||
-        (row.full_name && full_name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         row.email.toLowerCase().includes(debouncedSearch.toLowerCase());
 

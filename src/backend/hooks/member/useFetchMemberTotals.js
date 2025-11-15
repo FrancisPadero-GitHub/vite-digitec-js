@@ -3,8 +3,8 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 import { supabase } from "../../supabase.js";
 
 /**
- * RPC total that takes member_id for specific members
- * 
+ * RPC total that takes account_number for specific members
+ * This only fetches the data for the logged in member
  * @param {string} rpcFN - the name of the function inside supabase (not a table)
  * @param {date} year - and the month
 

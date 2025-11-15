@@ -4,6 +4,10 @@ import { supabase } from "../../supabase";
 /**
  * Dynamic Supabase RPC fetcher
  * Fetches totals based on the function name and time filters
+ * key is added to create unique queryKeys when needed
+ * @param {string} rpcFn - the name of the function inside supabase (not a table)
+ * @param {string} key - unique key to differentiate queries
+ * @param {date} year - and the month
  */
 async function fetchTotal({ queryKey }) {
   const [rpcFn, key, year, month] = queryKey; // ✅ matches new queryKey shape

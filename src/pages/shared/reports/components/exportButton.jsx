@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx-js-style";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
 /**
@@ -13,7 +13,7 @@ export default function ExcelExportButton({
   sheetName = "Sheet1",
   disabled,
 }) {
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!data) {
       alert("No data to export");
       return;
@@ -30,18 +30,17 @@ export default function ExcelExportButton({
         return;
       }
 
-      const workbook = XLSX.utils.book_new();
+      const workbook = new ExcelJS.Workbook();
 
       Object.entries(data).forEach(([key, sheetData]) => {
         if (Array.isArray(sheetData) && sheetData.length > 0) {
-          const worksheet = createStyledSheet(sheetData);
           const sheetTitle = key.charAt(0).toUpperCase() + key.slice(1);
-          XLSX.utils.book_append_sheet(workbook, worksheet, sheetTitle);
+          createStyledSheet(workbook, sheetData, sheetTitle);
         }
       });
 
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([excelBuffer], {
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, fileName.endsWith(".xlsx") ? fileName : `${fileName}.xlsx`);
@@ -51,12 +50,11 @@ export default function ExcelExportButton({
         return;
       }
 
-      const worksheet = createStyledSheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      const workbook = new ExcelJS.Workbook();
+      createStyledSheet(workbook, data, sheetName);
 
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([excelBuffer], {
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, fileName.endsWith(".xlsx") ? fileName : `${fileName}.xlsx`);
@@ -91,40 +89,48 @@ export default function ExcelExportButton({
  * - Styled headers
  * - Auto column width
  */
-function createStyledSheet(data) {
-  // Create worksheet from data (headers start at A2)
-  const worksheet = XLSX.utils.json_to_sheet(data, { origin: "A2" });
+function createStyledSheet(workbook, data, sheetName) {
+  const worksheet = workbook.addWorksheet(sheetName);
 
-  // Add headers manually (A1 row)
+  if (data.length === 0) return;
+
+  // Get headers from first data object
   const headers = Object.keys(data[0]);
-  XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A1" });
 
-  // Apply header styles
-  headers.forEach((header, i) => {
-    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: i });
-    if (!worksheet[cellAddress]) return;
-    worksheet[cellAddress].s = {
-      font: { bold: true, color: { rgb: "FFFFFF" } },
-      fill: { fgColor: { rgb: "4472C4" } },
-      alignment: { horizontal: "center", vertical: "center" },
-      border: {
-        top: { style: "thin", color: { rgb: "CCCCCC" } },
-        bottom: { style: "thin", color: { rgb: "CCCCCC" } },
-        left: { style: "thin", color: { rgb: "CCCCCC" } },
-        right: { style: "thin", color: { rgb: "CCCCCC" } },
-      },
-    };
+  // Add header row with styling
+  const headerRow = worksheet.addRow(headers);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF4472C4" },
+  };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  headerRow.border = {
+    top: { style: "thin", color: { argb: "FFCCCCCC" } },
+    bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
+    left: { style: "thin", color: { argb: "FFCCCCCC" } },
+    right: { style: "thin", color: { argb: "FFCCCCCC" } },
+  };
+
+  // Add data rows
+  data.forEach((item) => {
+    const row = [];
+    headers.forEach((header) => {
+      row.push(item[header] || "");
+    });
+    worksheet.addRow(row);
   });
 
   // Auto column width based on longest content
-  const columnWidths = headers.map((header) => {
+  worksheet.columns = headers.map((header) => {
     const maxContent = data.reduce((max, row) => {
       const value = row[header] ? row[header].toString() : "";
       return Math.max(max, value.length);
     }, header.length);
-    return { wch: Math.min(maxContent + 3, 50) };
+    return { 
+      key: header, 
+      width: Math.min(maxContent + 3, 50) 
+    };
   });
-  worksheet["!cols"] = columnWidths;
-
-  return worksheet;
 }

@@ -82,7 +82,7 @@ function AppRoutes() {
     { path: "reports/balance-sheet", element: <BalanceSheet /> },
     
     { path: "reports/member-statements", element: <MemberStatements /> },
-    { path: "reports/member-statement-details/:member_id", element: <MemStatementDetails /> },
+    { path: "reports/member-statement-details/:memberId", element: <MemStatementDetails /> },
 
     { path: "reports/loan-reports", element: <LoanReports /> },
     { path: "reports/club-coop-funds", element: <ClubCoopFunds /> },
