@@ -33,6 +33,7 @@ import calcLoanSchedFlat from "../../constants/calcLoanSchedFlat";
 // utils
 import { display } from "../../constants/numericFormat";
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
+import getYearsMonthsDaysDifference from "../../constants/DateCalculation";
 
 // Restriction
 import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
@@ -51,7 +52,7 @@ import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction"
 function MemberLoanApp() {
   const today = new Date().toISOString().split("T")[0];
   const { showPrompt } = usePrompt(); // custom toaster
-  const { hasRestriction } = useLoanRestriction();
+  const { hasRestriction, requirements } = useLoanRestriction();
   const { data: loanProducts } = useFetchLoanProducts();
 
   const { data: myProfile} = useFetchProfile();
@@ -567,51 +568,30 @@ function MemberLoanApp() {
       0
     );
     // Membership duration
-    function calculateMembershipMonths(joined_date) {
-      if (!joined_date) return 0;
-      const joined = new Date(joined_date);
-      const now = new Date();
-      const years = now.getFullYear() - joined.getFullYear();
-      const months = now.getMonth() - joined.getMonth();
-      return years * 12 + months;
-    }
+     const { years: tenure } = getYearsMonthsDaysDifference(memberInfo?.joined_date);
     // Age
-    function calculateAge(birthday) {
-      if (!birthday) return 0;
-      const birthdayDate = new Date(birthday);
-      const today = new Date();
-      let age = today.getFullYear() - birthdayDate.getFullYear();
-      const monthDiff = today.getMonth() - birthdayDate.getMonth();
-      const dayDiff = today.getDate() - birthdayDate.getDate();
-      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-      }
-      return age;
-    }
-    const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
-    const memberAge = calculateAge(memberInfo?.birthday);
+    const { years: memberAge } = getYearsMonthsDaysDifference(memberInfo?.birthday);
+
     const eligibilityInfo = [
       {
         label: "Tenure",
-        value: `${membershipMonths} months`,
-        passed: membershipMonths >= 12,
-        rule: "12 months of membership",
+        value: `${tenure} years`,
+        passed: tenure >= requirements.minTenure,
+        rule: `${requirements.minTenure} years of membership`,
       },
       {
         label: "Age",
         value: `${memberAge} years old`,
-        passed: memberAge >= 18,
-        rule: "Must be at least 18 years old",
+        passed: memberAge >= requirements.minAge,
+        rule: `Must be at least ${requirements.minAge} years old`,
       },
       {
         label: "Share Capital",
         value: `₱${totalShareCapital.toLocaleString()}`,
-        passed: totalShareCapital > 5000,
-        rule: "Over ₱5,000 share capital required",
+        passed: totalShareCapital >= requirements.minShareCapital,
+        rule: `Over ₱${requirements.minShareCapital.toLocaleString()} share capital required`,
       },
     ];
-
-
     return (
       <div className="p-6 text-center bg-red-50 rounded-xl border border-red-200">
         <h2 className="text-xl font-semibold text-red-600">
