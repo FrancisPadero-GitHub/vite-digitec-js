@@ -8,6 +8,8 @@ import { Toaster, toast } from "react-hot-toast"
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 import { useFetchLoanApp } from "../../backend/hooks/shared/useFetchLoanApp";
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useFetchProfile } from "../../backend/hooks/member/useFetchProfile";
+import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 
 // mutation hooks
 import { useAddLoanApp } from "../../backend/hooks/member/useAddLoanApp";
@@ -51,6 +53,9 @@ function MemberLoanApp() {
   const { showPrompt } = usePrompt(); // custom toaster
   const { hasRestriction } = useLoanRestriction();
   const { data: loanProducts } = useFetchLoanProducts();
+
+  const { data: myProfile} = useFetchProfile();
+  const { data: coopData } = useFetchCoop({ useLoggedInMember: true });
 
   const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ useLoggedInMember: true});
   const loanAppRaw = memberLoanAppRaw?.data || [];
@@ -551,6 +556,62 @@ function MemberLoanApp() {
 
 
   if (hasRestriction) {
+    // --- Loan Eligibility Display ---
+    // Simulate member info and contributions fetch (replace with actual hooks if available)
+    // If you have member info in context, use that instead
+    const memberInfo = myProfile || {};
+    const coopContributions = coopData?.data || [];
+    // Calculate total share capital
+    const totalShareCapital = coopContributions.reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
+    // Membership duration
+    function calculateMembershipMonths(joined_date) {
+      if (!joined_date) return 0;
+      const joined = new Date(joined_date);
+      const now = new Date();
+      const years = now.getFullYear() - joined.getFullYear();
+      const months = now.getMonth() - joined.getMonth();
+      return years * 12 + months;
+    }
+    // Age
+    function calculateAge(birthday) {
+      if (!birthday) return 0;
+      const birthdayDate = new Date(birthday);
+      const today = new Date();
+      let age = today.getFullYear() - birthdayDate.getFullYear();
+      const monthDiff = today.getMonth() - birthdayDate.getMonth();
+      const dayDiff = today.getDate() - birthdayDate.getDate();
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+      return age;
+    }
+    const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
+    const memberAge = calculateAge(memberInfo?.birthday);
+    const eligibilityInfo = [
+      {
+        label: "Tenure",
+        value: `${membershipMonths} months`,
+        passed: membershipMonths >= 12,
+        rule: "12 months of membership",
+      },
+      {
+        label: "Age",
+        value: `${memberAge} years old`,
+        passed: memberAge >= 18,
+        rule: "Must be at least 18 years old",
+      },
+      {
+        label: "Share Capital",
+        value: `₱${totalShareCapital.toLocaleString()}`,
+        passed: totalShareCapital > 5000,
+        rule: "Over ₱5,000 share capital required",
+      },
+    ];
+
+
     return (
       <div className="p-6 text-center bg-red-50 rounded-xl border border-red-200">
         <h2 className="text-xl font-semibold text-red-600">
@@ -559,6 +620,31 @@ function MemberLoanApp() {
         <p className="text-gray-700 mt-2">
           Please contact the administrator or board members for assistance.
         </p>
+        {/* Loan Eligibility display here */}
+        <div className="mt-6 max-w-md mx-auto text-left">
+          <div className="bg-white rounded-lg shadow p-4">
+            <h3 className="font-semibold text-primary mb-2">Eligibility Requirements</h3>
+            <ul className="text-sm space-y-2">
+              {eligibilityInfo.map((item, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span className={item.passed ? "text-green-600" : "text-red-600"}>
+                    {item.passed ? "✔️" : "❌"}
+                  </span>
+                  <span className="font-medium">{item.label}:</span>
+                  <span className={item.passed ? "text-green-700" : "text-red-700"}>{item.value}</span>
+                  <span className="ml-2 text-xs text-gray-500">({item.rule})</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4">
+              {eligibilityInfo.every(item => item.passed) ? (
+                <span className="badge badge-success">Eligible</span>
+              ) : (
+                <span className="badge badge-error">Not Eligible</span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
