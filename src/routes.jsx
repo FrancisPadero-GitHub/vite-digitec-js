@@ -38,6 +38,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 // TREASURER PAGES
 import CoopShareCapital from "./pages/treasurer/CoopShareCapital";
 import ClubFunds from "./pages/treasurer/ClubFunds";
+import MonthlyDues from "./pages/treasurer/components/MonthlyDues";
 import ClubExpenses from "./pages/treasurer/ClubExpenses";
 import CoopLoansReleases from "./pages/treasurer/CoopLoansReleases";
 import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
@@ -94,6 +95,7 @@ function AppRoutes() {
   const boardSharedTreasurerPages = [
     { path: "coop-share-capital", element: <CoopShareCapital /> },
     { path: "club-funds", element: <ClubFunds /> },
+    { path: "monthly-dues", element: <MonthlyDues /> },
     { path: "club-expenses", element: <ClubExpenses /> },
     { path: "coop-loans/payment-schedules", element: <CoopLoanPaymentSchedules /> },
     { path: "coop-loans/payments", element: <CoopLoansPayments /> },

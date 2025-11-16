@@ -3,6 +3,7 @@ import { useForm, Controller, useWatch } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useNavigate } from "react-router-dom";
 
 // fetch hooks
@@ -406,18 +407,31 @@ function ClubFunds() {
               },
             ]}
           />
-          {memberRole !== "board" && (
+          <div className="flex justify-between gap-4">
             <button
-              className="btn btn-neutral whitespace-nowrap"
-              title="Add contribution"
-              aria-label="Add Contribution"
+              className="btn btn-primary"
+              title="Manage Monthly Dues"
+              aria-label="Manage Monthly Dues"
               type="button"
-              onClick={openAddModal}
+              onClick={() => navigate(`/${memberRole}/monthly-dues`)}
             >
-              <AddCircleIcon />
-              Fund Contribution
+              <ExitToAppIcon />
+                Monthly Dues
             </button>
-          )}
+            {memberRole !== "board" && (
+              <button
+                className="btn btn-neutral whitespace-nowrap"
+                title="Add contribution"
+                aria-label="Add Contribution"
+                type="button"
+                onClick={openAddModal}
+              >
+                <AddCircleIcon />
+                Fund Contribution
+              </button>
+            )}
+          </div>
+          
         </div>
 
         <DataTableV2
@@ -515,8 +529,7 @@ function ClubFunds() {
           }}
         />
       </div>
-      <MonthlyDues />
-
+ 
       <FormModal
         table={"Club Funds"}
         open={modalType !== null}
