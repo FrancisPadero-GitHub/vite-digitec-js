@@ -1,7 +1,7 @@
 import { useState, useTransition, useMemo } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
-import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions} from "@headlessui/react";
+import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useNavigate } from "react-router-dom";
 
@@ -19,9 +19,10 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
+import MonthlyDues from "./components/MonthlyDues";
 
 // constants
-import {CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS,} from "../../constants/Color";
+import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, } from "../../constants/Color";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
@@ -102,7 +103,7 @@ function ClubFunds() {
     });
   };
   // Reduces the amount of filtering per change so its good delay
-  const debouncedSearch = useDebounce(searchTerm, 250); 
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "CFC";
   const clubFunds = useMemo(() => {
@@ -117,11 +118,11 @@ function ClubFunds() {
     return clubFundsRaw.filter((row) => {
       const generatedId = `${TABLE_PREFIX}_${row?.contribution_id || ""}`;
       const matchesSearch =
-          debouncedSearch === "" ||
-          (row.full_name && row.full_name
-            .toLowerCase()
-            .includes(debouncedSearch
-              .toLowerCase())) ||
+        debouncedSearch === "" ||
+        (row.full_name && row.full_name
+          .toLowerCase()
+          .includes(debouncedSearch
+            .toLowerCase())) ||
         row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         row.category?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
@@ -132,7 +133,7 @@ function ClubFunds() {
       const date = row.payment_date ? new Date(row.payment_date) : null;
       const matchesYear =
         yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-      
+
       // To avoid subtext displaying numbers instead of month names
       // I had to convert the values from the monthFilter to numbers for comparison
       const monthNameToNumber = {
@@ -146,14 +147,14 @@ function ClubFunds() {
       const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
       const matchesMonth =
         monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
-    // just a nested return dont be confused
-    return (
-      matchesSearch &&
-      matchesCategory &&
-      matchesYear &&
-      matchesMonth &&
-      matchesMethod
-    );
+      // just a nested return dont be confused
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesYear &&
+        matchesMonth &&
+        matchesMethod
+      );
     })
   }, [club_funds_data, debouncedSearch, categoryFilter, methodFilter, yearFilter, monthFilter]);
 
@@ -203,19 +204,19 @@ function ClubFunds() {
 
   // extract default form values to reuse in modal resets and in rhf initialization
   const defaultFormValues = {
-      contribution_id: null,
-      account_number: null,
-      amount: 0,
-      category: "",
-      payment_date: today,
-      payment_method: "",
-      remarks: "",
-      period_start: "",
-      period_end: "",  
+    contribution_id: null,
+    account_number: null,
+    amount: 0,
+    category: "",
+    payment_date: today,
+    payment_method: "",
+    remarks: "",
+    period_start: "",
+    period_end: "",
   };
 
   // react hook form
-  const { 
+  const {
     control,
     register,
     handleSubmit,
@@ -245,11 +246,11 @@ function ClubFunds() {
   const openEditModal = (selectedRowData) => {
     // Format data for period fields for month inputs
     let formData = { ...selectedRowData };
-    
+
     // Convert period fields to (YYYY-MM)
-    if (formData.period_start) {formData.period_start = formatForMonthInput(formData.period_start);}
-    if (formData.period_end) {formData.period_end = formatForMonthInput(formData.period_end);}
-    
+    if (formData.period_start) { formData.period_start = formatForMonthInput(formData.period_start); }
+    if (formData.period_end) { formData.period_end = formatForMonthInput(formData.period_end); }
+
     reset(formData);
     setModalType("edit");
   };
@@ -262,7 +263,7 @@ function ClubFunds() {
     }
   };
 
-  const closeModal = () =>{
+  const closeModal = () => {
     reset(defaultFormValues);
     setModalType(null);
   };
@@ -291,10 +292,11 @@ function ClubFunds() {
 
     if (modalType === "add") {
       mutateAdd(payload,
-        {onSuccess: () => {
+        {
+          onSuccess: () => {
             toast.success("Club fund contribution added")
             closeModal();
-        }, 
+          },
           onError: () => {
             toast.error("Something went wrong")
           }
@@ -302,14 +304,15 @@ function ClubFunds() {
       );
     } else if (modalType === "edit") {
       mutateEdit(payload,
-        {onSuccess: () => {
-          toast.success("Successfully updated")
-          closeModal();
-        },
+        {
+          onSuccess: () => {
+            toast.success("Successfully updated")
+            closeModal();
+          },
           onError: () => {
             toast.error("Something went wrong");
           }
-      }
+        }
       );
     }
   };
@@ -340,69 +343,69 @@ function ClubFunds() {
         { label: "Bank", value: "Bank" },
       ]
     },
-    { label: "Remarks", name: "remarks", type: "text", optional: true},
+    { label: "Remarks", name: "remarks", type: "text", optional: true },
   ];
 
   return (
     <div>
-      <Toaster position="bottom-left"/>
+      <Toaster position="bottom-left" />
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-            <FilterToolbar
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              isFilterPending={isPending}
-              onReset={handleClearFilters}
-              dropdowns={[
-                {
-                  label: "All Category",
-                  value: categoryFilter,
-                  onChange: handleCategoryChange,
-                  options: [
-                    { label: "Monthly Dues", value: "Monthly Dues" },
-                    { label: "Activities", value: "Activities" },
-                    { label: "Alalayang Agila", value: "Alalayang Agila" },
-                    { label: "Community Service", value: "Community Service" },
-                    { label: "Others", value: "Others" },
-                  ],
-                },
-                {
-                  label: "All Method",
-                  value: methodFilter,
-                  onChange: handleMethodChange,
-                  options: [
-                    { label: "Cash", value: "Cash" },
-                    { label: "GCash", value: "GCash" },
-                    { label: "Bank", value: "Bank" },
-                  ],
-                },
-                {
-                  label: "All Year",
-                  value: yearFilter,
-                  onChange: handleYearChange,
-                  options: yearOptions,
-                },
-                {
-                  label: "All Month",
-                  value: monthFilter,
-                  onChange: handleMonthChange,
-                  options: [
-                    { label: "January", value: "January" },
-                    { label: "February", value: "February" },
-                    { label: "March", value: "March" },
-                    { label: "April", value: "April" },
-                    { label: "May", value: "May" },
-                    { label: "June", value: "June" },
-                    { label: "July", value: "July" },
-                    { label: "August", value: "August" },
-                    { label: "September", value: "September" },
-                    { label: "October", value: "October" },
-                    { label: "November", value: "November" },
-                    { label: "December", value: "December" },
-                  ],
-                },
-              ]}
-            />
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Category",
+                value: categoryFilter,
+                onChange: handleCategoryChange,
+                options: [
+                  { label: "Monthly Dues", value: "Monthly Dues" },
+                  { label: "Activities", value: "Activities" },
+                  { label: "Alalayang Agila", value: "Alalayang Agila" },
+                  { label: "Community Service", value: "Community Service" },
+                  { label: "Others", value: "Others" },
+                ],
+              },
+              {
+                label: "All Method",
+                value: methodFilter,
+                onChange: handleMethodChange,
+                options: [
+                  { label: "Cash", value: "Cash" },
+                  { label: "GCash", value: "GCash" },
+                  { label: "Bank", value: "Bank" },
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions,
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
           {memberRole !== "board" && (
             <button
               className="btn btn-neutral whitespace-nowrap"
@@ -411,7 +414,7 @@ function ClubFunds() {
               type="button"
               onClick={openAddModal}
             >
-              <AddCircleIcon/>
+              <AddCircleIcon />
               Fund Contribution
             </button>
           )}
@@ -512,6 +515,7 @@ function ClubFunds() {
           }}
         />
       </div>
+      <MonthlyDues />
 
       <FormModal
         table={"Club Funds"}
@@ -519,7 +523,7 @@ function ClubFunds() {
         close={closeModal}
         action={modalType === "edit"}
         onSubmit={handleSubmit(onSubmit)}
-        isPending={isAddPending || isEditPending }
+        isPending={isAddPending || isEditPending}
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => handleDelete(getValues("contribution_id"))}
       >
@@ -550,7 +554,7 @@ function ClubFunds() {
                         key={member.account_number}
                         value={member}
                         className={({ focus }) =>
-                        `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
+                          `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
                         }
                       >
                         <div className="flex items-center gap-3">
@@ -565,8 +569,8 @@ function ClubFunds() {
                           <div className="flex flex-col flex-1 min-w-0">
                             <span className="font-mono text-sm font-semibold">{member.account_number}</span>
                             <div className="flex items-center gap-1">
-                            <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                            <span className="text-xs italic">({member.account_role})</span>
+                              <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                              <span className="text-xs italic">({member.account_role})</span>
                             </div>
                           </div>
                         </div>
@@ -579,11 +583,11 @@ function ClubFunds() {
           />
         </div>
 
-        {fields.map(({ label, name, type, options, autoComplete, optional}) => (
+        {fields.map(({ label, name, type, options, autoComplete, optional }) => (
           <div key={name} className="form-control w-full mt-2">
             <label htmlFor={name}>
               <span className="label text-sm font-semibold mb-2">{label}
-              {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
+                {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
               </span>
             </label>
 
