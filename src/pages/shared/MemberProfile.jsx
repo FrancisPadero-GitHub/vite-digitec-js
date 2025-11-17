@@ -1,9 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import toast, { Toaster } from "react-hot-toast";
 
 // fetch hooks
 import { useFetchMemberDetails } from "../../backend/hooks/member/useFetchMemberDetails";
 import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
+import { useUpdateMember } from "../../backend/hooks/admin/useUpdateMembers";
 
 // icons 
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
@@ -33,6 +36,9 @@ function MemberProfile() {
   const { data, isLoading, isError, error } = useFetchMemberDetails({
     memberId: parsedId,
   });
+
+  const { mutate: updateMember, isPending: isUpdating } = useUpdateMember();
+  const [isEligible, setIsEligible] = useState(false);
 
   const memberInfo = data?.memberInfo || {};
   const clubFunds = data?.clubFunds?.data || [];
@@ -77,6 +83,32 @@ function MemberProfile() {
   // Age
   const { years: memberAge } = getYearsMonthsDaysDifference(memberInfo?.birthday);
 
+  // Sync toggle state with member data
+  useEffect(() => {
+    if (memberInfo?.is_eligible_for_other_loans !== undefined) {
+      setIsEligible(memberInfo.is_eligible_for_other_loans);
+    }
+  }, [memberInfo?.is_eligible_for_other_loans]);
+
+  const handleToggleEligibility = () => {
+    const newValue = !isEligible;
+
+    updateMember(
+      {
+        id: parsedId,
+        updates: { is_eligible_for_other_loans: newValue }
+      },
+      {
+        onSuccess: () => {
+          setIsEligible(newValue);
+          toast.success(`Member is now ${newValue ? 'eligible' : 'not eligible'} for other loan products`);
+        },
+        onError: (error) => {
+          toast.error(`Failed to update eligibility: ${error.message}`);
+        }
+      }
+    );
+  };
 
   const openModal = (row) => {
     navigate(`../loan-account/details/${row.loan_id}`);
@@ -217,6 +249,7 @@ function MemberProfile() {
 
   return (
     <div>
+      <Toaster position="bottom-left" />
       {/* Breadcrumb */}
       <div className="text-2xl font-bold flex items-center gap-2 mb-4">
         <button onClick={() => navigate(-1)} className="text-primary hover:underline">
@@ -320,6 +353,27 @@ function MemberProfile() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="divider my-2"></div>
+
+              {/* Toggle for Other Loan Products */}
+              <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Other Loan Products Access</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {isEligible
+                      ? "Member can access all loan products"
+                      : "Member limited to share capital loan only"}
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-success"
+                  checked={isEligible}
+                  onChange={handleToggleEligibility}
+                  disabled={isUpdating}
+                />
               </div>
             </div>
           </section>
