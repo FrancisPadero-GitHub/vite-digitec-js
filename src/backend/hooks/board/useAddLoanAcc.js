@@ -1,6 +1,7 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAddActivityLog } from "../shared/useAddActivityLog";
+import { useFetchAccountNumber } from "../shared/useFetchAccountNumber";
 
 // Removed schedule generation imports
 
@@ -54,18 +55,53 @@ const addLoanAcc = async (formData) => {
   return data;
 };
 
+const sendTreasurerNotification = async (loanAccData, senderAccountNumber) => {
+  const message = `Loan approved for member ${loanAccData.account_number}. Principal: ₱${loanAccData.principal?.toLocaleString() || '0'} | Loan Ref: ${loanAccData.loan_ref_number || 'N/A'}`;
+
+  const { error } = await supabase.rpc("send_notification", {
+    p_message: message,
+    p_type: "loan_approval",
+    p_target: "role:treasurer",
+    p_sender: senderAccountNumber,
+  });
+
+  if (error) {
+    console.error("Failed to send treasurer notification:", error);
+    throw error;
+  }
+};
+
+const sendMemberNotification = async (loanAccData, senderAccountNumber) => {
+  const message = `Your loan application has been approved. Loan Ref: ${loanAccData.loan_ref_number || 'N/A'} | Approved Principal: ₱${loanAccData.principal?.toLocaleString() || '0'}`;
+
+  const { error } = await supabase.rpc("send_notification", {
+    p_message: message,
+    p_type: "loan_application_status",
+    p_target: loanAccData.account_number,
+    p_sender: senderAccountNumber,
+  });
+
+  if (error) {
+    console.error("Failed to send member notification:", error);
+    throw error;
+  }
+};
+
 export const useAddLoanAcc = () => {
   const queryClient = useQueryClient();
   const { mutateAsync: logActivity } = useAddActivityLog();
+  const { data: loggedInAccountNumber } = useFetchAccountNumber();
 
   return useMutation({
     mutationFn: addLoanAcc,
     onSuccess: async (data) => {
       console.log("✅ Loan Account Added!", data);
-      queryClient.invalidateQueries({queryKey: ["loan_accounts"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["view_loan_accounts"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false,});
-      queryClient.invalidateQueries({queryKey: ["activity_logs"], exact: false});
+      queryClient.invalidateQueries({ queryKey: ["loan_accounts"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["get_funds_summary"], exact: false, });
+      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries(["notifications"]);
+
       // log activity
       try {
         await logActivity({
@@ -74,6 +110,20 @@ export const useAddLoanAcc = () => {
         });
       } catch (err) {
         console.warn("Failed to log activity:", err.message);
+      }
+
+      // send notifications
+      try {
+        await sendTreasurerNotification(data, loggedInAccountNumber);
+        console.log("✅ Notification sent to treasurer");
+      } catch (err) {
+        console.warn("Failed to send treasurer notification:", err.message);
+      }
+      try {
+        await sendMemberNotification(data, loggedInAccountNumber);
+        console.log("✅ Notification sent to member:", data.account_number);
+      } catch (err) {
+        console.warn("Failed to send member notification:", err.message);
       }
     },
 

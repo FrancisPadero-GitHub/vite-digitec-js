@@ -22,7 +22,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HelpIcon from "@mui/icons-material/Help";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import NotificationDetail from "../components/shared/NotificationDetail";
 
 // constants
 import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now
@@ -159,7 +159,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
 
           {/* DROPDOWN LIST */}
           {showDropdown && (
-            <div className="absolute right-0 mt-3 w-96 bg-base-100 text-base-content rounded-2xl shadow-2xl border border-base-300 z-50 animate-[fadeIn_0.2s_ease-out]">
+            <div className="absolute right-0 mt-3 w-96 bg-base-100 text-base-content shadow-2xl border border-base-300 z-50 animate-[fadeIn_0.2s_ease-out]">
               {/* Header */}
               <div className="p-4 flex justify-between items-center border-b border-base-300 bg-base-200/50">
                 <h3 className="font-bold text-lg flex items-center gap-2">
@@ -187,7 +187,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                     <li
                       key={notif.id}
                       onClick={() => {
-                        // Mark as read mutation
                         if (!notif.is_read) {
                           markAsReadMutation({ notif_id: notif.id });
                         }
@@ -195,9 +194,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                         setShowModal(true);
                         setShowDropdown(false);
                       }}
-                      className={`p-3 mb-2 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-primary hover:shadow-md ${notif.is_read
-                        ? "bg-base-200/30 opacity-75"
-                        : "bg-base-200 font-semibold"
+                      className={`p-3 mb-2 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-primary hover:shadow-md ${notif.is_read ? "bg-base-200/30 opacity-75" : "bg-base-200 font-semibold"
                         }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -240,9 +237,11 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
             </div>
           )}
         </div>
+
+
         {/* MODAL */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-base-100 rounded-2xl w-full max-w-lg shadow-2xl border border-base-300 animate-[fadeIn_0.2s_ease-out]">
               {/* Header */}
               <div className="flex justify-between items-center p-5 border-b border-base-300">
@@ -265,45 +264,15 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
               {/* Content */}
               <div className="p-5 max-h-[70vh] overflow-y-auto">
                 {selectedNotif ? (
-                  <div className="space-y-4">
-                    {/* Emphasized message */}
-                    <div className="rounded-xl border border-base-300 bg-gradient-to-br from-base-200/80 to-base-100 p-5 shadow">
-                      <div className="text-lg font-sm tracking-tight text-base-content leading-snug">
-                        {selectedNotif?.message}
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <span className="badge badge-primary badge-sm">
-                          {selectedNotif?.type.toUpperCase() || "N/A"}
-                        </span>
-                        <span className="text-xs text-base-content/60">
-                          {format(new Date(selectedNotif.created_at), "PPPp")}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Minor details */}
-                    {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-3 bg-base-200 rounded-lg">
-                        <div className="text-xs uppercase text-base-content/60">Sender</div>
-                        <div className="text-sm text-base-content">{selectedNotif?.sender_id || "System"}</div>
-                      </div>
-                      
-                      <div className="p-3 bg-base-200 rounded-lg">
-                        <div className="text-xs uppercase text-base-content/60">Recipient</div>
-                        <div className="text-sm text-base-content">
-                          {selectedNotif?.recipient_id || (selectedNotif?.is_global ? "Global" : "—")}
-                        </div>
-                      </div>
-                    </div> */}
-
-                    <button
-                      onClick={() => setSelectedNotif(null)}
-                      className="btn btn-outline btn-primary btn-sm w-full mt-2 gap-2"
-                    >
-                      <ArrowBackIcon fontSize="small" />
-                      Back to all notifications
-                    </button>
-                  </div>
+                  <NotificationDetail
+                    message={selectedNotif?.message}
+                    type={selectedNotif?.type}
+                    createdAt={selectedNotif?.created_at}
+                    senderId={selectedNotif?.sender_id}
+                    recipientId={selectedNotif?.recipient_id}
+                    isGlobal={selectedNotif?.is_global}
+                    onBack={() => setSelectedNotif(null)}
+                  />
                 ) : notifications && notifications.length > 0 ? (
                   <div className="space-y-2">
                     {notifications.map((notif) => (

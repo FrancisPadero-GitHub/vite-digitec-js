@@ -34,6 +34,22 @@ const insertLoanApp = async (formData, accountNumber) => {
   return data;
 };
 
+const sendNotification = async (loanAppData, senderAccountNumber) => {
+  const message = `New loan application submitted by ${senderAccountNumber}. Amount: ₱${loanAppData.amount?.toLocaleString() || '0'} | Purpose: ${loanAppData.purpose || 'N/A'}`;
+
+  const { error } = await supabase.rpc("send_notification", {
+    p_message: message,
+    p_type: "loan_application",
+    p_target: "role:board",
+    p_sender: senderAccountNumber,
+  });
+
+  if (error) {
+    console.error("Failed to send notification:", error);
+    throw error;
+  }
+};
+
 export const useAddLoanApp = () => {
   const queryClient = useQueryClient();
   const { data: loggedInAccountNumber } = useFetchAccountNumber();
@@ -46,7 +62,8 @@ export const useAddLoanApp = () => {
       console.log("Loan Application Added!: ", data);
       queryClient.invalidateQueries(["loan_applications", loggedInAccountNumber,]);
       queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
-      
+      queryClient.invalidateQueries(["notifications"]);
+
       // log activity
       try {
         await logActivity({
@@ -55,6 +72,14 @@ export const useAddLoanApp = () => {
         });
       } catch (err) {
         console.warn("Failed to log activity:", err.message);
+      }
+
+      // send notification to board members
+      try {
+        await sendNotification(data, loggedInAccountNumber);
+        console.log("✅ Notification sent to board members");
+      } catch (err) {
+        console.warn("Failed to send notification:", err.message);
       }
     },
     onError: (error) => {

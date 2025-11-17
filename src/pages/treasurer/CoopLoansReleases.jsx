@@ -1,6 +1,6 @@
-import {useState, useMemo, useTransition} from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import { useForm } from 'react-hook-form';
-import { Toaster, toast} from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import dayjs from 'dayjs';
 import { createPortal } from 'react-dom'; // lets confirmation modal escape parent container (fixes z-index & overlay issues)
 import WarningIcon from '@mui/icons-material/Warning';
@@ -30,7 +30,7 @@ import { display } from '../../constants/numericFormat';
 import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
 
 function CoopLoansReleases() {
-  const {mutate: releaseLoan, isPending } = useEditLoanAcc();
+  const { mutate: releaseLoan, isPending } = useEditLoanAcc();
 
   //  const navigate = useNavigate();
   const { data: members_data } = useMembers({});
@@ -64,78 +64,78 @@ function CoopLoansReleases() {
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
-    /**
-     * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
-     * it needs to be paired with useMemo on the filtered data (clubFunds)
-     * 
-     */
-    // Add useTransition
-    const [isFilterPending, startTransition] = useTransition();
-  
-    // Update filter handlers to use startTransition
-    const handleSearchChange = (value) => {
-      startTransition(() => {
-        setSearchTerm(value);
-      });
-    };
-    const handleStatusChange = (value) => {
-      startTransition(() => {
-        setStatusFilter(value);
-      });
-    };
-    const handleYearChange = (value) => {
-      startTransition(() => {
-        setYearFilter(value);
-      });
-    };
-    const handleMonthChange = (value) => {
-      startTransition(() => {
-        setMonthFilter(value);
-      });
-    };
-  
-    // Reduces the amount of filtering per change so its good delay
-    const debouncedSearch = useDebounce(searchTerm, 250);
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   * 
+   */
+  // Add useTransition
+  const [isFilterPending, startTransition] = useTransition();
+
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleStatusChange = (value) => {
+    startTransition(() => {
+      setStatusFilter(value);
+    });
+  };
+  const handleYearChange = (value) => {
+    startTransition(() => {
+      setYearFilter(value);
+    });
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => {
+      setMonthFilter(value);
+    });
+  };
+
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "LACC_";
   const memberLoanAccounts = useMemo(() => {
     const members = members_data?.data || [];
     return mergedLoanAccounts.filter((row) => {
-    const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
+      const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
 
-    const member = members?.find((m) => m.account_number === row.account_number);
-    const fullName = member
-      ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
-      : "";
+      const member = members?.find((m) => m.account_number === row.account_number);
+      const fullName = member
+        ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
+        : "";
 
-    const matchesSearch =
-      debouncedSearch === "" ||
-      (fullName && fullName.includes(debouncedSearch)) ||
-      row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesSearch =
+        debouncedSearch === "" ||
+        (fullName && fullName.includes(debouncedSearch)) ||
+        row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
-    const matchesStatus = statusFilter === "" || row.status === statusFilter;
-    const date = row.release_date ? new Date(row.release_date) : null;
-    const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+      const matchesStatus = statusFilter === "" || row.status === statusFilter;
+      const date = row.release_date ? new Date(row.release_date) : null;
+      const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
 
-    // To avoid subtext displaying numbers instead of month names
-    // I had to convert the values from the monthFilter to numbers for comparison
-    const monthNameToNumber = {
-      January: 1, February: 2,
-      March: 3, April: 4,
-      May: 5, June: 6,
-      July: 7, August: 8,
-      September: 9, October: 10,
-      November: 11, December: 12,
-    };
-    const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
+      // To avoid subtext displaying numbers instead of month names
+      // I had to convert the values from the monthFilter to numbers for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2,
+        March: 3, April: 4,
+        May: 5, June: 6,
+        July: 7, August: 8,
+        September: 9, October: 10,
+        November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
 
-    return matchesSearch && matchesStatus && matchesYear && matchesMonth;
-  });
-}, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter, members_data]);
+      return matchesSearch && matchesStatus && matchesYear && matchesMonth;
+    });
+  }, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter, members_data]);
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
@@ -229,6 +229,7 @@ function CoopLoansReleases() {
 
   const handleConfirmRelease = () => {
     const data = getValues(); // Get form data
+    // console.log(data)
     releaseLoan(data, {
       onSuccess: () => {
         toast.success("Loan released successfully!");
@@ -267,7 +268,7 @@ function CoopLoansReleases() {
                 value: statusFilter,
                 onChange: handleStatusChange,
                 options: [
-                  { label: "Pending Release", value: "Pending Release"},
+                  { label: "Pending Release", value: "Pending Release" },
                   { label: "Active", value: "Active" },
                 ],
               },
@@ -355,10 +356,10 @@ function CoopLoansReleases() {
                       </div>
                     </div>
                     <div className="truncate">
-                      {fullName || 
-                      <span className="text-gray-400 italic">
-                        Not Provided
-                      </span>}
+                      {fullName ||
+                        <span className="text-gray-400 italic">
+                          Not Provided
+                        </span>}
                     </div>
                   </span>
                 </td>
@@ -371,9 +372,9 @@ function CoopLoansReleases() {
                 {/* Status */}
                 <td>
                   {status ? (
-                  <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                    <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
                       {row.status || "Not Provided"}
-                  </span>
+                    </span>
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
@@ -387,8 +388,8 @@ function CoopLoansReleases() {
             )
           }}
         />
-        
-        
+
+
         <BoardFormModal
           title={"Loan Account"}
           open={modalType !== null}
@@ -406,8 +407,8 @@ function CoopLoansReleases() {
 
               <div className="mb-3">
                 <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
-                  ${watch("status") === "Active" 
-                    ? "bg-green-50 border-green-300 text-green-800" 
+                  ${watch("status") === "Active"
+                    ? "bg-green-50 border-green-300 text-green-800"
                     : "bg-yellow-50 border-yellow-300 text-yellow-700"
                   }`}>
                   <span className={watch("status") === "Active" ? "text-green-600" : "text-yellow-500"}>●</span>
@@ -415,7 +416,7 @@ function CoopLoansReleases() {
                 </div>
                 <input type="hidden" value={watch("status")} />
               </div>
-              
+
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -491,7 +492,7 @@ function CoopLoansReleases() {
                 <div className="text-sm font-semibold">{watch("account_number")}</div>
                 <input type="hidden" {...register("account_number")} />
               </div>
-              
+
               <div className="md:col-span-1 col-span-2">
                 <label className="block text-xs font-medium text-gray-500 mb-1">Account Holder</label>
                 <div className="text-sm font-bold">{watch("applicant_name")}</div>
@@ -503,7 +504,7 @@ function CoopLoansReleases() {
           <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
             <div className="mb-4 flex items-center justify-between">
               <h4 className="text-xs font-bold text-gray-600 mb-2">Loan Details</h4>
-              
+
               {/* Loan Type */}
               <span className="text-xs font-semibold text-gray-700 badge badge-ghost">{watch("loanProductName") || "N/A"}</span>
             </div>
@@ -607,11 +608,10 @@ function CoopLoansReleases() {
                   <button
                     onClick={handleConfirmRelease}
                     disabled={isPending}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${
-                      isPending
-                        ? "bg-gray-400 text-gray-100 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${isPending
+                      ? "bg-gray-400 text-gray-100 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                      }`}
                   >
                     {isPending ? (
                       <><span className="loading loading-spinner loading-sm mr-2"></span>Releasing...</>
