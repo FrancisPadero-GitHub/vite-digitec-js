@@ -13,6 +13,7 @@ const updateLoanProducts = async (formData) => {
     repayment_freq = null,
     min_amount = null,
     max_amount = null,
+    min_term_months = null,
     max_term_months = null,
   } = formData;
 
@@ -30,6 +31,7 @@ const updateLoanProducts = async (formData) => {
     repayment_freq,
     min_amount,
     max_amount,
+    min_term_months,
     max_term_months,
   };
 

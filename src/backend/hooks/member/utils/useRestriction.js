@@ -30,9 +30,9 @@ export default function useLoanRestriction() {
   // Compare member's data against the settings from database
   const hasRestriction =
     // minTenure is under a year which is a mismatch
-    tenure <= Number(minTenure) ||
-    age <= Number(minAge) ||
-    myShares <= Number(minShareCapital);
+    tenure < Number(minTenure) ||
+    age < Number(minAge) ||
+    myShares < Number(minShareCapital);
 
   return { 
     hasRestriction,

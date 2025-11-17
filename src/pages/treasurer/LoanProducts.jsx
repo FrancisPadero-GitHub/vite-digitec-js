@@ -87,6 +87,7 @@ function LoanProducts() {
       "service_fee",
       "min_amount",
       "max_amount",
+      "min_term_months",
       "max_term_months",
     ];
     numericFields.forEach((f) => {

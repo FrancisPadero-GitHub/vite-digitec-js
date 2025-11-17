@@ -97,7 +97,7 @@ function Products({
       {data.map((product, index) => (
         <div 
           key={product?.id || index} 
-          className="mt-3 p-3 bg-base-100 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+          className="p-3 bg-base-100 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
         >
           {/* Header with Product Name and Edit Button */}
           <div className='flex justify-between items-center mb-2 pb-2 border-b border-gray-200'> 
@@ -142,7 +142,7 @@ function Products({
               <span className="font-semibold text-purple-700">{display(product?.service_fee)}%</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base-content/70">Loan Range:</span>
+              <span className="text-base-content/70">Loan Entitlement:</span>
               <span className="font-bold text-green-700">
                 ₱{display(product?.min_amount)} - ₱{display(product?.max_amount)}
               </span>

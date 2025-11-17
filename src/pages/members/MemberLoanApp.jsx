@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useTransition} from "react";
+import { useState, useEffect, useMemo, useTransition, use} from "react";
 import { useForm } from "react-hook-form";
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -29,6 +29,7 @@ import { usePrompt } from "../shared/components/usePrompt";
 import { LOAN_APPLICATION_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
 import calcLoanSchedDiminishing from "../../constants/calcLoanSchedDiminishing";
 import calcLoanSchedFlat from "../../constants/calcLoanSchedFlat";
+import { useShareCapitalLoanable } from "../../constants/Calculation";
 
 // utils
 import { display } from "../../constants/numericFormat";
@@ -56,7 +57,10 @@ function MemberLoanApp() {
   const { data: loanProducts } = useFetchLoanProducts();
 
   const { data: myProfile} = useFetchProfile();
+  const memberInfo = myProfile || {};
+
   const { data: coopData } = useFetchCoop({ useLoggedInMember: true });
+  const coopContributions = coopData?.data || [];
 
   const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ useLoggedInMember: true});
   const loanAppRaw = memberLoanAppRaw?.data || [];
@@ -78,6 +82,13 @@ function MemberLoanApp() {
       ...viewRow,
     };
   });
+
+  /**
+   * Stuffs that will be used below
+   */
+
+
+
 
   // Filtered Table base on the filter toolbar
   const [searchTerm, setSearchTerm] = useState("");
@@ -396,6 +407,36 @@ function MemberLoanApp() {
 
 
   /**
+   * Loan Product Eligibility check
+   */
+  
+  const loanProductAccess = myProfile?.is_eligible_for_other_loans // boolean true or false default is false
+  const productCode = "S_CAP_LOANS" // this is the only code or product that they can use if not eligible for other loans
+
+  // Filter loan products based on eligibility
+  const filteredLoanProducts = useMemo(() => {
+    if (!loanProducts) return [];
+    // If member has access to other loans show all, otherwise restrict to the feature-only code
+    if (loanProductAccess) return loanProducts;
+    return loanProducts.filter(p =>
+      p.product_code === productCode
+    );
+  }, [loanProducts, loanProductAccess, productCode]);
+
+  // Calculate total share capital
+  const totalShareCapital = useMemo(() => {
+    return coopContributions.reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
+  }, [coopContributions]);
+
+  // Call the hook at top level to get loanable amount
+  const {totalLoanable, percentage} = useShareCapitalLoanable(totalShareCapital);
+
+
+
+  /**
    * Loan calculator
    * 
    */
@@ -404,10 +445,12 @@ function MemberLoanApp() {
    * Finds the selected loan product from the loan products list
    * fetches the loan product info base on the selectedProduct
    */
+
   const selectedLoanProduct = watch("loan_product");
   const selectedProduct = useMemo(() => { 
   return loanProducts?.find((p) => p.name === selectedLoanProduct
   )}, [loanProducts, selectedLoanProduct]); 
+  const isSpecialProduct = selectedProduct?.product_code === productCode;
 
   const principalValue = watch("amount");
   const loanTermValue = watch("loan_term");
@@ -463,6 +506,21 @@ function MemberLoanApp() {
   /**
    * Use Effects
    */
+
+  // Auto-fill amount with totalLoanable if special product selected
+  useEffect(() => {
+    if (!selectedProduct) return;
+    // Only auto-fill for the restricted product code
+    if (selectedProduct.product_code === productCode) {
+      const currentAmount = watch("amount");
+      // Fill only if empty or zero to avoid overwriting user edits
+      if (!currentAmount || Number(currentAmount) === 0) {
+        setValue("amount", Number(totalLoanable));
+      }
+    }
+  }, [selectedProduct, productCode, totalLoanable, setValue, watch]);
+
+  // For auto calculation effect
   useEffect(() => {
     // update the calculated values to the form if changed
     // only proceed if there is a calculated loan
@@ -499,15 +557,17 @@ function MemberLoanApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calculatedLoan]);
 
+
   const fields = [
     {
       label: "Loan Product",
       name: "loan_product",
       type: "select",
       required: true,
-      dynamicOptions: loanProducts?.map((p) => ({
+      dynamicOptions: filteredLoanProducts?.map((p) => ({
         label: p.name,
-        value: p.id,
+        // We store the loan product name as the value since selection logic matches by name
+        value: p.name,
       })) || [],
     },
     {
@@ -515,20 +575,22 @@ function MemberLoanApp() {
       name: "amount",
       type: "number",
       required: true,
-      disabled: loanStatus || !selectedLoanProduct,
-      placeholder: selectedProduct
-        ? `Enter between ₱${selectedProduct.min_amount} - ₱${selectedProduct.max_amount}`
-        : "Select a loan product first",
+      disabled: loanStatus || !selectedLoanProduct, // || isSpecialProduct - lock amount if special auto-filled product
       validation: {
         min: selectedProduct?.min_amount || 0,
-        max: selectedProduct?.max_amount || 9999999,
+        max: selectedProduct?.max_amount === 0 ? totalLoanable : selectedProduct?.max_amount || 99999,
       },
+      placeholder: selectedProduct
+        ? selectedProduct?.max_amount === 0
+          ? `Enter between ₱${selectedProduct.min_amount} - ₱${totalLoanable}`
+          : `Enter between ₱${selectedProduct.min_amount} - ₱${selectedProduct.max_amount}`
+        : "Select a loan product first",
     },
     {
       label: "Term",  
       name: "loan_term",
       type: "select",
-      required: true,
+      required: true, 
       dynamicOptions: selectedProduct
         ? [
           { label: `${selectedProduct.min_term_months} months`, value: selectedProduct.min_term_months },
@@ -556,19 +618,21 @@ function MemberLoanApp() {
   ];
 
 
+
+
+  // --- Loan Eligibility Display ---
   if (hasRestriction) {
-    // --- Loan Eligibility Display ---
-    // Simulate member info and contributions fetch (replace with actual hooks if available)
-    // If you have member info in context, use that instead
-    const memberInfo = myProfile || {};
-    const coopContributions = coopData?.data || [];
+
     // Calculate total share capital
-    const totalShareCapital = coopContributions.reduce(
-      (sum, item) => sum + (item.amount || 0),
-      0
-    );
+    const totalShareCapital = useMemo(() => {
+      return coopContributions.reduce(
+        (sum, item) => sum + (item.amount || 0),
+        0
+      );
+    }, [coopContributions]);
+
     // Membership duration
-     const { years: tenure } = getYearsMonthsDaysDifference(memberInfo?.joined_date);
+    const { years: tenure } = getYearsMonthsDaysDifference(memberInfo?.joined_date);
     // Age
     const { years: memberAge } = getYearsMonthsDaysDifference(memberInfo?.birthday);
 
@@ -796,36 +860,49 @@ function MemberLoanApp() {
 
                     {/* Show loan product terms (interest, penalty, service, loan range) when selected */}
                     {selectedProduct && (
-                      <div className="mt-3 p-3 bg-base-100 rounded-lg border border-gray-200">
-                        <h5 className="text-xs font-semibold text-base-content/70 mb-2">Loan Terms & Conditions</h5>
-                        <div className="grid grid-cols-2 gap-y-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="text-base-content/70">Interest Rate:</span>
-                            <span className="font-semibold text-blue-700">{selectedProduct.interest_rate}%</span>
+                      isSpecialProduct ? (
+                        <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-300">
+                          <h5 className="text-xs font-semibold text-green-700 mb-2">Share Capital Loan Summary</h5>
+                          <div className="text-xs space-y-1">
+                            <div className="flex justify-between"><span className="text-green-700">Total Share Capital:</span><span className="font-semibold">₱{totalShareCapital.toLocaleString() || 0}</span></div>
+                            <div className="flex justify-between"><span className="text-green-700">Loanable (%):</span><span className="font-semibold">{Number(percentage)|| 0}%</span></div>
+                            <div className="flex justify-between"><span className="text-green-700">Max Loanable Amount:</span><span className="font-bold text-green-800">₱{Number(totalLoanable).toLocaleString() || 0}</span></div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base-content/70">Type:</span>
-                            <span className="font-semibold">{selectedProduct.interest_method}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base-content/70">Penalty Rate:</span>
-                            <span className="font-semibold text-red-500">{selectedProduct.penalty_rate}%</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base-content/70">Repayment Frequency:</span>
-                            <span className="font-semibold">{selectedProduct.repayment_freq}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base-content/70">Service Fee:</span>
-                            <span className="font-semibold text-purple-700">{selectedProduct.service_fee}%</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base-content/70">Loan Entitlement:</span>
-                            <span className="font-bold text-green-700">₱{selectedProduct.min_amount?.toLocaleString()} - ₱{selectedProduct.max_amount?.toLocaleString()}</span>
+                          <p className="text-[10px] mt-2 text-green-600">Amount field capped; based on current share capital eligibility.</p>
+                        </div>
+                      ) : (
+                        <div className="mt-3 p-3 bg-base-100 rounded-lg border border-gray-200">
+                          <h5 className="text-xs font-semibold text-base-content/70 mb-2">Loan Terms & Conditions</h5>
+                          <div className="grid grid-cols-2 gap-y-2 text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base-content/70">Interest Rate:</span>
+                              <span className="font-semibold text-blue-700">{selectedProduct.interest_rate}%</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-base-content/70">Type:</span>
+                              <span className="font-semibold">{selectedProduct.interest_method}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-base-content/70">Penalty Rate:</span>
+                              <span className="font-semibold text-red-500">{selectedProduct.penalty_rate}%</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-base-content/70">Repayment Frequency:</span>
+                              <span className="font-semibold">{selectedProduct.repayment_freq}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-base-content/70">Service Fee:</span>
+                              <span className="font-semibold text-purple-700">{selectedProduct.service_fee}%</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-base-content/70">Loan Entitlement:</span>
+                              <span className="font-bold text-green-700">₱{selectedProduct.min_amount?.toLocaleString()} - ₱{selectedProduct.max_amount?.toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )
                     )}
+
                   </div>
                 );
               }
@@ -862,7 +939,11 @@ function MemberLoanApp() {
                       )}
                       {errors[field.name] && (
                         <p className="text-error text-xs mt-1">
-                          Amount must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{selectedProduct?.max_amount?.toLocaleString()}
+                          Amount must be between ₱{field.validation?.min.toLocaleString()} and ₱{
+                            selectedProduct?.max_amount === 0
+                              ? totalLoanable?.toLocaleString()
+                              : field.validation?.max?.toLocaleString()
+                          }
                         </p>
                       )}
                     </div>
