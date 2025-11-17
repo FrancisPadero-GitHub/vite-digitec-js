@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useAuth } from "../backend/context/AuthProvider";
+import PropTypes from 'prop-types';
 
 // fetch hooks
 import { useMembers } from "../backend/hooks/shared/useFetchMembers";
@@ -10,7 +11,6 @@ import { useFetchNotifications } from "../backend/hooks/shared/useFetchNotificat
 // mutation hooks
 import { useMarkAsRead } from "../backend/hooks/shared/useMarkAsRead";
 import { useLogout } from "../backend/hooks/auth/authLogout";
-
 
 // icons 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
@@ -31,11 +31,11 @@ import placeHolderAvatar from '../assets/placeholder-avatar.png';
 const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
   const navigate = useNavigate();
   // to fetch member name for the logged in id
-  const {user} = useAuth();
+  const { user } = useAuth();
   const loginId = user?.id;
 
   // fetch member data and details for the logged in user
-  const { data: members_data, isLoading, isError, error } = useMembers({login_id: loginId});
+  const { data: members_data, isLoading, isError, error } = useMembers({ login_id: loginId });
   const member = members_data?.data[0] || [];
 
   const profile_pic = member?.avatar_url;
@@ -54,12 +54,12 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   // Filter notifications for dropdown: show unread + read notifications less than 1 month old
   const filteredNotifications = notifications?.filter((notif) => {
     if (!notif.is_read) return true; // Always show unread
-    
+
     // For read notifications, only show if less than 1 month old
     const createdAt = new Date(notif.created_at);
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    
+
     return createdAt > oneMonthAgo;
   }) || [];
 
@@ -70,9 +70,9 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   }
 
   // notification mutation hook
-  const {mutate: markAsReadMutation } = useMarkAsRead(); // single
-  const {mutate: markAllAsReadMutation } = useMarkAsRead(); // all
-  
+  const { mutate: markAsReadMutation } = useMarkAsRead(); // single
+  const { mutate: markAllAsReadMutation } = useMarkAsRead(); // all
+
 
   /**
    *  State variables
@@ -105,14 +105,14 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
 
   return (
     <header className="navbar bg-neutral text-white px-4 py-3 flex justify-between items-center">
-      
+
       <div className="flex justify-between items-center">
 
         {/* SIDEBAR TOGGLE FOR MOBILE */}
         <label htmlFor="my-drawer" className="lg:hidden ml-5 mr-10 drawer-button cursor-pointer">
           <MenuOutlinedIcon className="w-6 h-6" />
         </label>
-        
+
         {/* SEARCH */}
         <div className="hidden sm:flex relative w-72 max-w-md">
           <input
@@ -129,7 +129,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
             aria-label="Search"
             className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white text-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md"
           >
-            
+
             <SearchIcon />
           </button>
         </div>
@@ -195,11 +195,10 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                         setShowModal(true);
                         setShowDropdown(false);
                       }}
-                      className={`p-3 mb-2 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-primary hover:shadow-md ${
-                        notif.is_read 
-                          ? "bg-base-200/30 opacity-75" 
-                          : "bg-base-200 font-semibold"
-                      }`}
+                      className={`p-3 mb-2 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-primary hover:shadow-md ${notif.is_read
+                        ? "bg-base-200/30 opacity-75"
+                        : "bg-base-200 font-semibold"
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
@@ -267,35 +266,35 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
               <div className="p-5 max-h-[70vh] overflow-y-auto">
                 {selectedNotif ? (
                   <div className="space-y-4">
-                    <div className="alert alert-info shadow-lg">
-                      <div className="flex flex-col w-full">
-                        <div className="font-semibold text-base mb-2">{selectedNotif?.message}</div>
+                    {/* Emphasized message */}
+                    <div className="rounded-xl border border-base-300 bg-gradient-to-br from-base-200/80 to-base-100 p-5 shadow">
+                      <div className="text-lg font-sm tracking-tight text-base-content leading-snug">
+                        {selectedNotif?.message}
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="flex items-start gap-2 p-3 bg-base-200 rounded-lg">
-                        <span className="font-semibold text-base-content/80 min-w-[80px]">Type:</span>
-                        <span className="badge badge-primary badge-sm">{selectedNotif?.type || "General"}</span>
-                      </div>
-
-                      <div className="flex items-start gap-2 p-3 bg-base-200 rounded-lg">
-                        <span className="font-semibold text-base-content/80 min-w-[80px]">Sender:</span>
-                        <span className="text-base-content">{selectedNotif?.sender_id || "System"}</span>
-                      </div>
-
-                      <div className="flex items-start gap-2 p-3 bg-base-200 rounded-lg">
-                        <span className="font-semibold text-base-content/80 min-w-[80px]">Recipient:</span>
-                        <span className="text-base-content">{selectedNotif?.recipient_id || "Global"}</span>
-                      </div>
-
-                      <div className="flex items-start gap-2 p-3 bg-base-200 rounded-lg">
-                        <span className="font-semibold text-base-content/80 min-w-[80px]">Date:</span>
-                        <span className="text-base-content/70 text-sm">
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="badge badge-primary badge-sm">
+                          {selectedNotif?.type.toUpperCase() || "N/A"}
+                        </span>
+                        <span className="text-xs text-base-content/60">
                           {format(new Date(selectedNotif.created_at), "PPPp")}
                         </span>
                       </div>
                     </div>
+
+                    {/* Minor details */}
+                    {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 bg-base-200 rounded-lg">
+                        <div className="text-xs uppercase text-base-content/60">Sender</div>
+                        <div className="text-sm text-base-content">{selectedNotif?.sender_id || "System"}</div>
+                      </div>
+                      
+                      <div className="p-3 bg-base-200 rounded-lg">
+                        <div className="text-xs uppercase text-base-content/60">Recipient</div>
+                        <div className="text-sm text-base-content">
+                          {selectedNotif?.recipient_id || (selectedNotif?.is_global ? "Global" : "—")}
+                        </div>
+                      </div>
+                    </div> */}
 
                     <button
                       onClick={() => setSelectedNotif(null)}
@@ -316,7 +315,8 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                             markAsReadMutation({ notif_id: notif.id });
                             console.log(`TRIGGERED`, notif.id)
                           }
-                          setSelectedNotif(notif)}}
+                          setSelectedNotif(notif)
+                        }}
                         className={`p-4 border border-base-300 rounded-lg cursor-pointer hover:shadow-md hover:border-primary transition-all duration-200 ${notif.is_read ? "bg-base-200/50 opacity-75" : "bg-base-100 font-semibold"
                           }`}
                       >
@@ -503,6 +503,16 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
       </div>
     </header>
   );
+};
+
+// 🛠 Prop Types for the expected values to be recieved or something2
+Topbar.propTypes = {
+  role: PropTypes.oneOf([
+    "treasurer",
+    "board",
+    "regular-member",
+    "associate-member",
+  ]).isRequired,
 };
 
 export default Topbar;
