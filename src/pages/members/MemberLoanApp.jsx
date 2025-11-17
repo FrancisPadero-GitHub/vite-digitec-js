@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useTransition, use} from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { useForm } from "react-hook-form";
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -56,13 +56,13 @@ function MemberLoanApp() {
   const { hasRestriction, requirements } = useLoanRestriction();
   const { data: loanProducts } = useFetchLoanProducts();
 
-  const { data: myProfile} = useFetchProfile();
+  const { data: myProfile } = useFetchProfile();
   const memberInfo = myProfile || {};
 
   const { data: coopData } = useFetchCoop({ useLoggedInMember: true });
   const coopContributions = coopData?.data || [];
 
-  const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ useLoggedInMember: true});
+  const { data: memberLoanAppRaw, isLoading, isError, error } = useFetchLoanApp({ useLoggedInMember: true });
   const loanAppRaw = memberLoanAppRaw?.data || [];
 
   // mutation hooks
@@ -95,7 +95,7 @@ function MemberLoanApp() {
   const [statusFilter, setStatusFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
-  
+
   /**
    * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
    * it needs to be paired with useMemo on the filtered data (clubFunds)
@@ -127,23 +127,23 @@ function MemberLoanApp() {
   };
 
   // Reduces the amount of filtering per change so its good delay
-  const debouncedSearch = useDebounce(searchTerm, 250); 
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "LAPP_";
   const memberLoanApplications = useMemo(() => {
     return mergedLoanAccounts.filter((row) => {
-    const generatedId = `${TABLE_PREFIX}${row.application_id}`;
+      const generatedId = `${TABLE_PREFIX}${row.application_id}`;
 
-    const matchesSearch =
-      debouncedSearch === "" ||
-      row.amount?.toString().includes(debouncedSearch) ||
-      row.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesSearch =
+        debouncedSearch === "" ||
+        row.amount?.toString().includes(debouncedSearch) ||
+        row.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
-    const matchesStatus = statusFilter === "" || row.status === statusFilter;
-    const date = row.application_date ? new Date(row.application_date) : null;
-    const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+      const matchesStatus = statusFilter === "" || row.status === statusFilter;
+      const date = row.application_date ? new Date(row.application_date) : null;
+      const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
 
       // To avoid subtext displaying numbers instead of month names
       // I had to convert the values from the monthFilter to numbers for comparison
@@ -157,11 +157,11 @@ function MemberLoanApp() {
       };
       const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
       const matchesMonth =
-        monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
 
-    return matchesSearch && matchesStatus && matchesYear && matchesMonth;
-  });
-}, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter]);
+      return matchesSearch && matchesStatus && matchesYear && matchesMonth;
+    });
+  }, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter]);
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
@@ -234,7 +234,7 @@ function MemberLoanApp() {
   const [loanStatus, setLoanStatus] = useState(false);
 
   // Modal Handlers
-    const [modalType, setModalType] = useState(null);
+  const [modalType, setModalType] = useState(null);
   const openAddModal = () => {
     // Count restrictions for loan applications and accounts
     const pendingAppsCount = loanAppRaw.filter(   // loan applications status check
@@ -267,8 +267,8 @@ function MemberLoanApp() {
   const openEditModal = (row) => {
     if (!row.product_id) {
       toast.error("Cannot load data missing product id");
-      console.error("Cannot load data missing product id"); 
-      return 
+      console.error("Cannot load data missing product id");
+      return
     }
 
     const matchedProduct = loanProducts?.find(
@@ -288,14 +288,14 @@ function MemberLoanApp() {
     // returns true or false if the application has already approved and existing in loan accounts
     // setLoanStatus(loanAcc?.some(
     //   (loan) => loan.application_id === watch("application_id")))     
-    
+
     // to disable the form if the app is already Denied not being able to update or delete
     // setLoanStatus(row.status === "Denied" || row.status === "Approved")
 
     const appFound = loanAcc?.some((loan) => loan.application_id === watch("application_id"))
-    
+
     // Disable editing if status is not pending/if it exists in loan accounts
-    if (row.status !== "Pending" || appFound) {setLoanStatus(true);}
+    if (row.status !== "Pending" || appFound) { setLoanStatus(true); }
 
     setModalType("edit");
   };
@@ -306,7 +306,7 @@ function MemberLoanApp() {
      * first it resets the values 
      * second it retriggers my useEffect for loan calculation cause the dependencies are based on watch values
      */
-    reset(defaultValues); 
+    reset(defaultValues);
     setLoanStatus(false);
     setModalType(null);
   };
@@ -331,7 +331,7 @@ function MemberLoanApp() {
 
   const closeCancelConfirmation = () => {
     // reopen the edit modal with the previous data
-    openEditModal(pendingCancelData); 
+    openEditModal(pendingCancelData);
     setShowCancelConfirmation(false);
   };
 
@@ -409,7 +409,7 @@ function MemberLoanApp() {
   /**
    * Loan Product Eligibility check
    */
-  
+
   const loanProductAccess = myProfile?.is_eligible_for_other_loans // boolean true or false default is false
   const productCode = "S_CAP_LOANS" // this is the only code or product that they can use if not eligible for other loans
 
@@ -432,7 +432,7 @@ function MemberLoanApp() {
   }, [coopContributions]);
 
   // Call the hook at top level to get loanable amount
-  const {totalLoanable, percentage} = useShareCapitalLoanable(totalShareCapital);
+  const { totalLoanable, percentage } = useShareCapitalLoanable(totalShareCapital);
 
 
 
@@ -447,9 +447,10 @@ function MemberLoanApp() {
    */
 
   const selectedLoanProduct = watch("loan_product");
-  const selectedProduct = useMemo(() => { 
-  return loanProducts?.find((p) => p.name === selectedLoanProduct
-  )}, [loanProducts, selectedLoanProduct]); 
+  const selectedProduct = useMemo(() => {
+    return loanProducts?.find((p) => p.name === selectedLoanProduct
+    )
+  }, [loanProducts, selectedLoanProduct]);
   const isSpecialProduct = selectedProduct?.product_code === productCode;
 
   const principalValue = watch("amount");
@@ -465,7 +466,7 @@ function MemberLoanApp() {
 
     // don't proceed if no principal value
     if (!principalValue || principalValue <= 0) return null;
-    
+
     let totalPayable = 0;
     let totalInterest = 0;
     let totalServiceFee = 0;
@@ -498,7 +499,7 @@ function MemberLoanApp() {
     }
     return { totalPayable, totalInterest, totalServiceFee, totalMonthlyPayment };
   }, [principalValue, interestMethod, interestRateValue, loanTermValue, serviceFeeValue]);
-  
+
   /**
    * Use effects
    */
@@ -554,7 +555,6 @@ function MemberLoanApp() {
     }
     // The eslint-disable comment is to avoid warning for not including setValue and watchh in the dependency array
     // This is stable do not remove the dependency calculatedLoan
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calculatedLoan]);
 
 
@@ -587,17 +587,17 @@ function MemberLoanApp() {
         : "Select a loan product first",
     },
     {
-      label: "Term",  
+      label: "Term",
       name: "loan_term",
       type: "select",
-      required: true, 
+      required: true,
       dynamicOptions: selectedProduct
         ? [
           { label: `${selectedProduct.min_term_months} months`, value: selectedProduct.min_term_months },
           { label: "4 months", value: 4 },
           { label: "6 months", value: 6 },
           { label: `${selectedProduct.max_term_months} months`, value: selectedProduct.max_term_months },
-          ]
+        ]
         : [],
     },
     // Only include application date if modalType is edit
@@ -695,7 +695,7 @@ function MemberLoanApp() {
 
   return (
     <div>
-      <Toaster position="bottom-left"/>
+      <Toaster position="bottom-left" />
       <div className="space-y-4">
         {/* Put a restriction here if a certain criteria is not met */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
@@ -710,11 +710,11 @@ function MemberLoanApp() {
                 value: statusFilter,
                 onChange: handleStatusChange,
                 options: [
-                  { label: "Pending", value: "Pending"},
+                  { label: "Pending", value: "Pending" },
                   { label: "On Review", value: "On Review" },
                   { label: "Approved", value: "Approved" },
                   { label: "Denied", value: "Denied" },
-        
+
                 ],
               },
               {
@@ -744,9 +744,9 @@ function MemberLoanApp() {
               },
             ]}
           />
-        <button className="btn btn-neutral whitespace-nowrap" onClick={openAddModal} aria-label="Apply for loan">
-          Apply For A Loan
-        </button>
+          <button className="btn btn-neutral whitespace-nowrap" onClick={openAddModal} aria-label="Apply for loan">
+            Apply For A Loan
+          </button>
         </div>
 
         <DataTableV2
@@ -865,7 +865,7 @@ function MemberLoanApp() {
                           <h5 className="text-xs font-semibold text-green-700 mb-2">Share Capital Loan Summary</h5>
                           <div className="text-xs space-y-1">
                             <div className="flex justify-between"><span className="text-green-700">Total Share Capital:</span><span className="font-semibold">₱{totalShareCapital.toLocaleString() || 0}</span></div>
-                            <div className="flex justify-between"><span className="text-green-700">Loanable (%):</span><span className="font-semibold">{Number(percentage)|| 0}%</span></div>
+                            <div className="flex justify-between"><span className="text-green-700">Loanable (%):</span><span className="font-semibold">{Number(percentage) || 0}%</span></div>
                             <div className="flex justify-between"><span className="text-green-700">Max Loanable Amount:</span><span className="font-bold text-green-800">₱{Number(totalLoanable).toLocaleString() || 0}</span></div>
                           </div>
                           <p className="text-[10px] mt-2 text-green-600">Amount field capped; based on current share capital eligibility.</p>
