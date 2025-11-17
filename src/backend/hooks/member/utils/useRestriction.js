@@ -34,7 +34,7 @@ export default function useLoanRestriction() {
     age < Number(minAge) ||
     myShares < Number(minShareCapital);
 
-  return { 
+  return {
     hasRestriction,
     isLoading: settingsLoading,
     requirements: {

@@ -639,13 +639,13 @@ function MemberLoanApp() {
     const eligibilityInfo = [
       {
         label: "Tenure",
-        value: `${tenure} years`,
+        value: `${tenure} ${tenure > 1 ? "years" : "year"} of membership`,
         passed: tenure >= requirements.minTenure,
-        rule: `${requirements.minTenure} years of membership`,
+        rule: `${requirements.minTenure} ${requirements.minTenure > 1 ? "years" : "year"} of membership`,
       },
       {
         label: "Age",
-        value: `${memberAge} years old`,
+        value: `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
         passed: memberAge >= requirements.minAge,
         rule: `Must be at least ${requirements.minAge} years old`,
       },

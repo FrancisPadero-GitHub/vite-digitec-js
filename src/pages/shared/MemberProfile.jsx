@@ -17,39 +17,19 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import FinanceTab from "./components/FinanceTab";
 
 // constants
-import {CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS,} from "../../constants/Color";
+import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, CAPITAL_CATEGORY_COLORS, } from "../../constants/Color";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png";
+import getYearsMonthsDaysDifference from "../../constants/DateCalculation";
 
-// function to get membership duration in months based on joined_date
-function calculateMembershipMonths(joined_date) {
-  if (!joined_date) return 0;
-  const joined = new Date(joined_date);
-  const now = new Date();
-  const years = now.getFullYear() - joined.getFullYear();
-  const months = now.getMonth() - joined.getMonth();
-  return years * 12 + months;
-}
-
-// function to calculate age based on birthday
-function calculateAge(birthday) {
-  if (!birthday) return 0;
-  const birthdayDate = new Date(birthday);
-  const today = new Date();
-  let age = today.getFullYear() - birthdayDate.getFullYear();
-  const monthDiff = today.getMonth() - birthdayDate.getMonth();
-  const dayDiff = today.getDate() - birthdayDate.getDate();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-    age--;
-  }
-  return age;
-}
+// restriction
+import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
 
 function MemberProfile() {
+  const { requirements } = useLoanRestriction();
   const navigate = useNavigate();
   const { memberId } = useParams();
   const parsedId = Number(memberId);
-  
+
   const { data, isLoading, isError, error } = useFetchMemberDetails({
     memberId: parsedId,
   });
@@ -92,10 +72,10 @@ function MemberProfile() {
   );
 
   // Membership duration
-  const membershipMonths = calculateMembershipMonths(memberInfo?.joined_date);
+  const { years: tenure } = getYearsMonthsDaysDifference(memberInfo?.joined_date);
 
   // Age
-  const memberAge = calculateAge(memberInfo?.birthday);
+  const { years: memberAge } = getYearsMonthsDaysDifference(memberInfo?.birthday);
 
 
   const openModal = (row) => {
@@ -106,7 +86,7 @@ function MemberProfile() {
   const topInfo = [
     { label: "Account No.", value: memberInfo?.account_number || "—" },
     { label: "Share Capital", value: `₱${totalShareCapital.toLocaleString()}` },
-    { label: "Membership", value: `${membershipMonths} mos` },
+    { label: "Membership", value: `${tenure} years` },
   ];
 
   const personalInfo = [
@@ -133,24 +113,24 @@ function MemberProfile() {
   const eligibilityInfo = [
     {
       label: "Tenure",
-      value: `${membershipMonths} months`,
-      passed: membershipMonths >= 12,
-      rule: "12 months of membership",
+      value: `${tenure} ${tenure > 1 ? "years" : "year"} of membership`,
+      passed: tenure >= requirements.minTenure,
+      rule: `${requirements.minTenure} ${requirements.minTenure > 1 ? "years" : "year"} of membership`,
     },
     {
       label: "Age",
-      value: `${memberAge} years old`,
-      passed: memberAge >= 18,
-      rule: "Must be at least 18 years old",
+      value: `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
+      passed: memberAge >= requirements.minAge,
+      rule: `Must be at least ${requirements.minAge} years old`,
     },
     {
       label: "Share Capital",
       value: `₱${totalShareCapital.toLocaleString()}`,
-      passed: totalShareCapital > 5000,
-      rule: "Over ₱5,000 share capital required",
+      passed: totalShareCapital >= requirements.minShareCapital,
+      rule: `At least ₱${requirements.minShareCapital.toLocaleString()} share capital required`,
     },
   ]
-  
+
   // ----------- LOADING STATE -----------
   if (isLoading) {
     return (
@@ -291,7 +271,7 @@ function MemberProfile() {
                   {/* Eligibility rules */}
                   <div className="dropdown dropdown-hover dropdown-right">
                     <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-gray-400 hover:text-gray-500">
-                      <InfoIcon fontSize="small"/>
+                      <InfoIcon fontSize="small" />
                     </div>
                     <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-64 p-4 shadow bg-base-200 text-base-content">
                       <div className="card-body p-0">
@@ -314,10 +294,10 @@ function MemberProfile() {
                   <span className="badge badge-success gap-2">
                     <CheckCircleIcon sx={{ fontSize: 16 }} />Eligible
                   </span>
-                  ) : (
-                    <span className="badge badge-error gap-2">
-                      <CancelIcon sx={{ fontSize: 16 }} />Not Eligible
-                    </span>
+                ) : (
+                  <span className="badge badge-error gap-2">
+                    <CancelIcon sx={{ fontSize: 16 }} />Not Eligible
+                  </span>
                 )}
               </div>
 
@@ -327,9 +307,9 @@ function MemberProfile() {
                   <div key={index} className="flex items-center gap-3">
                     <div className={`${item.passed ? 'text-success' : 'text-error'}`}>
                       {item.passed ? (
-                        <CheckCircleIcon fontSize="small"/>
+                        <CheckCircleIcon fontSize="small" />
                       ) : (
-                        <CancelIcon fontSize="small"/>
+                        <CancelIcon fontSize="small" />
                       )}
                     </div>
                     <div className="flex-1 flex justify-between items-center gap-2">
@@ -359,9 +339,9 @@ function MemberProfile() {
                   if (optional) {
                     const value = name === "displayName" ? displayName : memberInfo?.[name];
                     const displayValue = name === "displayName" ? displayName : (memberInfo?.[name] || "—");
-                    if (value == null || displayValue === "—") {return null;}
+                    if (value == null || displayValue === "—") { return null; }
                   }
-                  
+
                   return (
                     <div key={name}>
                       <p className="text-xs text-gray-500 uppercase">{label}</p>
@@ -407,8 +387,8 @@ function MemberProfile() {
                   </td>
                   <td className="font-medium text-xs">{entry.contribution_date}</td>
                   <td className="text-xs w-[200px] max-w-[200px]">
-                    <div 
-                      className="cursor-help truncate w-full" 
+                    <div
+                      className="cursor-help truncate w-full"
                       title={entry.remarks || "No remarks provided"}
                     >
                       {entry.remarks || "—"}
@@ -422,7 +402,7 @@ function MemberProfile() {
             <FinanceTab
               label="Club Funds"
               icon={<SavingsIcon fontSize="small" className="mr-2" />}
-              headers={["Ref No.", "Amount", "Category", "Method", "Date", "Remarks"]}         
+              headers={["Ref No.", "Amount", "Category", "Method", "Date", "Remarks"]}
               data={clubFunds}
               renderRow={(entry) => (
                 <tr key={entry.contribution_id} className="text-center">
@@ -448,8 +428,8 @@ function MemberProfile() {
                   </td>
                   <td className="text-xs font-medium">{entry.payment_date}</td>
                   <td className="text-xs w-[200px] max-w-[200px]">
-                    <div 
-                      className="cursor-help truncate w-full" 
+                    <div
+                      className="cursor-help truncate w-full"
                       title={entry.remarks || "No remarks provided"}
                     >
                       {entry.remarks || "—"}
