@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 function BoardFormModal({
   title,
   open,
@@ -30,12 +32,12 @@ function BoardFormModal({
         </>
       );
     }
-    
-    
+
+
     if (type) return "Next"; // When board picks "Approved" in decision, show "Next"
     if (memberRole === "board") return "Update"; //When board picks "Pending", "On Review", "Denied" in application decision
     if (memberRole === "treasurer") return "Release"; //When treasurer releases loan
-    
+
     return "Submit";
   };
 
@@ -77,5 +79,22 @@ function BoardFormModal({
     </dialog>
   );
 }
+
+// 🛠 Prop Types for the expected values to be recieved or something2
+BoardFormModal.propTypes = {
+  title: PropTypes.string.isRequired,
+  open: PropTypes.bool.isRequired,
+  close: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
+  onSubmit: PropTypes.func,
+  status: PropTypes.bool,
+  action: PropTypes.func,
+  deleteAction: PropTypes.func,
+  type: PropTypes.string,
+  isPending: PropTypes.bool,
+  isDisabled: PropTypes.bool,
+  memberRole: PropTypes.string,
+};
+
 
 export default BoardFormModal;

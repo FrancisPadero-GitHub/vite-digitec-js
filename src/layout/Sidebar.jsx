@@ -17,6 +17,9 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InventoryIcon from '@mui/icons-material/Inventory';
 import LoginIcon from '@mui/icons-material/Login';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import PropTypes from "prop-types";
+
 
 // 🧩 Dynamic Pathings Items to be shared by other roles
 
@@ -25,7 +28,7 @@ const financeBase = (role) => [
   { label: "Coop Share Capital", icon: AccountBalanceIcon, path: `/${role}/coop-share-capital` },
   { label: "Club Funds", icon: SavingsIcon, path: `/${role}/club-funds` },
   { label: "Club Expenses", icon: ReceiptLongIcon, path: `/${role}/club-expenses` },
-  
+
 ];
 
 // board and members
@@ -96,7 +99,7 @@ const sidebarConfig = {
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/board" },
         { label: "Member Records", icon: PeopleIcon, path: "/board/member-records" },
-        // { label: "Announcements", icon: CampaignIcon, path: "/board/announcements" },
+        { label: "Announcements", icon: CampaignIcon, path: "/board/announcements" },
         { label: "Reports", icon: AssessmentIcon, path: "/board/reports" },
         { label: "Activity Logs", icon: HistoryIcon, path: "/board/activity-logs" },
       ],
@@ -104,7 +107,7 @@ const sidebarConfig = {
     {
       section: "Finance",
       items: [
-        ...financeBase("board"), 
+        ...financeBase("board"),
         ...loansBase("board")
       ]
     },
@@ -121,7 +124,7 @@ const sidebarConfig = {
     {
       section: "Finance",
       items: [
-        
+
         { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/share-capital" },
         { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/club-funds" },
         ...loansBase("regular-member"),
@@ -257,10 +260,20 @@ const Sidebar = ({ role }) => {
             ))}
           </ul>
         </div>
-     
+
       </div>
     </aside>
   );
+};
+
+// 🛠 Prop Types for the expected values to be recieved or something2
+Sidebar.propTypes = {
+  role: PropTypes.oneOf([
+    "treasurer",
+    "board",
+    "regular-member",
+    "associate-member",
+  ]).isRequired,
 };
 
 export default Sidebar;

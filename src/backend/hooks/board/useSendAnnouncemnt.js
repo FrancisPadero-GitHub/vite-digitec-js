@@ -4,6 +4,8 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber";
 
 /**
  * Calls Supabase RPC to send an announcement.
+ * This is for the announcement so the target for this is would be as all as in
+ * all members will recieve an announcement.
  *
  * @param {Object} params
  * @param {string} params.message - The announcement message.
@@ -16,14 +18,23 @@ const sendAnnouncement = async ({ message, type = "general", target = "all", sen
     throw new Error("Message cannot be empty.");
   }
 
-  const { error } = await supabase.rpc("send_notification", {
+  console.log("📤 Calling send_notification with:", { message, type, target, sender_id });
+
+  const { data, error } = await supabase.rpc("send_notification", {
     p_message: message,
     p_type: type,
     p_target: target,
-    p_sender_id: sender_id,
+    p_sender: sender_id,
   });
 
-  if (error) throw error;
+  console.log("📥 RPC Response:", { data, error });
+
+  if (error) {
+    console.error("❌ RPC Error:", error);
+    throw error;
+  }
+
+  return data;
 };
 
 /**
@@ -32,7 +43,7 @@ const sendAnnouncement = async ({ message, type = "general", target = "all", sen
  */
 export function useSendAnnouncement() {
   const queryClient = useQueryClient();
-  const { accountNumber } = useFetchAccountNumber();
+  const { data: accountNumber } = useFetchAccountNumber();
 
   return useMutation({
     mutationFn: ({ message, type = "general", target = "all" }) =>
@@ -40,16 +51,16 @@ export function useSendAnnouncement() {
         message,
         type,
         target,
-        sender_id: accountNumber,
+        sender_id: accountNumber
       }),
 
-    onSuccess: () => {
-      console.log("✅ Announcement sent successfully");
+    onSuccess: (data) => {
+      console.log("✅ Announcement sent successfully - Response:", data);
       queryClient.invalidateQueries(["notifications"]);
     },
 
     onError: (error) => {
-      console.error("❌ Failed to send announcement:", error.message);
+      console.error("❌ Failed to send announcement:", error);
     },
   });
 }

@@ -5,7 +5,7 @@ async function fetchAnnouncement() {
   const { data, error } = await supabase
     .from("notifications")
     .select("*")
-    .eq("type", "announcement")
+    .eq("type", "general")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
