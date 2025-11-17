@@ -139,6 +139,7 @@ function Settings() {
                           {setting.key === 'tenure'}
                           {setting.key === 'age' && 'years'}
                           {setting.key === 'share_capital' && 'PHP'}
+                          {setting.key === 'share_capital_percentage' && '%'}
                         </span>
                       </div>
                     </div>
