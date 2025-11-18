@@ -1,4 +1,4 @@
-import { useState} from 'react'
+import { useState, useMemo, useTransition} from 'react'
 import { useNavigate } from 'react-router-dom';
 
 // fetch hooks
@@ -10,9 +10,14 @@ import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanPro
 // components
 import MainDataTable from '../treasurer/components/MainDataTable';
 import FilterToolbar from '../shared/components/FilterToolbar';
+import DataTableV2 from '../shared/components/DataTableV2';
 
 // constants
 import { LOAN_ACCOUNT_STATUS_COLORS, LOAN_PRODUCT_COLORS } from "../../constants/Color";
+
+// utils
+import { display } from '../../constants/numericFormat';
+import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
 
 // Restriction
 import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
@@ -34,17 +39,12 @@ function MemberLoanAcc() {
   const members = members_data?.data || [];
   const { data: loanProducts } = useFetchLoanProducts();
 
-  // Data fetch on loan applications and pagination control
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-
   // get the outstanding balance on this view table instead of the base table 
-  const { data: loanAccView } = useFetchLoanAccView({ page, limit, useLoggedInMember: true });
+  const { data: loanAccView } = useFetchLoanAccView({ useLoggedInMember: true });
   const loanAccViewRaw = loanAccView?.data || [];
 
-  const { data: loanAcc, isLoading, isError, error } = useFetchLoanAcc({page, limit, useLoggedInMember: true});
+  const { data: loanAcc, isLoading, isError, error } = useFetchLoanAcc({ useLoggedInMember: true});
   const loanAccRaw = loanAcc?.data || [];
-  const total = loanAccRaw?.count || 0;
 
   // Merge view and base table by loan_id
   const mergedLoanAccounts = loanAccRaw.map(baseRow => {
@@ -61,37 +61,106 @@ function MemberLoanAcc() {
   const [statusFilter, setStatusFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
+
+    /**
+     * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+     * it needs to be paired with useMemo on the filtered data (clubFunds)
+     * 
+     */
+    // Add useTransition
+    const [isPending, startTransition] = useTransition();
+  
+    // Update filter handlers to use startTransition
+    const handleSearchChange = (value) => {
+      startTransition(() => {
+        setSearchTerm(value);
+      });
+    };
+    const handleStatusChange = (value) => {
+      startTransition(() => {
+        setStatusFilter(value);
+      });
+    };
+    const handleYearChange = (value) => {
+      startTransition(() => {
+        setYearFilter(value);
+      });
+    };
+    const handleMonthChange = (value) => {
+      startTransition(() => {
+        setMonthFilter(value);
+      });
+    };
+
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250);
+
   const TABLE_PREFIX = "LACC_";
+  const memberLoanAccounts = useMemo(() => {
+    return mergedLoanAccounts.filter((row) => {
+      const generatedId = `${TABLE_PREFIX}${row.loan_id}`;
 
-  const memberLoanAccounts = mergedLoanAccounts.filter((row) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        row.amount_req?.toString().includes(searchTerm) ||
+        row.total_amount_due?.toString().includes(searchTerm) ||
+        row.loan_ref_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.status?.toLowerCase().includes(searchTerm.toLowerCase());
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
-    const member = members?.find((m) => m.account_number === row.account_number);
-    const fullName = member
-      ? `${member.f_name} ${member.l_name} ${member.email}`.toLowerCase()
-      : "";
+      const matchesStatus = statusFilter === "" || row.status === statusFilter;
+      const date = row.release_date ? new Date(row.release_date) : null;
+      const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
 
-    const matchesSearch =
-      searchTerm === "" ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      row.amount_req?.toString().includes(searchTerm) ||
-      row.total_amount_due?.toString().includes(searchTerm) ||
-      row.loan_ref_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.status?.toLowerCase().includes(searchTerm.toLowerCase());
+      // To avoid subtext displaying numbers instead of month names
+      // I had to convert the values from the monthFilter to numbers for comparison
+      const monthNameToNumber = {
+        January: 1, February: 2,
+        March: 3, April: 4,
+        May: 5, June: 6,
+        July: 7, August: 8,
+        September: 9, October: 10,
+        November: 11, December: 12,
+      };
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth =
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
 
-    const matchesStatus = statusFilter === "" || row.status === statusFilter;
+      return matchesSearch && matchesStatus && matchesYear && matchesMonth;
+  });
+}, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter]);
 
-    const date = row.release_date ? new Date(row.release_date) : null;
-    const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-    const matchesMonth =
-      monthFilter === "" || (date && (date.getMonth() + 1).toString() === monthFilter);
-
-    return matchesSearch && matchesStatus && matchesYear && matchesMonth;
+  // Dynamically generate year options for the past 5 years including current year
+  // to get rid of the hard coded years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - i;
+    return { label: year.toString(), value: year.toString() };
   });
 
+  // for the subtext of data table
+  // just for fancy subtext in line with active filters
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    statusFilter ? `${statusFilter}` : null,
+    yearFilter ? `${yearFilter}` : null,
+    monthFilter ? `${monthFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all loan accounts";
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setYearFilter("");
+    setMonthFilter("");
+  };
+
+  // modal open handler
   const openModal = (row) => {
     navigate(`../loan-account/details/${row.loan_id}`);
   }
-
 
 
   if (hasRestriction) {
@@ -109,131 +178,104 @@ function MemberLoanAcc() {
 
   return (
     <div>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">My Loan Accounts</h1>
+      <div className="space-y-4">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-2">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Status",
+                value: statusFilter,
+                onChange: handleStatusChange,
+                options: [
+                  { label: "Active", value: "Active" },
+                  { label: "Closed", value: "Closed" },
+                ],
+              },
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: [
+                  { label: "January", value: "January" },
+                  { label: "February", value: "February" },
+                  { label: "March", value: "March" },
+                  { label: "April", value: "April" },
+                  { label: "May", value: "May" },
+                  { label: "June", value: "June" },
+                  { label: "July", value: "July" },
+                  { label: "August", value: "August" },
+                  { label: "September", value: "September" },
+                  { label: "October", value: "October" },
+                  { label: "November", value: "November" },
+                  { label: "December", value: "December" },
+                ],
+              },
+            ]}
+          />
         </div>
         
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "All Status",
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: "Active", value: "Active" },
-                { label: "Closed", value: "Closed" },
-                { label: "Defaulted", value: "Defaulted" },
-              ],
-            },
-            {
-              label: "All Year",
-              value: yearFilter,
-              onChange: setYearFilter,
-              options: [
-                { label: "2025", value: "2025" },
-                { label: "2024", value: "2024" },
-                { label: "2023", value: "2023" },
-              ],
-            },
-            {
-              label: "All Month",
-              value: monthFilter,
-              onChange: setMonthFilter,
-              options: [
-                { label: "January", value: "1" },
-                { label: "February", value: "2" },
-                { label: "March", value: "3" },
-                { label: "April", value: "4" },
-                { label: "May", value: "5" },
-                { label: "June", value: "6" },
-                { label: "July", value: "7" },
-                { label: "August", value: "8" },
-                { label: "September", value: "9" },
-                { label: "October", value: "10" },
-                { label: "November", value: "11" },
-                { label: "December", value: "12" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable
-          headers={[
-            "Loan Ref No.",
-            "Amount Req",
-            "Principal",
-            "Interest Rate",
-            "Total Amount Due",
-            "Balance",
-            "Total Paid",
-            "Loan Type",
-            "Status",
-            "Release",
-          ]}
+        <DataTableV2
+          title={"My Loan Accounts"}
+          filterActive={activeFiltersText !== "Showing all loan accounts"}
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Loan Ref No.", "Total Amount Due", "Outstanding Balance", "Total Paid", "Loan Type", "Status"]}
           data={memberLoanAccounts}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
 
             const matchedLoanProduct = loanProducts?.find(
               (product) => product.product_id === row.product_id
             );
             const loanProductName = matchedLoanProduct?.name;
-            const interestRate = matchedLoanProduct?.interest_rate.toLocaleString();
 
-            // const loanTerm = matchedLoanProduct?.max_term_months.toLocaleString();
+            const loanRefNo = row?.loan_ref_number || "Not found";
+            const totalAmountDue = row?.total_amount_due || 0;
+            const outstandingBalance = row?.outstanding_balance || 0;
+            const totalPaid = row?.total_paid || 0;
+            const status = row?.status || "Not found";
 
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.loan_id}`}
-                className="cursor-pointer hover:bg-base-200/50"
+                className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openModal(row)}
               >
-                 {/* Loan Ref number */}
-                <td className="text-center px-2 py-2 text-xs font-medium">
-                  {row.loan_ref_number || "ID"}
+
+                {/* Loan Ref No. */}
+                <td className="font-medium text-xs">
+                  {loanRefNo}
                 </td>
 
-                {/* Amount Req */}
-                <td className="px-2 py-2 text-center font-semibold text-info">
-                  ₱ {row.amount_req?.toLocaleString() || "0"}
+                {/* Total Amount Due */}
+                <td className="font-semibold text-success">
+                  ₱ {display(totalAmountDue)}
                 </td>
 
-                {/* Principal */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.principal?.toLocaleString() || "0"}
+                {/* Outstanding Balance */}
+                <td className="font-semibold text-success">
+                  ₱ {display(outstandingBalance)}
                 </td>
 
-                {/* Interest Rate */}
-                <td className="px-2 py-2 text-center font-semibold text-warning">
-                  {interestRate || "0"} %
-                </td>
-
-                {/* total amount due */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.total_amount_due?.toLocaleString() || "0"}
-                </td>
-
-                {/* Balance */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.outstanding_balance?.toLocaleString() || "0"}
-                </td>
-
-                {/* total paid */}
-                <td className="px-2 py-2 text-center font-semibold text-success">
-                  ₱ {row.total_paid?.toLocaleString() || "0"}
+                {/* Total Paid */}
+                <td className="font-semibold text-success">
+                  ₱ {display(totalPaid)}
                 </td>
 
                 {/* Loan Product */}
-                <td className="px-4 py-2 text-center">
+                <td>
                   {loanProductName ? (
                     <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
                       {loanProductName}
@@ -244,23 +286,17 @@ function MemberLoanAcc() {
                 </td>
 
                 {/* Status */}
-                <td className="px-4 py-4 text-center">
-                  {row.status ? (
-                    <span className={`badge badge-soft font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status]}`}>
-                      {row.status}
-                    </span>
+                <td>
+                  {status ? (
+                  <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                      {row.status || "Not Provided"}
+                  </span>
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
-
-                <td className="px-4 py-4 text-center">
-                  {row.release_date
-                    ? new Date(row.release_date).toLocaleDateString()
-                    : "—"}
-                </td>
               </tr>
-            );
+            )
           }}
         />
       </div>

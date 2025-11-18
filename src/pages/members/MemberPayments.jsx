@@ -107,8 +107,8 @@ function MemberPayments() {
 
   return (
     <div>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
