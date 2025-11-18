@@ -15,6 +15,7 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 
 // assets
 import auth_bg from "../../assets/auth-bg.jpg";
+import digitec_logo from "../../assets/digitec-logo.png";
 
 
 
@@ -36,6 +37,10 @@ const Login = () => {
     password: "",
     mode: "onChange",
   });
+
+  const handleCancel = () => {
+      navigate(-1);
+    };
 
   const navigate = useNavigate();
 
@@ -77,77 +82,87 @@ const Login = () => {
     <div className="min-h-screen font-inter bg-base-200">
       <Toaster position="bottom-right"/>
       <section className="min-h-screen flex justify-center items-center px-4">
-        <div className="card card-side w-[900px] h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
-          <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden">
+        <div className="card card-side w-[900px] h-[550px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
+          <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden hidden lg:block">
             <img 
             src={auth_bg}
             alt="Login background illustration"
-            className="w-full h-full object-cover" />
+            className="" />
           </figure>
 
           <div className="card-body w-full md:w-1/2 justify-center">
-            <h2 className="text-4xl font-bold text-center text-base-content mb-6">Login</h2>
+           {/* Added logo */}
+            <img 
+              src={digitec_logo} 
+              alt="Fraternity Logo" 
+              className="w-35 h-30 mx-auto mb-2" 
+            />
+            <h2 className="text-3xl font-bold text-center text-green-800 text-base-content mb-3">Welcome to DigiTEC!</h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Email Field */}
-              <div className="relative w-full">
-                <EmailOutlinedIcon
-                  fontSize="small"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email..."
-                  autoComplete="email"
-                  className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""
-                    }`}
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
-                      message: "Email must be a valid email address",
-                    },
-                    onChange: () => clearErrors("root"),
-                  })}
-                />
+              <div>
+                <div className="relative w-full">
+                  <EmailOutlinedIcon
+                    fontSize="small"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none outline-none"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Your Email..."
+                    autoComplete="email"
+                    className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""
+                      }`}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+                        message: "Email must be a valid email address",
+                      },
+                      onChange: () => clearErrors("root"),
+                    })}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
+                )}
               </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
-              )}
 
               {/* Password Field */}
-              <div className="relative w-full">
-                <LockOutlinedIcon
-                  fontSize="small"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none"
-                />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Your Password..."
-                  autoComplete="current-password"
-                  className={`input input-bordered w-full pl-10 pr-10 ${errors.password ? "input-error" : ""
-                    }`}
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must have at least 6 characters",
-                    },
-                    onChange: () => clearErrors("root"),
-                  })}
-                />
-                <button
-                  title="Show Password"
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)} // (prev) => !prev is an arrow function, it’s the functional form of a state update.
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10"
-                >
-                  {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
-                </button>
+              <div>
+                <div className="relative w-full">
+                  <LockOutlinedIcon
+                    fontSize="small"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 pointer-events-none"
+                  />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Your Password..."
+                    autoComplete="current-password"
+                    className={`input input-bordered w-full pl-10 pr-10 ${errors.password ? "input-error" : ""
+                      }`}
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must have at least 6 characters",
+                      },
+                      onChange: () => clearErrors("root"),
+                    })}
+                  />
+                  <button
+                    title="Show Password"
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)} // (prev) => !prev is an arrow function, it’s the functional form of a state update.
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10"
+                  >
+                    {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                )}
               </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password.message}</p>
-              )}
 
               {/* Server error */}
               {errors.root && (
@@ -168,7 +183,7 @@ const Login = () => {
                 title="Sign In Button"
                 type="submit"
                 disabled={isPending}
-                className="btn btn-primary w-full"
+                className="btn btn-primary w-full outline-none"
               >
                 {isPending ? (
                   <>
@@ -179,6 +194,17 @@ const Login = () => {
                   "Sign In"
                 )}
               </button>
+
+              {/* Cancel Button */}
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isPending}
+                className="btn w-full bg-gray-300 outline-none text-gray-800"
+              >
+                Cancel
+              </button>
+
             </form>
           </div>
         </div>
