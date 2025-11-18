@@ -618,19 +618,8 @@ function MemberLoanApp() {
   ];
 
 
-
-
   // --- Loan Eligibility Display ---
   if (hasRestriction) {
-
-    // Calculate total share capital
-    const totalShareCapital = useMemo(() => {
-      return coopContributions.reduce(
-        (sum, item) => sum + (item.amount || 0),
-        0
-      );
-    }, [coopContributions]);
-
     // Membership duration
     const { years: tenure } = getYearsMonthsDaysDifference(memberInfo?.joined_date);
     // Age
