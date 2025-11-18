@@ -81,7 +81,7 @@ function AppRoutes() {
     { path: "reports", element: <Reports /> },
     { path: "reports/income-statement", element: <IncomeStatement /> },
     { path: "reports/balance-sheet", element: <BalanceSheet /> },
-    
+
     { path: "reports/member-statements", element: <MemberStatements /> },
     { path: "reports/member-statement-details/:memberId", element: <MemStatementDetails /> },
 
@@ -89,7 +89,7 @@ function AppRoutes() {
     { path: "reports/club-coop-funds", element: <ClubCoopFunds /> },
     { path: "reports/transaction-logs", element: <TransactionLogs /> },
     { path: "reports/summary-charts", element: <SummaryCharts /> },
-    { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },   
+    { path: "coop-loans/loan-accounts", element: <LoanAccounts /> },
   ];
 
   const boardSharedTreasurerPages = [
@@ -112,7 +112,7 @@ function AppRoutes() {
 
   const boardRoutes = [
     ...sharedRoutes,
-    ...boardSharedTreasurerPages, 
+    ...boardSharedTreasurerPages,
     { path: "coop-loans/loan-applications", element: <LoanApplicationsV2 /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "settings", element: <BoardSettings /> },
@@ -137,7 +137,10 @@ function AppRoutes() {
     { path: "coop-loans/loan-payments", element: <MemberPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "help", element: <MemberHelp /> },
+
     { path: "reports", element: <MemberReports /> },
+    { path: "reports/member-statement-details/:memberId", element: <MemStatementDetails /> },
+
     { path: "settings", element: <MemberSettings /> },
     { path: "profile", element: <Profile /> },
   ];

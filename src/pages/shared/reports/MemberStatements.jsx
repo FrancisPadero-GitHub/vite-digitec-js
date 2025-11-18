@@ -1,5 +1,5 @@
 import { useState, useTransition, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 // fetch hooks
 import { useMembers } from "../../../backend/hooks/shared/useFetchMembers.js";
@@ -41,7 +41,7 @@ export default function MemberStatements() {
   const [isPending, startTransition] = useTransition();
 
   // Update filter handlers to use startTransition
-    const handleSearchChange = (value) => {
+  const handleSearchChange = (value) => {
     startTransition(() => {
       setSearchTerm(value);
     });
@@ -68,7 +68,7 @@ export default function MemberStatements() {
       if (!allowedRoles.includes(row.account_role)) return false;
 
       const full_name = `${row.f_name ?? ""} ${row.m_name ?? ""} ${row.l_name ?? ""}`.trim();
-      const matchesSearch = 
+      const matchesSearch =
         debouncedSearch === "" ||
         full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -97,7 +97,7 @@ export default function MemberStatements() {
   }
 
   // Go to a member's profile 
-  const handleClick = (row) => { navigate(`../reports/member-statement-details/${row.member_id}`);};
+  const handleClick = (row) => { navigate(`../reports/member-statement-details/${row.member_id}`); };
 
   return (
     <div>
@@ -133,7 +133,7 @@ export default function MemberStatements() {
           />
         </div>
 
-        <DataTableV2 
+        <DataTableV2
           title="Select Member Statement"
           subtext={activeFiltersText}
           showLinkPath={false}
@@ -150,7 +150,7 @@ export default function MemberStatements() {
             const role = row?.account_role || "Not Provided";
             const status = row?.account_status || "Not Provided";
 
-            return(
+            return (
               <tr key={id}
                 onClick={() => handleClick(row)}
                 className="cursor-pointer hover:bg-base-200/70 transition-colors text-center"
@@ -164,7 +164,7 @@ export default function MemberStatements() {
                     {full_name}
                   </div>
                 </td>
-                
+
                 {/* Role */}
                 <td>
                   {role ? (

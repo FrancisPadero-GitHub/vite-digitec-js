@@ -26,7 +26,7 @@ function MemStatementDetails() {
   const [selectedMonth, setSelectedMonth] = useState('all');
 
   // this contains 2 main data tables loanAcc and clubFunds + coopContributions AND a member information 
-  const { data, isLoading, isError, error } = useFetchMemberDetails({
+  const { data, isLoading, isError } = useFetchMemberDetails({
     memberId: parsedId,
   });
 
@@ -283,7 +283,10 @@ function MemStatementDetails() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">Loading member statement...</div>
+        <div className="flex items-center space-x-3" role="status" aria-live="polite">
+          <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+          <div className="text-xl">Loading member statement...</div>
+        </div>
       </div>
     );
   }
@@ -291,7 +294,7 @@ function MemStatementDetails() {
   if (isError) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-600">Error: {error?.message || 'Failed to load data'}</div>
+        <div className="text-xl text-red-600">Failed to load member statement.</div>
       </div>
     );
   }
