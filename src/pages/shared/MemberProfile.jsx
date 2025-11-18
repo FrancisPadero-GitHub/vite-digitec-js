@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import dayjs from "dayjs";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useFetchMemberDetails } from "../../backend/hooks/member/useFetchMemberDetails";
 import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
 import { useUpdateMember } from "../../backend/hooks/admin/useUpdateMembers";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // icons 
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
@@ -30,6 +31,10 @@ import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction"
 function MemberProfile() {
   const { requirements } = useLoanRestriction();
   const navigate = useNavigate();
+
+  // for the toggle eligibility only board can see it
+  const { memberRole } = useMemberRole();
+
   const { memberId } = useParams();
   const parsedId = Number(memberId);
 
@@ -354,27 +359,30 @@ function MemberProfile() {
                   </div>
                 ))}
               </div>
+              {memberRole === 'board' && (
+                <Fragment>
+                  <div className="divider my-2"></div>
+                  {/* Toggle for Other Loan Products */}
+                  <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">Other Loan Products Access</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {isEligible
+                          ? "Member can access all loan products"
+                          : "Member limited to share capital loan only"}
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="toggle toggle-success"
+                      checked={isEligible}
+                      onChange={handleToggleEligibility}
+                      disabled={isUpdating}
+                    />
+                  </div>
+                </Fragment>
+              )}
 
-              <div className="divider my-2"></div>
-
-              {/* Toggle for Other Loan Products */}
-              <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm">Other Loan Products Access</h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {isEligible
-                      ? "Member can access all loan products"
-                      : "Member limited to share capital loan only"}
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  className="toggle toggle-success"
-                  checked={isEligible}
-                  onChange={handleToggleEligibility}
-                  disabled={isUpdating}
-                />
-              </div>
             </div>
           </section>
 

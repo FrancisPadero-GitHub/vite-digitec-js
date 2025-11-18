@@ -462,7 +462,7 @@ function CoopLoansReleases() {
               <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded flex items-center gap-2">
                 <CheckCircleOutlinedIcon fontSize="inherit" className="text-green-700 text-[14px]" />
                 <span className="text-xs text-green-800 leading-tight">
-                  <strong>Ready to release:</strong> Click "Release" to activate this loan and generate the payment schedule.
+                  <strong>Ready to release:</strong> Click &ldquo;Release&rdquo; to activate this loan and generate the payment schedule.
                 </span>
               </div>
             )}

@@ -35,10 +35,10 @@ function MemStatementDetails() {
 
   // Extract various data tables
   const loanAccount = data?.loanAcc?.data || [];      // base table that will be merged with loanAccView
-  
+
   // loan acc view to view outstanding balance realtime
   const accountNo = memberInfo?.account_number
-  const { data: view_loan_account } = useFetchLoanAccView({ accountNumber: accountNo }); 
+  const { data: view_loan_account } = useFetchLoanAccView({ accountNumber: accountNo });
   const viewLoanAcc = view_loan_account?.data || [];
 
 
@@ -53,8 +53,8 @@ function MemStatementDetails() {
   });
   // console.log(mergedLoanAccounts[0])
   // const destructuredMergedData = mergedLoanAccounts[0] || {};    // might need later
-  
-    // Returns { onGoingLoans, pastLoans } for a given account number
+
+  // Returns { onGoingLoans, pastLoans } for a given account number
   function getLoansByStatus() {
     const onGoingLoans = mergedLoanAccounts?.filter(row => row.status === "Active");
     const pastLoans = mergedLoanAccounts?.filter(row => row.status === "Closed");         // unused for now need clarity if we include the closed loans in the statement
@@ -63,8 +63,8 @@ function MemStatementDetails() {
 
   /**
    * This is the data for the tables we need below
-   */ 
-  
+   */
+
   // loans both active and past loans
   const { onGoingLoans, pastLoans } = getLoansByStatus();
   const activeLoans = onGoingLoans[0] || [];     // the [0] is to get the first element which is the array of active loans filtered which is always return single array
@@ -72,7 +72,7 @@ function MemStatementDetails() {
   // loan payments
   const { data: loanPaymentsData } = useFetchLoanPayments({ accountNumber: accountNo });
   const loanPayments = loanPaymentsData?.data || [];
-  
+
   // club funds history
   const clubFunds = data?.clubFunds?.data || [];
   // coop contributions history
@@ -99,15 +99,15 @@ function MemStatementDetails() {
   // Filter data based on selected year and month
   const filterByDate = (items, dateField) => {
     if (!items) return [];
-    
+
     return items.filter(item => {
       const itemDate = new Date(item[dateField]);
       const itemYear = itemDate.getFullYear().toString();
       const itemMonth = (itemDate.getMonth() + 1).toString();
-      
+
       const yearMatch = selectedYear === 'all' || itemYear === selectedYear;
       const monthMatch = selectedMonth === 'all' || itemMonth === selectedMonth;
-      
+
       return yearMatch && monthMatch;
     });
   };
@@ -141,18 +141,18 @@ function MemStatementDetails() {
     return { label: year.toString(), value: year.toString() };
   });
 
-// Get unique years from all data
-// const availableYears = useMemo(() => {
-//   const years = new Set();
+  // Get unique years from all data
+  // const availableYears = useMemo(() => {
+  //   const years = new Set();
 
-//   [...clubFunds, ...coopContributions, ...loanPayments].forEach(item => {
-//     const date = new Date(item.payment_date || item.contribution_date);
-//     if (!isNaN(date.getTime())) {
-//       years.add(date.getFullYear());
-//     }
-//   });
-//   return Array.from(years).sort((a, b) => b - a);
-// }, [clubFunds, coopContributions, loanPayments]);
+  //   [...clubFunds, ...coopContributions, ...loanPayments].forEach(item => {
+  //     const date = new Date(item.payment_date || item.contribution_date);
+  //     if (!isNaN(date.getTime())) {
+  //       years.add(date.getFullYear());
+  //     }
+  //   });
+  //   return Array.from(years).sort((a, b) => b - a);
+  // }, [clubFunds, coopContributions, loanPayments]);
 
   // Prepare data for Excel export (using filtered data)
   const prepareExportData = () => {
@@ -308,7 +308,7 @@ function MemStatementDetails() {
               fileName={`Member_Statement_${memberInfo?.account_number || 'export'}_${new Date().toISOString().split('T')[0]}.xlsx`}
             />
           </div>
-          
+
           {/* Filter Section */}
           <DateFilterReports
             selectedYear={selectedYear}
@@ -330,7 +330,7 @@ function MemStatementDetails() {
                 {memberInfo ? (
                   `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim()
                 ) : 'N/A'}
-               </p>
+              </p>
             </div>
             <div>
               <p className="text-gray-600">Account Number:</p>
@@ -397,7 +397,7 @@ function MemStatementDetails() {
             <p className="text-xs mt-1 opacity-75">Total paid: {display(activeLoans?.total_paid || 0)}</p>
           </div>
         </div>
-        
+
         <div className='grid sm:grid-cols-1 lg:grid-cols-2  gap-2' >
           {/* Coop Contributions (Share Capital) */}
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
@@ -540,10 +540,12 @@ function MemStatementDetails() {
         {/* Active Loans */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Active Loan Balances</h2>
-          {/* HEADER stays fixed */}
-          <div className="overflow-x-auto">
+
+          {/* Combined scrollable container */}
+          <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              {/* HEADER stays sticky */}
+              <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
@@ -558,11 +560,7 @@ function MemStatementDetails() {
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
                 </tr>
               </thead>
-            </table>
-          </div>
-          {/* BODY scrolls */}
-          <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
-            <table className="min-w-full divide-y divide-gray-200">
+              {/* BODY scrolls */}
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredOngoingLoans.length > 0 ? (
                   filteredOngoingLoans.map((loan, index) => (
@@ -595,10 +593,12 @@ function MemStatementDetails() {
         {/* Loan Payment History */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Loan Payment History</h2>
-          {/* HEADER stays fixed */}
-          <div className="overflow-x-auto">
+
+          {/* Combined scrollable container */}
+          <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[20vh]">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              {/* HEADER stays sticky */}
+              <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
@@ -607,11 +607,7 @@ function MemStatementDetails() {
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
                 </tr>
               </thead>
-            </table>
-          </div>
-          {/* BODY scrolls */}
-          <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[20vh]">
-            <table className="min-w-full divide-y divide-gray-200">
+              {/* BODY scrolls */}
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredLoanPayments.length > 0 ? (
                   filteredLoanPayments.map((payment, index) => (
@@ -633,9 +629,10 @@ function MemStatementDetails() {
               </tbody>
             </table>
           </div>
+
           {/* FOOTER stays fixed */}
           {filteredLoanPayments.length > 0 && (
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200">
+            <div className="bg-gray-50 border-t border-gray-200">
               <table className="min-w-full">
                 <tfoot>
                   <tr>
@@ -653,10 +650,12 @@ function MemStatementDetails() {
         {pastLoans.length > 0 && (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Closed Loans</h2>
-            {/* HEADER stays fixed */}
-            <div className="overflow-x-auto">
+
+            {/* Combined scrollable container */}
+            <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[17vh]">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                {/* HEADER stays sticky */}
+                <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No</th>
@@ -669,11 +668,7 @@ function MemStatementDetails() {
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
-              </table>
-            </div>
-            {/* BODY scrolls */}
-            <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[17vh]">
-              <table className="min-w-full divide-y divide-gray-200">
+                {/* BODY scrolls */}
                 <tbody className="bg-white divide-y divide-gray-200">
                   {pastLoans.map((loan, index) => (
                     <tr key={index} className="hover:bg-gray-50">
