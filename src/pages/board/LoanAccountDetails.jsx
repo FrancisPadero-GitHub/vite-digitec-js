@@ -9,6 +9,7 @@ import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccV
 import { useFetchPaySched } from "../../backend/hooks/shared/useFetchPaySched";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // components
 import LoanScheduleCardList from "./components/LoanScheduleCardList";
@@ -29,6 +30,9 @@ function LoanAccountDetails() {
   const { loan_id } = useParams();
 
   const parsedId = Number(loan_id);
+
+  // for the navigation parent path helper
+  const { memberRole } = useMemberRole();
 
   // Merged Loan Accounts Data
   const { data: loanAcc } = useFetchLoanAcc();            // base table
@@ -52,7 +56,7 @@ function LoanAccountDetails() {
   // Payment Schedules
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: loanSchedules, isLoading } = useFetchPaySched({page, limit, loanId: parsedId});
+  const { data: loanSchedules, isLoading } = useFetchPaySched({ page, limit, loanId: parsedId });
   const loanSchedRaw = loanSchedules?.data || [];
   const total = loanSchedules?.count;
 
@@ -70,7 +74,7 @@ function LoanAccountDetails() {
 
   const { data: loanProducts } = useFetchLoanProducts();
 
-  
+
   const matchedLoanProduct = loanProducts?.find(
     (product) => product.product_id === accountData?.product_id
   );
@@ -82,7 +86,7 @@ function LoanAccountDetails() {
   const navigate = useNavigate();
 
   return (
-  <div>
+    <div>
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Loan Account Details</h1>
@@ -91,26 +95,25 @@ function LoanAccountDetails() {
           </div>
         </div>
 
-         {/* Loan Account Info Card */}
+        {/* Loan Account Info Card */}
         {accountData && (
           <div className="space-y-4">
             {/* Account Header */}
             <div className="border border-base-content/10 rounded-2xl bg-base-100 p-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold ${
-                    accountData?.status === "Active"
+                  <div className={`w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold ${accountData?.status === "Active"
                     ? "bg-green-100 text-green-700"
                     : accountData?.status === "Closed"
-                    ? "bg-gray-100 text-gray-600"
-                    : accountData?.status === "Pending Release"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-blue-100 text-blue-700"
-                  }`}>
+                      ? "bg-gray-100 text-gray-600"
+                      : accountData?.status === "Pending Release"
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}>
                     {accountData?.status === "Active" ? (
                       <DoneAllIcon fontSize="large" color="green" />) : accountData?.status === "Closed" ? (
-                      <LockIcon fontSize="large" color="gray" />) : (
-                      <AccessTimeIcon fontSize="large" color="amber" />) || (
+                        <LockIcon fontSize="large" color="gray" />) : (
+                          <AccessTimeIcon fontSize="large" color="amber" />) || (
                       "●"
                     )}
                   </div>
@@ -121,27 +124,26 @@ function LoanAccountDetails() {
                 </div>
                 <div className="text-right">
                   <span
-                    className={`badge badge-soft font-semibold text-base ${
-                      LOAN_ACCOUNT_STATUS_COLORS[accountData?.status] || "badge-neutral"
-                    }`}
+                    className={`badge badge-soft font-semibold text-base ${LOAN_ACCOUNT_STATUS_COLORS[accountData?.status] || "badge-neutral"
+                      }`}
                   >
                     {accountData?.status || "N/A"}
                   </span>
                   <p className="text-sm text-gray-600 mt-3">{accountData?.loan_ref_number}</p>
                 </div>
               </div>
-            
+
 
               {/* TOP ROWW */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                
+
                 {/* Loan Overview (how much you asked and how much you get) */}
                 <div className="border border-blue-200 rounded-2xl bg-blue-50 p-6">
                   <p className="text-sm text-blue-600 font-semibold mb-2">Loan Overview</p>
                   <p className="text-2xl font-bold text-blue-900 mb-3">
                     ₱{display(accountData?.principal)}
                   </p>
-                  
+
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center pb-2 border-b border-blue-200">
                       <span className="text-blue-700">Principal Amount</span>
@@ -164,14 +166,14 @@ function LoanAccountDetails() {
                   <span className="text-2xl font-bold text-green-900">
                     {((Number(accountData.total_paid || 0) / Number(accountData.total_amount_due || 1)) * 100).toFixed(1)}%
                   </span>
-                  
+
                   {/* Progress bar */}
-                  <progress 
-                    className="progress progress-success w-full h-3 mt-4" 
-                    value={Number(accountData.total_paid || 0)} 
+                  <progress
+                    className="progress progress-success w-full h-3 mt-4"
+                    value={Number(accountData.total_paid || 0)}
                     max={Number(accountData.total_amount_due || 1)}
                   />
-                  
+
                   <div className="flex justify-between text-xs text-green-600 mb-3">
                     <span>Paid</span>
                     <span>Total Repayable</span>
@@ -195,7 +197,7 @@ function LoanAccountDetails() {
                   <p className="text-2xl font-bold text-red-900 mb-3">
                     ₱{display(accountData?.outstanding_balance)}
                   </p>
-                  
+
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center pb-2 border-b border-red-200">
                       <span className="text-red-700">Remaining Principal</span>
@@ -210,7 +212,7 @@ function LoanAccountDetails() {
                       <span className="font-bold text-red-800">₱{display(accountData?.remaining_penalty_fees)}</span>
                     </div>
                   </div>
-                  
+
                   {display(accountData?.remaining_penalty_fees) > 0 && (
                     <div className="mt-3 p-2 bg-red-100 rounded-lg">
                       <p className="text-xs text-red-700">⚠️ Late payment fees</p>
@@ -221,7 +223,7 @@ function LoanAccountDetails() {
 
               {/* BOTTOM ROW */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                
+
                 {/* Financial Breakdown (principal + total interest) */}
                 <div className="border border-purple-200 rounded-2xl bg-purple-50 p-6">
                   <h3 className="text-sm font-semibold text-purple-800 mb-4 pb-2 border-b border-purple-200 flex items-center gap-2">
@@ -299,12 +301,20 @@ function LoanAccountDetails() {
                     </div>
                   </div>
                 </div>
-            </div>
+              </div>
             </div>
           </div>
         )}
+        <div className="flex justify-between my-4" >
+          <h3 className="text-lg font-semibold mt-1 ">Payment Schedules</h3>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate(`/${memberRole}/coop-loans/payments`)}
+          >
+            Go to payments
+          </button>
+        </div>
 
-        <h3 className="text-lg font-semibold mt-8 mb-2">Payment Schedules</h3>
 
         {/* Loan Schedule List */}
         <LoanScheduleCardList

@@ -25,20 +25,20 @@ function LoanScheduleCardList({
               <div
                 key={item.schedule_id}
                 className={`rounded-xl border transition-all duration-200 ${item.paid
-                    ? "bg-green-50 border-green-200 hover:shadow-md"
-                    : isOverdue
-                      ? "bg-red-50 border-red-200 hover:shadow-lg"
-                      : "bg-white border-gray-200 hover:shadow-lg hover:border-blue-300"
+                  ? "bg-green-50 border-green-200 hover:shadow-md"
+                  : isOverdue
+                    ? "bg-red-50 border-red-200 hover:shadow-lg"
+                    : "bg-white border-gray-200 hover:shadow-lg hover:border-blue-300"
                   }`}
               >
                 {/* Header (payment due date and status) */}
                 <div className="flex justify-between items-center p-4 pb-3 border-b border-base-content/10">
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${item.paid
-                        ? "bg-green-100 text-green-700"
-                        : isOverdue
-                          ? "bg-red-100 text-red-700"
-                          : "bg-blue-100 text-blue-700"
+                      ? "bg-green-100 text-green-700"
+                      : isOverdue
+                        ? "bg-red-100 text-red-700"
+                        : "bg-blue-100 text-blue-700"
                       }`}>
                       <div className="text-center">
                         <div className="text-xs font-semibold opacity-60">{dayjs(item.due_date).format("MMM")}</div>
@@ -55,10 +55,10 @@ function LoanScheduleCardList({
 
                   <div className="flex flex-col items-end gap-1">
                     <div className={`px-3 py-1 rounded-full text-xs font-semibold ${item.paid
-                        ? "bg-green-200 text-green-800"
-                        : isOverdue
-                          ? "bg-red-200 text-red-800"
-                          : "bg-amber-200 text-amber-800"
+                      ? "bg-green-200 text-green-800"
+                      : isOverdue
+                        ? "bg-red-200 text-red-800"
+                        : "bg-amber-200 text-amber-800"
                       }`}>
                       {item.paid ? "✓ PAID" : isOverdue ? "OVERDUE" : "UPCOMING"}
                     </div>
