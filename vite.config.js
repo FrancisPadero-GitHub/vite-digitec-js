@@ -30,6 +30,7 @@ export default defineConfig({
 
   // Performance optimizations
   build: {
+    sourcemap: false, // disable source maps for production
     rollupOptions: {
       output: {
         manualChunks: {

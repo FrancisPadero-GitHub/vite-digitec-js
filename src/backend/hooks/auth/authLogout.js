@@ -19,6 +19,7 @@ export const useLogout = () => {
 
     // 2. Clear any cached queries
     queryClient.clear();
+    sessionStorage.clear();
 
     // 3. Sign out from Supabase
     const { error } = await supabase.auth.signOut({ scope: "local" });
