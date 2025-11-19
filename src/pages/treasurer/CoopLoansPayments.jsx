@@ -1,4 +1,4 @@
-import {useState, useMemo, useTransition} from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import dayjs from 'dayjs';
 import { createPortal } from 'react-dom';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -121,7 +121,7 @@ function CoopLoansPayments() {
   }
 
   // Reduces the amount of filtering per change so its good delay
-  const debouncedSearch = useDebounce(searchTerm, 250); 
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   // Dynamically generate year options for past 5 years (including current)
   const currentYear = new Date().getFullYear();
@@ -180,7 +180,7 @@ function CoopLoansPayments() {
   const { mutate: mutateDelete } = useDeletePayment('loan_payments');
 
   const today = getLocalDateString(new Date());
-  
+
   const defaultFormValues = {
     payment_id: "",
     loan_id: null,
@@ -242,7 +242,7 @@ function CoopLoansPayments() {
     reset(defaultFormValues);
     dispatch(openLoanPaymentModal({ type: 'add' }));
   }
-  
+
   const closeModal = () => {
     reset(defaultFormValues);
     dispatch(closeLoanPaymentModal());
@@ -263,7 +263,7 @@ function CoopLoansPayments() {
     setEditModal(selectedLoan?.status === "Active" ? true : false);
   };
 
-  const editModal = () => { 
+  const editModal = () => {
     if (!viewPaymentData) return;
 
     // Fetch the loan account details based on the selected payment data
@@ -280,7 +280,7 @@ function CoopLoansPayments() {
     });
 
     // put something here to trigger the shcedule id to be filtered
-    
+
 
     closeViewModal();
     dispatch(openLoanPaymentModal({ type: 'edit', data: viewPaymentData }));
@@ -303,7 +303,7 @@ function CoopLoansPayments() {
     setPendingPaymentData(data);
     setShowPaymentConfirm(true);
   };
-  
+
   // On confirm button
   const confirmPayment = () => {
     if (!pendingPaymentData) return;
@@ -322,7 +322,7 @@ function CoopLoansPayments() {
           setShowPaymentConfirm(false);
         },
       });
-    } else if (loanPaymentModal.type === "edit") { 
+    } else if (loanPaymentModal.type === "edit") {
       // console.log("Payload", pendingPaymentData)
 
       // custom payload for editing to avoid non-db fields error when inserting the whole form data
@@ -351,7 +351,7 @@ function CoopLoansPayments() {
 
     }
   };
-  
+
   /**
    * MEMBERS FILTER
    */
@@ -363,7 +363,7 @@ function CoopLoansPayments() {
       ? members
       : members.filter((m) =>
         `${m.account_number} ${m.f_name} ${m.l_name}`
-          .toLowerCase()     
+          .toLowerCase()
           .includes(debouncedQueryMem.toLowerCase())
       );
 
@@ -377,7 +377,7 @@ function CoopLoansPayments() {
     const data = loan_acc_view?.data || [];                     // Uses the view table version instead of the base table
     return data.filter((loan) => loan.status === "Active");     // Filter to only Active loan accounts
   }, [loan_acc_view]);
-  
+
   // Get the account number of the selected member
   const selectedMember = members.find((m) => m.account_number === watch("account_number"));
 
@@ -542,7 +542,7 @@ function CoopLoansPayments() {
 
   return (
     <div>
-      <Toaster position="bottom-left"/>
+      <Toaster position="bottom-left" />
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
           <FilterToolbar
@@ -612,10 +612,10 @@ function CoopLoansPayments() {
         </div>
 
         <DataTableV2
-          title="Member Loan Payments" 
+          title="Member Loan Payments"
           subtext={activeFiltersText}
           showLinkPath={false}
-          headers={["Payment Ref.","Schedule ID", "Loan Ref No.", "Account No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
+          headers={["Payment Ref.", "Schedule ID", "Loan Ref No.", "Account No.", "Name", "Amount", "Status", "Date", "Payment Method"]}
           filterActive={activeFiltersText !== "Showing all payments"}
           data={loanPayments}
           isLoading={isLoading}
@@ -640,23 +640,23 @@ function CoopLoansPayments() {
               >
                 {/* Ref no */}
                 <td className="px-4 py-2 text-center font-medium text-xs">{TABLE_PREFIX}_{id}</td>
-                
+
                 {/* Schedule ID */}
                 <td className="px-4 py-2 text-center font-medium text-xs">#{scheduleId}</td>
                 {/* Loan ID */}
                 <td className="px-4 py-2 text-center font-medium text-xs">{loanRefNo}</td>
-                
+
                 {/* Account No. */}
                 <td className="px-4 py-2 text-center font-medium text-xs">{accountNo}</td>
-                
-                 {/* Name */}
+
+                {/* Name */}
                 <td className="px-4 py-4 text-center" >
                   <span className="flex items-center gap-3">
                     {/* avatar for members */}
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={ avatarUrl
+                          src={avatarUrl
                           }
                           alt={fullName || "Avatar"}
                         />
@@ -691,7 +691,8 @@ function CoopLoansPayments() {
                   )}
                 </td>
               </tr>
-            )}}
+            )
+          }}
         />
 
         <FormModal
@@ -707,81 +708,81 @@ function CoopLoansPayments() {
           {/* ACCOUNT SELECTION */}
           <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-200 mb-3">
             <h4 className="text-xs font-bold text-gray-600 mb-2">Account Selection</h4>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
               {/* Member Account */}
               <div className="form-control w-full">
                 <label className="label text-xs font-medium text-gray-600 mb-1">Member Account</label>
                 <Controller
-                name="account_number"
-                control={control}
-                render={({ field }) => (
-                  <Combobox
-                    value={members.find((m) => m.account_number === field.value) || null}
-                    onChange={(member) => {
-                      field.onChange(member?.account_number);
-                      setValue("account_number", member?.account_number || "");
-                      setValue("member_id", member?.member_id || null);
-                      setValue("loan_ref_number", "");
-                      setValue("loan_id", null);
-                    }}
-                  >
-                  <ComboboxInput
-                    required
-                    className="input input-sm input-bordered w-full"
-                    placeholder="Search by Account Number or Name..."
-                    displayValue={(member) => 
-                      member ? `${member.account_number} - ${member.f_name} ${member.l_name}`.trim() : ""
-                    }
-                    onChange={(e) => setQueryMem(e.target.value)}
-                  />
+                  name="account_number"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      value={members.find((m) => m.account_number === field.value) || null}
+                      onChange={(member) => {
+                        field.onChange(member?.account_number);
+                        setValue("account_number", member?.account_number || "");
+                        setValue("member_id", member?.member_id || null);
+                        setValue("loan_ref_number", "");
+                        setValue("loan_id", null);
+                      }}
+                    >
+                      <ComboboxInput
+                        required
+                        className="input input-sm input-bordered w-full"
+                        placeholder="Search by Account Number or Name..."
+                        displayValue={(member) =>
+                          member ? `${member.account_number} - ${member.f_name} ${member.l_name}`.trim() : ""
+                        }
+                        onChange={(e) => setQueryMem(e.target.value)}
+                      />
 
-                  {/* Search option dropdown: account number, avatar, member name, role */}
-                  <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                    {filteredMembers.length === 0 ? (
-                      <div className="px-4 py-2 text-base-content/60">No members found.</div>
-                    ) : (
-                      filteredMembers.map((member) => (
-                        <ComboboxOption
-                          key={member.account_number}
-                          value={member}
-                          className={({ focus }) =>
-                          `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
-                          }
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="avatar">
-                              <div className="mask mask-circle w-10 h-10">
-                                <img
-                                  src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
-                                  alt={`${member.f_name} ${member.l_name}`}
-                                />
+                      {/* Search option dropdown: account number, avatar, member name, role */}
+                      <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                        {filteredMembers.length === 0 ? (
+                          <div className="px-4 py-2 text-base-content/60">No members found.</div>
+                        ) : (
+                          filteredMembers.map((member) => (
+                            <ComboboxOption
+                              key={member.account_number}
+                              value={member}
+                              className={({ focus }) =>
+                                `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
+                              }
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="avatar">
+                                  <div className="mask mask-circle w-10 h-10">
+                                    <img
+                                      src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
+                                      alt={`${member.f_name} ${member.l_name}`}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <span className="font-mono text-sm font-semibold">{member.account_number}</span>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                                    <span className="text-xs italic">({member.account_role})</span>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <span className="font-mono text-sm font-semibold">{member.account_number}</span>
-                              <div className="flex items-center gap-1">
-                              <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                              <span className="text-xs italic">({member.account_role})</span>
-                              </div>
-                            </div>
-                          </div>
-                        </ComboboxOption>
-                      ))
-                    )}
-                  </ComboboxOptions>
-                  </Combobox>
-                )}
-              />
+                            </ComboboxOption>
+                          ))
+                        )}
+                      </ComboboxOptions>
+                    </Combobox>
+                  )}
+                />
               </div>
 
               {/* Loan Account */}
               <div className="form-control w-full">
                 <label className="label text-xs font-medium text-gray-600 mb-1">Loan Account</label>
-                  <Controller
-                    name="loan_ref_number"
-                    control={control}
-                    render={({ field }) => {
+                <Controller
+                  name="loan_ref_number"
+                  control={control}
+                  render={({ field }) => {
                     const selectedAccount = watch("account_number");
                     const selectedMember = members.find(m => m.account_number === selectedAccount);
 
@@ -813,8 +814,7 @@ function CoopLoansPayments() {
                                 key={loan.loan_ref_number}
                                 value={loan}
                                 className={({ focus }) =>
-                                  `px-4 py-2 cursor-pointer transition-colors duration-150 ${
-                                    focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                                  `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
                                   }`
                                 }
                               >
@@ -829,9 +829,9 @@ function CoopLoansPayments() {
                           )}
                         </ComboboxOptions>
                       </Combobox>
-                      );
-                    }}
-                  />
+                    );
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -839,7 +839,7 @@ function CoopLoansPayments() {
           {/* PAYMENT DETAILS */}
           <div className="bg-white p-2.5 rounded-lg border border-gray-200 mb-3">
             <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Details</h4>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-2.5">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
@@ -858,8 +858,8 @@ function CoopLoansPayments() {
                     ${paymentStatus === "OVERDUE"
                       ? "bg-red-50 border-red-300 text-red-800"
                       : paymentStatus === "PARTIALLY PAID"
-                      ? "bg-blue-50 border-blue-300 text-blue-800"
-                      : "bg-gray-50 border-gray-300 text-gray-700"
+                        ? "bg-blue-50 border-blue-300 text-blue-800"
+                        : "bg-gray-50 border-gray-300 text-gray-700"
                     }`}>
                     <span className={paymentStatus === "OVERDUE" ? "text-red-600" : "text-gray-500"}>●</span>
                     {paymentStatus}
@@ -928,7 +928,7 @@ function CoopLoansPayments() {
           {/* PAYMENT FORM */}
           <div className="bg-gray-50 px-2.5 py-0.5 rounded-lg border border-gray-200">
             <h4 className="text-xs font-bold text-gray-600 mb-2">Enter Payment</h4>
-            
+
             {fields.map(({ label, name, type, options, autoComplete }) => (
               <div key={name} className="form-control w-full mb-1.5 overflow-visible relative">
                 <label htmlFor={name} className="label text-xs font-medium text-gray-600">{label}</label>
@@ -941,10 +941,10 @@ function CoopLoansPayments() {
                       required: true,
                       validate: (value) => {
                         if (value <= 0) return "Amount cannot be zero or negative";
-                        
+
                         // Skip validation checks when editing an existing payment
                         if (loanPaymentModal.type === "edit") {
-                          
+
                           return true;
                         }
 
@@ -952,7 +952,7 @@ function CoopLoansPayments() {
                         const minRequiredAmount = Number(remainingDue * 0.3); // 30% of remaining amount
                         const inputValue = Number(value);
 
-                        if (paymentStatus === "OVERDUE"  && mosOverdue > 0) {
+                        if (paymentStatus === "OVERDUE" && mosOverdue > 0) {
                           if (inputValue < remainingDue)
                             return `For OVERDUE payments, amount must cover the full remaining payable of ₱${remainingDue.toLocaleString()}`;
                         }
@@ -971,12 +971,12 @@ function CoopLoansPayments() {
                           id="total_amount"
                           type="number"
                           autoComplete="off"
-                          steps="0.01"
+                          step="0.01"
                           value={field.value}
                           placeholder="Enter Payment Amount" //AMOUNT LIMIT TO BE ADDED
                           onChange={(e) => {
                             const raw = e.target.value;
-                            if (raw === "") {field.onChange("");return;}
+                            if (raw === "") { field.onChange(""); return; }
                             const value = Number(raw);
                             field.onChange(value < 0 ? 0 : value);
                           }}
@@ -1038,8 +1038,8 @@ function CoopLoansPayments() {
                     {loanPaymentModal.type === "edit" ? "Confirm Payment Modification" : "Confirm Payment Submission"}
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                    {loanPaymentModal.type === "edit" 
-                      ? "You are about to modify an existing payment record. This action will update the payment schedules and recalculate loan balances. All changes will be logged for audit purposes and cannot be undone." 
+                    {loanPaymentModal.type === "edit"
+                      ? "You are about to modify an existing payment record. This action will update the payment schedules and recalculate loan balances. All changes will be logged for audit purposes and cannot be undone."
                       : "You are about to process a new loan payment. Please verify all details are correct as this transaction will immediately update the borrower's payment schedule and outstanding balance. This action cannot be reversed once submitted."}
                   </p>
                   {pendingPaymentData && (
@@ -1055,7 +1055,7 @@ function CoopLoansPayments() {
                   )}
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
                 <button
                   className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
@@ -1074,7 +1074,7 @@ function CoopLoansPayments() {
                       {loanPaymentModal.type === "edit" ? "Updating Payment..." : "Processing Payment..."}
                     </>
                   ) : (
-                      loanPaymentModal.type === "edit" ? "Confirm Payment Update" : "Process Payment"
+                    loanPaymentModal.type === "edit" ? "Confirm Payment Update" : "Process Payment"
                   )}
                 </button>
               </div>
@@ -1083,107 +1083,106 @@ function CoopLoansPayments() {
           document.body
         )}
 
-      {/* View Payment Details Modal */}
-      {viewPaymentData && (
-        <dialog open className="modal">
-          <div className="modal-box w-11/12 max-w-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-              <h3 className="text-xl font-bold">Payment Details</h3>
-              <div className={`badge badge-lg font-semibold ${
-                viewPaymentData.status === "PAID" ? "badge-success" : "badge-info"
-              }`}>
-                {viewPaymentData.status}
-              </div>
-            </div>
-
-            {/* Account Info Section */}
-            <div className="bg-base-200 p-3 rounded-lg mb-3">
-              <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
-              <div className="grid grid-cols-3 gap-2.5">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Account Number</label>
-                  <div className="text-sm font-semibold">{viewPaymentData.account_number}</div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
-                  <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
+        {/* View Payment Details Modal */}
+        {viewPaymentData && (
+          <dialog open className="modal">
+            <div className="modal-box w-11/12 max-w-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                <h3 className="text-xl font-bold">Payment Details</h3>
+                <div className={`badge badge-lg font-semibold ${viewPaymentData.status === "PAID" ? "badge-success" : "badge-info"
+                  }`}>
+                  {viewPaymentData.status}
                 </div>
               </div>
-            </div>
 
-            {/* Payment Info Section */}
-            <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
-              <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Information</h4>
-              <div className="grid grid-cols-4 gap-2.5 mb-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
-                  <div className="text-sm font-mono font-bold">#{viewPaymentData.schedule_id}</div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Payment ID</label>
-                  <div className="text-sm font-mono font-bold">LP_{viewPaymentData.payment_id}</div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Payment Date</label>
-                  <div className="text-sm font-semibold">{dayjs(viewPaymentData.payment_date).format('MM/DD/YYYY')}</div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
-                  <div className="text-sm font-semibold">{viewPaymentData.payment_method}</div>
+              {/* Account Info Section */}
+              <div className="bg-base-200 p-3 rounded-lg mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Account Number</label>
+                    <div className="text-sm font-semibold">{viewPaymentData.account_number}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
+                    <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Payment details */}
-            <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
-              <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Breakdown</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Principal</span>
-                  <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200">
-                    <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
+              {/* Payment Info Section */}
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Information</h4>
+                <div className="grid grid-cols-4 gap-2.5 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
+                    <div className="text-sm font-mono font-bold">#{viewPaymentData.schedule_id}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Payment ID</label>
+                    <div className="text-sm font-mono font-bold">LP_{viewPaymentData.payment_id}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Payment Date</label>
+                    <div className="text-sm font-semibold">{dayjs(viewPaymentData.payment_date).format('MM/DD/YYYY')}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
+                    <div className="text-sm font-semibold">{viewPaymentData.payment_method}</div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Interest</span>
-                  <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200">
-                    <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Fees</span>
-                  <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200">
-                    <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-base-300">
+              </div>
+
+              {/* Payment details */}
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Breakdown</h4>
+                <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-base font-bold">Total Amount</span>
-                    <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
-                      <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                    <span className="text-sm text-gray-600">Principal</span>
+                    <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200">
+                      <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Interest</span>
+                    <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200">
+                      <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Fees</span>
+                    <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200">
+                      <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-base-300">
+                    <div className="flex justify-between items-center">
+                      <span className="text-base font-bold">Total Amount</span>
+                      <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                        <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Modal Actions */}
-            <div className='flex justify-between' >
+              {/* Modal Actions */}
+              <div className='flex justify-between' >
                 <div className="modal-action">
                   {showEditModal && (
                     <button onClick={editModal} className="btn btn-primary">Edit</button>
-                    )}
+                  )}
                 </div>
                 <div className="modal-action">
                   <button onClick={closeViewModal} className="btn btn-primary">Close</button>
                 </div>
-            </div>
+              </div>
 
-          </div>
-          <form method="dialog" className="modal-backdrop" onClick={closeViewModal}><button>close</button></form>
-        </dialog>
-      )}
+            </div>
+            <form method="dialog" className="modal-backdrop" onClick={closeViewModal}><button>close</button></form>
+          </dialog>
+        )}
       </div>
     </div>
   )

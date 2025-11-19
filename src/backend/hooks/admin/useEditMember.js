@@ -2,14 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 import { useAddActivityLog } from "../shared/useAddActivityLog";
 
-const updateMember = async ({ member_id, account_role }) => {
-  const payload = { account_role };
+const updateMember = async ({ member_id, account_role, account_status }) => {
+  const payload = { account_role, account_status };
 
   const { data, error } = await supabase
     .from("members")
     .update(payload)
     .eq("member_id", member_id)
-    .select(`*, `)
+    .select("*")
     .single();
 
   if (error) {
