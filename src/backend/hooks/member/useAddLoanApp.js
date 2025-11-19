@@ -38,6 +38,7 @@ const sendNotification = async (loanAppData, senderAccountNumber) => {
   const message = `New loan application submitted by ${senderAccountNumber}. Amount: ₱${loanAppData.amount?.toLocaleString() || '0'} | Purpose: ${loanAppData.purpose || 'N/A'}`;
 
   const { error } = await supabase.rpc("send_notification", {
+    p_title: "New Loan Application",
     p_message: message,
     p_type: "loan_application",
     p_target: "role:board",

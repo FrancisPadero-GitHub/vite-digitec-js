@@ -21,6 +21,7 @@ const sendAnnouncement = async ({ message, type = "general", target = "all", sen
   console.log("📤 Calling send_notification with:", { message, type, target, sender_id });
 
   const { data, error } = await supabase.rpc("send_notification", {
+    p_title: "Announcement",
     p_message: message,
     p_type: type,
     p_target: target,

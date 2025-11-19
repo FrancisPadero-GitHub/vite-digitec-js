@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useAuth } from "../backend/context/AuthProvider";
@@ -22,6 +22,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HelpIcon from "@mui/icons-material/Help";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+
+// components
 import NotificationDetail from "../components/shared/NotificationDetail";
 
 // constants
@@ -82,6 +84,9 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   const [showModal, setShowModal] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState();
 
+  // ref used for closing dropdown when clicking outside
+  const notifRef = useRef(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [dateTimeStr, setDateTimeStr] = useState("");
 
@@ -102,6 +107,29 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  // Close notifications dropdown when clicking outside of it or pressing Escape
+  useEffect(() => {
+    if (!showDropdown) return; // don't add listeners if dropdown is closed
+
+    const onOutsideClick = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    const onEscape = (e) => {
+      if (e.key === "Escape") setShowDropdown(false);
+    };
+
+    document.addEventListener("mousedown", onOutsideClick);
+    document.addEventListener("keydown", onEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", onOutsideClick);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [showDropdown]);
 
   return (
     <header className="navbar bg-neutral text-white px-4 py-3 flex justify-between items-center">
@@ -144,7 +172,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
         <div className="hidden md:block">{dateTimeStr}</div>
 
         {/* NOTIFICATIONS */}
-        <div className="relative">
+        <div ref={notifRef} className="relative">
           <button
             className="indicator relative"
             onClick={() => setShowDropdown((prev) => !prev)}
@@ -160,6 +188,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
           {/* DROPDOWN LIST */}
           {showDropdown && (
             <div className="absolute right-0 mt-3 w-96 bg-base-100 text-base-content shadow-2xl border border-base-300 z-50 animate-[fadeIn_0.2s_ease-out]">
+
               {/* Header */}
               <div className="p-4 flex justify-between items-center border-b border-base-300 bg-base-200/50">
                 <h3 className="font-bold text-lg flex items-center gap-2">
@@ -199,7 +228,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <div className="text-sm text-base-content line-clamp-2">{notif.message}</div>
+                          <div className="text-sm text-base-content line-clamp-2">{notif.title}</div>
                           <div className="text-xs text-base-content/60 mt-1 flex items-center gap-1">
                             <span>🕐</span>
                             {format(new Date(notif.created_at), "MMM d, h:mm a")}
@@ -238,8 +267,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
           )}
         </div>
 
-
-        {/* MODAL */}
+        {/* Notifications MODAL */}
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-base-100 rounded-2xl w-full max-w-lg shadow-2xl border border-base-300 animate-[fadeIn_0.2s_ease-out]">
@@ -265,6 +293,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
               <div className="p-5 max-h-[70vh] overflow-y-auto">
                 {selectedNotif ? (
                   <NotificationDetail
+                    title={selectedNotif?.title}
                     message={selectedNotif?.message}
                     type={selectedNotif?.type}
                     createdAt={selectedNotif?.created_at}
@@ -291,7 +320,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
-                            <div className="text-base-content mb-1">{notif.message}</div>
+                            <div className="text-base-content mb-1">{notif.title}</div>
                             <div className="text-xs text-base-content/60 flex items-center gap-1">
                               <span>📅</span>
                               {format(new Date(notif.created_at), "MMM d, yyyy h:mm a")}

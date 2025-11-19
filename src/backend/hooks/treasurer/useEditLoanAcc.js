@@ -99,6 +99,7 @@ const sendNotification = async (loanAccData, senderAccountNumber) => {
   const message = `Your loan has been released! Amount: ₱${loanAccData.principal?.toLocaleString() || '0'} | Loan Ref: ${loanAccData.loan_ref_number || 'N/A'}. Check your loan account for details.`;
 
   const { error } = await supabase.rpc("send_notification", {
+    p_title: "Loan Released",
     p_message: message,
     p_type: "loan_application_status",
     p_target: loanAccData.account_number,
