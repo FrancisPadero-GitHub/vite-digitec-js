@@ -40,13 +40,13 @@ const loansBase = (role) => {
     // refer to the routes.jsx to view what pages they are belong to
     // this is dynamically configured
 
-    { 
-      label: "Applications", 
-      path: `/${role}/coop-loans/loan-applications`, 
+    {
+      label: "Applications",
+      path: `/${role}/coop-loans/loan-applications`,
       badgeKey: role === "board" ? "applications" : null //only board gets notif badge
     },
     { label: "Loan Accounts", path: `/${role}/coop-loans/loan-accounts` },
-    { label: "Payments", path: role === "board" ? "/board/coop-loans/payments" : `/${role}/coop-loans/loan-payments` },
+    { label: "Payments", path: role === "board" ? "/board/coop-loans/payments" : `/${role}/coop-loans/payments` },
   ];
 
   // Add shared "Schedules" to Board only (Treasurer has its own config; members don't show schedules)
@@ -231,7 +231,7 @@ const Sidebar = ({ role }) => {
                     if (item.children) {
                       const isOpen = openMenus[item.label] || false;
                       const showParentBadge = item.label === "Coop Loans" && totalPendingCount > 0;
-                      
+
                       return (
                         <li key={i}>
                           <button
@@ -266,8 +266,7 @@ const Sidebar = ({ role }) => {
                                   <li key={idx}>
                                     <Link
                                       to={child.path}
-                                      className={`flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors ${
-                                        isChildActive ? "bg-green-950/50 text-white" : "hover:bg-green-950/20"
+                                      className={`flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors ${isChildActive ? "bg-green-950/50 text-white" : "hover:bg-green-950/20"
                                         }`}
                                     >
                                       <div className="flex items-center gap-2">
