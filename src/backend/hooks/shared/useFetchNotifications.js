@@ -55,6 +55,10 @@ export function useFetchNotifications({ accountNumber = null, useLoggedInMember 
                 if (old.some(r => r.id === newRow.id)) return old;
                 return [newRow, ...old].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
               case 'UPDATE':
+                // If the notification was soft-deleted (deleted_at set), remove it from cache
+                if (newRow?.deleted_at) {
+                  return old.filter(r => r.id !== newRow.id);
+                }
                 return old.map(r => r.id === newRow.id ? newRow : r);
               case 'DELETE':
                 return old.filter(r => r.id !== (oldRow?.id));

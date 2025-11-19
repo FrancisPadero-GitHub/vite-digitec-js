@@ -10,6 +10,7 @@ import { useFetchNotifications } from "../backend/hooks/shared/useFetchNotificat
 
 // mutation hooks
 import { useMarkAsRead } from "../backend/hooks/shared/useMarkAsRead";
+import { useDeleteNotif } from "../backend/hooks/shared/useDeleteNotif";
 import { useLogout } from "../backend/hooks/auth/authLogout";
 
 // icons 
@@ -73,6 +74,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   // notification mutation hook
   const { mutate: markAsReadMutation } = useMarkAsRead(); // single
   const { mutate: markAllAsReadMutation } = useMarkAsRead(); // all
+  const { mutate: deleteNotification } = useDeleteNotif();
 
 
   /**
@@ -217,6 +219,18 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                             <span className="badge badge-accent badge-xs">New</span>
                           </div>
                         )}
+                        <div className="flex items-center gap-2 ml-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification({ notif_id: notif.id });
+                            }}
+                            title="Delete notification"
+                            className="btn btn-ghost btn-xs btn-circle"
+                          >
+                            🗑
+                          </button>
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -251,20 +265,44 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
             <div className="bg-base-100 rounded-2xl w-full max-w-lg shadow-2xl border border-base-300 animate-[fadeIn_0.2s_ease-out]">
               {/* Header */}
               <div className="flex justify-between items-center p-5 border-b border-base-300">
-                <h2 className="text-xl font-bold text-base-content flex items-center gap-2">
-                  <NotificationsIcon className="text-primary" />
-                  {selectedNotif ? "Notification Details" : "All Notifications"}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                    setSelectedNotif(null);
-                  }}
-                  className="btn btn-ghost btn-sm btn-circle"
-                  aria-label="Close modal"
-                >
-                  ✕
-                </button>
+
+                <div>
+                  <h2 className="text-xl font-bold text-base-content flex items-center gap-2">
+                    <NotificationsIcon className="text-primary" />
+                    {selectedNotif ? "Notification Details" : "All Notifications"}
+                  </h2>
+                </div>
+                {!selectedNotif ? (
+                  <button
+                    onClick={() => {
+                      // Delete all notifications for current account
+                      deleteNotification({ account_no: accountNo });
+                    }}
+                    className="link text-red-600 btn-sm font-bold"
+                    aria-label="Delete all notifications"
+                    title="Delete all"
+                  >
+                    Delete all
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      // Delete all notifications for current account
+                      deleteNotification({ notif_id: selectedNotif.id }, {
+                        onSuccess: () => {
+                          // goes back to all notifications view
+                          setSelectedNotif(null);
+                        }
+                      });
+                    }}
+                    className="link text-red-600 btn-sm font-bold"
+                    aria-label="Delete all notifications"
+                    title="Delete"
+                  >
+                    Delete
+                  </button>
+                )}
+
               </div>
 
               {/* Content */}
@@ -307,6 +345,16 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                           {!notif.is_read && (
                             <span className="badge badge-accent badge-sm">New</span>
                           )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification({ notif_id: notif.id });
+                            }}
+                            title="Delete notification"
+                            className="btn btn-ghost btn-xs btn-circle"
+                          >
+                            🗑
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -320,16 +368,18 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
               </div>
 
               {/* Footer */}
-              <div className="p-5 border-t border-base-300 flex justify-between gap-2">
-                <button
-                  onClick={() => {
-                    // Mark all read mutation
-                    markAllAsReadMutation({ account_no: accountNo });
-                  }}
-                  className="btn btn-warning btn-sm"
-                >
-                  Mark all as read
-                </button>
+              <div className={`p-5 border-t border-base-300 flex ${!selectedNotif ? "justify-between" : "justify-end"} gap-2`}>
+                {!selectedNotif && (
+                  <button
+                    onClick={() => {
+                      // Mark all read mutation
+                      markAllAsReadMutation({ account_no: accountNo });
+                    }}
+                    className="btn btn-warning btn-sm"
+                  >
+                    Mark all as read
+                  </button>
+                )}
 
                 <button
                   onClick={() => {
