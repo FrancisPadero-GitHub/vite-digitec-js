@@ -20,6 +20,8 @@ import LoginIcon from '@mui/icons-material/Login';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PropTypes from "prop-types";
 
+// fetch hooks
+import { useFetchPendingLoanApplications, useFetchPendingLoanReleases } from "../backend/hooks/shared/useFetchPendingLoans";
 
 // 🧩 Dynamic Pathings Items to be shared by other roles
 
@@ -37,7 +39,12 @@ const loansBase = (role) => {
     // NOTE: they may seem the same but the parent path is different as well as the pages they are used
     // refer to the routes.jsx to view what pages they are belong to
     // this is dynamically configured
-    { label: "Applications", path: `/${role}/coop-loans/loan-applications` },
+
+    { 
+      label: "Applications", 
+      path: `/${role}/coop-loans/loan-applications`, 
+      badgeKey: role === "board" ? "applications" : null //only board gets notif badge
+    },
     { label: "Loan Accounts", path: `/${role}/coop-loans/loan-accounts` },
     { label: "Payments", path: role === "board" ? "/board/coop-loans/payments" : `/${role}/coop-loans/loan-payments` },
   ];
@@ -76,7 +83,7 @@ const sidebarConfig = {
           label: "Coop Loans",
           icon: HandshakeIcon,
           children: [
-            { label: "Releases", path: "/treasurer/coop-loans/releases" },
+            { label: "Releases", path: "/treasurer/coop-loans/releases", badgeKey: "releases" }, // treasurer gets notif badge
             { label: "Loan Accounts", path: "/treasurer/coop-loans/loan-accounts" },
             { label: "Schedules", path: "/treasurer/coop-loans/payment-schedules" },
             { label: "Payments", path: "/treasurer/coop-loans/payments" },
@@ -170,6 +177,28 @@ const sidebarConfig = {
 
 // 🧭 Sidebar Component
 const Sidebar = ({ role }) => {
+  const { data: pendingLoanApplications } = useFetchPendingLoanApplications();
+  const { data: pendingLoanReleases } = useFetchPendingLoanReleases();
+
+  // get actual counts from db views
+  const loanApplicationCount = pendingLoanApplications?.length || 0;
+  const loanReleaseCount = pendingLoanReleases?.length || 0;
+
+  // badge count mappings
+  const badgeCounts = {
+    applications: loanApplicationCount,
+    releases: loanReleaseCount,
+  };
+
+  // calculate total pending count for "Coop Loans" parent badge
+  const getTotalPendingCount = () => {
+    if (role === "board") return loanApplicationCount;
+    if (role === "treasurer") return loanReleaseCount;
+    return 0;
+  };
+
+  const totalPendingCount = getTotalPendingCount();
+
   const sections = sidebarConfig[role] || [];
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState({});
@@ -201,15 +230,25 @@ const Sidebar = ({ role }) => {
 
                     if (item.children) {
                       const isOpen = openMenus[item.label] || false;
+                      const showParentBadge = item.label === "Coop Loans" && totalPendingCount > 0;
+                      
                       return (
                         <li key={i}>
                           <button
                             onClick={() => toggleMenu(item.label)}
-                            className="flex items-center justify-between w-full py-2 px-4 rounded-md text-base mb-2 hover:bg-green-950/30"
+                            className="flex items-center justify-between w-full py-2 px-4 rounded-md text-base mb-2 hover:bg-green-950/30 transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               <item.icon fontSize="small" />
                               <span>{item.label}</span>
+
+                              {/* Parent badge for Coop Loans */}
+                              {showParentBadge && (
+                                <span className="badge badge-accent badge-sm ml-2">
+                                  {totalPendingCount}
+                                </span>
+                              )}
+
                             </div>
                             {isOpen ? (
                               <ExpandLessIcon fontSize="small" />
@@ -218,20 +257,31 @@ const Sidebar = ({ role }) => {
                             )}
                           </button>
                           {isOpen && (
-                            <ul className="ml-8 mt-1">
+                            <ul className="ml-8 mt-1 space-y-1">
                               {item.children.map((child, idx) => {
                                 const isChildActive = location.pathname === child.path;
+                                const badgeCount = child.badgeKey ? badgeCounts[child.badgeKey] : 0;
+
                                 return (
                                   <li key={idx}>
                                     <Link
                                       to={child.path}
-                                      className={`flex items-center gap-2 py-1 px-3 rounded-md text-sm mb-1 ${isChildActive
-                                        ? "bg-green-900 text-white"
-                                        : "hover:bg-green-950/20"
+                                      className={`flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors ${
+                                        isChildActive ? "bg-green-950/50 text-white" : "hover:bg-green-950/20"
                                         }`}
                                     >
-                                      <span>•</span>
-                                      {child.label}
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs">•</span>
+                                        <span>{child.label}</span>
+                                      </div>
+
+                                      {/* Dynamic badge based on badgeKey */}
+                                      {badgeCount > 0 && (
+                                        <span className="badge badge-accent badge-xs">
+                                          {badgeCount}
+                                        </span>
+                                      )}
+
                                     </Link>
                                   </li>
                                 );
