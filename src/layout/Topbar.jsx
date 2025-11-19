@@ -14,7 +14,6 @@ import { useLogout } from "../backend/hooks/auth/authLogout";
 
 // icons 
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -87,7 +86,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   // ref used for closing dropdown when clicking outside
   const notifRef = useRef(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [dateTimeStr, setDateTimeStr] = useState("");
 
   /**
