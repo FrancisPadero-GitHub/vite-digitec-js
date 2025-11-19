@@ -141,26 +141,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
           <MenuOutlinedIcon className="w-6 h-6" />
         </label>
 
-        {/* SEARCH */}
-        <div className="hidden sm:flex relative w-72 max-w-md">
-          <input
-            id="search_topbar"
-            name="search_topbar"
-            type="text"
-            placeholder="Search"
-            className="w-full rounded-full py-2 px-3 pr-10 border border-white focus:outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button
-            type="submit"
-            aria-label="Search"
-            className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white text-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md"
-          >
-
-            <SearchIcon />
-          </button>
-        </div>
         <div className="flex justify-center ml-6">
           <span className="mr-2">Page : </span>
           <span className="text-warning" title="Developmental, will be removed in the future">{getRoleLabel(role) || "Role Not Found"}</span>
