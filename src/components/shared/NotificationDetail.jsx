@@ -43,7 +43,7 @@ function NotificationDetail({
       <div className="card w-full bg-base-200 border border-base-200">
         <div className="card-body">
           {/* Metadata Section: Type and Date/Time */}
-          <div className="flex items-center justify-between border-b pb-4 mb-2">
+          <div className="flex items-center justify-between border-b pb-4 mb-5">
             <span className={`badge ${badgeClass} text-md font-bold`}>
               {title || "Untitled Notification"}
             </span>

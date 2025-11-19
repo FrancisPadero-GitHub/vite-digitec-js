@@ -11,6 +11,7 @@ import { useFetchNotifications } from "../backend/hooks/shared/useFetchNotificat
 // mutation hooks
 import { useMarkAsRead } from "../backend/hooks/shared/useMarkAsRead";
 import { useDeleteNotif } from "../backend/hooks/shared/useDeleteNotif";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useLogout } from "../backend/hooks/auth/authLogout";
 
 // icons 
@@ -74,7 +75,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   // notification mutation hook
   const { mutate: markAsReadMutation } = useMarkAsRead(); // single
   const { mutate: markAllAsReadMutation } = useMarkAsRead(); // all
-  const { mutate: deleteNotification } = useDeleteNotif();
+  const { mutate: deleteNotification, isPending: isDeleteNotifPending } = useDeleteNotif();
 
 
   /**
@@ -227,8 +228,14 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                             }}
                             title="Delete notification"
                             className="btn btn-ghost btn-xs btn-circle"
+                            disabled={isDeleteNotifPending}
+                            aria-disabled={isDeleteNotifPending}
                           >
-                            🗑
+                            {isDeleteNotifPending ? (
+                              <AiOutlineLoading3Quarters className="animate-spin" />
+                            ) : (
+                              <span>🗑</span>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -242,19 +249,21 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                 </div>
               )}
 
-              {/* Footer */}
-              <div className="p-3 border-t border-base-300 bg-base-200/30">
-                <button
-                  onClick={() => {
-                    setShowDropdown(false);
-                    setShowModal(true);
-                  }}
-                  className="btn btn-primary btn-sm w-full gap-2"
-                >
-                  View All Notifications
-                  <ExpandMoreIcon fontSize="small" />
-                </button>
-              </div>
+              {/* Footer only show if there are any notifications */}
+              {notifications?.length > 0 && (
+                <div className="p-3 border-t border-base-300 bg-base-200/30">
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowModal(true);
+                    }}
+                    className="btn btn-primary btn-sm w-full gap-2"
+                  >
+                    View All Notifications
+                    <ExpandMoreIcon fontSize="small" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -281,25 +290,36 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                     className="link text-red-600 btn-sm font-bold"
                     aria-label="Delete all notifications"
                     title="Delete all"
+                    disabled={isDeleteNotifPending}
+                    aria-disabled={isDeleteNotifPending}
                   >
-                    Delete all
+                    {isDeleteNotifPending ? (
+                      <AiOutlineLoading3Quarters className="inline animate-spin" />
+                    ) : (
+                      "Delete all"
+                    )}
                   </button>
                 ) : (
                   <button
                     onClick={() => {
-                      // Delete all notifications for current account
+                      // Delete the selected notification
                       deleteNotification({ notif_id: selectedNotif.id }, {
                         onSuccess: () => {
-                          // goes back to all notifications view
                           setSelectedNotif(null);
                         }
                       });
                     }}
                     className="link text-red-600 btn-sm font-bold"
-                    aria-label="Delete all notifications"
+                    aria-label="Delete notification"
                     title="Delete"
+                    disabled={isDeleteNotifPending}
+                    aria-disabled={isDeleteNotifPending}
                   >
-                    Delete
+                    {isDeleteNotifPending ? (
+                      <AiOutlineLoading3Quarters className="inline animate-spin" />
+                    ) : (
+                      "Delete"
+                    )}
                   </button>
                 )}
 
@@ -352,8 +372,14 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                             }}
                             title="Delete notification"
                             className="btn btn-ghost btn-xs btn-circle"
+                            disabled={isDeleteNotifPending}
+                            aria-disabled={isDeleteNotifPending}
                           >
-                            🗑
+                            {isDeleteNotifPending ? (
+                              <AiOutlineLoading3Quarters className="animate-spin" />
+                            ) : (
+                              "🗑"
+                            )}
                           </button>
                         </div>
                       </div>
@@ -380,7 +406,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                     Mark all as read
                   </button>
                 )}
-
                 <button
                   onClick={() => {
                     setShowModal(false);
