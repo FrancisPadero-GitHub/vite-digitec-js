@@ -244,7 +244,7 @@ const Sidebar = ({ role }) => {
 
                               {/* Parent badge for Coop Loans */}
                               {showParentBadge && (
-                                <span className="badge badge-accent badge-sm ml-2">
+                                <span className="badge badge-accent badge-xs">
                                   {totalPendingCount}
                                 </span>
                               )}

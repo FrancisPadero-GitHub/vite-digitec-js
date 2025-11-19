@@ -784,8 +784,9 @@ function CoopLoansPayments() {
                   control={control}
                   render={({ field }) => {
                     const selectedAccount = watch("account_number");
-                    const selectedMember = members.find(m => m.account_number === selectedAccount);
-
+                    const data = loan_acc_view?.data || [];
+                    const selectedMember = data.find(m => m.account_number === selectedAccount);
+                    console.log(selectedMember)
                     return (
                       <Combobox
                         value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
@@ -803,7 +804,7 @@ function CoopLoansPayments() {
                           displayValue={(loan) => loan?.loan_ref_number || ""}
                           onChange={(e) => setQueryLoan(e.target.value)}
                         />
-                        <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                        <ComboboxOptions className="absolute z-[800] w-[44%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
                           {filteredLoanAcc.length === 0 ? (
                             <div className="px-4 py-2 text-base-content/60">
                               {selectedAccount ? "No loan accounts found for this member." : "Select a member first."}
@@ -820,9 +821,15 @@ function CoopLoansPayments() {
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="font-mono text-sm font-semibold">{loan.loan_ref_number}</span>
-                                  <span className="text-xs text-base-content/60">
-                                    {selectedMember && `${selectedMember.f_name} ${selectedMember.l_name}`}
+                                  <span>
+                                    <span className="text-xs mr-1">
+                                      Amount Due:
+                                    </span>
+                                    <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1 rounded">
+                                      ₱{selectedMember && `${selectedMember?.total_amount_due}`}
+                                    </span>
                                   </span>
+
                                 </div>
                               </ComboboxOption>
                             ))
