@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "../../supabase.js";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
@@ -33,9 +34,70 @@ async function fetchCoopLoansApp({ accountNumber, page, limit }) {
 }
 
 export function useFetchLoanApp({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
-
+  const queryClient = useQueryClient();
   const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();     // fetches logged in account number
   const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;       // if the useLoggedInMember = true
+
+  useEffect(() => {
+    if (useLoggedInMember && !effectiveAccountNumber) return;
+
+    const channel = supabase
+      .channel(
+        `realtime-loan-applications-${effectiveAccountNumber ?? "all"}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "loan_applications",
+          filter: effectiveAccountNumber ? `account_number=eq.${effectiveAccountNumber}` : undefined,
+        },
+        (payload) => {
+          const key = ["loan_applications", effectiveAccountNumber, page, limit];
+
+          // simple approach for paginated queries: re-fetch to ensure accurate pagination
+          if (page && limit) {
+            queryClient.invalidateQueries(key);
+            // also invalidate view results (pagination may change)
+            queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
+            return;
+          }
+
+          queryClient.setQueryData(key, (old = { data: [], count: 0 }) => {
+            const { eventType, new: newRow, old: oldRow } = payload;
+            switch (eventType) {
+              case "INSERT":
+                if (old.data.some((r) => r.application_id === newRow.application_id)) return old;
+                return {
+                  data: [newRow, ...old.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+                  count: (old.count || 0) + 1,
+                };
+              case "UPDATE":
+                return {
+                  data: old.data.map((r) => (r.application_id === newRow.application_id ? newRow : r)),
+                  count: old.count,
+                };
+              case "DELETE":
+                return {
+                  data: old.data.filter((r) => r.application_id !== (oldRow?.application_id)),
+                  count: Math.max(0, (old.count || 1) - 1),
+                };
+              default:
+                return old;
+            }
+          });
+
+          // Keep the view in sync
+          queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [effectiveAccountNumber, page, limit, queryClient, useLoggedInMember]);
 
   return useQuery({
     queryKey: ["loan_applications", effectiveAccountNumber, page, limit],
@@ -48,6 +110,8 @@ export function useFetchLoanApp({ page = null, limit = null, accountNumber = nul
     staleTime: 1000 * 60 * 1,
   });
 }
+
+// end realtime
 
 /**
  * Fetch everything (no pagination)

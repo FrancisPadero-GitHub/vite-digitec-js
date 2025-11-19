@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "../../supabase.js";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
@@ -48,6 +49,30 @@ export function useFetchLoanAccView({
   const effectiveAccountNumber = useLoggedInMember
     ? loggedInAccountNumber
     : accountNumber;
+
+  // Realtime: Listen to base table changes and invalidate view cache
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (useLoggedInMember && !effectiveAccountNumber) return;
+
+    const channel = supabase
+      .channel(`realtime-view-loan-accounts-${effectiveAccountNumber ?? "all"}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "loan_accounts",
+          filter: effectiveAccountNumber ? `account_number=eq.${effectiveAccountNumber}` : undefined,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
+        }
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [effectiveAccountNumber, queryClient, useLoggedInMember]);
 
   return useQuery({
     queryKey: ["view_loan_accounts", effectiveAccountNumber, page, limit],

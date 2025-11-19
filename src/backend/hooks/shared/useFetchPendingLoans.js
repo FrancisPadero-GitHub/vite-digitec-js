@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "../../supabase.js";
 
 // get loan applications with status "Pending"
@@ -27,19 +28,49 @@ async function fetchPendingLoanReleases() {
 
 // hooks to use in components in sidebar
 export function useFetchPendingLoanApplications() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    // listen to base loan_applications table — view subscribes by invalidation
+    const channel = supabase
+      .channel("realtime-pending-loan-applications")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "loan_applications" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["pendingLoanApplications"], exact: true });
+        }
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [queryClient]);
   return useQuery({
     queryKey: ["pendingLoanApplications"],
     queryFn: fetchPendingLoanApplications,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: "always",
   });
 }
 
 export function useFetchPendingLoanReleases() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    // Realtime on base loan_accounts so the pending releases view updates
+    const channel = supabase
+      .channel("realtime-pending-loan-releases")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "loan_accounts" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: true });
+        }
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [queryClient]);
   return useQuery({
     queryKey: ["pendingLoanReleases"],
     queryFn: fetchPendingLoanReleases,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: "always",
   });
 }

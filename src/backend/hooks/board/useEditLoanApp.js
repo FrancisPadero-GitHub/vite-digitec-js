@@ -54,7 +54,8 @@ export const useEditLoanApp = () => {
     mutationFn: updateLoanApp,
     onSuccess: async (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries({queryKey: ["view_loan_applications"], exact: false});
+      queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["pendingLoanApplications"], exact: false }); // for the badge notification
       queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
 
       // log activity

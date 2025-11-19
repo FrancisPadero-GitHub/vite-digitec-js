@@ -102,6 +102,7 @@ export const useAddLoanAcc = () => {
       queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
       queryClient.invalidateQueries({ queryKey: ["get_funds_summary"], exact: false, });
       queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: false }); // for the badge notification
       queryClient.invalidateQueries(["notifications"]);
 
       // log activity
