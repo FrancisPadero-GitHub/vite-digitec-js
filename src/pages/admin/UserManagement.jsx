@@ -29,7 +29,7 @@ function UserManagement() {
   // fetch all members with pagination
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const { data: members_data, isLoading, isError, error } = useMembers({page, limit});
+  const { data: members_data, isLoading, isError, error } = useMembers({ page, limit });
   const membersRaw = members_data?.data || [];
   const total = members_data?.count || 0;
 
@@ -56,7 +56,7 @@ function UserManagement() {
     .filter((row) => {
       const doNotShowRoles = ["admin"];
       if (doNotShowRoles.includes(row.account_role)) return false;
-      
+
       const matchesSearch =
         searchTerm === "" ||
         row.generatedId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -66,19 +66,21 @@ function UserManagement() {
       return matchesSearch && matchesRole && matchesStatus;
     });
 
-  
+
   // modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   // state for selected members to populate information
   const [selectedMember, setSelectedMember] = useState(null);
-   
+
   // stores the new account type for the selected member
   const [newRole, setNewRole] = useState("");
+  const [accStatus, setAccStatus] = useState("");
 
   const openModal = (member) => {
     setSelectedMember(member);
     setNewRole(member.account_role);
+    setAccStatus(member.account_status);
     setEditModalOpen(true);
   };
 
@@ -86,13 +88,15 @@ function UserManagement() {
     updateMemberRole({
       member_id: selectedMember.member_id,
       account_role: newRole,
+      account_status: accStatus,
     });
     setEditModalOpen(false);
   };
 
-  const closeModal  =  () => {
+  const closeModal = () => {
     setEditModalOpen(false)
     setNewRole("")
+    setAccStatus("")
   }
 
   const memberGroups = [
@@ -217,7 +221,7 @@ function UserManagement() {
                 key={`${TABLE_PREFIX}${row.member_id}`}
                 onClick={() => openModal(row)}
                 className="cursor-pointer hover:bg-base-200/70 transition-colors"
-              > 
+              >
                 {/* Account No. */}
                 <td className="px-4 py-2 text-center text-info font-medium">
                   {row.account_number}
@@ -248,7 +252,7 @@ function UserManagement() {
                     </div>
                   </div>
                 </td>
-                
+
                 {/* Account Role */}
                 <td className="px-4 py-2 text-center font-bold">
                   {row.role ? (
@@ -264,16 +268,16 @@ function UserManagement() {
 
                 {/* To sort out later on */}
                 {/* Joined date */}
-                  <td className="px-4 py-2 text-center">
-                    {row.joined_date ? row.joined_date : <span className="text-gray-400 italic">No date</span>}
-                  </td>
+                <td className="px-4 py-2 text-center">
+                  {row.joined_date ? row.joined_date : <span className="text-gray-400 italic">No date</span>}
+                </td>
 
-                  {/* Membership years */}
-                  <td className="px-4 py-2 text-center">
-                    {(years || months || days)
-                      ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
-                      : <span className="text-gray-400 italic">Just joined</span>}
-                  </td>
+                {/* Membership years */}
+                <td className="px-4 py-2 text-center">
+                  {(years || months || days)
+                    ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
+                    : <span className="text-gray-400 italic">Just joined</span>}
+                </td>
 
                 {/* Account Status */}
                 <td className="px-4 py-2 text-center">
@@ -298,7 +302,7 @@ function UserManagement() {
             )
           }}
         />
-        
+
         <ViewMemberModal
           open={editModalOpen}
           close={closeModal}
@@ -332,6 +336,26 @@ function UserManagement() {
                       </div>
                     );
                   }
+
+                  if (field.label === "Account Status") {
+                    return (
+                      <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
+                        <p className="text-base-content/70">{field.label}</p>
+                        <select
+                          className="select select-bordered w-full mt-1 bg-base-100 text-base-content"
+                          value={accStatus}
+                          onChange={(e) => setAccStatus(e.target.value)}
+                        >
+                          {["Active", "Inactive", "Revoked"].map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
                       <p className="text-base-content/70">{field.label}</p>
