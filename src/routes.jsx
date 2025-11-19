@@ -134,7 +134,7 @@ function AppRoutes() {
     { path: "share-capital", element: <MemberCoopShareCapital /> },
     { path: "coop-loans/loan-accounts", element: <MemberLoanAcc /> },
     { path: "coop-loans/loan-applications", element: <MemberLoanApp /> },
-    { path: "coop-loans/loan-payments", element: <MemberPayments /> },
+    { path: "coop-loans/payments", element: <MemberPayments /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "help", element: <MemberHelp /> },
 

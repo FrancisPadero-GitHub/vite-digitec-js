@@ -59,7 +59,7 @@ const sendTreasurerNotification = async (loanAccData, senderAccountNumber) => {
   const message = `Loan approved for member ${loanAccData.account_number}. Principal: ₱${loanAccData.principal?.toLocaleString() || '0'} | Loan Ref: ${loanAccData.loan_ref_number || 'N/A'}`;
 
   const { error } = await supabase.rpc("send_notification", {
-    p_title: "Loan Approved",
+    p_title: "Pending release for approved loan",
     p_message: message,
     p_type: "loan_approval",
     p_target: "role:treasurer",
