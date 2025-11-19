@@ -9,14 +9,17 @@ const updateMember = async ({ member_id, account_role }) => {
     .from("members")
     .update(payload)
     .eq("member_id", member_id)
-    .select()
+    .select(`*, `)
     .single();
 
   if (error) {
     throw new Error(`Failed to update account type: ${error.message}`);
   }
 
-  return data;
+  return {
+    ...data,
+    member_name: `${data.f_name} ${data.l_name}`,
+  };
 };
 
 export function useUpdateMember() {
@@ -31,7 +34,7 @@ export function useUpdateMember() {
       // log activity
       try {
         await logActivity({
-          action: `Updated role of member ${data.member_id} to ${data.account_role}`,
+          action: `Updated role of ${data.member_name} (${data.account_number}) to ${data.account_role}`,
           type: "UPDATE"
         });
       } catch (err) {

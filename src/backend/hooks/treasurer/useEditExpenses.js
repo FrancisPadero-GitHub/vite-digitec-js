@@ -53,7 +53,7 @@ export const useEditExpenses = () => {
       // log activity
       try {
         await logActivity({
-          action: `Updated club expense details for ${data.title}`,
+          action: `Updated club expense details for ${data.title}: ₱${Number(data.amount).toLocaleString()} - ${data.category}`,
           type: "UPDATE",
         });
       } catch (err) {

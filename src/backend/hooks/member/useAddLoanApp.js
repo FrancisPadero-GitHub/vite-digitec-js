@@ -68,7 +68,7 @@ export const useAddLoanApp = () => {
       // log activity
       try {
         await logActivity({
-          action: `Member created loan application. Account No: ${data.account_number} | Application ID: ${data.application_id}`,
+          action: `Created loan application (${data.account_number}): ₱${Number(data.amount).toLocaleString()}`,
           type: "CREATE",
         });
       } catch (err) {

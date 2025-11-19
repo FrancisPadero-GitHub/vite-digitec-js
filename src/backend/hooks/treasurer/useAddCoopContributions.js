@@ -18,14 +18,21 @@ const insertCoopContributions = async (formData) => {
   const { data, error } = await supabase
     .from("coop_cbu_contributions")
     .insert(payload)
-    .select()
+    .select(`
+      *,
+      members!coop_cbu_contributions_account_number_fkey (f_name, l_name)
+    `)
     .single();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data;
+  const memberData = data.members;
+  return {
+    ...data,
+    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+  };
 };
 
 export const useAddCoopContributions = () => {
@@ -45,7 +52,7 @@ export const useAddCoopContributions = () => {
       // log activity
       try {
         await logActivity({
-          action: `Created coop share capital contribution of ₱${data.amount} for account ${data.account_number}`,
+          action: `Created coop share capital contribution for ${data.member_name} (${data.account_number}): ₱${Number(data.amount).toLocaleString()} - ${data.category}`,
           type: "CREATE",
         });
       } catch (err) {

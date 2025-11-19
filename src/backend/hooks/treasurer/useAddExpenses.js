@@ -48,7 +48,7 @@ export const useAddExpenses = () => {
       // log activity
       try {
         await logActivity({
-          action: `Created club expense of ₱${data.amount} for ${data.category}`,
+          action: `Created club expense: ${data.title} - ₱${Number(data.amount).toLocaleString()} (${data.category})`,
           type: "CREATE",
         });
       } catch (err) {

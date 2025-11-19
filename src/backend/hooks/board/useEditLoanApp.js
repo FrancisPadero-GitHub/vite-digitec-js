@@ -28,13 +28,22 @@ const updateLoanApp = async (formData) => {
     .from("loan_applications")
     .update(payload)
     .eq("application_id", application_id)
-    .select()
+    .select(`
+      *,
+      members!loan_applications_account_number_fkey (f_name,l_name,account_number)
+    `)
     .single();
 
   if (error) {
     throw new Error(error.message);
   }
-  return data;
+
+  // flatten member data to use in activity log
+  const memberData = data.members;
+  return {
+    ...data,
+    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : data.account_number
+  };
 };
 
 export const useEditLoanApp = () => {
@@ -47,10 +56,11 @@ export const useEditLoanApp = () => {
       console.log("Loan Application Updated!: ", data);
       queryClient.invalidateQueries({queryKey: ["view_loan_applications"], exact: false});
       queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+
       // log activity
       try {
         await logActivity({
-          action: `Updated loan application ID ${data.application_id}`,
+          action: `Updated loan application for ${data.member_name} (${data.account_number}): ${data.status}`,
           type: "UPDATE",
         });
       } catch (err) {

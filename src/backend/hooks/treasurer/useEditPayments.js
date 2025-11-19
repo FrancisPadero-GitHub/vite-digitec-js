@@ -40,14 +40,26 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
       .from("loan_payments")
       .update(dbPayload)
       .eq("payment_id", dbPayload.payment_id)
-      .select()
+      .select(`
+        *,
+        loan_accounts!loan_payments_loan_id_fkey (
+          account_number,
+          members!loan_accounts_account_number_fkey (f_name, l_name)
+        )
+      `)
       .single();
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return data;
+    // flatten member data for easier access
+    const memberData = data.loan_accounts?.members;
+    return {
+      ...data,
+      member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+      account_number: data.loan_accounts?.account_number || "N/A",
+    };
   };
 
   // --- React hook ---
@@ -65,10 +77,11 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
         queryClient.invalidateQueries({ queryKey: ["view_member_loan_schedules"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
         queryClient.invalidateQueries({ queryKey: ["get_funds_summary"], exact: false });
+
         // Log activity
         try {
           await logActivity({
-            action: `Updated member payment loan ID: ${data.loan_id} for Schedule ID: ${data.schedule_id}`,
+            action: `Updated loan payment for ${data.member_name} (${data.account_number}): ₱${Number(data.total_amount).toLocaleString()} - Loan ID: ${data.loan_id}, Schedule ID: ${data.schedule_id}`,
             type: "UPDATE",
           });
         } catch (err) {

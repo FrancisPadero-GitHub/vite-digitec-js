@@ -30,14 +30,21 @@ const insertClubfunds = async (formData) => {
   const { data, error } = await supabase
     .from("club_funds_contributions")
     .insert(payload)
-    .select()
+    .select(`
+      *,
+      members!club_funds_contributions_account_number_fkey (f_name, l_name)
+    `)
     .single();
 
   if (error) {
     throw new Error(error.message); // Let React Query handle it
   }
 
-  return data; // Will be passed to onSuccess / mutation.data
+  const memberData = data.members;
+  return {
+    ...data,
+    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+  };
 };
 
 // React Query mutation hook
@@ -63,7 +70,7 @@ export const useAddClubFunds = () => {
       // log activity
       try {
         await logActivity({
-          action: `Created club fund contribution of ₱${data.amount} (${data.category}) for account ${data.account_number}`,
+          action: `Created club fund contribution for ${data.member_name} (${data.account_number}): ₱${Number(data.amount).toLocaleString()} - ${data.category}`,
           type: "CREATE",
         });
       } catch (err) {

@@ -64,6 +64,7 @@ export const useEditLoanProducts = () => {
       console.log("Loan Product Updated!", data);
       queryClient.invalidateQueries({ queryKey: ["loan_products"], exact: false });
       queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      
       // log activity
       try {
         await logActivity({

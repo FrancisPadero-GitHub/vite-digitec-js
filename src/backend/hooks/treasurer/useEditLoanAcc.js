@@ -3,6 +3,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import calcLoanSchedFlat from "../../../constants/calcLoanSchedFlat";
 import calcLoanSchedDiminishing from "../../../constants/calcLoanSchedDiminishing";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber";
+import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 /**
  * This is used to update loan account for release and generate payment schedules
@@ -32,11 +33,15 @@ const updateLoanAcc = async (formData) => {
     first_due,
   };
 
+  // update loan account and pull in member info
   const { data, error } = await supabase
     .from("loan_accounts")
     .update(payload)
     .eq("loan_id", loan_id)
-    .select()
+    .select(`
+      *,
+      members!loan_accounts_account_number_fkey (f_name,l_name,account_number)
+    `)
     .single();
 
   if (error) {
@@ -89,9 +94,12 @@ const updateLoanAcc = async (formData) => {
     };
   }
 
+  const memberData = data.members
   return {
     loanAccount: data,
     scheduleResult: scheduleInsertResult,
+    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+    account_number: data.account_number,
   };
 };
 
@@ -115,6 +123,7 @@ const sendNotification = async (loanAccData, senderAccountNumber) => {
 export const useEditLoanAcc = () => {
   const queryClient = useQueryClient();
   const { data: loggedInAccountNumber } = useFetchAccountNumber();
+  const { mutateAsync: logActivity } = useAddActivityLog();
 
   return useMutation({
     mutationFn: updateLoanAcc,
@@ -133,6 +142,16 @@ export const useEditLoanAcc = () => {
         exact: false,
       });
       queryClient.invalidateQueries(["notifications"]);
+
+      // Log activity for loan release
+      try {
+        await logActivity({
+          action: `Released loan for ${result.member_name} (${result.account_number}): ₱${result.loanAccount.principal.toLocaleString()} | Loan Ref: ${result.loanAccount.loan_ref_number}`,
+          type: "UPDATE",
+        });
+      } catch (err) {
+        console.warn("Failed to log activity:", err.message);
+      }
 
       // send notification to the specific member
       try {

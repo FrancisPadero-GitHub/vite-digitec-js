@@ -31,18 +31,27 @@ const updateClubFunds = async (formData) => {
     period_end,
   };
 
+  // Update row and pull in member info
   const { data, error } = await supabase
     .from("club_funds_contributions")
     .update(payload)
     .eq("contribution_id", contribution_id)
-    .select()
+    .select(`
+      *,
+      members!club_funds_contributions_account_number_fkey (f_name,l_name)
+    `)
     .single();
 
   if (error) {
     throw new Error(error.message); // Let React Query handle it
   }
 
-  return data; // Will be passed to onSuccess / mutation.data
+  // flatten member data to use in activity log
+  const memberData = data.members;
+  return {
+    ...data,
+    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : account_number
+  };
 };
 
 // React Query mutation hook
@@ -63,7 +72,7 @@ export const useEditClubFunds = () => {
       // log activity
       try {
         await logActivity({
-          action: `Updated club fund contribution details for account ${data.account_number}`,
+          action: `Updated club fund contribution details for ${data.member_name} (${data.account_number}): ₱${Number(data.amount).toLocaleString()} via ${data.payment_method} - ${data.category}`,
           type: "UPDATE",
         });
       } catch (err) {
