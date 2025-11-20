@@ -344,7 +344,7 @@ function ClubExpenses() {
               : "Not Found";
             return (
               <tr key={id}
-                onDoubleClick={() => openEditModal(row)}
+                onDoubleClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
                 className="text-center cursor-pointer hover:bg-base-200/50"
               >
                 {/* Ref no. */}

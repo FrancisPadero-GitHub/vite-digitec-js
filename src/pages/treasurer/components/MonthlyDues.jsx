@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router';
 import { useMemberRole } from '../../../backend/context/useMemberRole';
 import {
@@ -323,7 +323,7 @@ function MonthlyDues() {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {availableStartMonths.map((month, originalIndex) => {
+                {availableStartMonths.map((month) => {
                   const monthIndex = allMonths.indexOf(month);
                   return (
                     <option key={month} value={monthIndex}>{month}</option>
@@ -350,7 +350,7 @@ function MonthlyDues() {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {availableEndMonths.map((month, originalIndex) => {
+                {availableEndMonths.map((month) => {
                   const monthIndex = allMonths.indexOf(month);
                   return (
                     <option key={month} value={monthIndex}>{month}</option>

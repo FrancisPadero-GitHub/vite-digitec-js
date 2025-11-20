@@ -20,7 +20,6 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
-import MonthlyDues from "./components/MonthlyDues";
 
 // constants
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, } from "../../constants/Color";
@@ -466,7 +465,7 @@ function ClubFunds() {
             const paymentMethod = row?.payment_method || "Not Found";
             return (
               <tr key={id}
-                onDoubleClick={() => openEditModal(row)}
+                onDoubleClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
                 className="text-center cursor-pointer hover:bg-base-200/50"
               >
                 {/* Ref no. */}
