@@ -1,5 +1,6 @@
 import { useState, useMemo, useTransition } from 'react'
 import dayjs from 'dayjs';
+import Decimal from 'decimal.js';
 import { createPortal } from 'react-dom';
 import WarningIcon from '@mui/icons-material/Warning';
 
@@ -310,7 +311,11 @@ function CoopLoansPayments() {
 
     if (loanPaymentModal.type === "add") {
       // console.log("ADD",pendingPaymentData)
-      addLoanPayments(pendingPaymentData, {
+      const addPayload = {
+        ...pendingPaymentData,
+        total_amount: new Decimal(pendingPaymentData?.total_amount || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber(),
+      };
+      addLoanPayments(addPayload, {
         onSuccess: () => {
           toast.success("Successfully added payment");
           setShowPaymentConfirm(false);
@@ -330,7 +335,7 @@ function CoopLoansPayments() {
         payment_id: pendingPaymentData?.payment_id,
         loan_ref_number: pendingPaymentData?.loan_ref_number,
         account_number: pendingPaymentData?.account_number,
-        total_amount: Number(pendingPaymentData?.total_amount) || 0,
+        total_amount: new Decimal(pendingPaymentData?.total_amount || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber(),
         payment_method: pendingPaymentData?.payment_method,
         payment_date: pendingPaymentData?.payment_date,
         receipt_no: pendingPaymentData?.receipt_no,
@@ -434,10 +439,10 @@ function CoopLoansPayments() {
     if (loanPaymentModal.type === 'edit' && payment_redux_data?.schedule_id) {
       const editSchedule = loanSchedRaw.find(s => s.schedule_id === payment_redux_data.schedule_id);
       if (editSchedule) {
-        const totalDue = Number(editSchedule.total_due ?? 0);
-        const amountPaid = Number(editSchedule.amount_paid ?? 0);
+        const totalDue = new Decimal(editSchedule.total_due ?? 0);
+        const amountPaid = new Decimal(editSchedule.amount_paid ?? 0);
         // const feeDue = Number(editSchedule.fee_due ?? 0);
-        const remaining = totalDue - amountPaid;
+        const remaining = totalDue.minus(amountPaid);
         return {
           list: [editSchedule],
           nextSchedule: editSchedule,
@@ -449,7 +454,7 @@ function CoopLoansPayments() {
 
     // Normal usage (add mode)
     if (!selectedLoanRef || loanSchedRaw.length === 0) {
-      return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
+      return { list: [], nextSchedule: null, totalPayableAll: new Decimal(0), scheduleMode: null };
     }
     // Unpaid overdue schedules
     const unpaidOverdue = loanSchedRaw
@@ -457,10 +462,10 @@ function CoopLoansPayments() {
       .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
     if (unpaidOverdue.length > 0) {
       const totalPayableAll = unpaidOverdue.reduce((sum, s) => {
-        const totalDue = Number(s.total_due ?? 0);
-        const amountPaid = Number(s.amount_paid ?? 0);
-        return sum + (totalDue - amountPaid);
-      }, 0);
+        const totalDue = new Decimal(s.total_due ?? 0);
+        const amountPaid = new Decimal(s.amount_paid ?? 0);
+        return sum.plus(totalDue.minus(amountPaid));
+      }, new Decimal(0));
       return {
         list: unpaidOverdue,
         nextSchedule: unpaidOverdue[0] ?? null,
@@ -473,13 +478,13 @@ function CoopLoansPayments() {
       .filter(s => !s.paid) // any unpaid regardless of status
       .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
     if (unpaidUpcoming.length === 0) {
-      return { list: [], nextSchedule: null, totalPayableAll: 0, scheduleMode: null };
+      return { list: [], nextSchedule: null, totalPayableAll: new Decimal(0), scheduleMode: null };
     }
     // For upcoming we only care about the first schedule's remaining payable
     const first = unpaidUpcoming[0];
-    const totalDue = Number(first.total_due ?? 0);
-    const amountPaid = Number(first.amount_paid ?? 0);
-    const remaining = totalDue - amountPaid;
+    const totalDue = new Decimal(first.total_due ?? 0);
+    const amountPaid = new Decimal(first.amount_paid ?? 0);
+    const remaining = totalDue.minus(amountPaid);
     return {
       list: unpaidUpcoming, // list of all upcoming unpaid schedules not bound to any specific id
       nextSchedule: first,
@@ -490,9 +495,9 @@ function CoopLoansPayments() {
 
   // Derived single schedule fields
   const schedId = nextSchedule?.schedule_id ?? null;
-  const totalDue = Number(nextSchedule?.total_due ?? 0);
-  const feeDue = Number(nextSchedule?.fee_due ?? 0);
-  const amountPaid = Number(nextSchedule?.amount_paid ?? 0);
+  const totalDue = new Decimal(nextSchedule?.total_due ?? 0);
+  const feeDue = new Decimal(nextSchedule?.fee_due ?? 0);
+  const amountPaid = new Decimal(nextSchedule?.amount_paid ?? 0);
 
   // Show explicit UPCOMING if mode is upcoming and status isn't already set (or is not OVERDUE/PARTIALLY PAID)
   const paymentStatus = scheduleMode === 'upcoming'
@@ -506,7 +511,9 @@ function CoopLoansPayments() {
 
   // Unified payable (either aggregated overdue months or single upcoming remaining)
   // Like all overdue unpaid or next upcoming unpaid schedule is added here
-  const totalPayableAllOverdueUnpaid = totalPayableAll;
+  // Always round monetary results to 2 decimal places
+  const totalPayableAllOverdueUnpaidDecimal = new Decimal(totalPayableAll ?? 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  const totalPayableAllOverdueUnpaid = totalPayableAllOverdueUnpaidDecimal.toNumber();
 
   // Only log when we have actual data (when a loan is selected)
   // if (selectedLoanRef && paymentSchedule) {
@@ -786,7 +793,7 @@ function CoopLoansPayments() {
                     const selectedAccount = watch("account_number");
                     const data = loan_acc_view?.data || [];
                     const selectedMember = data.find(m => m.account_number === selectedAccount);
-                    console.log(selectedMember)
+                    // console.log(selectedMember)
                     return (
                       <Combobox
                         value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
@@ -879,7 +886,7 @@ function CoopLoansPayments() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Outstanding Balance</label>
                 <div className="text-sm font-bold text-amber-700">
-                  {balance ? `₱${Number(balance).toLocaleString()}` : <span className="text-gray-400">-</span>}
+                  {balance ? `₱${display(new Decimal(balance ?? 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}` : <span className="text-gray-400">-</span>}
                 </div>
               </div>
             </div>
@@ -889,7 +896,7 @@ function CoopLoansPayments() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Amount</label>
                 <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
-                  <div className="text-sm font-bold text-blue-900">₱{display(totalDue - feeDue)}</div>
+                  <div className="text-sm font-bold text-blue-900">₱{display(totalDue.minus(feeDue).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
                 </div>
               </div>
 
@@ -906,7 +913,7 @@ function CoopLoansPayments() {
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Penalty</label>
                     <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
-                      <div className="text-sm font-bold text-red-900">₱{display(feeDue)}</div>
+                      <div className="text-sm font-bold text-red-900">₱{display(feeDue.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
                     </div>
                   </div>
                 </>
@@ -917,7 +924,7 @@ function CoopLoansPayments() {
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Already Paid</label>
                   <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
-                    <div className="text-sm font-bold text-blue-900">₱{display(amountPaid)}</div>
+                    <div className="text-sm font-bold text-blue-900">₱{display(amountPaid.toNumber())}</div>
                   </div>
                 </div>
               )}
@@ -955,20 +962,22 @@ function CoopLoansPayments() {
                           return true;
                         }
 
-                        const remainingDue = Number(totalPayableAllOverdueUnpaid); // unified remaining (overdue aggregate or upcoming)
-                        const minRequiredAmount = Number(remainingDue * 0.3); // 30% of remaining amount
-                        const inputValue = Number(value);
+                        const remainingDue = totalPayableAllOverdueUnpaidDecimal;
+                        console.log("Remaining Due: ", remainingDue)
+                        const minRequiredAmount = remainingDue.mul(0.3).toDecimalPlaces(2, Decimal.ROUND_HALF_UP); // 30% of remaining amount
+                        const inputValue = new Decimal(value || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+                        console.log("Input Value: ", inputValue);
 
                         if (paymentStatus === "OVERDUE" && mosOverdue > 0) {
-                          if (inputValue < remainingDue)
-                            return `For OVERDUE payments, amount must cover the full remaining payable of ₱${remainingDue.toLocaleString()}`;
+                          if (inputValue.lt(remainingDue))
+                            return `For OVERDUE payments, amount must cover the full remaining payable of ₱${remainingDue.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         }
-                        if (inputValue < minRequiredAmount)
-                          return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toLocaleString()})`;
-                        if (inputValue > remainingDue)
-                          return `Amount cannot exceed total payable of ₱${remainingDue.toLocaleString()}`;
-                        if (inputValue > balance)
-                          return `Amount cannot exceed outstanding balance of ₱${Number(balance).toLocaleString()}`;
+                        if (inputValue.lt(minRequiredAmount))
+                          return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+                        if (inputValue.gt(remainingDue))
+                          return `Amount cannot exceed total payable of ₱${remainingDue.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        if (inputValue.gt(new Decimal(balance || 0)))
+                          return `Amount cannot exceed outstanding balance of ₱${display(new Decimal(balance || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}`;
                         return true;
                       },
                     }}
@@ -984,7 +993,7 @@ function CoopLoansPayments() {
                           onChange={(e) => {
                             const raw = e.target.value;
                             if (raw === "") { field.onChange(""); return; }
-                            const value = Number(raw);
+                            const value = new Decimal(raw).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber();
                             field.onChange(value < 0 ? 0 : value);
                           }}
                           className={`input input-bordered w-full font-bold ${error ? "input-error border-red-400" : "border-green-400 focus:border-green-600"}`}
@@ -1053,7 +1062,7 @@ function CoopLoansPayments() {
                     <div className="bg-gray-50 p-3 rounded-lg border">
                       <h4 className="text-xs font-bold text-gray-700 mb-2">Payment Summary</h4>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div><span className="text-gray-500 mr-2">Amount: </span> <span className="font-bold text-success">₱ {Number(pendingPaymentData.total_amount).toLocaleString()}</span></div>
+                        <div><span className="text-gray-500 mr-2">Amount: </span> <span className="font-bold text-success">₱ {display(new Decimal(pendingPaymentData.total_amount || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</span></div>
                         <div><span className="text-gray-500 mr-1">Method: </span> <span className="font-semibold">{pendingPaymentData.payment_method}</span></div>
                         <div><span className="text-gray-500 mr-1">Date: </span> <span className="font-semibold">{dayjs(pendingPaymentData.payment_date).format('MM/DD/YYYY')}</span></div>
                         <div><span className="text-gray-500 mr-1">Loan Ref: </span> <span className="font-semibold">{pendingPaymentData.loan_ref_number}</span></div>
