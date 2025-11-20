@@ -100,7 +100,7 @@ function CoopShareCapital() {
   };
 
   // Reduces the amount of filtering per change so its good delay
-  const debouncedSearch = useDebounce(searchTerm, 250); 
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "SCC";
   const coop = useMemo(() => {
@@ -138,16 +138,16 @@ function CoopShareCapital() {
       };
       const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
       const matchesMonth =
-        monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
+        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
 
-    return (
-      matchesSearch &&
-      matchesCategory &&
-      matchesYear &&
-      matchesMonth &&
-      matchesMethod &&
-      matchesSource
-    );
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesYear &&
+        matchesMonth &&
+        matchesMethod &&
+        matchesSource
+      );
     })
   }, [coop_data, debouncedSearch, categoryFilter, yearFilter, monthFilter, paymentMethodFilter, sourceFilter]);
 
@@ -211,12 +211,12 @@ function CoopShareCapital() {
   };
 
   // react hook form
-  const { 
-    control, 
+  const {
+    control,
     handleSubmit,
     reset,
     register,
-    formState: {isDirty}
+    formState: { isDirty }
   } = useForm({
     defaultValues: defaultFormValues
   });
@@ -243,16 +243,17 @@ function CoopShareCapital() {
     }
   };
 
-  const closeModal = () =>{
-    reset(defaultFormValues); 
+  const closeModal = () => {
+    reset(defaultFormValues);
     setModalType(null);
   };
 
   const handleDelete = (coop_contri_id) => {
-    mutateDelete({ 
-      table: "coop_cbu_contributions", 
-      column_name: "coop_contri_id", 
-      id: coop_contri_id });
+    mutateDelete({
+      table: "coop_cbu_contributions",
+      column_name: "coop_contri_id",
+      id: coop_contri_id
+    });
     closeModal();
   };
 
@@ -265,10 +266,11 @@ function CoopShareCapital() {
     // console.log(`coop test`, data )
     if (modalType === "add") {
       mutateAdd(data,
-        {onSuccess: () => {
+        {
+          onSuccess: () => {
             toast.success("Coop contribution added")
             closeModal();
-        }, 
+          },
           onError: () => {
             toast.error("Something went wrong")
           }
@@ -276,38 +278,43 @@ function CoopShareCapital() {
       );
     } else if (modalType === "edit") {
       mutateEdit(data,
-        {onSuccess: () => {
-          toast.success("Successfully updated")
-          closeModal();
-        },
+        {
+          onSuccess: () => {
+            toast.success("Successfully updated")
+            closeModal();
+          },
           onError: () => {
             toast.error("Something went wrong");
           }
-      }
+        }
       );
     }
   };
 
   const fields = [
     { label: "Amount", name: "amount", type: "number", autoComplete: "off" },
-    { label: "Payment Category", name: "category", type: "select", 
+    {
+      label: "Payment Category", name: "category", type: "select",
       options: [
-        {label: "Monthly", value: "Monthly"},
-        {label: "Initial", value: "Initial"}
-      ]},
+        { label: "Monthly", value: "Monthly" },
+        { label: "Initial", value: "Initial" }
+      ]
+    },
     { label: "Date", name: "contribution_date", type: "date", autoComplete: "date" },
-    { label: "Payment Method", name: "payment_method", type: "select", autoComplete: "off",
+    {
+      label: "Payment Method", name: "payment_method", type: "select", autoComplete: "off",
       options: [
         { label: "Cash", value: "Cash" },
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
-      ]},
+      ]
+    },
     { label: "Remarks", name: "remarks", type: "text", optional: true },
   ];
 
   return (
     <div>
-      <Toaster position="bottom-left"/>
+      <Toaster position="bottom-left" />
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
           <FilterToolbar
@@ -383,11 +390,11 @@ function CoopShareCapital() {
           showLinkPath={false}
           headers={[
             "Ref No.",
-            "Account No.", 
+            "Account No.",
             "Name",
-            "Amount", 
+            "Amount",
             "Category",
-            "Date", 
+            "Date",
             "Method"
           ]}
           filterActive={activeFiltersText !== "Showing all contributions"}
@@ -403,15 +410,15 @@ function CoopShareCapital() {
             const fullName = row?.full_name || "Not Found";
             const amount = row?.amount || 0;
             const paymentCategory = row?.category;
-            const contributionDate = row?.contribution_date 
-              ? new Date(row.contribution_date).toLocaleDateString() 
+            const contributionDate = row?.contribution_date
+              ? new Date(row.contribution_date).toLocaleDateString()
               : "Not Found";
             const paymentMethod = row?.payment_method || "Not Found";
             const isDisabled = !row?.full_name; // condition (you can adjust logic)
             return (
               <tr key={id}
-                  onDoubleClick={() => openEditModal(row)}
-                  className={`text-center ${isDisabled ?
+                onDoubleClick={() => openEditModal(row)}
+                className={`text-center ${isDisabled ?
                   "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
               >
                 {/* Ref no. */}
@@ -425,28 +432,28 @@ function CoopShareCapital() {
                   {accountNo}
                 </td>
                 {/* Full name and avatar */}
-                <td> 
+                <td>
                   <span className="flex items-center gap-3">
-                  <>
-                    {/* Avatar */}
-                    <div className="avatar">
-                      <div className="mask mask-circle w-10 h-10">
-                        <img
-                          src={avatarUrl}
-                          alt={fullName}
-                        />
-                      </div>
-                    </div>
-                    {/* Full name */}
-                    <span className="flex items-center gap-2">
-                      <span className="truncate max-w-[120px]">{fullName}</span>
-                      {isDisabled && (
-                        <div className="tooltip tooltip-top" data-tip="System Generated">
-                          <span className="badge badge-sm badge-ghost">?</span>
+                    <>
+                      {/* Avatar */}
+                      <div className="avatar">
+                        <div className="mask mask-circle w-10 h-10">
+                          <img
+                            src={avatarUrl}
+                            alt={fullName}
+                          />
                         </div>
-                      )}
-                    </span>
-                  </>
+                      </div>
+                      {/* Full name */}
+                      <span className="flex items-center gap-2">
+                        <span className="truncate max-w-[120px]">{fullName}</span>
+                        {isDisabled && (
+                          <div className="tooltip tooltip-top" data-tip="System Generated">
+                            <span className="badge badge-sm badge-ghost">?</span>
+                          </div>
+                        )}
+                      </span>
+                    </>
                   </span>
                 </td>
                 {/* Amount */}
@@ -517,14 +524,14 @@ function CoopShareCapital() {
                         key={member.account_number}
                         value={member}
                         className={({ focus }) =>
-                        `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
+                          `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
                         }
                       >
                         <div className="flex items-center gap-3">
                           <div className="avatar">
                             <div className="mask mask-circle w-10 h-10">
                               <img
-                                src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
+                                src={member.avatar_url || placeHolderAvatar}
                                 alt={`${member.f_name} ${member.l_name}`}
                               />
                             </div>
@@ -532,8 +539,8 @@ function CoopShareCapital() {
                           <div className="flex flex-col flex-1 min-w-0">
                             <span className="font-mono text-sm font-semibold">{member.account_number}</span>
                             <div className="flex items-center gap-1">
-                            <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                            <span className="text-xs italic">({member.account_role})</span>
+                              <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                              <span className="text-xs italic">({member.account_role})</span>
                             </div>
                           </div>
                         </div>

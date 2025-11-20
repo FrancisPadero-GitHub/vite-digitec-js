@@ -1,10 +1,10 @@
-import {useState, useMemo, useTransition} from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 // fetch hooks
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
-import { useFetchLoanAccView} from "../../backend/hooks/shared/useFetchLoanAccView"
+import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView"
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
 
@@ -47,51 +47,51 @@ function LoanAccounts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-    /**
-     * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
-     * it needs to be paired with useMemo on the filtered data (clubFunds)
-     * 
-     */
-    // Add useTransition
-    const [isFilterPending, startTransition] = useTransition();
-  
-    // Update filter handlers to use startTransition
-    const handleSearchChange = (value) => {
-      startTransition(() => {
-        setSearchTerm(value);
-      });
-    };
-    const handleStatusChange = (value) => {
-      startTransition(() => {
-        setStatusFilter(value);
-      });
-    };
-  
-    // Reduces the amount of filtering per change so its good delay
-    const debouncedSearch = useDebounce(searchTerm, 250);
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data (clubFunds)
+   * 
+   */
+  // Add useTransition
+  const [isFilterPending, startTransition] = useTransition();
+
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+  const handleStatusChange = (value) => {
+    startTransition(() => {
+      setStatusFilter(value);
+    });
+  };
+
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "LACC_";
   const memberLoanAccounts = useMemo(() => {
     const members = members_data?.data || [];
     return mergedLoanAccounts.filter((row) => {
-    const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
+      const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
 
-    const member = members?.find((m) => m.account_number === row.account_number);
-    const fullName = member
-      ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
-      : "";
+      const member = members?.find((m) => m.account_number === row.account_number);
+      const fullName = member
+        ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
+        : "";
 
-    const matchesSearch =
-      debouncedSearch === "" ||
-      (fullName && fullName.includes(debouncedSearch)) ||
-      row.loan_ref_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      row.status?.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesSearch =
+        debouncedSearch === "" ||
+        (fullName && fullName.includes(debouncedSearch)) ||
+        row.loan_ref_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.status?.toLowerCase().includes(debouncedSearch.toLowerCase());
       generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
       const matchesStatus = statusFilter === "" || row.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-}, [mergedLoanAccounts, debouncedSearch, statusFilter, members_data]);
+      return matchesSearch && matchesStatus;
+    });
+  }, [mergedLoanAccounts, debouncedSearch, statusFilter, members_data]);
 
   // for the subtext of data table
   // just for fancy subtext in line with active filters
@@ -145,7 +145,7 @@ function LoanAccounts() {
       release_date: row.release_date,
       maturity_date: row.release_date,
     });
-    
+
     navigate(`../loan-account/details/${row.loan_id}`);
   }
 
@@ -173,7 +173,7 @@ function LoanAccounts() {
             ]}
           />
         </div>
-        
+
         <DataTableV2
           title={"Loan Accounts"}
           filterActive={activeFiltersText !== "Showing all loan accounts"}
@@ -233,10 +233,10 @@ function LoanAccounts() {
                       </div>
                     </div>
                     <div className="truncate">
-                      {fullName || 
-                      <span className="text-gray-400 italic">
-                        Not Provided
-                      </span>}
+                      {fullName ||
+                        <span className="text-gray-400 italic">
+                          Not Provided
+                        </span>}
                     </div>
                   </span>
                 </td>
@@ -270,9 +270,9 @@ function LoanAccounts() {
                 {/* Status */}
                 <td>
                   {status ? (
-                  <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                    <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
                       {row.status || "Not Provided"}
-                  </span>
+                    </span>
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
@@ -283,7 +283,7 @@ function LoanAccounts() {
         />
       </div>
 
-      
+
     </div>
   )
 }

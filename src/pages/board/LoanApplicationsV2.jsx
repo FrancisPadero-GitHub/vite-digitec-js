@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useTransition } from "react";
+import Decimal from "decimal.js";
 import { Toaster, toast } from "react-hot-toast";
 import dayjs from "dayjs";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
@@ -226,6 +227,7 @@ function LoanApplicationsV2() {
 
   // Loan Account Form
   const {
+    control,
     register: registerLoanAcc,
     handleSubmit: handleSubmitLoanAcc,
     reset: resetLoanAcc,
@@ -266,8 +268,9 @@ function LoanApplicationsV2() {
   // this is the solution I can come up with right now
   const isLoanApproved = watchLoanApp("status") === "Approved";
 
-  // to get the principal amount input for calculation
-  const principalInput = parseFloat(watchLoanAcc("principal")) ?? 0;
+  // to get the principal amount input for calculation - use Decimal to avoid floating point errors
+  const principalDecimal = watchLoanAcc("principal") ? new Decimal(watchLoanAcc("principal")) : new Decimal(0);
+  const principalInput = Number(principalDecimal.toNumber());
 
   // fetch to the loan product base on the data fetched from redux for min and max amount validation
   const loan_product_id = redux_data?.product_id || null;
@@ -336,6 +339,7 @@ function LoanApplicationsV2() {
   // On Submit Loan Account Form
   const onSubmitLoanAcc = (formDataLoanAcc) => {
     // Form data in here contains the data being passed in line 201 during the resetLoanAcc({}) call
+
     mutateUpdateLoanApp({
       application_id: formDataLoanAcc.application_id,
       reviewed_by: formDataLoanAcc.reviewed_by,
@@ -367,7 +371,7 @@ function LoanApplicationsV2() {
       }
     );
 
-    console.log(`Data final submit`, formDataLoanAcc);
+    // console.log(`Data final submit`, formDataLoanAcc);
   };
 
   // Mark as delete Loan Application
@@ -493,7 +497,6 @@ function LoanApplicationsV2() {
     }
     // The eslint-disable comment is to avoid warning for not including setLoanAccValue and watchLoanAcc in the dependency array
     // This is stable do not remove the dependency calculatedLoan
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calculatedLoan]);
 
 
@@ -563,7 +566,7 @@ function LoanApplicationsV2() {
           renderRow={(row) => {
             const id = row?.application_id || "Not Found";
             const accountNo = row?.account_number || "Not Found";
-            const avatarUrl = row?.avatar_url || "Not Found";
+            const avatarUrl = row?.avatar_url || placeHolderAvatar;
             const fullName = row?.full_name || "Not Found";
             const loanProduct = row?.product_name || false; // false since it is being checked as conditional if it has a value or not below
             const loanAmount = row?.amount || 0;    // display function only accepts numeric values
@@ -590,7 +593,7 @@ function LoanApplicationsV2() {
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
                         <img
-                          src={avatarUrl || placeHolderAvatar}
+                          src={avatarUrl}
                           alt={fullName}
                         />
                       </div>
@@ -706,7 +709,7 @@ function LoanApplicationsV2() {
               <div className="p-3 bg-green-50 border border-green-300 rounded-lg flex items-start gap-2">
                 <CheckCircleOutlinedIcon fontSize="small" color="success" />
                 <p className="text-sm text-green-800">
-                  <strong>Approved:</strong> Click "Next" to review and confirm loan release details.
+                  <strong>Approved:</strong> Click &ldquo;Next&rdquo; to review and confirm loan release details.
                 </p>
               </div>
             )}
@@ -811,7 +814,7 @@ function LoanApplicationsV2() {
 
 
 
-
+        {/* This modal appears when the loan applications gets approved to set more information for amount to be disbursed by the treasurer */}
         <LoanAccModal
           title={"Loan Account Details"}
           open={state && mode === 'loanAccount'}
@@ -823,7 +826,6 @@ function LoanApplicationsV2() {
           {/* Loan Account details go here */}
           {/* Hidden fields */}
           <input type="hidden" {...registerLoanAcc("loan_id")} />
-
           {/* Approval Amount */}
           <div className="p-3 bg-green-50 rounded-lg border-2 border-green-300 mb-4">
             <div className="mb-2 flex items-center justify-between">
@@ -841,25 +843,58 @@ function LoanApplicationsV2() {
                 </div>
                 <input type="hidden" {...registerLoanAcc("amount_req", { required: true })} value={watchLoanApp("amount")} />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
-                <input
-                  type="number"
-                  min="0"
-                  {...registerLoanAcc("principal", {
-                    required: true,
-                    min: selectedProduct?.min_amount || 0,
-                    max: selectedProduct?.max_amount || 9999999,
-                  })}
-                  placeholder={watchLoanApp("amount")}
-                  className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
-                />
-                {errorsLoanAcc.principal && (
-                  <p className="text-error text-xs mt-2">
-                    Amount must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{selectedProduct?.max_amount?.toLocaleString()}
-                  </p>
+
+              {/* Principal / Approval Amount */}
+              <Controller
+                name="principal"
+                control={control}
+                rules={{
+                  required: "Principal amount is required",
+                  validate: (value) => {
+                    // Use Decimal for precise money comparisons
+                    try {
+                      const D_value = new Decimal(value || 0);
+
+                      if (D_value.lte(0)) return "Amount cannot be zero or negative";
+
+                      const D_min = new Decimal(selectedProduct?.min_amount || 0);
+                      const D_max = redux_data?.amount;
+
+                      if (D_value.lt(D_min)) return `Amount must be at least ₱${D_min.toFixed(2)}`;
+
+                      // Special product rule: S_CAP_LOANS — amount cannot exceed 80% of share capital
+                      const productCode = redux_data?.product_code || "";
+                      if (productCode === "S_CAP_LOANS") {
+                        if (D_value.gt(D_max)) {
+                          return `For ${redux_data?.product_name}, maximum allowed is 80% of share capital`;
+                        }
+                      }
+
+                      return true;
+                    } catch {
+                      // Fallback to built-in message on error parsing Decimal
+                      return "Invalid amount";
+                    }
+                  }
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <div>
+                    <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder={watchLoanApp("amount")}
+                      {...field}
+                      className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
+                    />
+
+                    {error && (
+                      <p className="text-error text-xs mt-2">{error.message || error}</p>
+                    )}
+                  </div>
                 )}
-              </div>
+              />
             </div>
           </div>
 
