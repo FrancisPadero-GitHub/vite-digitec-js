@@ -24,7 +24,7 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, isPendin
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-6 overflow-visible w-[50rem] max-w-full">
+      <div className="modal-box space-y-6 overflow-hidden w-[50rem] max-w-full">
         <h2 className="text-2xl font-semibold">{`${title}`}</h2>
         <form 
           onSubmit={(e) => {
@@ -36,7 +36,10 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, isPendin
             onSubmit(e);
           }}
         >
-          {children}
+          {/* make form body scrollable to prevent overlap in smaller screens */}
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            {children}
+          </div>
 
           <div className="flex justify-between items-center gap-2 mt-6">
             <div className="flex gap-2 ml-auto">

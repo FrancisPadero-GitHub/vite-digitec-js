@@ -277,6 +277,8 @@ function LoanApplicationsV2() {
   const selectedProduct = loanProducts?.find(product => product.product_id === loan_product_id) || null;
   // console.log("Selected Product: ", selectedProduct);
 
+  // redux data for the loan product code
+  const productCode = redux_data?.product_code || "";
 
   /**
    * State Variables
@@ -827,7 +829,7 @@ function LoanApplicationsV2() {
           {/* Hidden fields */}
           <input type="hidden" {...registerLoanAcc("loan_id")} />
           {/* Approval Amount */}
-          <div className="p-3 bg-green-50 rounded-lg border-2 border-green-300 mb-4">
+          <div className="p-3 bg-green-50 rounded-lg border-2 border-green-300 mb-4 overflow-y-auto">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="font-bold">Approval Amount</h3>
               <p className="text-xs text-green-600 italic">(Adjust if needed)</p>
@@ -846,6 +848,7 @@ function LoanApplicationsV2() {
 
               {/* Principal / Approval Amount */}
               <Controller
+                defaultValue={watchLoanApp("amount") || 0}
                 name="principal"
                 control={control}
                 rules={{
@@ -854,20 +857,22 @@ function LoanApplicationsV2() {
                     // Use Decimal for precise money comparisons
                     try {
                       const D_value = new Decimal(value || 0);
+                      
 
                       if (D_value.lte(0)) return "Amount cannot be zero or negative";
 
                       const D_min = new Decimal(selectedProduct?.min_amount || 0);
-                      const D_max = redux_data?.amount;
+                      const D_max = productCode === "S_CAP_LOANS"
+                        ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
+                        : new Decimal(selectedProduct?.max_amount || 9999999);
 
                       if (D_value.lt(D_min)) return `Amount must be at least ₱${D_min.toFixed(2)}`;
-
-                      // Special product rule: S_CAP_LOANS — amount cannot exceed 80% of share capital
-                      const productCode = redux_data?.product_code || "";
                       if (productCode === "S_CAP_LOANS") {
                         if (D_value.gt(D_max)) {
                           return `For ${redux_data?.product_name}, maximum allowed is 80% of share capital`;
                         }
+                      } else {
+                        return D_value.gt(D_max) ? `Amount must not exceed ₱${D_max.toFixed(2)}` : true;
                       }
 
                       return true;
@@ -877,25 +882,33 @@ function LoanApplicationsV2() {
                     }
                   }
                 }}
-                render={({ field, fieldState: { error } }) => (
+                render={({ field }) => (
                   <div>
                     <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
                     <input
+                      value={field.value ?? ''}
                       type="number"
                       step="0.01"
-                      min="0"
+                      min={selectedProduct?.min_amount || 0}
+                      max={productCode === "S_CAP_LOANS"
+                        ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
+                        : new Decimal(selectedProduct?.max_amount || 9999999)}
                       placeholder={watchLoanApp("amount")}
                       {...field}
                       className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
                     />
 
-                    {error && (
-                      <p className="text-error text-xs mt-2">{error.message || error}</p>
+                    {errorsLoanAcc.principal && (
+                      <p className="text-error text-xs mt-2">
+                        Amount must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{productCode === "S_CAP_LOANS"
+                          ? new Decimal(redux_data?.amount || 9999999).toLocaleString()
+                          : new Decimal(selectedProduct?.max_amount || 9999999).toLocaleString()}
+                      </p>
                     )}
-                  </div>
-                )}
-              />
-            </div>
+              </div>
+            )}
+          />
+        </div>
           </div>
 
           {/* EDITABLE SECTION - Dates */}
@@ -994,8 +1007,8 @@ function LoanApplicationsV2() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Service Fee</label>
                 <div className={`relative px-4 py-2 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border-2 border-purple-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-purple-900">
-                    ₱{display(watchLoanAcc("service_fee")) || "0.00"}
+                  <div className="text-xl font-bold text-purple-900 text-right">
+                    <span title={`₱${display(watchLoanAcc("service_fee")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("service_fee")) || "0.00"}</span>
                   </div>
                   {isCalculating && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 animate-spin">
@@ -1010,8 +1023,8 @@ function LoanApplicationsV2() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
                 <div className={`relative px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-blue-900">
-                    ₱{display(watchLoanAcc("total_interest")) || "0.00"}
+                  <div className="text-xl font-bold text-blue-900 text-right">
+                    <span title={`₱${display(watchLoanAcc("total_interest")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("total_interest")) || "0.00"}</span>
                   </div>
                   {isCalculating && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 animate-spin">
@@ -1026,8 +1039,8 @@ function LoanApplicationsV2() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Due</label>
                 <div className={`relative px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-emerald-900">
-                    ₱{display(watchLoanAcc("monthly_payment")) || "0.00"}
+                  <div className="text-xl font-bold text-emerald-900 text-right">
+                    <span title={`₱${display(watchLoanAcc("monthly_payment")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("monthly_payment")) || "0.00"}</span>
                   </div>
                   {isCalculating && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-spin">
@@ -1043,8 +1056,8 @@ function LoanApplicationsV2() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Total Amount Due</label>
                 <div className={`relative px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold">
-                    ₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                  <div className="text-xl font-bold text-right">
+                    <span title={`₱${watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}`} className="truncate block max-w-full">₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</span>
                   </div>
                   {isCalculating && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 animate-spin">
