@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router";
 import dayjs from "dayjs";
@@ -8,6 +8,7 @@ import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
 import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
 import { useFetchPaySched } from "../../backend/hooks/shared/useFetchPaySched";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
+import { useFetchLoanPaymentsView } from "../../backend/hooks/shared/view/useFetchPaymentsView";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
 import { useMemberRole } from "../../backend/context/useMemberRole";
 
@@ -20,12 +21,15 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // constants
-import { LOAN_ACCOUNT_STATUS_COLORS } from "../../constants/Color";
+import { LOAN_ACCOUNT_STATUS_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
 
 // utils
 import { display } from "../../constants/numericFormat";
+import DataTableV2 from "../shared/components/DataTableV2";
 
 function LoanAccountDetails() {
+  const navigate = useNavigate();
+  
   // ID params Grabber 
   const { loan_id } = useParams();
 
@@ -83,7 +87,21 @@ function LoanAccountDetails() {
   const loanTerm = accountData?.loan_term_approved;
   const net_principal = accountData?.net_principal;
 
-  const navigate = useNavigate();
+  // Payment Records - compute params based on role
+  const paymentParams = useMemo(() => {
+    if (memberRole === "regular-member") {
+      return { useLoggedInMember: true };
+    } else {
+      // for the treasurer and board
+      return { accountNumber: applicant_id };
+    }
+  }, [memberRole, applicant_id]);
+  // Dynamic Parameters are being passed in here depends on the role is being logged in to the system
+  const { data: view_payment_records, isLoading: isPaymentLoading, isError: isPaymentError, error: paymentError } = useFetchLoanPaymentsView(paymentParams);
+  const payments = view_payment_records?.data || [];
+  // filters the loan payments to only show payments related to the current loan account
+  const filteredPayments = payments?.filter(rec => rec.loan_id === parsedId);
+  
 
   return (
     <div>
@@ -306,7 +324,7 @@ function LoanAccountDetails() {
           </div>
         )}
         <div className="flex justify-between my-4" >
-          <h3 className="text-lg font-semibold mt-1 ">Payment Schedules</h3>
+          <h3 className="text-lg font-semibold mt-1 ">Payment Schedules & Records</h3>
           <button
             className="btn btn-primary"
             onClick={() => navigate(`/${memberRole}/coop-loans/payments`)}
@@ -315,16 +333,70 @@ function LoanAccountDetails() {
           </button>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+          {/* Loan Schedule List */}
+          <div className="border border-base-content/10 rounded-xl bg-base-100 p-4 shadow-sm">
+            <LoanScheduleCardList
+              data={loanSchedRaw}
+              isLoading={isLoading}
+              page={page}
+              limit={limit}
+              total={total}
+              setPage={setPage}
+            />
+          </div>
 
-        {/* Loan Schedule List */}
-        <LoanScheduleCardList
-          data={loanSchedRaw}
-          isLoading={isLoading}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
-        />
+          {/* Payment Record */}
+          <div className="border border-base-content/10 rounded-xl bg-base-100 p-4 shadow-sm">
+            <DataTableV2 
+              title="Payment Records"
+              headers={["Schedule ID", "Date Paid", "Amount Paid", "Payment Method"]}
+              subtext={"Recent Payments"}
+              data={filteredPayments}
+              isLoading={isPaymentLoading}
+              isError={isPaymentError}
+              error={paymentError}
+              renderRow={(row) => {
+                const id = row?.payment_id || "Not Found";
+                const scheduleId = row?.schedule_id || "Not Found";
+                const paymentDate = row?.payment_date ? dayjs(row?.payment_date).format("MMM D, YYYY") : "Not Provided";
+                const amount = row?.total_amount || 0;
+                const paymentMethod = row?.payment_method || "Not Provided";
+                return (
+                  <tr
+                    key={id}
+                    
+                    className="transition-colors cursor-pointer hover:bg-base-200/70"
+                  >
+                    {/* Schedule ID */}
+                    <td className="px-4 py-2 text-center font-medium text-xs">#{scheduleId}</td>
+                    
+                    {/* Date */}
+                    <td className="px-4 py-2 text-center">{paymentDate}</td>
+
+                    {/* Amount */}
+                    <td className="px-4 py-2 font-semibold text-success text-center">
+                      ₱ {display(amount)}
+                    </td>
+    
+                    {/* Method */}
+                    <td className="px-4 py-2 text-center">
+                      {paymentMethod ? (
+                        <span className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[paymentMethod]}`}>
+                          {row?.payment_method}
+                        </span>
+                      ) : (
+                        <span> — </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              }}  
+            />
+          </div>
+        </div>
+        
+
       </div>
     </div>
   );

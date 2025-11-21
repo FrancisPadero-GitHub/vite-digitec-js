@@ -12,7 +12,7 @@ function LoanScheduleCardList({
 }) {
   return (
     <section className="border border-base-content/5 bg-white rounded-2xl shadow-md flex flex-col">
-      <div className="p-4 max-h-[550px] min-h-[550px] overflow-y-auto space-y-3 bg-white rounded-t-2xl">
+      <div className="p-4 max-h-[81vh] min-h-[17vh] overflow-y-auto space-y-3 bg-white rounded-t-2xl">
         {isLoading ? (
           <div className="flex justify-center items-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
         ) : data.length === 0 ? (
