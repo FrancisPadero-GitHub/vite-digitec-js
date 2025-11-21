@@ -272,6 +272,11 @@ function LoanApplicationsV2() {
   const principalDecimal = watchLoanAcc("principal") ? new Decimal(watchLoanAcc("principal")) : new Decimal(0);
   const principalInput = Number(principalDecimal.toNumber());
 
+  // watch first_due and approved loan term so maturity_date updates automatically
+  // this is used in the useEffect below
+  const firstDue = watchLoanAcc("first_due");
+  const loanTermApproved = watchLoanAcc("loan_term_approved");
+  
   // fetch to the loan product base on the data fetched from redux for min and max amount validation
   const loan_product_id = redux_data?.product_id || null;
   const selectedProduct = loanProducts?.find(product => product.product_id === loan_product_id) || null;
@@ -303,9 +308,11 @@ function LoanApplicationsV2() {
 
   // On Submit Loan Application Form
   const onSubmitLoanApp = (formDataLoanApp) => {
+
+    // if the status is approved, open the loan account modal next
+    // instead of submitting the loan application edit here
     if (formDataLoanApp.status === "Approved") {
       dispatch(openModal({ mode: 'loanAccount', data: formDataLoanApp })); // open loan account modal next
-
       resetLoanAcc({
         ...formDataLoanApp,
         loan_ref_number: generateAccountNumber(formDataLoanApp.application_id),
@@ -315,8 +322,10 @@ function LoanApplicationsV2() {
         status: "Pending Release",
         release_date: null,
         approved_date: today,
+        first_due: dayjs().add(1, 'month').format('YYYY-MM-DD'),
       });
     } else {
+      // directly submit the loan application edit if not approved
       mutateUpdateLoanApp({
         application_id: formDataLoanApp.application_id,
         reviewed_by: formDataLoanApp.reviewed_by,
@@ -334,7 +343,7 @@ function LoanApplicationsV2() {
             console.error("Error updating loan application:", error);
           }
         }
-      ); // directly submit the loan application edit if not approved
+      );
     }
   }
 
@@ -398,7 +407,17 @@ function LoanApplicationsV2() {
   // Close Loan Account Modal
   const closeLoanAccModal = () => {
     // Clear the account form
-    resetLoanAcc();
+    /**
+     * You must be asking why is just first_due being reset here?
+     * the useEffect for the calculation of the maturity date only works
+     * if I clear it this way to reset the dependency properly
+     * 
+     * I might need to implement a separate values for the defaultValues inside
+     * the react-hook-form if this becomes too messy
+     * 
+     * would implement a better solution later
+     */
+    resetLoanAcc({ first_due: null });
 
     // Reopen the loan application modal with the previous redux data
     resetLoanApp({
@@ -423,7 +442,7 @@ function LoanApplicationsV2() {
 
   // console.log(`TEST`, principalValue, interestRateValue, loanTermValue, interestMethod, serviceFeeValue);
 
-  // detects the changes of principal then calculate on the go
+  // Actual loan calculator
   const calculatedLoan = useMemo(() => {
 
     // don't proceed if no principal value
@@ -435,6 +454,7 @@ function LoanApplicationsV2() {
     let totalMonthlyPayment = 0;
 
     if (interestMethod === "flat") {
+      // use flat rate calculation
       const result = calcLoanSchedFlat({
         interestRate: Number(interestRateValue),
         principal: Number(principalValue),
@@ -446,6 +466,7 @@ function LoanApplicationsV2() {
       totalServiceFee = result.serviceFee;
       totalMonthlyPayment = result.monthlyPayment;
     } else if (interestMethod === "diminishing") {
+      // use diminishing rate calculation
       const result = calcLoanSchedDiminishing({
         interestRate: Number(interestRateValue),
         principal: Number(principalValue),
@@ -466,6 +487,19 @@ function LoanApplicationsV2() {
   /**
    * Use Effects
    */
+
+  // update maturity_date when first_due or loan_term_approved changes
+  useEffect(() => {
+    if (!firstDue) return;
+    const months = Math.max(Number(loanTermApproved) - 1, 0);
+    const newMaturity = dayjs(firstDue).add(months, "month").format("YYYY-MM-DD");
+    const current = watchLoanAcc("maturity_date");
+    if (current !== newMaturity) {
+      setLoanAccValue("maturity_date", newMaturity);
+    }
+  }, [firstDue, loanTermApproved]);
+  
+  // listens to calculatedLoan changes and make updates to the form values
   useEffect(() => {
     // update the calculated values to the form if changed
     // only proceed if there is a calculated loan
@@ -554,7 +588,8 @@ function LoanApplicationsV2() {
             ]}
           />
         </div>
-
+        
+        {/* Table */}
         <DataTableV2
           title={"Loan Applications"}
           filterActive={activeFiltersText !== "Showing all loan applications"}
@@ -649,7 +684,7 @@ function LoanApplicationsV2() {
             )
           }}
         />
-
+        {/* Loan Application Details form modal */}
         <BoardFormModal
           title={"Loan Application Details"}
           open={state && mode === 'loanApplication'}
@@ -815,8 +850,7 @@ function LoanApplicationsV2() {
         </BoardFormModal>
 
 
-
-        {/* This modal appears when the loan applications gets approved to set more information for amount to be disbursed by the treasurer */}
+        {/* Loan Account Details that to be approved form modal */}
         <LoanAccModal
           title={"Loan Account Details"}
           open={state && mode === 'loanAccount'}
@@ -888,7 +922,6 @@ function LoanApplicationsV2() {
                     <input
                       value={field.value ?? ''}
                       type="number"
-                      step="0.01"
                       min={selectedProduct?.min_amount || 0}
                       max={productCode === "S_CAP_LOANS"
                         ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
@@ -931,7 +964,9 @@ function LoanApplicationsV2() {
                 <label className="block text-xs font-medium text-blue-700 mb-1">Maturity Date</label>
                 <input
                   type="date"
-                  defaultValue={dayjs().add(watchLoanAcc("loan_term_approved"), 'month').format('YYYY-MM-DD')}
+                  title="Precalculated based on first due date"
+                  // this is now being auto calculated in the useEffect above
+                  // defaultValue={dayjs().add(watchLoanAcc("loan_term_approved"), 'month').format('YYYY-MM-DD')}
                   {...registerLoanAcc("maturity_date", { required: true })}
                   className="input input-bordered w-full border-blue-400 focus:border-blue-600"
                 />
@@ -988,7 +1023,7 @@ function LoanApplicationsV2() {
                 <input type="hidden" {...registerLoanAcc("loan_term_approved", { required: true })} />
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-200">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
                 <span className="text-xs font-medium text-gray-500">Method:</span>
                 <span className="text-xs font-bold">{watchLoanAcc("interest_method")}</span>
                 <input type="hidden" {...registerLoanAcc("interest_method", { required: true })} />
