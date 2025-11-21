@@ -1,4 +1,4 @@
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useEffect } from 'react'
 import { useForm } from 'react-hook-form';
 import { Toaster, toast } from "react-hot-toast";
 import dayjs from 'dayjs';
@@ -198,6 +198,21 @@ function CoopLoansReleases() {
   } = useForm({
     defaultValues
   });
+
+  // watch schedule-related fields
+  const firstDue = watch("first_due");
+  const loanTerm = watch("loan_term");
+
+  // auto-calculate maturity_date whenever first_due or loan_term changes
+  useEffect(() => {
+    if (!firstDue) return;
+    const months = Math.max(Number(loanTerm) - 1, 0); // subtract 1 month, clamp at 0
+    const newMaturity = dayjs(firstDue).add(months, 'month').format('YYYY-MM-DD');
+    const current = watch("maturity_date");
+    if (current !== newMaturity) {
+      setValue("maturity_date", newMaturity);
+    }
+  }, [firstDue, loanTerm, setValue, watch]);
 
   const openModal = (row) => {
     // console.log(row)
@@ -548,7 +563,7 @@ function CoopLoansReleases() {
             </div>
           </div>
 
-          {/* Schedule info */}
+          {/* Payment Schedule */}
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Schedule</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -577,6 +592,9 @@ function CoopLoansReleases() {
                     {watch("maturity_date") ? dayjs(watch("maturity_date")).format('MM/DD/YYYY') : "N/A"}
                   </div>
                 </div>
+                {/* hidden registered field to submit value */}
+                <input type="hidden" {...register("maturity_date", { required: true })} />
+                {errors.maturity_date && (<p className="text-error text-xs mt-1">Maturity date required</p>)}
               </div>
             </div>
           </div>
