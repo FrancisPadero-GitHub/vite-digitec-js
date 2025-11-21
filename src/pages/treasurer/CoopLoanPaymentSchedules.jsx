@@ -260,7 +260,7 @@ function CoopLoanPaymentSchedules() {
             return (
               <tr
                 key={`${row?.schedule_id}`}
-                onClick={() => console.log(`Clicked on Schedule ID: LPS_${row?.schedule_id}`)}
+                onDoubleClick={() => console.log(`Clicked on Schedule ID: LPS_${row?.schedule_id}`)}
                 className={`transition-colors cursor-pointer ${getRowStyling()} text-center`}
               >
                 {/* Row Number */}

@@ -208,7 +208,7 @@ function LoanAccounts() {
               <tr
                 key={`${TABLE_PREFIX}${row.loan_id}`}
                 className="cursor-pointer hover:bg-base-200/50 text-center"
-                onClick={() => openModal(row)}
+                onDoubleClick={() => openModal(row)}
               >
 
                 {/* Loan Ref No. */}

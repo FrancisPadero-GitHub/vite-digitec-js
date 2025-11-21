@@ -334,6 +334,7 @@ function CoopLoansReleases() {
             const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
 
             const id = row?.loan_id || "Not found";
+            const loanRefNo = row?.loan_ref_number || "Not found";
             const accountNo = row?.account_number || "Not found";
             const avatarUrl = matchedMember?.avatar_url || placeHolderAvatar;
             const principalAmount = row?.net_principal || 0;
@@ -344,14 +345,14 @@ function CoopLoansReleases() {
 
             return (
               <tr
-                key={`${TABLE_PREFIX}${row.loan_id}`}
+                key={id}
                 className="cursor-pointer hover:bg-base-200/50 text-center"
-                onClick={() => openModal(row)}
+                onDoubleClick={() => openModal(row)}
               >
 
-                {/* Application ID */}
+                {/* Loan Ref No. */}
                 <td className="font-medium text-xs">
-                  {id}
+                  {loanRefNo}
                 </td>
 
                 {/* Account No. */}

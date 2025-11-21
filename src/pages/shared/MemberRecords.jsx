@@ -149,7 +149,7 @@ export default function MemberRecords() {
 
             return(
               <tr key={id}
-                onClick={() => handleClick(row)}
+                onDoubleClick={() => handleClick(row)}
                 className="cursor-pointer hover:bg-base-200/70 transition-colors text-center"
               >
                 {/* Account Number */}

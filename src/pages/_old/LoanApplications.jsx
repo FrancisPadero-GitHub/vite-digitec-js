@@ -527,7 +527,7 @@ function LoanApplications() {
               <tr
                 key={`${TABLE_PREFIX}${row.application_id}`}
                 className="cursor-pointer hover:bg-base-200/50"
-                onClick={() => openEditModal(row)}
+                onDoubleClick={() => openEditModal(row)}
               >
                 {/* Application ID */}
                 <td className="text-center px-2 py-2 text-xs font-medium">
@@ -644,7 +644,7 @@ function LoanApplications() {
             <div className="p-3 bg-green-50 border border-green-300 rounded-lg flex items-start gap-2">
               <CheckCircleOutlinedIcon fontSize="small" color="success" />
               <p className="text-sm text-green-800">
-                <strong>Approved:</strong> Click "Next" to review and confirm loan release details.
+                <strong>Approved:</strong> Click &ldquo;Next&rdquo; to review and confirm loan release details.
               </p>
             </div>
           )}
