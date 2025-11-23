@@ -212,7 +212,7 @@ const Sidebar = ({ role }) => {
       <label htmlFor="my-drawer" className="drawer-overlay lg:hidden"></label>
 
       <div className="h-full w-65 bg-neutral text-white shadow-lg overflow-hidden flex flex-col">
-        <div className="avatar mt-4 mb-2 flex justify-center">
+        <div className="avatar mt-8 mb-2 flex justify-center">
           <div className="w-20">
             <img src={logo} alt="DigiTEC Logo" />
           </div>
