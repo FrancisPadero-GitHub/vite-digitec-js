@@ -1,4 +1,4 @@
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useEffect } from 'react'
 import dayjs from 'dayjs';
 import Decimal from 'decimal.js';
 import { createPortal } from 'react-dom';
@@ -212,6 +212,29 @@ function CoopLoansPayments() {
 
   // Modal Controls
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+
+  // Auto-populate form when modal opens with prefilled data from payment schedules
+  useEffect(() => {
+    if (loanPaymentModal.isOpen && loanPaymentModal.type === 'add' && payment_redux_data && Object.keys(payment_redux_data).length > 0) {
+      // Find the member to get member_id
+      const selectedMember = members.find(m => m.account_number === payment_redux_data.member_account_number);
+      
+      reset({
+        payment_id: "",
+        loan_id: payment_redux_data.loan_id || null,
+        loan_ref_number: payment_redux_data.loan_ref_number || "",
+        account_number: payment_redux_data.member_account_number || "",
+        member_id: selectedMember?.member_id || null,
+        total_amount: "",
+        payment_method: "",
+        payment_date: getLocalDateString(new Date()),
+        payment_type: "",
+        sched_id: payment_redux_data.schedule_id || "",
+        outstanding_balance: "",
+        status: "",
+      });
+    }
+  }, [loanPaymentModal.isOpen, loanPaymentModal.type, payment_redux_data, members, reset]);
 
   const openAddModal = () => {
     reset(defaultFormValues);

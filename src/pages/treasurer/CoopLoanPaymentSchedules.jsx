@@ -143,6 +143,128 @@ function CoopLoanPaymentSchedules() {
     }
   };
 
+  const handleContextMenu = (row) => (e) => {
+    e.preventDefault();
+    
+    // Remove any existing menu
+    const EXISTING_ID = "row-context-menu";
+    const existing = document.getElementById(EXISTING_ID);
+    if (existing) existing.remove();
+
+    // Build menu container
+    const menu = document.createElement("div");
+    menu.id = EXISTING_ID;
+    menu.className =
+      "rounded shadow-lg border bg-white text-sm text-base-content z-[9999] overflow-hidden";
+    menu.style.position = "fixed";
+    menu.style.top = `${e.clientY}px`;
+    menu.style.left = `${e.clientX}px`;
+    menu.style.minWidth = "180px";
+
+    // Helper to create menu item
+    const createMenuItem = (label, onClick, options = {}) => {
+      const item = document.createElement("div");
+      item.className =
+        "px-3 py-2 hover:bg-base-200 cursor-pointer whitespace-nowrap";
+      if (options.bold) item.style.fontWeight = "600";
+      item.textContent = label;
+      item.onclick = (ev) => {
+        ev.stopPropagation();
+        try {
+          onClick(ev);
+        } finally {
+          menu.remove();
+        }
+      };
+      return item;
+    };
+
+    // Menu actions
+    const goToPayments = () => {
+      navigate(`/${memberRole}/coop-loans/payments`);
+    };
+
+    // This function opens the payment modal for treasurer role
+    // Navigates to payments page and opens modal with prefilled data
+    const openPaymentModal = () => {
+      if (memberRole === "treasurer") {
+        // Navigate to payments page first
+        navigate(`/${memberRole}/coop-loans/payments`);
+        
+        // Prepare data to prefill the modal
+        const prefillData = {
+          schedule_id: row?.schedule_id,
+          loan_ref_number: row?.loan_ref_number,
+          member_account_number: row?.member_account_number,
+          full_name: row?.full_name,
+          loan_id: row?.loan_id,
+          principal_due: row?.principal_due,
+          interest_due: row?.interest_due,
+          fee_due: row?.fee_due,
+          total_due: row?.total_due,
+          amount_paid: row?.amount_paid,
+          due_date: row?.due_date,
+        };
+        
+        // Dispatch modal with prefilled data
+        dispatch(openLoanPaymentModal({ type: "add", data: prefillData }));
+      } else {
+        window.alert("Only treasurer can open payment modal.");
+      }
+    };
+
+    const copyScheduleId = () => {
+      const scheduleId = `${TABLE_PREFIX}${row?.schedule_id}`;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(scheduleId).catch(() => {});
+      } else {
+        // Fallback for older browsers
+        const ta = document.createElement("textarea");
+        ta.value = scheduleId;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+    };
+
+    const viewDetails = () => {
+      const loanID = row?.loan_id;
+      if (loanID) {
+        navigate(`/${memberRole}/loan-account/details/${loanID}`);
+      } else {
+        window.alert("Loan ID not found.");
+      }
+    };
+
+    // Add menu items
+    menu.appendChild(
+      createMenuItem("Go to Payments", goToPayments, { bold: true })
+    );
+    menu.appendChild(createMenuItem("Open Payment", openPaymentModal));
+    menu.appendChild(createMenuItem("Copy Schedule ID", copyScheduleId));
+    menu.appendChild(createMenuItem("View Details", viewDetails));
+
+    // Insert menu and setup event listeners for auto-removal
+    document.body.appendChild(menu);
+
+    const removeMenu = () => {
+      menu.remove();
+      document.removeEventListener("click", removeMenu);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("scroll", removeMenu, true);
+    };
+
+    const onKeyDown = (kd) => {
+      if (kd.key === "Escape") removeMenu();
+    };
+
+    // Use capture for scroll to catch scrolling inside containers
+    document.addEventListener("click", removeMenu);
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("scroll", removeMenu, true);
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -260,7 +382,7 @@ function CoopLoanPaymentSchedules() {
             return (
               <tr
                 key={`${row?.schedule_id}`}
-                onDoubleClick={() => console.log(`Clicked on Schedule ID: LPS_${row?.schedule_id}`)}
+                onContextMenu={handleContextMenu(row)}
                 className={`transition-colors cursor-pointer ${getRowStyling()} text-center`}
               >
                 {/* Row Number */}
