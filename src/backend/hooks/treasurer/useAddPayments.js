@@ -2,9 +2,13 @@
   import { useQueryClient, useMutation } from "@tanstack/react-query";
   import { allocateLoanPayment } from "./utils/allocateLoanPayment";
   import { useAddActivityLog } from "../shared/useAddActivityLog";
+  import { generateReceiptNo } from "../../../pages/board/helpers/utils";
 
   // --- Insert function ---
   const insertLoanPayments = async (formData) => {
+    
+    // form data destructure for account_number only
+    // don't be confused, the whole formData is still passed to allocateLoanPayment
     const { account_number } = formData;
 
     // get member info (im giving this a separate db call because i dont want to touch the allocateLoanPayment function HAHAHA)
@@ -20,13 +24,39 @@
 
     const member_name = `${memberData.f_name} ${memberData.l_name}`;
 
-
     // the payload is inside this hook
     const allocations = await allocateLoanPayment(supabase, formData);
 
+    // Receipt number generation
+    const receiptNo = await generateReceiptNo(supabase, {
+      loan_ref_number: formData.loan_ref_number,
+      account_number: formData.account_number,
+      payment_date: formData.payment_date,
+    });
+
+    // Add receipt_no and receipt_meta to each allocation
+    const payload = allocations.map((allocation, index) => ({
+      ...allocation,
+      receipt_no: index === 0 ? receiptNo : `${receiptNo}-${index}`,
+      receipt_meta: {
+        generated_at: new Date().toISOString(),
+        member_name: member_name,
+        account_number: allocation.account_number,
+        loan_ref_number: allocation.loan_ref_number,
+        payment_method: allocation.payment_method,
+        payment_date: allocation.payment_date,
+        breakdown: {
+          total_amount: allocation.total_amount,
+          principal: allocation.principal,
+          interest: allocation.interest,
+          fees: allocation.fees,
+        }
+      }
+    }));
+    
     const { data, error } = await supabase
       .from("loan_payments")
-      .insert(allocations)
+      .insert(payload)
       .select()
 
 
@@ -34,11 +64,11 @@
       throw new Error(error.message);
     }
 
-  return {
-    ...data,
-    member_name,
-    account_number,
-  };
+    return {
+      ...data,
+      member_name,
+      account_number,
+    };
   };
 
   // --- React hook ---

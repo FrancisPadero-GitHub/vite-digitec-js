@@ -17,3 +17,17 @@ export function genLoanRefNo(loanAppID) {
   const rand = Math.floor(10 + Math.random() * 90); // 2 digits
   return `L${y}${m}${d}-${id}${rand}`;
 }
+
+export async function generateReceiptNo(supabase, { loan_ref_number, account_number, payment_date }) {
+  const datePart = new Date(payment_date).toISOString().slice(0,10).replace(/-/g,"");
+  // Count existing for same day & loan/account
+  const { data, error } = await supabase
+    .from("loan_payments")
+    .select("receipt_no", { count: "exact", head: true })
+    .eq("loan_ref_number", loan_ref_number)
+    .eq("account_number", account_number)
+    .like("receipt_no", `%D${datePart}%`);
+  if (error) throw error;
+  const seq = String((data?.length || 0) + 1).padStart(3,"0");
+  return `${loan_ref_number}-P${account_number}-D${datePart}-${seq}`;
+}

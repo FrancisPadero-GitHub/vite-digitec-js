@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 // fetch hooks
 import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayments';
 
@@ -14,6 +14,7 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 // utils
 import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
 import { display } from '../../constants/numericFormat';
+import { createPdfReceipt } from '../treasurer/utils/receiptPDF';
 
 function MemberPayments() {
   const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({ useLoggedInMember: true });
@@ -231,7 +232,7 @@ function MemberPayments() {
             open={true}
             close={closeViewModal}
             action={false}
-            onSubmit={null}
+            onSubmit={() => {}} // just passing a dummy function to disable submit
           >
             {/* Payment Info Section */}
             <div className="bg-base-100 p-2.5 rounded-lg border border-gray-200 mb-3">
@@ -316,6 +317,18 @@ function MemberPayments() {
                 </div>
               </div>
             </div>
+            <div className="flex justify-start">
+            <button 
+              className="btn btn-sm btn-primary mt-3"
+              onClick={() => {
+                // console.log(viewPaymentData)
+                createPdfReceipt(viewPaymentData);
+              }}
+            >
+              <PictureAsPdfIcon fontSize="small" />
+              Export PDF
+            </button>
+          </div>
           </FormModal>
         )}
       </div>

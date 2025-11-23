@@ -32,6 +32,8 @@ import { useEditLoanPayments } from '../../backend/hooks/treasurer/useEditPaymen
 import FilterToolbar from '../shared/components/FilterToolbar';
 import DataTableV2 from '../shared/components/DataTableV2';
 
+// modal
+import ReceiptModal  from './modals/ReceiptModal';
 import FormModal from './modals/FormModal';
 
 // constants
@@ -208,34 +210,6 @@ function CoopLoansPayments() {
     defaultValues: defaultFormValues,
   });
 
-
-  /**
-   * 
-   * TEMPORARY WORK AROUND
-   * 
-   * sets the loan_id automatically if a member is selected and has a loan acc that is active 
-   */
-
-  // Watch the dependencies
-  // const payerId = watch("account_number");
-  // const loanId = watch("loan_ref_number");
-  // const paymentDate = watch("payment_date");
-
-  // RECEIPT NO GENERATOR
-  // Compute receipt_no whenever dependencies change
-  // useMemo(() => {
-  //   if (loanId && payerId && paymentDate) {
-  //     setValue(
-  //       "receipt_no",
-  //       `${loanId}-P${payerId}-D${dayjs(paymentDate).format("YYYYMMDD")}`
-  //     );
-  //   } else {
-  //     setValue("receipt_no", "");
-  //   }
-  // }, [loanId, payerId, paymentDate, setValue]);
-
-
-
   // Modal Controls
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
@@ -298,6 +272,7 @@ function CoopLoansPayments() {
     closeModal();
   };
   const [pendingPaymentData, setPendingPaymentData] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   // On form submit (opens confirmation)
   const handlePaymentSubmit = (data) => {
@@ -313,8 +288,10 @@ function CoopLoansPayments() {
       // console.log("ADD",pendingPaymentData)
       const addPayload = {
         ...pendingPaymentData,
+        member_name: members.find(m => m.account_number === pendingPaymentData.account_number)?.f_name + " " + members.find(m => m.account_number === pendingPaymentData.account_number)?.l_name,
         total_amount: new Decimal(pendingPaymentData?.total_amount || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber(),
       };
+      // console.log("Add Payload", addPayload)
       addLoanPayments(addPayload, {
         onSuccess: () => {
           toast.success("Successfully added payment");
@@ -1042,6 +1019,12 @@ function CoopLoansPayments() {
           </div>
         </FormModal>
 
+        <ReceiptModal
+          open={showReceipt}
+          onClose={() => setShowReceipt(false)}
+          payment={viewPaymentData}
+        />
+
         {/* Payment Confirmation Modal */}
         {showPaymentConfirm && createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
@@ -1113,7 +1096,7 @@ function CoopLoansPayments() {
                 </div>
               </div>
 
-              {/* Account Info Section */}
+              {/* Account Info Section */ }
               <div className="bg-base-200 p-3 rounded-lg mb-3">
                 <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
                 <div className="grid grid-cols-3 gap-2.5">
@@ -1124,6 +1107,9 @@ function CoopLoansPayments() {
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
                     <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <button onClick={() => setShowReceipt(true)} className="btn btn-warning w-20 h-5">Receipt</button>
                   </div>
                 </div>
               </div>
