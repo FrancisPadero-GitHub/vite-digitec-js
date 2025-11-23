@@ -17,7 +17,7 @@ import { useFetchClubFunds } from "../../backend/hooks/shared/useFetchClubFunds"
 import { useFetchLoanPayments } from "../../backend/hooks/shared/useFetchPayments";
 
 // Components
-import DataTableMember from "./modal/DataTableMember";
+import DataTableMember from "../members/modal/DataTableMember";
 import StatCard from "../shared/components/StatCard";
 
 // Constant Colors
