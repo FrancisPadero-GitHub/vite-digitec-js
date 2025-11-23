@@ -219,29 +219,26 @@ function DashboardV2() {
     ];
   }, [currentSummary, prevSummary, loading, error, errorMessage]);
 
-
-
-
   return (
-    <div>
+    <div className="m-2 sm:m-3 lg:m-4">
       <Toaster position="bottom-left"/>
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex flex-col md:flex-col lg:flex-row xl:flex-row gap-4">
-            {/* LEFT SIDE */}
-          <div className="flex-1 flex flex-col gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold px-2 sm:px-0">Dashboard</h1>
+        <div className="flex flex-col xl:flex-row gap-4">
+          {/* LEFT SIDE - Main Content */}
+          <div className="flex-1 flex flex-col gap-4 lg:gap-6">
             {/* Total Card Stats  */}
-            <section className="mb-4">
-              <div className="flex items-center mb-2">
-                <h2 className="text-xl font-semibold mr-2">Overall Totals</h2>
+            <section className="mb-2 sm:mb-4 px-2 sm:px-0">
+              <div className="flex items-center mb-3">
+                <h2 className="text-lg sm:text-xl font-semibold mr-2">Overall Totals</h2>
                 {/* Universal Filter */}
-                <div className="dropdown dropdown-right">
-                  <label tabIndex={0} className="btn btn-sm">
+                <div className="dropdown dropdown-bottom sm:dropdown-right">
+                  <label tabIndex={0} className="btn btn-sm btn-ghost">
                     <MoreHorizOutlinedIcon />
                   </label>
                   <ul
                     tabIndex={0}
-                    className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-sm"
+                    className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-sm border border-base-300"
                   >
                     {["All Time", "This Month", "This Year"].map((date_label) => (
                       <li key={date_label}>
@@ -274,8 +271,8 @@ function DashboardV2() {
                   </ul>
                 </div>
               </div>
-              {/* Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {/* Cards Grid - Responsive */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                 {stats.map((s, i) => (
                   <StatCardV2 key={i} {...s} subtitle={filters.overAll.subtitle} />
                 ))}
@@ -283,14 +280,14 @@ function DashboardV2() {
             </section>
 
             {/* Share Capital Area Chart */}
-            <section className="border border-base-content/5 bg-base-100 rounded-2xl shadow-md min-h-[400px]">
-              <div className="p-6 flex flex-col h-full">
-                <div>
-                  <span className="text-2xl font-semibold">Share Capital Activity</span>
-                  <span className="text-gray-400"> | This Year</span>
-                  <p className="text-base-content/60 mb-2">Overview of total share capital contributions by month.</p>
+            <section className="border border-base-content/5 bg-base-100 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-6">
+              <div className="p-2 sm:p-0 flex flex-col h-full">
+                <div className="mb-4">
+                  <span className="text-lg sm:text-xl lg:text-2xl font-semibold">Share Capital Activity</span>
+                  <span className="text-gray-400 text-sm sm:text-base"> | This Year</span>
+                  <p className="text-base-content/60 text-sm sm:text-base mt-1">Overview of total share capital contributions by month.</p>
                 </div>
-                <div className="w-full min-w-0">
+                <div className="w-full min-w-0 flex-1">
                   <CoopContributionChart
                     data={coopFunds}
                     isLoading={coopIsloading}
@@ -301,248 +298,245 @@ function DashboardV2() {
               </div>
             </section>
 
-            <DataTableV2
-              title={"Share Capital / Coop"}
-              type={"compact"}
-              showLinkPath={true}
-              linkPath={`/${memberRole}/coop-share-capital`}
-              headers={["Ref No.", "Account No", "Name", "Amount", "Payment Category", "Date"]}
-              data={coopFunds} // share capital / coop
-              isLoading={coopIsloading}
-              renderRow={(row) => {
-                const TABLE_PREFIX = "SCC_";
-                const id = row?.coop_contri_id || "Not Found";
-                const memberId = row?.member_id || null;
-                const accountNo = row?.account_number || "System";
-                const avatarUrl = row?.avatar_url || placeHolderAvatar;
-                const fullName = row?.full_name || "Not Found";
-                const amount = row?.amount || 0;
-                const paymentCategory = row?.category || "Not Found";
-                const contributionDate = row?.contribution_date || "Not Found";
-                const isDisabled = !row?.full_name; // condition (you can adjust logic)
-                return (
-                  <tr key={id}
-                      className={`text-center ${isDisabled ?
-                      "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
-                  >
-                    {/* Ref no. */}
-                    <td className=" text-center font-medium text-xs">
-                      {TABLE_PREFIX}{id}
-                    </td>
-                    {/* Account No */}
-                    <td className=" text-center font-medium text-xs hover:underline"
-                      onClick={() => openProfile(memberId)}
+            {/* Data Tables */}
+            <div className="space-y-4 lg:space-y-6">
+              <DataTableV2
+                title={"Share Capital / Coop"}
+                type={"compact"}
+                showLinkPath={true}
+                linkPath={`/${memberRole}/coop-share-capital`}
+                headers={["Ref No.", "Account No", "Name", "Amount", "Payment Category", "Date"]}
+                data={coopFunds}
+                isLoading={coopIsloading}
+                renderRow={(row) => {
+                  const TABLE_PREFIX = "SCC_";
+                  const id = row?.coop_contri_id || "Not Found";
+                  const memberId = row?.member_id || null;
+                  const accountNo = row?.account_number || "System";
+                  const avatarUrl = row?.avatar_url || placeHolderAvatar;
+                  const fullName = row?.full_name || "Not Found";
+                  const amount = row?.amount || 0;
+                  const paymentCategory = row?.category || "Not Found";
+                  const contributionDate = row?.contribution_date || "Not Found";
+                  const isDisabled = !row?.full_name;
+                  return (
+                    <tr key={id}
+                        className={`text-center ${isDisabled ?
+                        "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
                     >
-                      {accountNo}
-                    </td>
-                    {/* Full name and avatar */}
-                    <td>
-                      <span className="flex items-center gap-3">
-                      <Fragment>
-                        {/* Avatar */}
-                        <div className="avatar">
-                          <div className="mask mask-circle w-10 h-10">
-                            <img
-                              src={avatarUrl}
-                              alt={fullName}
-                            />
-                          </div>
-                        </div>
-                        {/* Full name */}
-                        <span className="flex items-center gap-2">
-                          <span className="truncate max-w-[120px]">{fullName}</span>
-                          {isDisabled && (
-                            <div className="tooltip tooltip-top" data-tip="System Generated">
-                              <span className="badge badge-sm badge-ghost">?</span>
-                            </div>
-                          )}
-                        </span>
-                      </Fragment>
-                      </span>
-                    </td>
-                    {/* Amount */}
-                    <td className="font-semibold text-success">
-                      ₱ {display(amount)}
-                    </td>
-                    {/* Payment Category */}
-                    <td>
-                      {paymentCategory ? (
-                        <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
-                          {paymentCategory}
-                        </span>
-                      ) : (
-                        <span className="badge font-semibold badge-error">Not Found</span>
-                      )}
-                    </td>
-                    {/* Contribution Date */}
-                    <td>
-                      {contributionDate ? new Date(contributionDate).toLocaleDateString() : "Not Found"}
-                    </td>
-      
-                  </tr>
-                )
-              }}
-            />
-            <DataTableV2
-              title={"Club Funds"}
-              type={"compact"}
-              showLinkPath={true}
-              linkPath={`/${memberRole}/club-funds`}
-              headers={["Ref No.", "Account No.", "Name", "Amount", "Category", "Date"]}
-              data={clubFunds}
-              isLoading={clubFundsIsLoading}
-              renderRow={(row) => {
-                const TABLE_PREFIX = "CFC_"
-                const id = row?.contribution_id || "Not Found";
-                const memberId = row?.member_id || null;
-                const accountNo = row?.account_number || "Not Found";
-                const fullName = row?.full_name || "Not Found";
-                const avatarUrl = row?.avatar_url || placeHolderAvatar;
-                const amount = row?.amount || 0;
-                const clubCategory = row?.category || "Not Found";
-                const paymentDate = row?.payment_date || "Not Found";
-                return (
-                  <tr key={id}
-                    className="text-center cursor-pointer hover:bg-base-200/50"
-                  >
-                    {/* Ref no. */}
-                    <td className=" text-center font-medium text-xs">
-                      {TABLE_PREFIX}{id}
-                    </td>
-                    {/* Account No */}
-                    <td className=" text-center font-medium text-xs hover:underline"
-                      onClick={() => openProfile(memberId)}
-                    >
-                      {accountNo || "Not Found"}
-                    </td>
-      
-                    {/* Full name and avatar */}
-                    <td>
-                      <span className="flex items-center gap-3">
-                        <Fragment>
-                          {/* Avatar */}
-                          <div className="avatar">
-                            <div className="mask mask-circle w-10 h-10">
-                              <img
-                                src={avatarUrl}
-                                alt={fullName}
-                              />
-                            </div>
-                          </div>
-                          {/* Full name */}
-                          <span className="truncate max-w-[120px]">{fullName}</span>
-                        </Fragment>
-                      </span>
-                    </td>
-                    {/* Amount */}
-                    <td className="font-semibold text-success">
-                      ₱ {display(amount)}
-                    </td>
-                    {/* Category */}
-                    <td>
-                      <span
-                        className={`font-semibold ${CLUB_CATEGORY_COLORS[clubCategory]}`}
+                      <td className="text-xs sm:text-sm font-medium px-2 py-3">
+                        {TABLE_PREFIX}{id}
+                      </td>
+                      <td className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
+                        onClick={() => openProfile(memberId)}
                       >
-                        {clubCategory}
-                      </span>
-                    </td>
-                    {/* Payment Date */}
-                    <td>
-                      {new Date(paymentDate).toLocaleDateString()}
-                    </td>
-                  </tr>
-                )
-              }}
-            />
-            <DataTableV2
-              title={"Club Expenses"}
-              type={"compact"}
-              showLinkPath={true}
-              linkPath={`/${memberRole}/club-expenses`}
-              headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
-              data={expenses}
-              isLoading={expensesIsLoading}
-              renderRow={(row) => {
-                const TABLE_PREFIX = "EXP_";
-                const id = row?.transaction_id || "Not Found";
-                const title = row?.title || "Not Found";
-                const amount = row?.amount || 0;
-                const category = row?.category || "Not Found";
-                const transactionDate = row?.transaction_date || "Not Found";
-                return (
-                  <tr key={id}
-                    className="text-center cursor-pointer hover:bg-base-200/50"
-                  >
-                    {/* Ref no. */}
-                    <td className=" text-center font-medium text-xs">
-                      {TABLE_PREFIX}{id}
-                    </td>
-                    {/* Title */}
-                    <td className=" text-center font-medium">
-                      {title}
-                    </td>
-                    {/* Amount */}
-                    <td className=" font-semibold text-error">
-                      ₱ {display(amount)}
-                    </td>
-                    {/* Category */}
-                    <td>
-                      <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
-                        {category}
-                      </span>
-                    </td>
-                    {/* Transaction Date */}
-                    <td>
-                      {new Date(transactionDate).toLocaleDateString()}
-                    </td>
-                  </tr>
-                )
-              }}
-            />
+                        {accountNo}
+                      </td>
+                      <td className="px-2 py-3">
+                        <span className="flex items-center gap-2 sm:gap-3">
+                          <Fragment>
+                            <div className="avatar">
+                              <div className="mask mask-circle w-8 h-8 sm:w-10 sm:h-10">
+                                <img
+                                  src={avatarUrl}
+                                  alt={fullName}
+                                  className="object-cover"
+                                />
+                              </div>
+                            </div>
+                            <span className="flex items-center gap-1 sm:gap-2">
+                              <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">{fullName}</span>
+                              <span className="xs:hidden text-xs truncate max-w-[60px]">{fullName.split(' ')[0]}</span>
+                              {isDisabled && (
+                                <div className="tooltip tooltip-top" data-tip="System Generated">
+                                  <span className="badge badge-xs sm:badge-sm badge-ghost">?</span>
+                                </div>
+                              )}
+                            </span>
+                          </Fragment>
+                        </span>
+                      </td>
+                      <td className="font-semibold text-success text-xs sm:text-sm px-2 py-3">
+                        ₱ {display(amount)}
+                      </td>
+                      <td className="px-2 py-3">
+                        {paymentCategory ? (
+                          <span className={`badge badge-soft font-semibold text-xs ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
+                            <span className="hidden sm:inline">{paymentCategory}</span>
+                            <span className="sm:hidden">{paymentCategory.split(' ')[0]}</span>
+                          </span>
+                        ) : (
+                          <span className="badge font-semibold badge-error text-xs">N/A</span>
+                        )}
+                      </td>
+                      <td className="text-xs sm:text-sm px-2 py-3">
+                        {contributionDate ? new Date(contributionDate).toLocaleDateString() : "N/A"}
+                      </td>
+                    </tr>
+                  )
+                }}
+              />
+              
+              <DataTableV2
+                title={"Club Funds"}
+                type={"compact"}
+                showLinkPath={true}
+                linkPath={`/${memberRole}/club-funds`}
+                headers={["Ref No.", "Account No.", "Name", "Amount", "Category", "Date"]}
+                data={clubFunds}
+                isLoading={clubFundsIsLoading}
+                renderRow={(row) => {
+                  const TABLE_PREFIX = "CFC_"
+                  const id = row?.contribution_id || "Not Found";
+                  const memberId = row?.member_id || null;
+                  const accountNo = row?.account_number || "Not Found";
+                  const fullName = row?.full_name || "Not Found";
+                  const avatarUrl = row?.avatar_url || placeHolderAvatar;
+                  const amount = row?.amount || 0;
+                  const clubCategory = row?.category || "Not Found";
+                  const paymentDate = row?.payment_date || "Not Found";
+                  return (
+                    <tr key={id}
+                      className="text-center cursor-pointer hover:bg-base-200/50"
+                    >
+                      <td className="text-xs sm:text-sm font-medium px-2 py-3">
+                        {TABLE_PREFIX}{id}
+                      </td>
+                      <td className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
+                        onClick={() => openProfile(memberId)}
+                      >
+                        {accountNo || "N/A"}
+                      </td>
+                      <td className="px-2 py-3">
+                        <span className="flex items-center gap-2 sm:gap-3">
+                          <Fragment>
+                            <div className="avatar">
+                              <div className="mask mask-circle w-8 h-8 sm:w-10 sm:h-10">
+                                <img
+                                  src={avatarUrl}
+                                  alt={fullName}
+                                  className="object-cover"
+                                />
+                              </div>
+                            </div>
+                            <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">{fullName}</span>
+                            <span className="xs:hidden text-xs truncate max-w-[60px]">{fullName.split(' ')[0]}</span>
+                          </Fragment>
+                        </span>
+                      </td>
+                      <td className="font-semibold text-success text-xs sm:text-sm px-2 py-3">
+                        ₱ {display(amount)}
+                      </td>
+                      <td className="px-2 py-3">
+                        <span
+                          className={`font-semibold text-xs sm:text-sm ${CLUB_CATEGORY_COLORS[clubCategory]}`}
+                        >
+                          <span className="hidden sm:inline">{clubCategory}</span>
+                          <span className="sm:hidden">{clubCategory.split(' ')[0]}</span>
+                        </span>
+                      </td>
+                      <td className="text-xs sm:text-sm px-2 py-3">
+                        {new Date(paymentDate).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  )
+                }}
+              />
+              
+              <DataTableV2
+                title={"Club Expenses"}
+                type={"compact"}
+                showLinkPath={true}
+                linkPath={`/${memberRole}/club-expenses`}
+                headers={["Ref No.", "Title", "Amount", "Category", "Date"]}
+                data={expenses}
+                isLoading={expensesIsLoading}
+                renderRow={(row) => {
+                  const TABLE_PREFIX = "EXP_";
+                  const id = row?.transaction_id || "Not Found";
+                  const title = row?.title || "Not Found";
+                  const amount = row?.amount || 0;
+                  const category = row?.category || "Not Found";
+                  const transactionDate = row?.transaction_date || "Not Found";
+                  return (
+                    <tr key={id}
+                      className="text-center cursor-pointer hover:bg-base-200/50"
+                    >
+                      <td className="text-xs sm:text-sm font-medium px-2 py-3">
+                        {TABLE_PREFIX}{id}
+                      </td>
+                      <td className="text-xs sm:text-sm font-medium px-2 py-3 truncate max-w-[120px] sm:max-w-none">
+                        {title}
+                      </td>
+                      <td className="font-semibold text-error text-xs sm:text-sm px-2 py-3">
+                        ₱ {display(amount)}
+                      </td>
+                      <td className="px-2 py-3">
+                        <span className={`font-semibold text-xs sm:text-sm ${CLUB_CATEGORY_COLORS[category]}`}>
+                          <span className="hidden sm:inline">{category}</span>
+                          <span className="sm:hidden">{category.split(' ')[0]}</span>
+                        </span>
+                      </td>
+                      <td className="text-xs sm:text-sm px-2 py-3">
+                        {new Date(transactionDate).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  )
+                }}
+              />
+            </div>
           </div>
 
-          {/* RIGHT SIDE */}
-          <div className="w-full md:w-full lg:w-[20%] xl:w-[30%] flex flex-col gap-3">
+          {/* RIGHT SIDE - Sidebar */}
+          <div className="w-full xl:w-[350px] 2xl:w-[400px] flex flex-col gap-4 lg:gap-6">
             {/* RECENT ACTIVITIES */}
-            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+            <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-row justify-between items-center mb-4">
-                <h2 className="text-2xl font-semibold">Recent Activity</h2>
-                <button onClick={() => navigate(`/${memberRole}/activity-logs`)} className="btn btn-link no-underline text-primary hover:underline">
+                <h2 className="text-lg sm:text-xl font-semibold">Recent Activity</h2>
+                <button 
+                  onClick={() => navigate(`/${memberRole}/activity-logs`)} 
+                  className="btn btn-link no-underline text-primary hover:underline p-0 min-h-0 h-auto text-sm sm:text-base"
+                >
                   See More ➜
                 </button>
               </div>
               
               {activityLogsIsLoading ? (
-                <div className="flex justify-center items-center h-64"><span className="loading loading-spinner"></span></div>
+                <div className="flex justify-center items-center h-40 sm:h-64">
+                  <span className="loading loading-spinner loading-sm sm:loading-md"></span>
+                </div>
               ) : activityLogsIsError ? (
-                <div className="text-center text-error py-8">{activityLogsError?.message || "Unknown error"}</div>
+                <div className="text-center text-error py-6 sm:py-8 text-sm sm:text-base">
+                  {activityLogsError?.message || "Unknown error"}
+                </div>
               ) : (
-                <ul className="space-y-4 relative before:absolute before:top-0 before:bottom-0 before:left-2.5 before:w-px before:bg-base-300">      
+                <ul className="space-y-3 sm:space-y-4 relative before:absolute before:top-0 before:bottom-0 before:left-2.5 before:w-px before:bg-base-300">      
                   {activityLogs?.slice(0, 6).map((log, index) => {
                     const dotColor = ACTIVITY_LOGS_TYPE_COLORS[log.type] || 'bg-primary';
                     return (
-                      <li key={log.activity_log_id || index} className="relative pl-8">
-                        <span className={`badge ${dotColor} w-3 h-3 p-0 rounded-full absolute left-1 top-1.5`}></span>
-                        <div className="text-sm leading-tight">
-                          <p className="font-medium">{log.action}</p>
+                      <li key={log.activity_log_id || index} className="relative pl-6 sm:pl-8">
+                        <span className={`badge ${dotColor} w-2 h-2 sm:w-3 sm:h-3 p-0 rounded-full absolute left-1 sm:left-1 top-1.5`}></span>
+                        <div className="text-xs sm:text-sm leading-tight">
+                          <p className="font-medium line-clamp-2">{log.action}</p>
                           <p className="text-xs text-base-content/50 mt-1">
-                            {dayjs(log.timestamp).format('MMMM D, YYYY h:mm A')}
+                            {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
                           </p>
                         </div>
-                        {index !== activityLogs.length - 1 && (<div className="mt-3 border-b border-base-200" />)}
+                        {index !== activityLogs.length - 1 && (<div className="mt-2 sm:mt-3 border-b border-base-200" />)}
                       </li>
                     );
                   })}
                 </ul>
               )}
             </section>
+
             {/* CLUB EXPENSES DONUT CHART */}
-            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+            <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-col h-full">
-                <div>
-                  <span className="text-2xl font-semibold">Club Expenses Breakdown</span>
-                  <span className="text-gray-400"> | All Time</span>
-                  <p className="mt-1 text-sm text-base-content/70">
+                <div className="mb-3">
+                  <span className="text-lg sm:text-xl font-semibold">Club Expenses Breakdown</span>
+                  <span className="text-gray-400 text-sm sm:text-base"> | All Time</span>
+                  <p className="ext-xs sm:text-sm text-base-content/100">
                     Distribution of club expenses by category
                   </p>
                 </div>
@@ -556,13 +550,16 @@ function DashboardV2() {
                 </div>
               </div>
             </section>
+
             {/* CLUB FUNDS VS EXPENSES DUAL LINE CHART */}
-            <section className="card bg-base-100 shadow-md min-h-[400px] p-5 rounded-2xl">
+            <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-col h-full">
-                <div>
-                  <span className="text-2xl font-semibold">Club Funds vs. Expenses</span>
-                  <span className="text-gray-400"> | This Year</span>
-                  <p className="mt-1 text-sm text-base-content/70">Track yearly trends between club funds and expenses.</p>
+                <div className="mb-4">
+                  <span className="text-lg sm:text-xl font-semibold">Club Funds vs. Expenses</span>
+                  <span className="text-gray-400 text-sm sm:text-base"> | This Year</span>
+                  <p className="mt-1 text-xs sm:text-sm text-base-content/70">
+                    Track yearly trends between club funds and expenses.
+                  </p>
                 </div>
                 <div className="flex-grow">
                   <ComparisonChart
@@ -579,6 +576,7 @@ function DashboardV2() {
         </div>
       </div>  
     </div>
-)}
+  )
+}
 
 export default DashboardV2

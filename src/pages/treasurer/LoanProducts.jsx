@@ -44,7 +44,6 @@ function LoanProducts() {
   const { data: loanProducts, isLoading, error } = useFetchLoanProducts();
   const data = loanProducts || [];
 
-
   // mutation hook
   const { mutate: addLoanProduct, isPending: isAdding } = useAddLoanProduct();
   const { mutate: editLoanProduct, isPending: isEditing } = useEditLoanProducts();
@@ -78,7 +77,6 @@ function LoanProducts() {
 
   const loanProductSubmitForm = (formData) => {
     const payload = { ...formData };
-
 
     // converting numeric fields to numbers
     const numericFields = [
@@ -122,10 +120,8 @@ function LoanProducts() {
   // Form button control - disable submit if adding/editing or no changes made
   const submitDisabled = isAdding || isEditing || (action === "edit" && !isDirty);
 
-
   const fields = [
     { label: "Loan Name", name: "name", type: "text" },
-
     {
       label: "Interest Method",
       name: "interest_method",
@@ -135,11 +131,9 @@ function LoanProducts() {
         { label: "Diminishing Rate", value: "diminishing" }
       ],
     },
-
     { label: "Interest Rate (%)", name: "interest_rate", type: "number" },
     { label: "Penalty Rate (%)", name: "penalty_rate", type: "number" },
     { label: "Service Fee (%)", name: "service_fee", type: "number" },
-
     {
       label: "Repayment Frequency",
       name: "repayment_freq",
@@ -150,30 +144,30 @@ function LoanProducts() {
         { label: "Weekly", value: "Weekly" },
       ],
     },
-
     { label: "Minimum Amount (₱)", name: "min_amount", type: "number" },
     { label: "Maximum Amount (₱)", name: "max_amount", type: "number" },
     { label: "Minimum Term (Months)", name: "min_term_months", type: "number" },
     { label: "Maximum Term (Months)", name: "max_term_months", type: "number" },
   ];
 
-
-  // console.log("Redux Data Stored:", redux_data)
   return (
-    <div>
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       <Toaster position='bottom-left' />
-      <div className="mb-6 space-y-4">
+      <div className="space-y-6">
 
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Loan Products</h1>
-
-            <button className="btn btn-neutral whitespace-nowrap" onClick={loanProductOpenModal}>
-              + Add Loan Product
-            </button>
-
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Loan Products</h1>
+          <button 
+            className="btn btn-neutral whitespace-nowrap w-full sm:w-auto px-4 py-2 text-sm sm:text-base"
+            onClick={loanProductOpenModal}
+          >
+            + Add Loan Product
+          </button>
         </div>
 
-        <div className="w-full grid gap-4 grid-cols-2">
+        {/* Products Grid */}
+        <div className="w-full space-y-4 sm:space-y-6">
           <Products
             data={data}
             isLoading={isLoading}
@@ -183,6 +177,7 @@ function LoanProducts() {
           />
         </div>
 
+        {/* Modal */}
         <FormModal
           table="Loan Products"
           open={state}
@@ -190,24 +185,23 @@ function LoanProducts() {
           action={action === "edit"}
           onSubmit={handleSubmit(loanProductSubmitForm)}
           isPending={isAdding || isEditing}
-          status={submitDisabled} // disable submit if no changes made
+          status={submitDisabled}
           deleteAction={() => (toast.error("Temporary disabled"))}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto px-1">
             {fields.map(({ label, name, type, options, autoComplete }) => (
               <div key={name} className="form-control w-full">
-                <label htmlFor={name} className="label text-sm font-semibold mb-2">
+                <label htmlFor={name} className="label text-sm font-semibold mb-1 sm:mb-2">
                   {label}
                 </label>
 
                 {/* Handle select dropdowns */}
                 {type === "select" ? (
-                  // Handle dropdowns
                   <select
                     id={name}
                     autoComplete={autoComplete}
                     {...register(name, { required: `${label} is required` })}
-                    className="select select-bordered w-full"
+                    className="select select-bordered w-full text-sm sm:text-base"
                   >
                     <option value="" disabled>
                       Select {label}
@@ -219,7 +213,6 @@ function LoanProducts() {
                     ))}
                   </select>
                 ) : type === "number" ? (
-                  // Handle all number inputs with decimal support
                   <>
                     <input
                       id={name}
@@ -231,30 +224,28 @@ function LoanProducts() {
                         required: `${label} is required`,
                         min: { value: 0, message: `${label} must be 0 or greater` }
                       })}
-                      className={`input input-bordered w-full ${
+                      className={`input input-bordered w-full text-sm sm:text-base ${
                         errors[name] ? "input-error" : ""
                       }`}
                     />
                     {errors[name] && (
-                      <span className="text-sm text-error mt-1 block">
+                      <span className="text-xs sm:text-sm text-error mt-1 block">
                         {errors[name]?.message}
                       </span>
                     )}
                   </>
                 ) : (
-                  // Handle all other input types (text, etc.)
                   <>
                     <input
-                    id={name}
-                    type={type}
-                    autoComplete={autoComplete}
-                    placeholder={`Enter ${label}`}
-                    {...register(name, { required: `${label} is required` })}
-                    className="input input-bordered w-full"
-                    
+                      id={name}
+                      type={type}
+                      autoComplete={autoComplete}
+                      placeholder={`Enter ${label}`}
+                      {...register(name, { required: `${label} is required` })}
+                      className="input input-bordered w-full text-sm sm:text-base"
                     />
                     {errors[name] && (
-                      <span className="text-sm text-error mt-1 block">
+                      <span className="text-xs sm:text-sm text-error mt-1 block">
                         {errors[name]?.message}
                       </span>
                     )}
@@ -264,7 +255,7 @@ function LoanProducts() {
             ))}
           </div>
         </FormModal>
-     </div>
+      </div>
     </div>
   );
 }
