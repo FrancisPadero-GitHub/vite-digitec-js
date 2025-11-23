@@ -10,7 +10,7 @@ function Reports() {
     { path: `/${memberRole}/reports/loan-reports`, label: 'Loan Reports', icon: '💳' },
     { path: `/${memberRole}/reports/club-coop-funds`, label: 'Club/Coop Funds', icon: '🏦' },
     { path: `/${memberRole}/reports/transaction-logs`, label: 'Transaction Logs', icon: '📝' },
-    { path: `/${memberRole}/reports/summary-charts`, label: 'Summary Charts', icon: '📈' },
+    // { path: `/${memberRole}/reports/summary-charts`, label: 'Summary Charts', icon: '📈' },
   ]
 
   return (
