@@ -12,7 +12,7 @@ function getScheduleStatus(amountPaid, totalDue) {
   if (paid.gte(due)) return "PAID";
   return "PARTIALLY PAID";
 }
-
+// This is for the old edit reverse allocation logic if there is a difference on the amount paid
 async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse) {
   let remaining = round(amountToReverse);
 

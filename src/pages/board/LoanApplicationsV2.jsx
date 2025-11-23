@@ -43,26 +43,7 @@ import calcLoanSchedDiminishing from "../../constants/calcLoanSchedDiminishing";
 // utils
 import { display } from "../../constants/numericFormat";
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
-
-// HELPER FUNCTIONS & VARIABLES
-// To avoid timezone issues with date inputs, we convert dates to local date strings
-function getLocalDateString(date) {
-  const d = new Date(date);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split("T")[0];
-};
-
-// For the loan reference number generation
-function generateAccountNumber(loanAppID) {
-  const now = new Date();
-  const y = now.getFullYear().toString().slice(-2); // last 2 digits of year
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  const id = String(loanAppID).padStart(4, "0"); // 4 digits instead of 6
-  const rand = Math.floor(10 + Math.random() * 90); // 2 digits
-  return `L${y}${m}${d}-${id}${rand}`;
-}
-
+import { genLoanRefNo, getLocalDateString} from "./helpers/utils"
 
 // JSX COMPONENT
 function LoanApplicationsV2() {
@@ -315,7 +296,7 @@ function LoanApplicationsV2() {
       dispatch(openModal({ mode: 'loanAccount', data: formDataLoanApp })); // open loan account modal next
       resetLoanAcc({
         ...formDataLoanApp,
-        loan_ref_number: generateAccountNumber(formDataLoanApp.application_id),
+        loan_ref_number: genLoanRefNo(formDataLoanApp.application_id),
         total_amount_due: 0, // to be calculated in the loan account modal
         loan_term_approved: formDataLoanApp.loan_term,
         service_fee: 0,     // to be calculated in the loan account modal
@@ -1106,8 +1087,6 @@ function LoanApplicationsV2() {
             </div>
           </div>
         </LoanAccModal>
-
-
       </div>
     </div>
   )

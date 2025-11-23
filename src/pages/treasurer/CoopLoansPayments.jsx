@@ -332,6 +332,7 @@ function CoopLoansPayments() {
 
       // custom payload for editing to avoid non-db fields error when inserting the whole form data
       const customPayload = {
+        schedule_id: pendingPaymentData?.schedule_id,
         payment_id: pendingPaymentData?.payment_id,
         loan_ref_number: pendingPaymentData?.loan_ref_number,
         account_number: pendingPaymentData?.account_number,
@@ -340,7 +341,7 @@ function CoopLoansPayments() {
         payment_date: pendingPaymentData?.payment_date,
         receipt_no: pendingPaymentData?.receipt_no,
       }
-      // console.log("Custom payload", customPayload)
+      // console.log("Custom payload", pendingPaymentData)
       editLoanPayments(customPayload, {
         onSuccess: () => {
           toast.success("Successfully edited payment");
