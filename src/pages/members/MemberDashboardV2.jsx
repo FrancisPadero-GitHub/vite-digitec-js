@@ -410,7 +410,7 @@ function MemberDashboardV2() {
           title={"My Loan Payments"}
           type={"compact"}
           showLinkPath={true}
-          linkPath={`/${memberRole}/coop-loans/loan-payments`}
+          linkPath={`/${memberRole}/coop-loans/payments`}
           headers={["Payment Ref.", "Loan Ref No.", "Amount", "Status", "Date"]}
           data={payments}
           isLoading={loanPaymentsLoading}
