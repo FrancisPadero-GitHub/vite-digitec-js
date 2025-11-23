@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useMemberRole } from "../../backend/context/useMemberRole";
@@ -37,15 +38,25 @@ function NotificationDetail({
   const { memberRole } = useMemberRole();
   const dispatch = useDispatch();
 
-  const handleViewLoanAccounts = () => {
-    dispatch(closeNotificationModal());
-    navigate(`/${memberRole}/coop-loans/loan-accounts`);
-  };
-  
   // Loan-related notification type check (derived, no state updates)
   const loanTypes = ["loan_application", "loan_application_status", "loan_approval"];
   const normalizedType = type?.toLowerCase();
   const isLoan = normalizedType ? loanTypes.includes(normalizedType) : false;
+
+
+  const [path, setPath] = useState(null);
+
+  // Fix: set path only when normalizedType changes, not in render body
+  useEffect(() => {
+    if (normalizedType === "loan_application") {
+      setPath("loan-applications");
+    }
+  }, [normalizedType]);
+
+  const handleViewLoanAccounts = () => {
+    dispatch(closeNotificationModal());
+    navigate(`/${memberRole}/coop-loans/${path || "loan-accounts"}`);
+  };
 
   return (
     <div className="flex flex-col space-y-6">
@@ -104,7 +115,7 @@ function NotificationDetail({
                 className="text-primary underline underline-offset-2 text-sm inline-flex items-center gap-2 cursor-pointer hover:text-primary/80"
                 aria-label="View loan accounts"
               >
-                <span>Go to Loan Accounts</span>
+                <span>Go to Loan {normalizedType === "loan_application" ? "Applications" : "Accounts"}</span>
               </div>
             </div>
           )}
