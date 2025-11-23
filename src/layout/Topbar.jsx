@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useAuth } from "../backend/context/AuthProvider";
 import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from "react-redux";
+import { openNotificationModal, closeNotificationModal, setSelectedNotification, notificationModalState } from "../features/redux/notificationModalSlice";
 
 // fetch hooks
 import { useMembers } from "../backend/hooks/shared/useFetchMembers";
@@ -82,9 +84,9 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
    *  State variables
    * 
    */
+  const dispatch = useDispatch();
+  const { isOpen: showModal, selectedNotif } = useSelector(notificationModalState);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedNotif, setSelectedNotif] = useState();
 
   // ref used for closing dropdown when clicking outside
   const notifRef = useRef(null);
@@ -200,8 +202,8 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                         if (!notif.is_read) {
                           markAsReadMutation({ notif_id: notif.id });
                         }
-                        setSelectedNotif(notif);
-                        setShowModal(true);
+                        dispatch(setSelectedNotification(notif));
+                        dispatch(openNotificationModal(notif));
                         setShowDropdown(false);
                       }}
                       className={`p-3 mb-2 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-primary hover:shadow-md ${notif.is_read ? "bg-base-200/30 opacity-75" : "bg-base-200 font-semibold"
@@ -255,7 +257,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                   <button
                     onClick={() => {
                       setShowDropdown(false);
-                      setShowModal(true);
+                      dispatch(openNotificationModal(null));
                     }}
                     className="btn btn-primary btn-sm w-full gap-2"
                   >
@@ -305,7 +307,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                       // Delete the selected notification
                       deleteNotification({ notif_id: selectedNotif.id }, {
                         onSuccess: () => {
-                          setSelectedNotif(null);
+                          dispatch(setSelectedNotification(null));
                         }
                       });
                     }}
@@ -336,7 +338,24 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                     senderId={selectedNotif?.sender_id}
                     recipientId={selectedNotif?.recipient_id}
                     isGlobal={selectedNotif?.is_global}
-                    onBack={() => setSelectedNotif(null)}
+                    onBack={() => dispatch(setSelectedNotification(null))}
+                    onNext={() => {
+                      // Find current notification index
+                      const currentIndex = notifications.findIndex(n => n.id === selectedNotif.id);
+                      // Get next notification if exists
+                      if (currentIndex !== -1 && currentIndex < notifications.length - 1) {
+                        const nextNotif = notifications[currentIndex + 1];
+                        // Mark as read if unread
+                        if (!nextNotif.is_read) {
+                          markAsReadMutation({ notif_id: nextNotif.id });
+                        }
+                        dispatch(setSelectedNotification(nextNotif));
+                      }
+                    }}
+                    hasNext={(() => {
+                      const currentIndex = notifications?.findIndex(n => n.id === selectedNotif.id) ?? -1;
+                      return currentIndex !== -1 && currentIndex < (notifications?.length ?? 0) - 1;
+                    })()}
                   />
                 ) : notifications && notifications.length > 0 ? (
                   <div className="space-y-2">
@@ -349,7 +368,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                             markAsReadMutation({ notif_id: notif.id });
                             console.log(`TRIGGERED`, notif.id)
                           }
-                          setSelectedNotif(notif)
+                          dispatch(setSelectedNotification(notif));
                         }}
                         className={`p-4 border border-base-300 rounded-lg cursor-pointer hover:shadow-md hover:border-primary transition-all duration-200 ${notif.is_read ? "bg-base-200/50 opacity-75" : "bg-base-100 font-semibold"
                           }`}
@@ -408,8 +427,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                 )}
                 <button
                   onClick={() => {
-                    setShowModal(false);
-                    setSelectedNotif(null);
+                    dispatch(closeNotificationModal());
                   }}
                   className="btn btn-primary btn-sm"
                 >
