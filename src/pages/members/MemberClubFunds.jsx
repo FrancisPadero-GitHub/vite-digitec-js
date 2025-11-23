@@ -95,9 +95,9 @@ function MemberClubFunds() {
   }
 
   return (
-    <div>
+    <div className="m-3">
       <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
