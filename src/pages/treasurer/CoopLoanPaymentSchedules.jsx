@@ -241,7 +241,10 @@ function CoopLoanPaymentSchedules() {
     menu.appendChild(
       createMenuItem("Go to Payments", goToPayments, { bold: true })
     );
-    menu.appendChild(createMenuItem("Open Payment", openPaymentModal));
+
+    if (memberRole === "treasurer") {
+      menu.appendChild(createMenuItem("Open Payment", openPaymentModal));
+    }
     menu.appendChild(createMenuItem("Copy Schedule ID", copyScheduleId));
     menu.appendChild(createMenuItem("View Details", viewDetails));
 
