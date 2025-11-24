@@ -177,9 +177,9 @@ function MemberLoanAcc() {
   }
 
   return (
-    <div>
+    <div className="m-3">
       <div className="space-y-4">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-2">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-5">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
