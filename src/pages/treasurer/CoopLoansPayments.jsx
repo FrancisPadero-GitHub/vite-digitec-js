@@ -432,7 +432,7 @@ function CoopLoansPayments() {
   // 1. If there are unpaid OVERDUE schedules => aggregate all of them (multi-month catch up)
   // 2. Else fall back to the next unpaid schedule (treated as UPCOMING)
   // If editing, use the schedule_id from the modal data
-  const { nextSchedule, totalPayableAll, scheduleMode } = useMemo(() => {
+  const { nextSchedule, totalPayableAll, scheduleMode, totalPenalty, overdueScheduleCount } = useMemo(() => {
     const loanSchedRaw = loan_sched?.data || [];
 
     // If editing, grab the schedule by id from modal data from redux
@@ -442,12 +442,14 @@ function CoopLoansPayments() {
       if (editSchedule) {
         const totalDue = new Decimal(editSchedule.total_due ?? 0);
         const amountPaid = new Decimal(editSchedule.amount_paid ?? 0);
-        // const feeDue = Number(editSchedule.fee_due ?? 0);
+        const feeDue = new Decimal(editSchedule.fee_due ?? 0);
         const remaining = totalDue.minus(amountPaid);
         return {
           list: [editSchedule],
           nextSchedule: editSchedule,
           totalPayableAll: remaining,
+          totalPenalty: feeDue,
+          overdueScheduleCount: editSchedule.status === 'OVERDUE' ? 1 : 0,
           scheduleMode: editSchedule.status === 'OVERDUE' ? 'overdue' : 'upcoming',
         };
       }
@@ -455,7 +457,7 @@ function CoopLoansPayments() {
 
     // Normal usage (add mode)
     if (!selectedLoanRef || loanSchedRaw.length === 0) {
-      return { list: [], nextSchedule: null, totalPayableAll: new Decimal(0), scheduleMode: null };
+      return { list: [], nextSchedule: null, totalPayableAll: new Decimal(0), totalPenalty: new Decimal(0), overdueScheduleCount: 0, scheduleMode: null };
     }
     // Unpaid overdue schedules
     const unpaidOverdue = loanSchedRaw
@@ -467,10 +469,18 @@ function CoopLoansPayments() {
         const amountPaid = new Decimal(s.amount_paid ?? 0);
         return sum.plus(totalDue.minus(amountPaid));
       }, new Decimal(0));
+      
+      const totalPenalty = unpaidOverdue.reduce((sum, s) => {
+        const feeDue = new Decimal(s.fee_due ?? 0);
+        return sum.plus(feeDue);
+      }, new Decimal(0));
+      
       return {
         list: unpaidOverdue,
         nextSchedule: unpaidOverdue[0] ?? null,
         totalPayableAll,
+        totalPenalty,
+        overdueScheduleCount: unpaidOverdue.length,
         scheduleMode: 'overdue'
       };
     }
@@ -479,17 +489,20 @@ function CoopLoansPayments() {
       .filter(s => !s.paid) // any unpaid regardless of status
       .sort((a, b) => dayjs(a.due_date).diff(dayjs(b.due_date)));
     if (unpaidUpcoming.length === 0) {
-      return { list: [], nextSchedule: null, totalPayableAll: new Decimal(0), scheduleMode: null };
+      return { list: [], nextSchedule: null, totalPayableAll: new Decimal(0), totalPenalty: new Decimal(0), overdueScheduleCount: 0, scheduleMode: null };
     }
     // For upcoming we only care about the first schedule's remaining payable
     const first = unpaidUpcoming[0];
     const totalDue = new Decimal(first.total_due ?? 0);
     const amountPaid = new Decimal(first.amount_paid ?? 0);
+    const feeDue = new Decimal(first.fee_due ?? 0);
     const remaining = totalDue.minus(amountPaid);
     return {
       list: unpaidUpcoming, // list of all upcoming unpaid schedules not bound to any specific id
       nextSchedule: first,
       totalPayableAll: remaining,
+      totalPenalty: feeDue,
+      overdueScheduleCount: 0,
       scheduleMode: 'upcoming'
     };
   }, [selectedLoanRef, loan_sched, loanPaymentModal.type, payment_redux_data?.schedule_id]);
@@ -515,6 +528,13 @@ function CoopLoansPayments() {
   // Always round monetary results to 2 decimal places
   const totalPayableAllOverdueUnpaidDecimal = new Decimal(totalPayableAll ?? 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
   const totalPayableAllOverdueUnpaid = totalPayableAllOverdueUnpaidDecimal.toNumber();
+
+  // Penalty (either aggregated overdue fees or single upcoming fee)
+  const totalPenaltyOccuredDecimal = new Decimal(totalPenalty ?? 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  const totalPenaltyOccured = totalPenaltyOccuredDecimal.toNumber();
+
+  // counts the overdue payment schedules
+  const overPaymentCount = overdueScheduleCount;
 
   // Only log when we have actual data (when a loan is selected)
   // if (selectedLoanRef && paymentSchedule) {
@@ -904,19 +924,47 @@ function CoopLoansPayments() {
               {/* If OVERDUE, show months and penalties */}
               {paymentStatus === "OVERDUE" && (
                 <>
+                {/* Display either overdue months or payments missed (if more than 1 overdues) */}
+                {overdueScheduleCount > 1 ? (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Payments Missed</label>
+                    <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
+                      <div 
+                        title='Overdue payments for which penalties have occurred' 
+                        className="text-sm font-bold text-red-900"
+                      >
+                          {overPaymentCount.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                ): (
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Overdue</label>
                     <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
                       <div className="text-sm font-bold text-red-900">{mosOverdue.toLocaleString()} mos</div>
                     </div>
                   </div>
-
+                )}
+                
+                {totalPenaltyOccured > feeDue ? (                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Total Penalty</label>
+                    <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
+                      <div
+                        title='Total accumulated penalties from all overdue payments'
+                        className="text-sm font-bold text-red-900"
+                      >
+                        ₱{totalPenaltyOccured}</div>
+                    </div>
+                  </div>
+                ) : (
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Penalty</label>
                     <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
                       <div className="text-sm font-bold text-red-900">₱{display(feeDue.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
                     </div>
                   </div>
+                  )}
                 </>
               )}
 
@@ -932,9 +980,9 @@ function CoopLoansPayments() {
 
               {/* Total Payable */}
               <div className={paymentStatus === "OVERDUE" || paymentStatus === "PARTIALLY PAID" ? "" : "md:col-span-2"}>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Total Payable</label>
-                <div className="px-2 py-1.5 bg-green-50 rounded border-2 border-green-400">
-                  <div className="text-base font-bold text-green-900">₱{display(totalPayableAllOverdueUnpaid)}</div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">Total Payable</label>
+                <div className="px-2 py-1.5 bg-green-50 rounded border border-green-400">
+                  <div className="text-sm font-bold text-green-900">₱{display(totalPayableAllOverdueUnpaid)}</div>
                 </div>
               </div>
             </div>
