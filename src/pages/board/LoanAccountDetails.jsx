@@ -104,7 +104,7 @@ function LoanAccountDetails() {
   
 
   return (
-    <div>
+    <div className="m-3">
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Loan Account Details</h1>
