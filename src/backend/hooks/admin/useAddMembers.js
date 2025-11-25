@@ -107,34 +107,40 @@ const insertMember = async (formData) => {
     await uploadAvatar(formData.avatarFile, newMember.member_id);
   }
 
-  // --- 4. Insert club funds contribution ---
-  const clubFunds = {
-    amount: payment.membership_fee || 0,
-    category: "Monthly Dues",
-    payment_date: payment.membership_payment_date,
-    period_start: payment.membership_payment_date,
-    period_end: payment.membership_payment_date,
-    payment_method: payment.membership_payment_method,
-    remarks: "Membership Initial",
-  };
-  const newClubFunds = await insertTable("club_funds_contributions", {
-    ...clubFunds,
-    account_number: newMember.account_number,
-  });
+  // --- 4. Insert club funds contribution (only if amount > 0) ---
+  let newClubFunds = null;
+  if (payment.membership_fee && parseFloat(payment.membership_fee) > 0) {
+    const clubFunds = {
+      amount: payment.membership_fee,
+      category: "Monthly Dues",
+      payment_date: payment.membership_payment_date,
+      period_start: payment.membership_payment_date,
+      period_end: payment.membership_payment_date,
+      payment_method: payment.membership_payment_method,
+      remarks: payment.membership_remarks || "Membership Initial",
+    };
+    newClubFunds = await insertTable("club_funds_contributions", {
+      ...clubFunds,
+      account_number: newMember.account_number,
+    });
+  }
 
-  // --- 5. Insert coop contribution ---
-  const coop = {
-    source: "Member Contribution",
-    amount: payment.initial_share_capital || 0,
-    category: "Initial",
-    payment_method: payment.share_capital_payment_method,
-    contribution_date: payment.share_capital_payment_date,
-    remarks: "Membership Initial",
-  };
-  const newCoop = await insertTable("coop_cbu_contributions", {
-    ...coop,
-    account_number: newMember.account_number,
-  });
+  // --- 5. Insert coop contribution (only if amount > 0) ---
+  let newCoop = null;
+  if (payment.initial_share_capital && parseFloat(payment.initial_share_capital) > 0) {
+    const coop = {
+      source: "Member Contribution",
+      amount: payment.initial_share_capital,
+      category: "Initial",
+      payment_method: payment.share_capital_payment_method,
+      contribution_date: payment.share_capital_payment_date,
+      remarks: payment.share_capital_remarks || "Membership Initial",
+    };
+    newCoop = await insertTable("coop_cbu_contributions", {
+      ...coop,
+      account_number: newMember.account_number,
+    });
+  }
 
   return {
     member: newMember,
@@ -159,12 +165,28 @@ export const useAddMember = () => {
       queryClient.invalidateQueries({queryKey: ["coop_cbu_contributions"], exact: false});
       queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false});
 
-      // log activity
+      // log activities
       try {
         await logActivity({
           action: `Created new member: ${data.member.f_name} ${data.member.l_name} (${data.member.account_role})`,
           type: "CREATE",
         });
+
+        // log club funds if included
+        if (data.clubFunds) {
+          await logActivity({
+            action: `Created club fund contribution for ${data.member.f_name} ${data.member.l_name} (${data.member.account_number}): ₱${Number(data.clubFunds.amount).toLocaleString()} - ${data.clubFunds.category}`,
+            type: "CREATE",
+          });
+        }
+
+        // log share capital if included  
+        if (data.coop) {
+          await logActivity({
+            action: `Created coop share capital contribution for ${data.member.f_name} ${data.member.l_name} (${data.member.account_number}): ₱${Number(data.coop.amount).toLocaleString()} - ${data.coop.category}`,
+            type: "CREATE",
+          });
+        }
       } catch (err) {
         console.warn("Failed to log activity:", err.message);
       }

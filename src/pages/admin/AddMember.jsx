@@ -11,10 +11,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 // assets
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
-
-
 function AddMember (){
-
   // functions
   const navigate = useNavigate();
 
@@ -139,8 +136,8 @@ function AddMember (){
   const employmentFields = [
     { label: "Name of Office/Line of Business", name: "office_name", type: "text", required: true, autoComplete: "organization" },
     { label: "Title & Position", name: "title_and_position", type: "text", required: true, autoComplete: "organization-title" },
-    { label: "Office Address", name: "office_address", type: "text", required: true, autoComplete: "street-address" },
-    { label: "Office Contact Number", name: "office_contact_number", type: "text", required: true, pattern: /^[0-9+()\-.\s]+$/, autoComplete: "tel" }
+    { label: "Office Address", name: "office_address", type: "text", required: false, autoComplete: "street-address" },
+    { label: "Office Contact Number", name: "office_contact_number", type: "text", required: false, pattern: /^[0-9+()\-.\s]+$/, autoComplete: "tel" }
   ];
 
   // Membership fields
@@ -167,7 +164,7 @@ function AddMember (){
     { label: "Joined Date", name: "joined_date", type: "date", required: false, group: "Account Info" },
 
     // Membership Fee
-    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: true },
+    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: false },
     {
       label: "Fee Status", name: "membership_fee_status", type: "select", autoComplete: "off",
       options: [
@@ -175,7 +172,7 @@ function AddMember (){
         { label: "Unpaid", value: "Unpaid" },
         { label: "Partial", value: "Partial" },
       ],
-      group: "Membership Fee", required: true
+      group: "Membership Fee", required: false
     },
 
     {
@@ -185,14 +182,14 @@ function AddMember (){
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Membership Fee", required: true
+      group: "Membership Fee", required: false
     },
 
-    { label: "Payment Date", name: "membership_payment_date", type: "date", group: "Membership Fee", required: true },
+    { label: "Payment Date", name: "membership_payment_date", type: "date", group: "Membership Fee", required: false },
     { label: "Remarks", name: "membership_remarks", type: "text", group: "Membership Fee", required: false },
 
     // Initial Share Capital
-    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: true },
+    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: false },
     {
       label: "Payment Method", name: "share_capital_payment_method", type: "select", autoComplete: "off",
       options: [
@@ -200,10 +197,10 @@ function AddMember (){
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Share Capital", required: true
+      group: "Share Capital", required: false
     },
 
-    { label: "Payment Date", name: "share_capital_payment_date", autoComplete: "off", type: "date", group: "Share Capital", required: true },
+    { label: "Payment Date", name: "share_capital_payment_date", autoComplete: "off", type: "date", group: "Share Capital", required: false },
     { label: "Remarks", name: "share_capital_remarks", autoComplete: "off", type: "text", group: "Share Capital", required: false },
   ];
 
@@ -348,7 +345,7 @@ function AddMember (){
                       type={type}
                       autoComplete={autoComplete || "off"}
                       {...register(name, {
-                        required: `${label} is required`,
+                        required: employmentFields.find(f => f.name === name)?.required ? `${label} is required` : false,
                         pattern: name === "office_contact_number" ? {
                           value: /^[0-9+()\-.\s]+$/,
                           message: "Only numbers and symbols like +, -, (, ) allowed",
@@ -359,7 +356,7 @@ function AddMember (){
                       } : undefined}
                       className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
                     />
-                   
+                  
                     {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
                   </div>
                 ))}
@@ -434,7 +431,7 @@ function AddMember (){
                           <input
                             id={name}
                             type={type}
-                             autoComplete={autoComplete || "off"}
+                            autoComplete={autoComplete || "off"}
                             {...register(name, {
                               required: membershipFields.find(f => f.name === name)?.required
                                 ? `${label} is required`

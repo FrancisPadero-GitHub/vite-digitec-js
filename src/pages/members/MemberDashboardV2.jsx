@@ -245,7 +245,7 @@ function MemberDashboardV2() {
 
         {/* RIGHT*/}
         <div className="xl:col-span-1 flex">
-          <div className="bg-base-100 rounded-xl shadow-sm p-6 flex-1 flex flex-col gap-2">
+          <div className="bg-base-100 rounded-xl shadow-sm p-4 flex-1 flex flex-col gap-2">
             {/* Monthly Dues Card */}
             <div className="bg-blue-500 rounded-xl p-5 text-white mt-2 mb-4">
               <div className="flex items-center justify-between">
@@ -273,7 +273,7 @@ function MemberDashboardV2() {
             </div>
 
             {/* Next Loan Payment Card */}
-            <div className="bg-base-200 rounded-xl p-5">
+            <div className="bg-base-200 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2 text-base-content/70 justify-between">
                 <div className="flex items-center gap-2">
                   <AccountBalanceWalletOutlined fontSize="small" />
@@ -295,7 +295,7 @@ function MemberDashboardV2() {
                   </div>
                 </>
               ) : (
-                <div className="text-center py-2">
+                <div className="text-center">
                   <div className="text-lg font-medium text-base-content/60">No Active Loans</div>
                   <p className="text-xs text-base-content/50">You have no upcoming loan payments</p>
                 </div>
