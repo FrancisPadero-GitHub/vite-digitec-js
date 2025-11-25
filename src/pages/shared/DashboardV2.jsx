@@ -1,5 +1,5 @@
 import {useState, Fragment, useMemo} from 'react'
-import { Savings, AccountBalance, Wallet, ReceiptLong, TrendingUp, LocalAtm, AccountBalanceWallet, MonetizationOn, AccountBox, CreditCard, RequestQuoteOutlined, Receipt } from '@mui/icons-material';
+import { AccountBalance, ReceiptLong, TrendingUp, LocalAtm, AccountBalanceWallet, MonetizationOn, AccountBox, CreditCard, Receipt } from '@mui/icons-material';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
@@ -272,7 +272,7 @@ function DashboardV2() {
                 </div>
               </div>
               {/* Cards Grid - Responsive */}
-              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-3">
                 {stats.map((s, i) => (
                   <StatCardV2 key={i} {...s} subtitle={filters.overAll.subtitle} />
                 ))}

@@ -13,7 +13,7 @@ import { supabase } from "../../supabase";
 */
 
 async function fetchMemberMonthlyDues({ queryKey}) {
-    const [_key, { accountNumber, year}] = queryKey;
+    const [, { accountNumber, year }] = queryKey;
 
     const { data, error } = await supabase.rpc("get_monthly_dues_totals_by_member", {
         p_account_number: accountNumber,
