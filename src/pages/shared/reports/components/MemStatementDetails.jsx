@@ -16,6 +16,11 @@ import { display } from '../../../../constants/numericFormat';
 import ExcelExportButton from './ExportButton';
 import DateFilterReports from './DateFilterReports';
 
+// PDF Export utility
+import { createMemberStatementPDF } from '../utils/memberStatementPDF';
+
+import digitecLogo from '../../../../assets/digitec-logo.png'
+
 
 function MemStatementDetails() {
   const { memberId } = useParams();
@@ -117,6 +122,105 @@ function MemStatementDetails() {
   const filteredOngoingLoans = filterByDate(onGoingLoans, 'release_date');
   const filteredLoanPayments = filterByDate(loanPayments, 'payment_date');
 
+  // Handle PDF export with complete member data
+  const handleExportPDF = () => {
+    try {
+      if (!memberInfo) {
+        alert("Member information not loaded. Please wait and try again.");
+        return;
+      }
+
+      const memberName = `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim();
+
+      // Calculate summary totals
+      const totalLoanOutstanding = filteredOngoingLoans.reduce(
+        (sum, loan) => sum + (parseFloat(loan.outstanding_balance) || 0), 
+        0
+      );
+      const totalPaymentsMade = filteredLoanPayments.reduce(
+        (sum, payment) => sum + (parseFloat(payment.total_amount) || 0), 
+        0
+      );
+
+      console.log("Generating PDF with data:", {
+        memberName,
+        shareCapitalCount: filteredCoopContributions.length,
+        loanAccountsCount: filteredOngoingLoans.length,
+        paymentsCount: filteredLoanPayments.length,
+        clubFundsCount: filteredClubFunds.length
+      });
+
+      const statementData = {
+        member: {
+          account_number: memberInfo.account_number || 'N/A',
+          full_name: memberName,
+          email: memberInfo.email || 'N/A',
+          contact_number: memberInfo.contact_number || 'N/A',
+          account_role: memberInfo.account_role || 'N/A',
+          account_status: memberInfo.account_status || 'N/A',
+        },
+        shareCapital: (filteredCoopContributions || []).map(c => ({
+          transaction_date: c.contribution_date,
+          transaction_type: c.category || 'Contribution',
+          description: c.description || 'Share Capital Contribution',
+          amount: parseFloat(c.amount) || 0
+        })),
+        loanAccounts: (filteredOngoingLoans || []).map(loan => ({
+          loan_ref_number: loan.loan_ref_number || 'N/A',
+          loan_type: loan.loan_type || 'Standard Loan',
+          application_date: loan.release_date,
+          loan_amount: parseFloat(loan.principal) || 0,
+          outstanding_balance: parseFloat(loan.outstanding_balance) || 0,
+          loan_status: loan.status || 'Active'
+        })),
+        payments: (filteredLoanPayments || []).map(payment => ({
+          payment_date: payment.payment_date,
+          loan_ref_number: payment.loan_ref_number || 'N/A',
+          principal: parseFloat(payment.principal) || 0,
+          interest: parseFloat(payment.interest) || 0,
+          fees: parseFloat(payment.fees || payment.penalty_fees) || 0,
+          total_amount: parseFloat(payment.total_amount) || 0,
+          payment_method: payment.payment_method || 'N/A'
+        })),
+        clubFunds: (filteredClubFunds || []).map(fund => ({
+          contribution_date: fund.payment_date,
+          fund_type: fund.category || 'Club Fund',
+          purpose: fund.description || 'Club Fund Contribution',
+          amount: parseFloat(fund.amount) || 0,
+          status: 'Completed'
+        })),
+        summary: {
+          totalShareCapital: parseFloat(coopContributionsTotal) || 0,
+          totalClubFunds: parseFloat(clubFundsTotal) || 0,
+          activeLoanCount: filteredOngoingLoans.length,
+          totalLoanOutstanding: totalLoanOutstanding,
+          totalPayments: totalPaymentsMade,
+          memberEquity: (parseFloat(coopContributionsTotal) || 0) + (parseFloat(clubFundsTotal) || 0)
+        }
+      };
+
+      createMemberStatementPDF(statementData, {
+        logoDataUrl: digitecLogo,
+        cooperativeName: "DigiTec Cooperative",
+        cooperativeAddress: "Trinitas Bugo, Cagayan de Oro City",
+        cooperativeContact: "Contact: 09123456789 | Email: eaglesclubectec@gmail.com",
+        startDate: selectedYear !== 'all' || selectedMonth !== 'all' 
+          ? new Date(
+              selectedYear !== 'all' ? parseInt(selectedYear) : new Date().getFullYear(), 
+              selectedMonth !== 'all' ? parseInt(selectedMonth) - 1 : 0, 
+              1
+            )
+          : undefined,
+        endDate: new Date()
+      });
+
+      console.log("✅ PDF Statement generated successfully for:", memberName);
+    } catch (error) {
+      console.error("❌ Error generating PDF:", error);
+      console.error("Error details:", error.message, error.stack);
+      alert(`Failed to generate PDF statement: ${error.message}\n\nCheck console for details.`);
+    }
+  };
 
   const months = [
     { value: '1', label: 'January' },
@@ -306,10 +410,20 @@ function MemStatementDetails() {
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900">Member Statement</h1>
-            <ExcelExportButton
-              data={prepareExportData()}
-              fileName={`Member_Statement_${memberInfo?.account_number || 'export'}_${new Date().toISOString().split('T')[0]}.xlsx`}
-            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleExportPDF}
+                className="btn btn-outline btn-sm"
+                disabled={isLoading}
+                title="Export as PDF"
+              >
+                Export PDF
+              </button>
+              <ExcelExportButton
+                data={prepareExportData()}
+                fileName={`Member_Statement_${memberInfo?.account_number || 'export'}_${new Date().toISOString().split('T')[0]}.xlsx`}
+              />
+            </div>
           </div>
 
           {/* Filter Section */}
