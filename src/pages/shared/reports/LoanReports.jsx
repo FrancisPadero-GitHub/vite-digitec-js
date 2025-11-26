@@ -7,7 +7,7 @@ import { useFetchLoanPaymentsView } from "../../../backend/hooks/shared/view/use
 
 // Components
 import DataTableV2 from '../components/DataTableV2';
-import ExcelExportButton from './components/ExportButton';
+import ExcelExportButton from './components/ExcelExportButton';
 import ExportLoanReportsPDF from './components/ExportLoanReportsPDF';
 import DateFilterReports from './components/DateFilterReports';
 

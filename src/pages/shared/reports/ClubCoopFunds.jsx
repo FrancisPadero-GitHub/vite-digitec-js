@@ -8,7 +8,7 @@ import { useFetchLoanAccView } from '../../../backend/hooks/shared/useFetchLoanA
 import { useFetchTotal } from '../../../backend/hooks/shared/useFetchTotal'
 
 // components
-import ExcelExportButton from './components/ExportButton'
+import ExcelExportButton from './components/ExcelExportButton'
 import ExportClubCoopFundsPDF from './components/ExportClubCoopFundsPDF'
 import DataTableV2 from '../components/DataTableV2'
 import DateFilterReports from './components/DateFilterReports'

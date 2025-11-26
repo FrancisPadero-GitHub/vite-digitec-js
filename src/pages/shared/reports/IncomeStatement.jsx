@@ -5,7 +5,7 @@ import { useIncomeStatementDetails } from '../../../backend/hooks/shared/view/us
 import { useIncomeStatementSummary } from '../../../backend/hooks/shared/view/useIncomeStatementSummary'
 
 // component
-import ExcelExportButton from './components/ExportButton'
+import ExcelExportButton from './components/ExcelExportButton'
 import ExportIncomeStatementPDF from './components/ExportIncomeStatementPDF'
 import DataTableV2 from '../components/DataTableV2'
 import DateFilterReports from './components/DateFilterReports'

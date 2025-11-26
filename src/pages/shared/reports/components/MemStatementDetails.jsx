@@ -14,7 +14,7 @@ import { display } from '../../../../constants/numericFormat';
 
 // Export component
 import ExportPDFButton from "./ExportPDFButton";
-import ExcelExportButton from './ExportButton';
+import ExcelExportButton from './ExcelExportButton';
 import DateFilterReports from './DateFilterReports';
 
 
