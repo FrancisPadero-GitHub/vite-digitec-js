@@ -5,11 +5,11 @@ function Reports() {
   const { memberRole } = useMemberRole();
   const reportButtons = [
     { path: `/${memberRole}/reports/income-statement`, label: 'Income Statement', icon: '📊' },
-    { path: `/${memberRole}/reports/balance-sheet`, label: 'Balance Sheet', icon: '💰' },
     { path: `/${memberRole}/reports/member-statements`, label: 'Member Statements', icon: '👥' },
     { path: `/${memberRole}/reports/loan-reports`, label: 'Loan Reports', icon: '💳' },
     { path: `/${memberRole}/reports/club-coop-funds`, label: 'Club/Coop Funds', icon: '🏦' },
     { path: `/${memberRole}/reports/transaction-logs`, label: 'Transaction Logs', icon: '📝' },
+    // { path: `/${memberRole}/reports/balance-sheet`, label: 'Balance Sheet', icon: '💰' },
     // { path: `/${memberRole}/reports/summary-charts`, label: 'Summary Charts', icon: '📈' },
   ]
 
