@@ -92,8 +92,6 @@ function LoanReports() {
     });
   }, [loanAccountInformation, selectedYear, selectedMonth]);
 
-  console.log(filteredActiveLoans);
-
   // Filter payment schedules by date
   const filteredPaymentSchedules = useMemo(() => {
     return paymentSchedules.filter(sched => {
@@ -366,7 +364,7 @@ function LoanReports() {
               <div className="text-xs text-gray-500 mt-1">Total interest charges</div>
             </div>
             <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-indigo-500">
-              <div className="text-sm text-gray-600 mb-1">Total Repayable Amount</div>
+              <div className="text-sm text-gray-600 mb-1">Total Receivable Amount</div>
               <div className="text-3xl font-bold text-indigo-600">{formatCurrency(summary.totalLoanAmountDue)}</div>
               <div className="text-xs text-gray-500 mt-1">Principal + Interest</div>
             </div>

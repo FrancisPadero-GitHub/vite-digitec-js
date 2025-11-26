@@ -381,7 +381,7 @@ function LoanApplicationsV2() {
       }
     );
 
-    console.log(`Data final submit`, formDataLoanAcc);
+    // console.log(`Data final submit`, formDataLoanAcc);
   };
 
   // Mark as delete Loan Application

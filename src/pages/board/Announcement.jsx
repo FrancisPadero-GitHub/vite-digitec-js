@@ -67,7 +67,7 @@ function Announcement() {
   }, [modalMode, selectedAnnouncement, setValue]);
 
   const handleDelete = () => {
-    console.log('Delete announcement:', selectedAnnouncement);
+    // console.log('Delete announcement:', selectedAnnouncement);
     // Add delete logic here
     setIsModalOpen(false);
   };

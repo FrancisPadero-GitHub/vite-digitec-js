@@ -366,7 +366,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                           // Mark as read mutation
                           if (!notif.is_read) {
                             markAsReadMutation({ notif_id: notif.id });
-                            console.log(`TRIGGERED`, notif.id)
+                            // console.log(`TRIGGERED`, notif.id)
                           }
                           dispatch(setSelectedNotification(notif));
                         }}

@@ -1012,10 +1012,10 @@ function CoopLoansPayments() {
                         }
 
                         const remainingDue = totalPayableAllOverdueUnpaidDecimal;
-                        console.log("Remaining Due: ", remainingDue)
+                        // console.log("Remaining Due: ", remainingDue)
                         const minRequiredAmount = remainingDue.mul(0.3).toDecimalPlaces(2, Decimal.ROUND_HALF_UP); // 30% of remaining amount
                         const inputValue = new Decimal(value || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-                        console.log("Input Value: ", inputValue);
+                        // console.log("Input Value: ", inputValue);
 
                         if (paymentStatus === "OVERDUE" && mosOverdue > 0) {
                           if (inputValue.lt(remainingDue))
