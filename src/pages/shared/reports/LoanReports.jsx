@@ -425,7 +425,7 @@ function LoanReports() {
       )}
 
       {/* Tabs */}
-      <div className="tabs tabs-boxed bg-white shadow mb-6">
+      <div className="tabs tabs-boxed bg-white shadow mb-2 mt-8 rounded-lg">
         <a 
           className={`tab ${activeTab === 'active' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('active')}
