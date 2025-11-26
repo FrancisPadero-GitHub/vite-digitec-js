@@ -61,12 +61,39 @@ export default function ExportPDFButton({
       const logoSize = 50;
       const logoOffsetX = margin;
       const logoOffsetY = yPos;
+        // Try to render logo if provided
       if (logoDataUrl) {
         try {
-          doc.addImage(logoDataUrl, "PNG", logoOffsetX, logoOffsetY, logoSize, logoSize, undefined, "FAST");
+          let format = "PNG";
+          if (logoDataUrl.toLowerCase().includes('data:image/jpeg') || logoDataUrl.toLowerCase().includes('data:image/jpg')) {
+            format = "JPEG";
+          } else if (logoDataUrl.toLowerCase().includes('data:image/png')) {
+            format = "PNG";
+          }
+          
+          doc.addImage(logoDataUrl, format, logoOffsetX, logoOffsetY, logoSize, logoSize, undefined, "FAST");
         } catch (e) {
           console.warn("Logo rendering failed:", e);
+          doc.setDrawColor(100, 100, 100);
+          doc.setLineWidth(1);
+          doc.rect(logoOffsetX, logoOffsetY, logoSize, logoSize);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(100, 100, 100);
+          doc.text("LOGO", logoOffsetX + logoSize/2, logoOffsetY + logoSize/2 + 2, { align: "center" });
+          doc.setTextColor(0, 0, 0);
         }
+      } else {
+        doc.setDrawColor(150, 150, 150);
+        doc.setLineWidth(0.5);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(logoOffsetX, logoOffsetY, logoSize, logoSize, 'FD');
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(120, 120, 120);
+        doc.text("COOP", logoOffsetX + logoSize/2, logoOffsetY + logoSize/2 - 5, { align: "center" });
+        doc.text("LOGO", logoOffsetX + logoSize/2, logoOffsetY + logoSize/2 + 5, { align: "center" });
+        doc.setTextColor(0, 0, 0);
       }
 
       doc.setFont("helvetica", "bold");
@@ -273,12 +300,12 @@ export default function ExportPDFButton({
           headStyles: { fillColor: [231, 76, 60], textColor: 255, fontSize: 8, fontStyle: "bold", halign: "center" },
           bodyStyles: { fontSize: 8 },
           columnStyles: {
-            0: { cellWidth: 75, halign: "center" },
-            1: { cellWidth: 70 },
-            2: { cellWidth: 70, halign: "center" },
-            3: { cellWidth: 75, halign: "right" },
-            4: { cellWidth: 75, halign: "right", fontStyle: "bold" },
-            5: { cellWidth: 60, halign: "center" },
+            0: { cellWidth: 80, halign: "center" },
+            1: { cellWidth: 80, halign: "center" },
+            2: { cellWidth: 80, halign: "center" },
+            3: { cellWidth: 85, halign: "right" },
+            4: { cellWidth: 90, halign: "right", fontStyle: "bold" },
+            5: { cellWidth: 80, halign: "center" },
           },
         });
 
@@ -329,13 +356,13 @@ export default function ExportPDFButton({
           headStyles: { fillColor: [46, 204, 113], textColor: 255, fontSize: 8, fontStyle: "bold", halign: "center" },
           bodyStyles: { fontSize: 7 },
           columnStyles: {
-            0: { cellWidth: 60, halign: "center" },
-            1: { cellWidth: 65, halign: "center" },
-            2: { cellWidth: 60, halign: "right" },
-            3: { cellWidth: 55, halign: "right" },
-            4: { cellWidth: 50, halign: "right" },
-            5: { cellWidth: 65, halign: "right", fontStyle: "bold" },
-            6: { cellWidth: 70, halign: "center" },
+            0: { cellWidth: 70, halign: "center" },
+            1: { cellWidth: 75, halign: "center" },
+            2: { cellWidth: 70, halign: "right" },
+            3: { cellWidth: 70, halign: "right" },
+            4: { cellWidth: 65, halign: "right" },
+            5: { cellWidth: 80, halign: "right", fontStyle: "bold" },
+            6: { cellWidth: 75, halign: "center" },
           },
           alternateRowStyles: { fillColor: [245, 245, 245] },
         });
