@@ -10,6 +10,9 @@ import ExportIncomeStatementPDF from './components/ExportIncomeStatementPDF'
 import DataTableV2 from '../components/DataTableV2'
 import DateFilterReports from './components/DateFilterReports'
 
+// Logo
+import digitecLogo from '../../../assets/digitec-logo.png'
+
 /**
  * Service_fee - loan accounts
  * interest_income - loan payments
@@ -187,6 +190,7 @@ function IncomeStatement() {
               cooperativeName="DigiTEC | ECTEC Multi-Purpose Cooperative"
               cooperativeAddress="123 Cooperative Street, City, Province"
               cooperativeContact="Tel: +63 123 456 7890 | Email: info@digiteccoop.com"
+              logoDataUrl={digitecLogo} // Add your base64 logo here or fetch from config
             />
             <ExcelExportButton
               data={prepareExcelData()}

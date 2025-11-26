@@ -66,39 +66,79 @@ export default function ExportIncomeStatementPDF({
       let yPos = margin;
 
       const drawHeader = () => {
-        const logoSize = 50;
+        // Logo configuration
+        const logoSize = 60; // Increased logo size for better visibility
         const logoOffsetX = margin;
         const logoOffsetY = yPos;
+        
+        // Try to render logo if provided
         if (logoDataUrl) {
           try {
-            doc.addImage(logoDataUrl, "PNG", logoOffsetX, logoOffsetY, logoSize, logoSize, undefined, "FAST");
+            // Determine image format from data URL
+            let format = "PNG";
+            if (logoDataUrl.toLowerCase().includes('data:image/jpeg') || logoDataUrl.toLowerCase().includes('data:image/jpg')) {
+              format = "JPEG";
+            } else if (logoDataUrl.toLowerCase().includes('data:image/png')) {
+              format = "PNG";
+            }
+            
+            doc.addImage(logoDataUrl, format, logoOffsetX, logoOffsetY, logoSize, logoSize, undefined, "FAST");
           } catch (e) {
             console.warn("Logo rendering failed:", e);
+            // Fallback: render a placeholder box
+            doc.setDrawColor(100, 100, 100);
+            doc.setLineWidth(1);
+            doc.rect(logoOffsetX, logoOffsetY, logoSize, logoSize);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text("LOGO", logoOffsetX + logoSize/2, logoOffsetY + logoSize/2 + 2, { align: "center" });
+            doc.setTextColor(0, 0, 0); // Reset text color
           }
+        } else {
+          // Render a simple placeholder when no logo is provided
+          doc.setDrawColor(150, 150, 150);
+          doc.setLineWidth(0.5);
+          doc.setFillColor(245, 245, 245);
+          doc.rect(logoOffsetX, logoOffsetY, logoSize, logoSize, 'FD'); // Filled rectangle
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(120, 120, 120);
+          doc.text("COOP", logoOffsetX + logoSize/2, logoOffsetY + logoSize/2 - 5, { align: "center" });
+          doc.text("LOGO", logoOffsetX + logoSize/2, logoOffsetY + logoSize/2 + 5, { align: "center" });
+          doc.setTextColor(0, 0, 0); // Reset text color
         }
+
+        // Title positioning - adjust based on logo presence
+        const titleStartY = yPos + 16;
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18); // Slightly larger title
+        doc.setTextColor(0, 0, 0);
+        doc.text("INCOME STATEMENT REPORT", pageWidth / 2, titleStartY, { align: "center" });
 
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text("INCOME STATEMENT REPORT", pageWidth / 2, yPos + 16, { align: "center" });
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-        doc.text(safe(cooperativeName), pageWidth / 2, yPos + 32, { align: "center" });
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        let detailsY = yPos + 46;
-        if (cooperativeAddress) {
-          doc.text(cooperativeAddress, pageWidth / 2, detailsY, { align: "center" });
-          detailsY += 12;
-        }
-        if (cooperativeContact) {
-          doc.text(cooperativeContact, pageWidth / 2, detailsY, { align: "center" });
-          detailsY += 12;
-        }
+        doc.setFontSize(14); // Larger cooperative name
+        doc.setTextColor(0, 50, 100); // Professional blue color
+        doc.text(safe(cooperativeName), pageWidth / 2, titleStartY + 24, { align: "center" });
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        let detailsY = titleStartY + 42;
+        
+        if (cooperativeAddress) {
+          doc.text(cooperativeAddress, pageWidth / 2, detailsY, { align: "center" });
+          detailsY += 14;
+        }
+        if (cooperativeContact) {
+          doc.text(cooperativeContact, pageWidth / 2, detailsY, { align: "center" });
+          detailsY += 14;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(0, 100, 0); // Green color for period
         
         // Create period text based on filters
         let periodText = "";
@@ -119,13 +159,18 @@ export default function ExportIncomeStatementPDF({
           periodText = startDate ? `Period: ${formatDate(startDate)} to ${formatDate(endDate)}` : `As of ${formatDate(endDate)}`;
         }
         
-        doc.text(periodText, pageWidth / 2, detailsY, { align: "center" });
+        doc.text(periodText, pageWidth / 2, detailsY + 4, { align: "center" });
 
-        yPos = detailsY + 18;
+        // Ensure yPos accounts for logo height and spacing
+        const logoBottomY = yPos + logoSize;
+        const textBottomY = detailsY + 20;
+        yPos = Math.max(logoBottomY, textBottomY);
+        
+        // Draw separator line
         doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(1.0);
+        doc.setLineWidth(1.5);
         doc.line(margin, yPos, pageWidth - margin, yPos);
-        yPos += 15;
+        yPos += 20;
       };
 
       const drawIncomeSummary = () => {
