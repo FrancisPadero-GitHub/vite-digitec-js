@@ -16,6 +16,9 @@ import { openModal, editModal, closeModal, modalData } from "../../features/redu
 // view table 
 import { useFetchLoanAppView } from "../../backend/hooks/board/view/useFetchLoanAppView";
 
+// RPC hook for the share capital balance
+import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
+
 // base table
 import { useMemberRole } from "../../backend/context/useMemberRole";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
@@ -45,6 +48,7 @@ import { display } from "../../constants/numericFormat";
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { genLoanRefNo, getLocalDateString} from "./helpers/utils"
 
+
 // JSX COMPONENT
 function LoanApplicationsV2() {
   const today = getLocalDateString(new Date());
@@ -66,6 +70,16 @@ function LoanApplicationsV2() {
 
   const { data: view_loan_app, isLoading, isError, error } = useFetchLoanAppView({});
 
+  // share capital total hook RPC
+    const {
+    data: share_capital_balance,
+    isLoading: isLoadingShareCapital,
+    isError: isErrorShareCapital,
+    error: errorShareCapital,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    key: "funds-summary-current",
+  });
 
   // mutation hooks
   const { mutate: mutateUpdateLoanApp, isPending: isUpdateLoanAppPending } = useEditLoanApp();
@@ -266,6 +280,10 @@ function LoanApplicationsV2() {
   // redux data for the loan product code
   const productCode = redux_data?.product_code || "";
 
+  // Share capital total balance fetched from RPC Total you can see more of an example in the DashboardV2.jsx file
+  const shareCapitalBalance = share_capital_balance?.club_total_coop ?? 0;
+  
+
   /**
    * State Variables
    */
@@ -363,7 +381,7 @@ function LoanApplicationsV2() {
       }
     );
 
-    // console.log(`Data final submit`, formDataLoanAcc);
+    console.log(`Data final submit`, formDataLoanAcc);
   };
 
   // Mark as delete Loan Application
@@ -850,7 +868,38 @@ function LoanApplicationsV2() {
               <p className="text-xs text-green-600 italic">(Adjust if needed)</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Share Capital Info */}
+              <div className="md:col-span-1">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Club&apos;s Share Capital Balance</label>
+                <div className={`px-4 py-2 rounded-lg border-2 flex items-center justify-between gap-3 ${
+                  isErrorShareCapital 
+                    ? 'border-red-300 bg-red-50' 
+                    : 'border-teal-200 bg-teal-50'
+                }`}>
+                  <div className="text-base font-bold text-teal-800">
+                    {isLoadingShareCapital && (
+                      <span className="flex items-center gap-2 text-teal-600">
+                        <AiOutlineLoading3Quarters className="animate-spin" /> Loading...
+                      </span>
+                    )}
+                    {isErrorShareCapital && (
+                      <span className="text-red-600 text-sm">
+                        Error loading share capital
+                      </span>
+                    )}
+                    {!isLoadingShareCapital && !isErrorShareCapital && (
+                      <>₱{display(shareCapitalBalance)}</>
+                    )}
+                  </div>
+                </div>
+                {isErrorShareCapital && errorShareCapital && (
+                  <p className="text-xs text-red-500 mt-1 truncate">
+                    {(errorShareCapital?.message || 'Unknown error').toString()}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Amount Requested</label>
                 <div className="px-3 py-2 bg-white rounded border border-gray-200">
@@ -861,6 +910,7 @@ function LoanApplicationsV2() {
                 <input type="hidden" {...registerLoanAcc("amount_req", { required: true })} value={watchLoanApp("amount")} />
               </div>
 
+            
               {/* Principal / Approval Amount */}
               <Controller
                 defaultValue={watchLoanApp("amount") || 0}
@@ -883,13 +933,16 @@ function LoanApplicationsV2() {
 
                       if (D_value.lt(D_min)) return `Amount must be at least ₱${D_min.toFixed(2)}`;
                       if (productCode === "S_CAP_LOANS") {
+                        const shareCap = new Decimal(shareCapitalBalance || 0);
+                        if (shareCap.gt(0) && D_value.gt(shareCap)) {
+                          return `Amount exceeds the club's share capital balance (max ₱${shareCap.toFixed(2)}). Cannot approve loan greater than share capital.`;
+                        }
                         if (D_value.gt(D_max)) {
-                          return `For ${redux_data?.product_name}, maximum allowed is 80% of share capital`;
+                          return `For ${redux_data?.product_name}, maximum allowed is 80% member's of share capital`;
                         }
                       } else {
                         return D_value.gt(D_max) ? `Amount must not exceed ₱${D_max.toFixed(2)}` : true;
                       }
-
                       return true;
                     } catch {
                       // Fallback to built-in message on error parsing Decimal
@@ -911,18 +964,15 @@ function LoanApplicationsV2() {
                       {...field}
                       className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
                     />
-
                     {errorsLoanAcc.principal && (
-                      <p className="text-error text-xs mt-2">
-                        Amount must be between ₱{selectedProduct?.min_amount?.toLocaleString()} - ₱{productCode === "S_CAP_LOANS"
-                          ? new Decimal(redux_data?.amount || 9999999).toLocaleString()
-                          : new Decimal(selectedProduct?.max_amount || 9999999).toLocaleString()}
+                      <p className="text-error text-xs mt-1">
+                        {errorsLoanAcc.principal.message}
                       </p>
                     )}
-              </div>
-            )}
-          />
-        </div>
+                  </div>
+                )}
+              />
+            </div>
           </div>
 
           {/* EDITABLE SECTION - Dates */}
