@@ -13,11 +13,10 @@ import { useRpcTotal } from '../../../../backend/hooks/shared/view/useFetchRpcTo
 import { display } from '../../../../constants/numericFormat';
 
 // Export component
+import ExportPDFButton from "./ExportPDFButton";
 import ExcelExportButton from './ExportButton';
 import DateFilterReports from './DateFilterReports';
 
-// PDF Export utility
-import { createMemberStatementPDF } from '../utils/memberStatementPDF';
 
 import digitecLogo from '../../../../assets/digitec-logo.png'
 
@@ -46,33 +45,25 @@ function MemStatementDetails() {
   const { data: view_loan_account } = useFetchLoanAccView({ accountNumber: accountNo });
   const viewLoanAcc = view_loan_account?.data || [];
 
-
   // Merge loanAccount with loanAccView on loan_id (base and view tables might have multiple matching columns)
-  const mergedLoanAccounts = loanAccount.map(baseRow => {
-    const viewRow = viewLoanAcc.find(v => v.loan_id === baseRow.loan_id);
-
+  const mergedLoanAccounts = loanAccount.map((baseRow) => {
+    const viewRow = viewLoanAcc.find((v) => v.loan_id === baseRow.loan_id);
     return {
-      ...baseRow, // all base table fields
+      ...baseRow,
       ...viewRow,
     };
   });
-  // console.log(mergedLoanAccounts[0])
-  // const destructuredMergedData = mergedLoanAccounts[0] || {};    // might need later
 
   // Returns { onGoingLoans, pastLoans } for a given account number
   function getLoansByStatus() {
-    const onGoingLoans = mergedLoanAccounts?.filter(row => row.status === "Active");
-    const pastLoans = mergedLoanAccounts?.filter(row => row.status === "Closed");         // unused for now need clarity if we include the closed loans in the statement
+    const onGoingLoans = mergedLoanAccounts?.filter((row) => row.status === "Active");
+    const pastLoans = mergedLoanAccounts?.filter((row) => row.status === "Closed");
     return { onGoingLoans, pastLoans };
   }
 
-  /**
-   * This is the data for the tables we need below
-   */
-
   // loans both active and past loans
   const { onGoingLoans, pastLoans } = getLoansByStatus();
-  const activeLoans = onGoingLoans[0] || [];     // the [0] is to get the first element which is the array of active loans filtered which is always return single array
+  const activeLoans = onGoingLoans[0] || []; // base behavior kept from original code
 
   // loan payments
   const { data: loanPaymentsData } = useFetchLoanPayments({ accountNumber: accountNo });
@@ -104,15 +95,13 @@ function MemStatementDetails() {
   // Filter data based on selected year and month
   const filterByDate = (items, dateField) => {
     if (!items) return [];
-
-    return items.filter(item => {
+    return items.filter((item) => {
       const itemDate = new Date(item[dateField]);
       const itemYear = itemDate.getFullYear().toString();
       const itemMonth = (itemDate.getMonth() + 1).toString();
 
-      const yearMatch = selectedYear === 'all' || itemYear === selectedYear;
-      const monthMatch = selectedMonth === 'all' || itemMonth === selectedMonth;
-
+      const yearMatch = selectedYear === "all" || itemYear === selectedYear;
+      const monthMatch = selectedMonth === "all" || itemMonth === selectedMonth;
       return yearMatch && monthMatch;
     });
   };
@@ -122,105 +111,57 @@ function MemStatementDetails() {
   const filteredOngoingLoans = filterByDate(onGoingLoans, 'release_date');
   const filteredLoanPayments = filterByDate(loanPayments, 'payment_date');
 
-  // Handle PDF export with complete member data
-  const handleExportPDF = () => {
-    try {
-      if (!memberInfo) {
-        alert("Member information not loaded. Please wait and try again.");
-        return;
-      }
-
-      const memberName = `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim();
-
-      // Calculate summary totals
-      const totalLoanOutstanding = filteredOngoingLoans.reduce(
-        (sum, loan) => sum + (parseFloat(loan.outstanding_balance) || 0), 
-        0
-      );
-      const totalPaymentsMade = filteredLoanPayments.reduce(
-        (sum, payment) => sum + (parseFloat(payment.total_amount) || 0), 
-        0
-      );
-
-      console.log("Generating PDF with data:", {
-        memberName,
-        shareCapitalCount: filteredCoopContributions.length,
-        loanAccountsCount: filteredOngoingLoans.length,
-        paymentsCount: filteredLoanPayments.length,
-        clubFundsCount: filteredClubFunds.length
-      });
-
-      const statementData = {
-        member: {
-          account_number: memberInfo.account_number || 'N/A',
-          full_name: memberName,
-          email: memberInfo.email || 'N/A',
-          contact_number: memberInfo.contact_number || 'N/A',
-          account_role: memberInfo.account_role || 'N/A',
-          account_status: memberInfo.account_status || 'N/A',
-        },
-        shareCapital: (filteredCoopContributions || []).map(c => ({
-          transaction_date: c.contribution_date,
-          transaction_type: c.category || 'Contribution',
-          description: c.description || 'Share Capital Contribution',
-          amount: parseFloat(c.amount) || 0
-        })),
-        loanAccounts: (filteredOngoingLoans || []).map(loan => ({
-          loan_ref_number: loan.loan_ref_number || 'N/A',
-          loan_type: loan.loan_type || 'Standard Loan',
-          application_date: loan.release_date,
-          loan_amount: parseFloat(loan.principal) || 0,
-          outstanding_balance: parseFloat(loan.outstanding_balance) || 0,
-          loan_status: loan.status || 'Active'
-        })),
-        payments: (filteredLoanPayments || []).map(payment => ({
-          payment_date: payment.payment_date,
-          loan_ref_number: payment.loan_ref_number || 'N/A',
-          principal: parseFloat(payment.principal) || 0,
-          interest: parseFloat(payment.interest) || 0,
-          fees: parseFloat(payment.fees || payment.penalty_fees) || 0,
-          total_amount: parseFloat(payment.total_amount) || 0,
-          payment_method: payment.payment_method || 'N/A'
-        })),
-        clubFunds: (filteredClubFunds || []).map(fund => ({
-          contribution_date: fund.payment_date,
-          fund_type: fund.category || 'Club Fund',
-          purpose: fund.description || 'Club Fund Contribution',
-          amount: parseFloat(fund.amount) || 0,
-          status: 'Completed'
-        })),
-        summary: {
-          totalShareCapital: parseFloat(coopContributionsTotal) || 0,
-          totalClubFunds: parseFloat(clubFundsTotal) || 0,
-          activeLoanCount: filteredOngoingLoans.length,
-          totalLoanOutstanding: totalLoanOutstanding,
-          totalPayments: totalPaymentsMade,
-          memberEquity: (parseFloat(coopContributionsTotal) || 0) + (parseFloat(clubFundsTotal) || 0)
-        }
-      };
-
-      createMemberStatementPDF(statementData, {
-        logoDataUrl: digitecLogo,
-        cooperativeName: "DigiTec Cooperative",
-        cooperativeAddress: "Trinitas Bugo, Cagayan de Oro City",
-        cooperativeContact: "Contact: 09123456789 | Email: eaglesclubectec@gmail.com",
-        startDate: selectedYear !== 'all' || selectedMonth !== 'all' 
-          ? new Date(
-              selectedYear !== 'all' ? parseInt(selectedYear) : new Date().getFullYear(), 
-              selectedMonth !== 'all' ? parseInt(selectedMonth) - 1 : 0, 
-              1
-            )
-          : undefined,
-        endDate: new Date()
-      });
-
-      console.log("✅ PDF Statement generated successfully for:", memberName);
-    } catch (error) {
-      console.error("❌ Error generating PDF:", error);
-      console.error("Error details:", error.message, error.stack);
-      alert(`Failed to generate PDF statement: ${error.message}\n\nCheck console for details.`);
-    }
-  };
+  const prepareExportDataPDF = () => ({
+    member: {
+      account_number: memberInfo?.account_number,
+      full_name: `${memberInfo?.f_name || ''} ${memberInfo?.m_name || ''} ${memberInfo?.l_name || ''}`.trim(),
+      email: memberInfo?.email,
+      contact_number: memberInfo?.contact_number,
+      account_role: memberInfo?.account_role,
+      account_status: memberInfo?.account_status,
+    },
+    shareCapital: (filteredCoopContributions || []).map((c) => ({
+      transaction_date: c.contribution_date,
+      transaction_type: c.category || 'Contribution',
+      description: c.description || 'Share Capital Contribution',
+      amount: c.amount,
+    })),
+    loanAccounts: [
+      ...(filteredOngoingLoans || []),
+      ...(pastLoans || []),
+    ].map((loan) => ({
+      loan_ref_number: loan.loan_ref_number,
+      loan_type: loan.loan_type || loan.type || 'Loan',
+      application_date: loan.release_date || loan.application_date,
+      loan_amount: loan.principal ?? loan.loan_amount,
+      outstanding_balance: loan.outstanding_balance,
+      loan_status: loan.status || loan.loan_status || 'Active',
+    })),
+    payments: (filteredLoanPayments || []).map((p) => ({
+      payment_date: p.payment_date,
+      loan_ref_number: p.loan_ref_number,
+      principal: p.principal,
+      interest: p.interest,
+      fees: p.penalty_fees_paid ?? p.fees,
+      total_amount: p.total_amount,
+      payment_method: p.payment_method,
+    })),
+    clubFunds: (filteredClubFunds || []).map((f) => ({
+      contribution_date: f.payment_date,
+      fund_type: f.category || 'Contribution',
+      purpose: f.description || 'Club Fund',
+      amount: f.amount,
+      status: f.status || 'Posted',
+    })),
+    summary: {
+      totalShareCapital: coopContributionsTotal || 0,
+      totalClubFunds: clubFundsTotal || 0,
+      activeLoanCount: (onGoingLoans || []).length || 0,
+      totalLoanOutstanding: (onGoingLoans && onGoingLoans.outstanding_balance) || 0,
+      totalPayments: (activeLoans && activeLoans.total_paid) || 0,
+      memberEquity: (coopContributionsTotal || 0) + (clubFundsTotal || 0) - ((onGoingLoans && onGoingLoans.outstanding_balance) || 0),
+    },
+  });
 
   const months = [
     { value: '1', label: 'January' },
@@ -259,7 +200,7 @@ function MemStatementDetails() {
   // }, [clubFunds, coopContributions, loanPayments]);
 
   // Prepare data for Excel export (using filtered data)
-  const prepareExportData = () => {
+  const prepareExportDataExcel = () => {
     const memberName = memberInfo
       ? `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim()
       : 'N/A';
@@ -381,8 +322,6 @@ function MemStatementDetails() {
       })
     };
   };
-
-
   // Loading and error states
   if (isLoading) {
     return (
@@ -411,16 +350,27 @@ function MemStatementDetails() {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900">Member Statement</h1>
             <div className="flex gap-2">
-              <button
-                onClick={handleExportPDF}
-                className="btn btn-outline btn-sm"
+              {/** PDF Export as a reusable button component */}
+              <ExportPDFButton
+                logoDataUrl= {digitecLogo}
+                cooperativeName= "ECTEC DigiTEC"
+                cooperativeAddress= "Trinitas Bugo, Cagayan de Oro City"
+                cooperativeContact= "Contact: 09123456789 | Email: eaglesclubectec@gmail.com"
+                startDate = {selectedYear !== 'all' || selectedMonth !== 'all' 
+                  ? new Date(
+                      selectedYear !== 'all' ? parseInt(selectedYear) : new Date().getFullYear(), 
+                      selectedMonth !== 'all' ? parseInt(selectedMonth) - 1 : 0, 
+                      1
+                    )
+                  : undefined}
+                endDate = {new Date()}
                 disabled={isLoading}
+                statementData={prepareExportDataPDF()}
+                fileName={`Member_Statement_${memberInfo?.account_number || 'export'}_${new Date().toISOString().split('T')[0]}.pdf`}
                 title="Export as PDF"
-              >
-                Export PDF
-              </button>
+              />
               <ExcelExportButton
-                data={prepareExportData()}
+                data={prepareExportDataExcel()}
                 fileName={`Member_Statement_${memberInfo?.account_number || 'export'}_${new Date().toISOString().split('T')[0]}.xlsx`}
               />
             </div>

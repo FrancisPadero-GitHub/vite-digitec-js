@@ -1,5 +1,7 @@
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { useState } from "react";
+import PropTypes from "prop-types";
 
 /**
  * Enhanced Excel export button with:
@@ -13,13 +15,20 @@ export default function ExcelExportButton({
   sheetName = "Sheet1",
   disabled,
 }) {
+  const [isExporting, setIsExporting] = useState(false);
   const handleExport = async () => {
     if (!data) {
       alert("No data to export");
       return;
     }
 
-    const isMultiSheet = typeof data === "object" && !Array.isArray(data);
+    setIsExporting(true);
+    
+    try {
+      // Allow UI to update before heavy Excel generation
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const isMultiSheet = typeof data === "object" && !Array.isArray(data);
 
     if (isMultiSheet) {
       const hasData = Object.values(data).some(
@@ -43,6 +52,9 @@ export default function ExcelExportButton({
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
+      
+      // Small delay before save to ensure UI updates
+      await new Promise(resolve => setTimeout(resolve, 50));
       saveAs(blob, fileName.endsWith(".xlsx") ? fileName : `${fileName}.xlsx`);
     } else {
       if (!Array.isArray(data) || data.length === 0) {
@@ -57,12 +69,22 @@ export default function ExcelExportButton({
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
+      
+      // Small delay before save to ensure UI updates
+      await new Promise(resolve => setTimeout(resolve, 50));
       saveAs(blob, fileName.endsWith(".xlsx") ? fileName : `${fileName}.xlsx`);
+    }
+    } catch (err) {
+      console.error('Error generating Excel file:', err);
+      alert('Failed to generate Excel file. Check console for details.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
   const isDisabled = () => {
     if (disabled) return true;
+    if (isExporting) return true;
     if (!data) return true;
     if (typeof data === "object" && !Array.isArray(data)) {
       return !Object.values(data).some(
@@ -77,12 +99,32 @@ export default function ExcelExportButton({
       type="button"
       onClick={handleExport}
       disabled={isDisabled()}
-      className="btn btn-outline btn-sm"
+      className={`btn btn-outline btn-sm ${isExporting ? 'opacity-75 cursor-not-allowed' : ''}`}
+      title={isExporting ? 'Generating Excel file...' : 'Export to Excel file'}
+      aria-busy={isExporting}
+      aria-disabled={isDisabled()}
     >
-      Export to Excel
+      {isExporting ? (
+        <span className="flex items-center gap-2">
+          <span className="loading loading-spinner loading-xs"></span>
+          Exporting...
+        </span>
+      ) : (
+        'Export to Excel'
+      )}
     </button>
   );
 }
+
+ExcelExportButton.propTypes = {
+  data: PropTypes.oneOfType([
+    PropTypes.array,
+    PropTypes.object
+  ]),
+  fileName: PropTypes.string,
+  sheetName: PropTypes.string,
+  disabled: PropTypes.bool,
+};
 
 /**
  * Creates a worksheet with:
