@@ -353,7 +353,7 @@ function MemStatementDetails() {
               {/** PDF Export as a reusable button component */}
               <ExportPDFButton
                 logoDataUrl= {digitecLogo}
-                cooperativeName= "ECTEC DigiTEC"
+                cooperativeName= "DigiTEC | ECTEC Multi-Purpose Cooperative"
                 cooperativeAddress= "Trinitas Bugo, Cagayan de Oro City"
                 cooperativeContact= "Contact: 09123456789 | Email: eaglesclubectec@gmail.com"
                 startDate = {selectedYear !== 'all' || selectedMonth !== 'all' 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 
 // fetch hooks
 import { useIncomeStatementDetails } from '../../../backend/hooks/shared/view/useIncomeStatementDetails'
@@ -6,6 +6,7 @@ import { useIncomeStatementSummary } from '../../../backend/hooks/shared/view/us
 
 // component
 import ExcelExportButton from './components/ExportButton'
+import ExportIncomeStatementPDF from './components/ExportIncomeStatementPDF'
 import DataTableV2 from '../components/DataTableV2'
 import DateFilterReports from './components/DateFilterReports'
 
@@ -41,6 +42,19 @@ function IncomeStatement() {
     return category?.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ') || '';
+  };
+
+  // Prepare PDF data for export - uses filtered data
+  const preparePDFData = () => {
+    const detailsToExport = filteredDetails || [];
+    const summaryToExport = filteredSummary.length > 0 ? filteredSummary : (summaryData || []);
+    const totalIncomeToExport = filteredSummary.length > 0 ? filteredTotalIncome : totalIncome;
+
+    return {
+      summaryData: summaryToExport,
+      detailsData: detailsToExport,
+      totalIncome: totalIncomeToExport
+    };
   };
 
   // Prepare Excel data for export - uses filtered data
@@ -165,13 +179,23 @@ function IncomeStatement() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Income Statement</h1>
         {!isLoading && (filteredDetails?.length > 0 || filteredSummary?.length > 0) && (
-          <ExcelExportButton
-            data={prepareExcelData()}
-            fileName={`income_statement_${new Date()
-              .toISOString()
-              .slice(0, 10)}.xlsx`}
-            sheetName='Income Statement'
-          />
+          <div className="flex gap-2">
+            <ExportIncomeStatementPDF
+              incomeData={preparePDFData()}
+              selectedYear={selectedYear}
+              selectedMonth={selectedMonth}
+              cooperativeName="DigiTEC | ECTEC Multi-Purpose Cooperative"
+              cooperativeAddress="123 Cooperative Street, City, Province"
+              cooperativeContact="Tel: +63 123 456 7890 | Email: info@digiteccoop.com"
+            />
+            <ExcelExportButton
+              data={prepareExcelData()}
+              fileName={`income_statement_${new Date()
+                .toISOString()  
+                .slice(0, 10)}.xlsx`}
+              sheetName='Income Statement'
+            />
+          </div>
         )}
       </div>
 
