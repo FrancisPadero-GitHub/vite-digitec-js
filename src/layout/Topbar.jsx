@@ -161,7 +161,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
 
           <div className="leading-tight">
             {/* short label on very small screens, full title on sm+ */}
-            <span className="font-bold text-gray-250 text-sm sm:text-base md:text-xl lg:text-xl block truncate">
+            <span className="font-bold tracking-wide text-gray-250 text-sm sm:text-base md:text-xl lg:text-xl block truncate">
               <span className="inline md:hidden">DigiTEC – ECTEC</span>
               <span className="hidden md:inline">DigiTEC – ECTEC Multi-Purpose Cooperative Portal</span>
             </span>
