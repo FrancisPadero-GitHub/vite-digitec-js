@@ -1,5 +1,9 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 
+// Vercel Stuff
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
+
 // TanStack Query + Auth Provider for universal user ID retrieval
 import { AuthProvider } from "./backend/context/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -224,6 +228,8 @@ function AppRoutes() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RouterProvider router={router} />
+        <Analytics />
+        <SpeedInsights />
       </AuthProvider>
     </QueryClientProvider>
   );
