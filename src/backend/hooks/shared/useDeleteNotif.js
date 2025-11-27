@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
-import { useAddActivityLog } from "./useAddActivityLog";
 
 /**
  * Soft-delete notifications.
@@ -24,8 +23,6 @@ const deleteNotifications = async ({ notif_id, account_no }) => {
 
 export const useDeleteNotif = () => {
   const queryClient = useQueryClient();
-  const { mutateAsync: logActivity } = useAddActivityLog();
-
   return useMutation({
     mutationFn: deleteNotifications,
     onSuccess: async (_data, variables) => {
@@ -38,18 +35,6 @@ export const useDeleteNotif = () => {
       // if we deleted all for a user, ensure other notification pockets refresh
       if (account_no) {
         queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: false });
-      }
-
-      // Optionally log this action for analytics
-      try {
-        await logActivity({
-          action: notif_id
-            ? `Deleted notification ${notif_id}`
-            : `Deleted all notifications for ${account_no}`,
-          type: "DELETE",
-        });
-      } catch (err) {
-        console.warn("Failed to log delete notification activity", err);
       }
     },
     onError: (error) => {

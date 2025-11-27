@@ -158,8 +158,9 @@ function CoopShareCapital() {
   // This is used for the combobox selection of members upon searching for account_number
   const filteredMembers =
     debouncedQuery === ""
-      ? members || []
+      ? (members || []).filter((m) => m.account_role === "regular-member")
       : members.filter((m) =>
+        m.account_role === "regular-member" &&
         `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
           .toLowerCase()
           .includes(debouncedQuery.toLowerCase())
@@ -446,7 +447,7 @@ function CoopShareCapital() {
                       </div>
                       {/* Full name */}
                       <span className="flex items-center gap-2">
-                        <span className="truncate max-w-[120px]">{fullName}</span>
+                        <span className="truncate">{fullName}</span>
                         {isDisabled && (
                           <div className="tooltip tooltip-top" data-tip="System Generated">
                             <span className="badge badge-sm badge-ghost">?</span>

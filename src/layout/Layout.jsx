@@ -37,7 +37,7 @@ const Layout = () => {
         <Topbar role={memberRole} onToggleSidebar={toggleSidebar} />
         
         {/* MAIN CONTENT with top padding to account for fixed header */}
-        <main className="flex-grow mt-17 pt-2 lg:pt-3">
+        <main className="flex-grow mt-17 pt- lg:pt-5">
           <Outlet />
         </main>
         

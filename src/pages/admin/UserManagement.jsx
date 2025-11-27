@@ -85,7 +85,6 @@ function UserManagement() {
 
         const matchesSearch =
           debouncedSearch === "" ||
-          row.generatedId.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
           row.searchKey.includes(debouncedSearch.toLowerCase()) ||
           row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase());
         const matchesRole = roleFilter === "" || row.role === roleFilter;

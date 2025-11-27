@@ -164,13 +164,13 @@ function ClubFunds() {
   const debouncedQuery = useDebounce(query, 250); // 250ms delay feels natural
   const filteredMembers =
     debouncedQuery === ""
-      ? members || []
+      ? (members || []).filter((m) => m.account_role === "regular-member")
       : members.filter((m) =>
+        m.account_role === "regular-member" &&
         `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
           .toLowerCase()
           .includes(debouncedQuery.toLowerCase())
       );
-
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
@@ -494,7 +494,7 @@ function ClubFunds() {
                         </div>
                       </div>
                       {/* Full name */}
-                      <span className="truncate max-w-[120px]">{fullName}</span>
+                      <span className="truncate">{fullName}</span>
                     </>
                   </span>
                 </td>
