@@ -138,38 +138,39 @@ const Topbar = ({ role, onToggleSidebar }) => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-neutral text-white px-4 py-3 flex justify-between items-center shadow-lg z-50">
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-4">
 
-        {/* SIDEBAR TOGGLE */}
-        <button 
-          onClick={onToggleSidebar}
-          className="lg:hidden p-2 hover:bg-neutral-focus rounded-md transition-colors cursor-pointer"
-          aria-label="Toggle sidebar"
-        >
-          <MenuOutlinedIcon className="w-6 h-6" />
-        </button>
+          {/* SIDEBAR TOGGLE */}
+          <button 
+            onClick={onToggleSidebar}
+            className="lg:hidden p-2 hover:bg-neutral-focus rounded-md transition-colors cursor-pointer"
+            aria-label="Toggle sidebar"
+          >
+            <MenuOutlinedIcon className="w-6 h-6" />
+          </button>
 
-        {/* LOGO */}
-        <div className="flex items-center gap-3 lg:ml-[5vh]">
-          <div className="flex-shrink-0"></div>
+          {/* LOGO + TITLE */}
+          <div className="flex items-center gap-3 lg:ml-6">
             <img
               src={logo}
               alt="DigiTEC Logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-md object-contain"
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-md object-contain shrink-0"
             />
-          </div>
 
-          <div className="leading-tight">
-            {/* short label on very small screens, full title on sm+ */}
-            <span className="font-bold tracking-wide text-gray-250 text-md sm:text-xl md:text-xl lg:text-xl block truncate">
-              <span className="inline md:hidden">DigiTEC – ECTEC</span>
-              <span className="hidden md:inline">DigiTEC – ECTEC Multi-Purpose Cooperative Portal</span>
-            </span>
+            <div className="leading-tight min-w-0">
+              {/* responsive labels: very small, small, and medium+ */}
+              <span className="font-bold tracking-wide text-gray-250 text-sm sm:text-lg md:text-xl block truncate">
+                <span className="inline sm:hidden">DigiTEC</span>
+                <span className="hidden sm:inline md:hidden">DigiTEC – ECTEC</span>
+                <span className="hidden md:inline">DigiTEC – ECTEC Multi-Purpose Cooperative Portal</span>
+              </span>
+            </div>
           </div>
         </div>
 
         {/* DATE, NOTIFS, PROFILE */}
-      <div className="flex items-center space-x-6 text-sm select-none">
+        <div className="flex items-center gap-4 text-sm select-none">
 
         <div className="hidden lg:block">{dateTimeStr}</div>
 
@@ -459,7 +460,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
         <div className="dropdown dropdown-end">
           <button
             tabIndex={0}
-            className="btn btn-ghost flex items-center gap-2 px-4 h-14 cursor-pointer hover:bg-transparent hover:text-inherit"
+            className="btn btn-ghost flex items-center h-14 cursor-pointer hover:bg-transparent hover:text-inherit"
           >
             <div className="avatar">
               <div className="w-10 rounded-full">
@@ -589,6 +590,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
           </div>
         </div>
       </div>
+    </div>
     </header>
   );
 };
