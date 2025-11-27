@@ -177,10 +177,10 @@ const Topbar = ({ role, onToggleSidebar }) => {
         {/* NOTIFICATIONS */}
         <div ref={notifRef} className="relative">
           <button
-            className="indicator relative"
+            className={`indicator relative ${notifications && notifications.filter((n) => !n.is_read).length > 0 ? 'animate-bounce' : 'mt-2'}`}
             onClick={() => setShowDropdown((prev) => !prev)}
           >
-            <NotificationsIcon className="cursor-pointer" style={{ width: "32px", height: "32px" }} />
+            <NotificationsIcon className="cursor-pointer" style={{ width: "32px", height: "32px"}} />
             {notifications && notifications?.length > 0 && (
               <span className="indicator-item badge badge-accent">
                 {notifications.filter((n) => !n.is_read).length}
