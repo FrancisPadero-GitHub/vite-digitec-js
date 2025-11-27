@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
@@ -6,29 +7,44 @@ import { useMemberRole } from "../backend/context/useMemberRole";
 
 const Layout = () => {
   const { memberRole } = useMemberRole();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   return (
-  <div className="drawer lg:drawer-open">
-    <input
-      id="my-drawer"
-      name="my-drawer"
-      type="checkbox"
-      className="drawer-toggle"
-      aria-label="Toggle navigation menu"
-    />
+    <div className="relative min-h-screen bg-base-200">
+      {/* SIDEBAR */}
+      <Sidebar role={memberRole} isOpen={isSidebarOpen} onClose={closeSidebar} />
 
-    {/* PAGE CONTENT, HEADER, FOOTER */}
-    <div className="bg-base-200 drawer-content flex flex-col min-h-screen">
-      <Topbar role={memberRole} />
-      <main className="p-4 flex-grow">
-        <Outlet />
-      </main>
-      <Footer />
+      {/* OVERLAY for mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* MAIN CONTENT WRAPPER */}
+      <div className="flex flex-col min-h-screen lg:ml-64">
+        {/* TOPBAR */}
+        <Topbar role={memberRole} onToggleSidebar={toggleSidebar} />
+        
+        {/* MAIN CONTENT with top padding to account for fixed header */}
+        <main className="flex-grow p-4 mt-[8vh] md:mt-[9vh]">
+          <Outlet />
+        </main>
+        
+        {/* FOOTER */}
+        <Footer />
+      </div>
     </div>
-
-    {/* SIDEBAR */}
-    <Sidebar role={memberRole} />
-  </div>
-
   );
 };
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logo from "../assets/digitec-logo.png";
 
 // MUI Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -176,7 +175,7 @@ const sidebarConfig = {
 };
 
 // 🧭 Sidebar Component
-const Sidebar = ({ role }) => {
+const Sidebar = ({ role, isOpen, onClose }) => {
   const { data: pendingLoanApplications } = useFetchPendingLoanApplications();
   const { data: pendingLoanReleases } = useFetchPendingLoanReleases();
 
@@ -208,16 +207,14 @@ const Sidebar = ({ role }) => {
   };
 
   return (
-    <aside className="drawer-side z-40">
-      <label htmlFor="my-drawer" className="drawer-overlay lg:hidden"></label>
-
-      <div className="h-full w-65 bg-neutral text-white shadow-lg overflow-hidden flex flex-col">
-        <div className="avatar mt-8 mb-2 flex justify-center">
-          <div className="w-20">
-            <img src={logo} alt="DigiTEC Logo" />
-          </div>
-        </div>
-        <div className="h-full overflow-y-auto px-2 pb-4 flex flex-col">
+    <aside className={`fixed top-0 left-0 h-full w-64 bg-neutral text-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    } lg:translate-x-0`}>
+      <div className="h-full overflow-hidden flex flex-col">
+        {/* Top spacing for alignment with fixed topbar */}
+        <div className="h-16 flex-shrink-0" />
+        
+        <div className="flex-1 overflow-y-auto px-2 pb-4">
           <ul className="menu flex-grow">
             {sections.map((section) => (
               <li key={section.section}>
@@ -266,6 +263,7 @@ const Sidebar = ({ role }) => {
                                   <li key={idx}>
                                     <Link
                                       to={child.path}
+                                      onClick={onClose}
                                       className={`flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors ${isChildActive ? "bg-green-950/50 text-white" : "hover:bg-green-950/20"
                                         }`}
                                     >
@@ -295,6 +293,7 @@ const Sidebar = ({ role }) => {
                       <li key={i}>
                         <Link
                           to={item.path}
+                          onClick={onClose}
                           className={`flex items-center gap-3 py-2 px-4 rounded-md text-base mb-2 ${isActive ? "bg-green-950 text-white" : ""
                             }`}
                         >
@@ -323,6 +322,8 @@ Sidebar.propTypes = {
     "regular-member",
     "associate-member",
   ]).isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default Sidebar;

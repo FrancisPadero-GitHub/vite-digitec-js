@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useAuth } from "../backend/context/AuthProvider";
 import PropTypes from 'prop-types';
+import logo from "../assets/digitec-logo.png";
 import { useDispatch, useSelector } from "react-redux";
 import { openNotificationModal, closeNotificationModal, setSelectedNotification, notificationModalState } from "../features/redux/notificationModalSlice";
 
@@ -33,7 +34,7 @@ import NotificationDetail from "../components/shared/NotificationDetail";
 import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for now
 import placeHolderAvatar from '../assets/placeholder-avatar.png';
 
-const Topbar = ({ role }) => {      // expecting an argument in layout as memberRole
+const Topbar = ({ role, onToggleSidebar }) => {
   const navigate = useNavigate();
   // to fetch member name for the logged in id
   const { user } = useAuth();
@@ -135,27 +136,42 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
   }, [showDropdown]);
 
   return (
-    <header className="navbar bg-neutral text-white px-4 py-3 flex justify-between items-center">
+    <header className="fixed top-0 left-0 right-0 bg-neutral text-white px-4 py-3 flex justify-between items-center shadow-lg z-50">
 
-      <div className="flex justify-between items-center">
+      <div className="flex items-center gap-4">
 
-        {/* SIDEBAR TOGGLE FOR MOBILE */}
-        <label htmlFor="my-drawer" className="lg:hidden ml-5 mr-10 drawer-button cursor-pointer">
+        {/* SIDEBAR TOGGLE */}
+        <button 
+          onClick={onToggleSidebar}
+          className="lg:hidden p-2 hover:bg-neutral-focus rounded-md transition-colors cursor-pointer"
+          aria-label="Toggle sidebar"
+        >
           <MenuOutlinedIcon className="w-6 h-6" />
-        </label>
+        </button>
 
-        {/* <div className="flex justify-center ml-6">
-          <span className="mr-2">Page : </span>
-          <span className="text-warning" title="Developmental, will be removed in the future">{getRoleLabel(role) || "Role Not Found"}</span>
-        </div> */}
-        <span className="text-primary font-bold text-sm sm:text-base md:text-lg ml-2">
-          DigiTEC – ECTEC Multi-Purpose Cooperative Portal
-        </span>
-      </div>
+        {/* LOGO */}
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0"></div>
+            <img
+              src={logo}
+              alt="DigiTEC Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-md object-contain"
+            />
+          </div>
 
-      {/* DATE, NOTIFS, PROFILE */}
+          <div className="leading-tight">
+            {/* short label on very small screens, full title on sm+ */}
+            <span className="font-bold text-gray-250 text-sm sm:text-base md:text-xl lg:text-xl block truncate">
+              <span className="inline md:hidden">DigiTEC – ECTEC</span>
+              <span className="hidden md:inline">DigiTEC – ECTEC Multi-Purpose Cooperative Portal</span>
+            </span>
+          </div>
+        </div>
+
+        {/* DATE, NOTIFS, PROFILE */}
       <div className="flex items-center space-x-6 text-sm select-none">
-        <div className="hidden md:block">{dateTimeStr}</div>
+
+        <div className="hidden lg:block">{dateTimeStr}</div>
 
         {/* NOTIFICATIONS */}
         <div ref={notifRef} className="relative">
@@ -173,8 +189,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
 
           {/* DROPDOWN LIST */}
           {showDropdown && (
-            <div className="absolute right-0 mt-3 w-96 bg-base-100 text-base-content shadow-2xl border border-base-300 z-50 animate-[fadeIn_0.2s_ease-out]">
-
+            <div className="absolute left-1/2 -translate-x-1/2 right-auto sm:right-0 sm:left-auto sm:translate-x-0 mt-3 w-80 bg-base-100 text-base-content shadow-2xl border border-base-300 z-40 animate-[fadeIn_0.2s_ease-out]">
               {/* Header */}
               <div className="p-4 flex justify-between items-center border-b border-base-300 bg-base-200/50">
                 <h3 className="font-bold text-lg flex items-center gap-2">
@@ -511,7 +526,6 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                   </button>
                 </li>
               )}
-              SETTINGS  AND HELP COMMENT OUT SA RAW
               <li>
                 <button
                   title="Settings button"
@@ -587,6 +601,7 @@ Topbar.propTypes = {
     "regular-member",
     "associate-member",
   ]).isRequired,
+  onToggleSidebar: PropTypes.func.isRequired,
 };
 
 export default Topbar;
