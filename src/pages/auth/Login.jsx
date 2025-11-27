@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-
 // mutation hooks
 import { useLogin } from "../../backend/hooks/auth/useLogin";
 
@@ -17,13 +16,11 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 import auth_bg from "../../assets/auth-bg.jpg";
 import digitec_logo from "../../assets/digitec-logo.png";
 
-
-
 const Login = () => {
-
   // hooks
   const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // react hook form
   const {
@@ -31,31 +28,33 @@ const Login = () => {
     handleSubmit,
     setError,
     clearErrors,
-    formState: { errors },
+    watch,
+    formState: { errors, isValid },
   } = useForm({
-    email: "",
-    password: "",
+    defaultValues: {
+      email: "",
+      password: "",
+      terms: false
+    },
     mode: "onChange",
   });
 
-  const handleCancel = () => {
-      navigate(-1);
-    };
-
   const navigate = useNavigate();
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
 
   const redirect = () => {
     navigate("/forgot-password");
-  }
+  };
 
   const onSubmit = (form_data) => {
     // Mutate and do the login process then navigate which role (account_type) returns
-    // Might remove the switch process in the future after I fix the admin user adding
     login(form_data, {
-      onSuccess: ({role}) => { // {role} is destructered cause we returned {role: members.account_type} as object otherwise its default (data)
+      onSuccess: ({ role }) => {
         navigate(`/${role}`);
       },
-
       onError: (err) => {
         let uiMessage = "Unexpected error occurred.";
 
@@ -78,26 +77,35 @@ const Login = () => {
     });
   };
 
+  // Watch form values to enable/disable submit button
+  const watchedFields = watch(['email', 'password', 'terms']);
+  const isFormValid = watchedFields[0] && watchedFields[1] && watchedFields[2] && isValid;
+
   return (
     <div className="min-h-screen font-inter bg-base-200">
-      <Toaster position="bottom-right"/>
-      <section className="min-h-screen flex justify-center items-center px-4">
-        <div className="card card-side w-[900px] h-[550px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col md:flex-row mt-5 mb-5">
-          <figure className="w-full md:w-1/2 h-full max-h-[600px] overflow-hidden hidden lg:block">
+      <Toaster position="bottom-right" />
+      <section className="min-h-screen flex justify-center items-center px-4 py-8">
+        <div className="card w-full max-w-[900px] min-h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col lg:flex-row">
+          {/* Image Section - Hidden on mobile, visible on lg and up */}
+          <figure className="hidden lg:block lg:w-1/2 h-auto">
             <img 
-            src={auth_bg}
-            alt="Login background illustration"
-            className="" />
+              src={auth_bg}
+              alt="Login background illustration"
+              className="w-full h-full object-cover"
+            />
           </figure>
 
-          <div className="card-body w-full md:w-1/2 justify-center">
-           {/* Added logo */}
+          {/* Form Section */}
+          <div className="card-body w-full lg:w-1/2 justify-center p-6 md:p-8">
+            {/* Logo */}
             <img 
               src={digitec_logo} 
               alt="Fraternity Logo" 
-              className="w-35 h-30 mx-auto mb-2" 
+              className="w-28 h-24 mx-auto mb-4" 
             />
-            <h2 className="text-3xl font-bold text-center text-green-800 text-base-content mb-3">Welcome to DigiTEC!</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-green-800 mb-4">
+              Welcome to DigiTEC!
+            </h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Email Field */}
@@ -117,14 +125,14 @@ const Login = () => {
                       required: "Email is required",
                       pattern: {
                         value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
-                        message: "Email must be a valid email address",
+                        message: "Email must be a valid Gmail address",
                       },
                       onChange: () => clearErrors("root"),
                     })}
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
+                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                 )}
               </div>
 
@@ -153,7 +161,7 @@ const Login = () => {
                   <button
                     title="Show Password"
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)} // (prev) => !prev is an arrow function, it’s the functional form of a state update.
+                    onClick={() => setShowPassword((prev) => !prev)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10"
                   >
                     {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
@@ -166,51 +174,89 @@ const Login = () => {
 
               {/* Server error */}
               {errors.root && (
-                <p className="text-red-600 text-center">{errors.root.message}</p>
+                <p className="text-red-600 text-center text-sm">{errors.root.message}</p>
               )}
 
-              <p className="text-right text-xs text-gray-500">
+              {/* Terms and Forgot Password Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs mt-2">
+                {/* Terms Checkbox */}
+                <label className="flex items-start gap-2 flex-1">
+                  <input
+                    type="checkbox"
+                    {...register("terms", {
+                      required: "You must agree to the terms and conditions",
+                    })}
+                    className="checkbox checkbox-xs mt-0.5 flex-shrink-0"
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                  />
+                  <span className="text-xs leading-relaxed">
+                    I hereby acknowledge and agree to the{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/terms")}
+                      className="link text-green-800 hover:text-green-700"
+                    >
+                      Terms of Service
+                    </button>{" "}
+                    and{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/privacy")}
+                      className="link text-green-800 hover:text-green-700"
+                    >
+                      Privacy Policy
+                    </button>
+                  </span>
+                </label>
+
+                {/* Forgot Password */}
                 <button
                   title="Forgot password"
-                  type="button" 
-                  onClick={() => redirect()}
-                  className="link">
+                  type="button"
+                  onClick={redirect}
+                  className="link text-gray-500 hover:text-gray-700 text-xs sm:text-right whitespace-nowrap"
+                >
                   Forgot Password?
                 </button>
-              </p>
+              </div>
 
-              <button
-                title="Sign In Button"
-                type="submit"
-                disabled={isPending}
-                className="btn btn-primary w-full outline-none"
-              >
-                {isPending ? (
-                  <>
-                    <span className="loading loading-ball loading-sm mr-2"></span>
-                    Logging in...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </button>
+              {/* Checkbox error */}
+              {errors.terms && (
+                <p className="text-red-500 text-xs mt-1">{errors.terms.message}</p>
+              )}
 
-              {/* Cancel Button */}
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isPending}
-                className="btn w-full bg-gray-300 outline-none text-gray-800"
-              >
-                Cancel
-              </button>
+              {/* Buttons */}
+              <div className="space-y-3 mt-4">
+                <button
+                  title="Sign In Button"
+                  type="submit"
+                  disabled={isPending || !isFormValid}
+                  className="btn btn-primary w-full outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-ball loading-sm mr-2"></span>
+                      Logging in...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
+                </button>
 
+                {/* Cancel Button */}
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isPending}
+                  className="btn w-full bg-gray-300 outline-none text-gray-800 hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>
       </section>
-
-
     </div>
   );
 };
