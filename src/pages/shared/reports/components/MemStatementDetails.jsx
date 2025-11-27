@@ -343,13 +343,13 @@ function MemStatementDetails() {
   }
 
   return (
-    <div>
+    <div className="px-2 sm:px-4 lg:px-6">
       <div className="space-y-4">
         {/* Header Section */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">Member Statement</h1>
-            <div className="flex gap-2">
+        <div className="shadow-md rounded-lg p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">Member Statement</h1>
+            <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
               {/** PDF Export as a reusable button component */}
               <ExportPDFButton
                 logoDataUrl= {digitecLogo}
@@ -390,10 +390,10 @@ function MemStatementDetails() {
             }}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mt-4">
             <div>
               <p className="text-gray-600">Member Name:</p>
-              <p className="font-semibold text-lg">
+              <p className="font-semibold text-base sm:text-lg">
                 {memberInfo ? (
                   `${memberInfo.f_name || ''} ${memberInfo.m_name || ''} ${memberInfo.l_name || ''}`.trim()
                 ) : 'N/A'}
@@ -401,11 +401,11 @@ function MemStatementDetails() {
             </div>
             <div>
               <p className="text-gray-600">Account Number:</p>
-              <p className="font-semibold text-lg">{memberInfo?.account_number || 'N/A'}</p>
+              <p className="font-semibold text-base sm:text-lg">{memberInfo?.account_number || 'N/A'}</p>
             </div>
             <div>
               <p className="text-gray-600">Email:</p>
-              <p className="font-semibold">{memberInfo?.email || 'N/A'}</p>
+              <p className="font-semibold truncate">{memberInfo?.email || 'N/A'}</p>
             </div>
             <div>
               <p className="text-gray-600">Statement Date:</p>
@@ -415,100 +415,97 @@ function MemStatementDetails() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {/* Share Capital Total */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md p-6 text-white">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium opacity-90">Share Capital Total</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Share Capital Total</h3>
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{display(coopContributionsTotal || 0)}</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{display(coopContributionsTotal || 0)}</p>
             <p className="text-xs mt-1 opacity-75">{filteredCoopContributions.length} contributions</p>
           </div>
 
           {/* Club Funds Total */}
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md p-6 text-white">
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium opacity-90">Club Funds Total</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Club Funds Total</h3>
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{display(clubFundsTotal || 0)}</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{display(clubFundsTotal || 0)}</p>
             <p className="text-xs mt-1 opacity-75">{filteredClubFunds.length} transactions</p>
           </div>
 
           {/* Active Loans */}
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-md p-6 text-white">
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium opacity-90">Active Loans</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Active Loans</h3>
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{onGoingLoans.length}</p>
-            <p className="text-xs mt-1 opacity-75">Outstanding balance: {display(onGoingLoans?.outstanding_balance || 0)}</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{onGoingLoans.length}</p>
+            <p className="text-xs mt-1 opacity-75 truncate">Outstanding: {display(onGoingLoans?.outstanding_balance || 0)}</p>
           </div>
 
           {/* Total Payments */}
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-md p-6 text-white">
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium opacity-90">Loan Payments</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Loan Payments</h3>
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{filteredLoanPayments.length}</p>
-            <p className="text-xs mt-1 opacity-75">Total paid: {display(activeLoans?.total_paid || 0)}</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{filteredLoanPayments.length}</p>
+            <p className="text-xs mt-1 opacity-75 truncate">Total paid: {display(activeLoans?.total_paid || 0)}</p>
           </div>
         </div>
 
-        <div className='grid sm:grid-cols-1 lg:grid-cols-2  gap-2' >
+        <div className='grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6' >
           {/* Coop Contributions (Share Capital) */}
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Share Capital Contributions</h2>
+          <div className="shadow-md rounded-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Share Capital Contributions</h2>
 
-            {/* HEADER stays fixed */}
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Date</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Description</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Category</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Amount</th>
                   </tr>
                 </thead>
               </table>
             </div>
 
-            {/* BODY scrolls */}
             <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
-              <table className="min-w-full divide-y divide-gray-200">
-                <tbody className="bg-white divide-y divide-gray-200">
+              <table className="min-w-full divide-y">
+                <tbody className="divide-y">
                   {filteredCoopContributions.length > 0 ? (
                     filteredCoopContributions.map((contribution, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                           {new Date(contribution.contribution_date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm max-w-[120px] sm:max-w-xs truncate">
                           {contribution.description || 'Share Capital Contribution'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                           {contribution.category || 'Contribution'}
                         </td>
-                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm font-semibold text-green-600">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 text-right whitespace-nowrap text-xs sm:text-sm font-semibold text-green-600">
                           {display(contribution.amount)}
                         </td>
-
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan="4" className="px-3 py-4 text-center text-xs sm:text-sm">
                         No share capital contributions found
                       </td>
                     </tr>
@@ -517,14 +514,13 @@ function MemStatementDetails() {
               </table>
             </div>
 
-            {/* FOOTER stays fixed */}
             {filteredCoopContributions.length !== 0 && (
-              <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200">
+              <div className="sticky bottom-0 border-t border-gray-200">
                 <table className="min-w-full">
                   <tfoot>
                     <tr>
-                      <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total:</td>
-                      <td className="px-6 py-4 text-right font-bold text-green-600">
+                      <td colSpan="2" className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-bold">Total:</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-bold text-green-600">
                         {display(coopContributionsTotal || 0)}
                       </td>
                       <td></td>
@@ -536,47 +532,45 @@ function MemStatementDetails() {
           </div>
 
           {/* Club Funds */}
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Club Funds History</h2>
+          <div className="shadow-md rounded-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Club Funds History</h2>
 
-            {/* HEADER stays fixed */}
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Date</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Description</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Category</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Amount</th>
                   </tr>
                 </thead>
               </table>
             </div>
 
-            {/* BODY scrolls */}
             <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
-              <table className="min-w-full divide-y divide-gray-200">
-                <tbody className="bg-white divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-300">
+                <tbody className="divide-y divide-gray-300">
                   {filteredClubFunds.length > 0 ? (
                     filteredClubFunds.map((fund, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                           {new Date(fund.payment_date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm max-w-[120px] sm:max-w-xs truncate">
                           {fund.description || 'Club Fund Contribution'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                           {fund.category || 'Contribution'}
                         </td>
-                        <td className="px-6 py-4 text-right whitespace-nowrap text-sm font-semibold text-blue-600">
+                        <td className="px-3 py-2 sm:px-6 sm:py-4 text-right whitespace-nowrap text-xs sm:text-sm font-semibold text-blue-600">
                           {display(fund.amount)}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan="4" className="px-3 py-4 text-center text-xs sm:text-sm">
                         No club fund transactions found
                       </td>
                     </tr>
@@ -585,14 +579,13 @@ function MemStatementDetails() {
               </table>
             </div>
 
-            {/* FOOTER stays fixed */}
             {filteredClubFunds.length !== 0 && (
-              <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200">
+              <div className="sticky bottom-0 border-t border-gray-200 bg-white">
                 <table className="min-w-full">
                   <tfoot>
                     <tr>
-                      <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total:</td>
-                      <td className="px-6 py-4 text-right font-bold text-blue-600">
+                      <td colSpan="2" className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-bold">Total:</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-bold">
                         {display(clubFundsTotal || 0)}
                       </td>
                       <td></td>
@@ -605,49 +598,46 @@ function MemStatementDetails() {
         </div>
 
         {/* Active Loans */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Active Loan Balances</h2>
+        <div className="shadow-md rounded-lg p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Active Loan Balances</h2>
 
-          {/* Combined scrollable container */}
           <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
-            <table className="min-w-full divide-y divide-gray-200">
-              {/* HEADER stays sticky */}
-              <thead className="bg-gray-50 sticky top-0 z-10">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="sticky top-0 z-10">
                 <tr>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Net Principal</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Interest Paid</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Penalty Paid</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Paid</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Principal</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Interest</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Loan ID</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Loan Ref No.</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Principal</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Net Principal</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider hidden lg:table-cell">Interest Paid</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider hidden xl:table-cell">Penalty Paid</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Total Paid</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider hidden xl:table-cell">Remaining Principal</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider hidden xl:table-cell">Remaining Interest</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Outstanding</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider hidden sm:table-cell">Release Date</th>
                 </tr>
               </thead>
-              {/* BODY scrolls */}
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-300">
                 {filteredOngoingLoans.length > 0 ? (
                   filteredOngoingLoans.map((loan, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_id}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_ref_number}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.principal)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.net_principal)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.interest_paid)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.penalty_fees_paid)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-green-600 font-semibold">{display(loan.total_paid)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.remaining_principal)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.remaining_interest)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-orange-600 font-semibold">{display(loan.outstanding_balance)}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{new Date(loan.release_date).toLocaleDateString()}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{loan.loan_id}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{loan.loan_ref_number}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm">{display(loan.principal)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm">{display(loan.net_principal)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm hidden lg:table-cell">{display(loan.interest_paid)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm hidden xl:table-cell">{display(loan.penalty_fees_paid)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm text-green-600 font-semibold">{display(loan.total_paid)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm hidden xl:table-cell">{display(loan.remaining_principal)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm hidden xl:table-cell">{display(loan.remaining_interest)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm text-orange-600 font-semibold">{display(loan.outstanding_balance)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm hidden sm:table-cell">{new Date(loan.release_date).toLocaleDateString()}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="11" className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan="11" className="px-3 py-4 text-center text-xs sm:text-sm">
                       No active loans
                     </td>
                   </tr>
@@ -658,37 +648,34 @@ function MemStatementDetails() {
         </div>
 
         {/* Loan Payment History */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Loan Payment History</h2>
+        <div className="shadow-md rounded-lg p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Loan Payment History</h2>
 
-          {/* Combined scrollable container */}
           <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[20vh]">
-            <table className="min-w-full divide-y divide-gray-200">
-              {/* HEADER stays sticky */}
-              <thead className="bg-gray-50 sticky top-0 z-10">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="sticky top-0 z-10">
                 <tr>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No.</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Date</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Payment ID</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Amount</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider hidden sm:table-cell">Payment Method</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Loan Ref No.</th>
                 </tr>
               </thead>
-              {/* BODY scrolls */}
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-300">
                 {filteredLoanPayments.length > 0 ? (
                   filteredLoanPayments.map((payment, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{new Date(payment.payment_date).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">{payment.payment_id || 'N/A'}</td>
-                      <td className="px-6 py-4 text-right text-sm font-semibold text-green-600">{display(payment.total_amount)}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-500">{payment.payment_method || 'N/A'}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-500">{payment.loan_ref_number || 'N/A'}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{new Date(payment.payment_date).toLocaleDateString()}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm font-medium">{payment.payment_id || 'N/A'}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-semibold text-green-600">{display(payment.total_amount)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm hidden sm:table-cell">{payment.payment_method || 'N/A'}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{payment.loan_ref_number || 'N/A'}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan="5" className="px-3 py-4 text-center text-xs sm:text-sm">
                       No payment history found
                     </td>
                   </tr>
@@ -697,14 +684,13 @@ function MemStatementDetails() {
             </table>
           </div>
 
-          {/* FOOTER stays fixed */}
           {filteredLoanPayments.length > 0 && (
-            <div className="bg-gray-50 border-t border-gray-200">
+            <div className="border-t border-gray-300">
               <table className="min-w-full">
                 <tfoot>
                   <tr>
-                    <td colSpan="2" className="px-6 py-4 text-right font-bold text-gray-900">Total Payments:</td>
-                    <td className="px-6 py-4 text-right font-bold text-green-600">{display(activeLoans?.total_paid)}</td>
+                    <td colSpan="2" className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-bold">Total Payments:</td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm font-bold text-green-600">{display(activeLoans?.total_paid)}</td>
                     <td colSpan="2"></td>
                   </tr>
                 </tfoot>
@@ -715,39 +701,36 @@ function MemStatementDetails() {
 
         {/* Past Loans (Optional) */}
         {pastLoans.length > 0 && (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Closed Loans</h2>
+          <div className="shadow-md rounded-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Closed Loans</h2>
 
-            {/* Combined scrollable container */}
             <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[17vh]">
-              <table className="min-w-full divide-y divide-gray-200">
-                {/* HEADER stays sticky */}
-                <thead className="bg-gray-50 sticky top-0 z-10">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead className="sticky top-0 z-10">
                   <tr>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Ref No</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Interest Paid</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Penalty Paid</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Paid</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Maturity Date</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Loan ID</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Loan Ref No</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Principal</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider hidden lg:table-cell">Interest Paid</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider hidden xl:table-cell">Penalty Paid</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium uppercase tracking-wider">Total Paid</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider hidden sm:table-cell">Release Date</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider hidden xl:table-cell">Maturity Date</th>
+                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
-                {/* BODY scrolls */}
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-300">
                   {pastLoans.map((loan, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_id}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.loan_ref_number}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.principal)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.interest_paid)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-900">{display(loan.penalty_fees_paid)}</td>
-                      <td className="px-6 py-4 text-right text-sm text-green-600 font-semibold">{display(loan.total_paid)}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{new Date(loan.release_date).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.maturity_date ? new Date(loan.maturity_date).toLocaleDateString() : 'N/A'}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{loan.status}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{loan.loan_id}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{loan.loan_ref_number}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm">{display(loan.principal)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm hidden lg:table-cell">{display(loan.interest_paid)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm hidden xl:table-cell">{display(loan.penalty_fees_paid)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-right text-xs sm:text-sm text-green-600 font-semibold">{display(loan.total_paid)}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm hidden sm:table-cell">{new Date(loan.release_date).toLocaleDateString()}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm hidden xl:table-cell">{loan.maturity_date ? new Date(loan.maturity_date).toLocaleDateString() : 'N/A'}</td>
+                      <td className="px-3 py-2 sm:px-6 sm:py-4 text-center text-xs sm:text-sm">{loan.status}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -757,7 +740,7 @@ function MemStatementDetails() {
         )}
 
         {/* Footer */}
-        <div className="bg-white shadow-md rounded-lg p-6 text-center text-sm text-gray-500">
+        <div className="shadow-md rounded-lg p-4 sm:p-6 text-center text-xs sm:text-sm">
           <p>This is an official member statement generated on {new Date().toLocaleDateString()}</p>
           <p className="mt-2">For questions or concerns, please contact your cooperative administrator.</p>
         </div>
@@ -766,4 +749,4 @@ function MemStatementDetails() {
   )
 }
 
-export default MemStatementDetails
+export default MemStatementDetails;

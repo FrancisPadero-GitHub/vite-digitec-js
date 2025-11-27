@@ -19,6 +19,12 @@ import gallery4 from "../assets/gallery4.jpg";
 import gallery5 from "../assets/gallery5.jpg";
 import gallery6 from "../assets/gallery6.jpg";
 
+import project1 from "../assets/project1.jpg";
+import project2 from "../assets/project2.jpg";
+import project3 from "../assets/project3.jpg";
+import project4 from "../assets/project4.jpg";
+import project5 from "../assets/project5.jpg";
+
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import PhoneAndroidOutlinedIcon from '@mui/icons-material/PhoneAndroidOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -41,32 +47,41 @@ const gallery = [
   gallery6,
 ];
 
+
 // Projects of ECTEC
 const project = {
   2023: [
-    {
-      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=60",
-      title: "Outreach Program", // Changed from location
-      date: "January 25, 2025", // Changed from price
-    },
+  {
+    img: project4,
+    title: "Outreach Program",
+    date: "August 27, 2025",
+  },
   ],
+
   2024: [
-    {
-      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=60",
-      title: "Outreach Program",
-      date: "January 25, 2025",
-    },
+
   ],
+
   2025: [
     {
-      img: "https://scontent.fcgm1-1.fna.fbcdn.net/v/t39.30808-6/481279822_122104358912790047_3299124637793993201_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGiqDgoV5-FD32XHXnsKBxYhgavblMpq0SGBq9uUymrRJYGGvyD4P5-f7QxrsCmCCvA22sx4nf2wS8CrA_Jw_4s&_nc_ohc=DjwrzoRwOC0Q7kNvwEmGorV&_nc_oc=Adm5afSD3V89U7-anB-Z8RSoDuqqBe8Qp7Nqw1LURrZgaoxlwWVE0-tp7AGuvPYkjDb_nFFi9vYkA7pPxStMh321&_nc_zt=23&_nc_ht=scontent.fcgm1-1.fna&_nc_gid=KJgtRkTTBfZYJ_bcIwKj_A&oh=00_Afgqstzg7tv8BArXo_pKXyq6SMjslzmRP0guF_5nKmFjoA&oe=691E6CDF",
-      title: "Outreach Program",
+      img: project5,
+      title: "1st General Meeting",
       date: "January 25, 2025",
     },
     {
-      img: "https://scontent.fcgm1-1.fna.fbcdn.net/v/t39.30808-6/481217155_122104318058790047_5274804630572731356_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeEl2oLUIhsuN-AUhpTUEjsdhTAd_JozWDyFMB38mjNYPD8QmSnpFFTfeeVkSSXbidtyu6z5_HpV9-JtlMyetCCo&_nc_ohc=BKnUmqjY6vIQ7kNvwEKiJ2S&_nc_oc=AdlAp0xzo4Dt4Mqh4RFQJKUXtfVQWu-b0uaQMJZ6zSLGJ615xIvFtKC3mXnqScUvrIPXxi9-JjTVjYPjWhB_9IYN&_nc_zt=23&_nc_ht=scontent.fcgm1-1.fna&_nc_gid=-TuJk6Rqlxii9r9v1TIbfg&oh=00_AfivzLOxIpsOHlkd-uadj5I4fksV8vgxbp9P6jpf6C84IQ&oe=691E6398",
-      title: "BANGON 2025",
+      img: project1,
+      title: "Outreach Program",
+      date: "January 24, 2025",
+    },
+    {
+      img: project2,
+      title: "1st General Membership Meeting",
       date: "January 18, 2025",
+    },
+    {
+      img: project3,
+      title: "52nd SHA Grand Alumni Home Coming",
+      date: "January 5, 2025",
     },
   ],
 };

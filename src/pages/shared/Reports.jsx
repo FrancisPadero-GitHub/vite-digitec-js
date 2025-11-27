@@ -14,18 +14,18 @@ function Reports() {
   ]
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Reports</h1>
+    <div className="p-4 sm:p-6">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Reports</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {reportButtons.map((report) => (
           <Link
             key={report.path}
             to={report.path}
-            className="flex items-center gap-3 p-6 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+            className="flex items-center gap-3 p-4 sm:p-6 hover:bg-gray-50 hover:text-gray-800 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <span className="text-3xl">{report.icon}</span>
-            <span className="text-lg font-semibold text-gray-800">{report.label}</span>
+            <span className="text-2xl sm:text-3xl">{report.icon}</span>
+            <span className="text-base sm:text-lg font-semibold">{report.label}</span>
           </Link>
         ))}
       </div>

@@ -305,12 +305,12 @@ function LoanReports() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="px-2 sm:px-4 lg:px-6 min-h-screen py-4">
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Loan Reports</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Loan Reports</h1>
         {!isLoading && filteredActiveLoans.length > 0 && (
-          <div className="flex gap-2">
+          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
             <ExportLoanReportsPDF
               loanData={preparePDFData()}
               selectedYear={selectedYear}
@@ -345,77 +345,77 @@ function LoanReports() {
 
       {/* Summary Cards */}
       {!isLoading && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Top Row - Main Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-blue-500">
-              <div className="text-sm text-gray-600 mb-1">Active Loans</div>
-              <div className="text-3xl font-bold text-blue-600">{summary.totalActiveLoans}</div>
-              <div className="text-xs text-gray-500 mt-1">Total loan accounts</div>
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-blue-500">
+              <div className="text-xs sm:text-sm mb-1">Active Loans</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">{summary.totalActiveLoans}</div>
+              <div className="text-xs mt-1">Total loan accounts</div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-green-500">
-              <div className="text-sm text-gray-600 mb-1">Total Principal Released</div>
-              <div className="text-3xl font-bold text-green-600">{formatCurrency(summary.totalPrincipal)}</div>
-              <div className="text-xs text-gray-500 mt-1">Amount disbursed</div>
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-green-500">
+              <div className="text-xs sm:text-sm mb-1">Total Principal Released</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{formatCurrency(summary.totalPrincipal)}</div>
+              <div className="text-xs mt-1">Amount disbursed</div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-purple-500">
-              <div className="text-sm text-gray-600 mb-1">Total Interest</div>
-              <div className="text-3xl font-bold text-purple-600">{formatCurrency(summary.totalInterest)}</div>
-              <div className="text-xs text-gray-500 mt-1">Total interest charges</div>
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-purple-500">
+              <div className="text-xs sm:text-sm mb-1">Total Interest</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600">{formatCurrency(summary.totalInterest)}</div>
+              <div className="text-xs mt-1">Total interest charges</div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-indigo-500">
-              <div className="text-sm text-gray-600 mb-1">Total Receivable Amount</div>
-              <div className="text-3xl font-bold text-indigo-600">{formatCurrency(summary.totalLoanAmountDue)}</div>
-              <div className="text-xs text-gray-500 mt-1">Principal + Interest</div>
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-indigo-500">
+              <div className="text-xs sm:text-sm mb-1">Total Receivable Amount</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-indigo-600">{formatCurrency(summary.totalLoanAmountDue)}</div>
+              <div className="text-xs mt-1">Principal + Interest</div>
             </div>
           </div>
 
           {/* Middle Row - Payment Progress */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-teal-500">
-              <div className="text-sm text-gray-600 mb-1">Total Payments Made</div>
-              <div className="text-3xl font-bold text-teal-600">{formatCurrency(summary.totalPaid)}</div>
-              <div className="text-xs text-gray-500 mt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-teal-500">
+              <div className="text-xs sm:text-sm mb-1">Total Payments Made</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600">{formatCurrency(summary.totalPaid)}</div>
+              <div className="text-xs mt-1 truncate">
                 {summary.totalLoanAmountDue > 0 
                   ? `${((summary.totalPaid / summary.totalLoanAmountDue) * 100).toFixed(1)}% of total repayable`
                   : '0% of total repayable'}
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-orange-500">
-              <div className="text-sm text-gray-600 mb-1">Outstanding Balance</div>
-              <div className="text-3xl font-bold text-orange-600">{formatCurrency(summary.totalOutstanding)}</div>
-              <div className="text-xs text-gray-500 mt-1">
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-orange-500">
+              <div className="text-xs sm:text-sm mb-1">Outstanding Balance</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600">{formatCurrency(summary.totalOutstanding)}</div>
+              <div className="text-xs mt-1 truncate">
                 {formatCurrency(summary.totalOutstandingExcludingPenalties)} + {formatCurrency(summary.totalRemainingPenalties)} penalties
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-amber-500">
-              <div className="text-sm text-gray-600 mb-1">Total Penalties</div>
-              <div className="text-3xl font-bold text-amber-600">{formatCurrency(summary.totalPenalties)}</div>
-              <div className="text-xs text-gray-500 mt-1">
+            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-amber-500">
+              <div className="text-xs sm:text-sm mb-1">Total Penalties</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-600">{formatCurrency(summary.totalPenalties)}</div>
+              <div className="text-xs mt-1 truncate">
                 {formatCurrency(summary.totalRemainingPenalties)} remaining
               </div>
             </div>
           </div>
 
           {/* Bottom Row - Overdue Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-red-50 rounded-lg shadow-md p-5 border-l-4 border-red-500">
-              <div className="text-sm text-red-700 font-semibold mb-1">⚠️ Overdue Loans</div>
-              <div className="text-3xl font-bold text-red-600">{summary.totalOverdueLoans}</div>
-              <div className="text-xs text-red-600 mt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-red-50 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-red-500">
+              <div className="text-xs sm:text-sm text-red-700 font-semibold mb-1">⚠️ Overdue Loans</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">{summary.totalOverdueLoans}</div>
+              <div className="text-xs text-red-600 mt-1 truncate">
                 {summary.totalActiveLoans > 0 
                   ? `${((summary.totalOverdueLoans / summary.totalActiveLoans) * 100).toFixed(1)}% of active loans`
                   : '0% of active loans'}
               </div>
             </div>
-            <div className="bg-red-50 rounded-lg shadow-md p-5 border-l-4 border-red-600">
-              <div className="text-sm text-red-700 font-semibold mb-1">Overdue Amount</div>
-              <div className="text-3xl font-bold text-red-700">{formatCurrency(summary.totalOverdueAmount)}</div>
+            <div className="bg-red-50 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-red-600">
+              <div className="text-xs sm:text-sm text-red-700 font-semibold mb-1">Overdue Amount</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-700">{formatCurrency(summary.totalOverdueAmount)}</div>
               <div className="text-xs text-red-600 mt-1">Total balance overdue</div>
             </div>
-            <div className="bg-red-50 rounded-lg shadow-md p-5 border-l-4 border-red-700">
-              <div className="text-sm text-red-700 font-semibold mb-1">Overdue Penalties</div>
-              <div className="text-3xl font-bold text-red-800">{formatCurrency(summary.totalOverduePenalties)}</div>
+            <div className="bg-red-50 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-red-700">
+              <div className="text-xs sm:text-sm text-red-700 font-semibold mb-1">Overdue Penalties</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-800">{formatCurrency(summary.totalOverduePenalties)}</div>
               <div className="text-xs text-red-600 mt-1">Penalty fees on overdue</div>
             </div>
           </div>
@@ -423,31 +423,33 @@ function LoanReports() {
       )}
 
       {/* Tabs */}
-      <div className="tabs tabs-boxed bg-white shadow mb-2 mt-8 rounded-lg">
-        <a 
-          className={`tab ${activeTab === 'active' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('active')}
-        >
-          Active Loans ({filteredActiveLoans.length})
-        </a>
-        <a 
-          className={`tab ${activeTab === 'schedules' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('schedules')}
-        >
-          Payment Schedules ({filteredPaymentSchedules.length})
-        </a>
-        <a 
-          className={`tab ${activeTab === 'overdue' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('overdue')}
-        >
-          Overdue Loans ({overdueLoans.length})
-        </a>
-        <a 
-          className={`tab ${activeTab === 'payments' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('payments')}
-        >
-          Loan Payments ({filteredLoanPayments.length})
-        </a>
+      <div className="tabs tabs-boxed shadow mb-2 mt-6 sm:mt-8 rounded-lg overflow-x-auto">
+        <div className="flex min-w-max">
+          <a 
+            className={`tab text-xs sm:text-sm ${activeTab === 'active' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('active')}
+          >
+            Active Loans ({filteredActiveLoans.length})
+          </a>
+          <a 
+            className={`tab text-xs sm:text-sm ${activeTab === 'schedules' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('schedules')}
+          >
+            Payment Schedules ({filteredPaymentSchedules.length})
+          </a>
+          <a 
+            className={`tab text-xs sm:text-sm ${activeTab === 'overdue' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('overdue')}
+          >
+            Overdue Loans ({overdueLoans.length})
+          </a>
+          <a 
+            className={`tab text-xs sm:text-sm ${activeTab === 'payments' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('payments')}
+          >
+            Loan Payments ({filteredLoanPayments.length})
+          </a>
+        </div>
       </div>
 
       {/* Active Loans Table */}
@@ -471,20 +473,20 @@ function LoanReports() {
           isLoading={isLoading}
           renderRow={(loan) => (
             <tr key={loan.loan_id} className="hover">
-              <td className="text-center">{loan.loan_ref_number}</td>
-              <td className="text-center">{loan.account_number}</td>
-              <td className="text-center">{loan.name}</td>
-              <td className="text-right">{formatCurrency(loan.principal)}</td>
-              <td className="text-center">{loan.interest_rate}%</td>
-              <td className="text-center">{loan.loan_term_approved} mos</td>
-              <td className="text-center">
+              <td className="text-center text-xs sm:text-sm">{loan.loan_ref_number}</td>
+              <td className="text-center text-xs sm:text-sm">{loan.account_number}</td>
+              <td className="text-center text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{loan.name}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(loan.principal)}</td>
+              <td className="text-center text-xs sm:text-sm">{loan.interest_rate}%</td>
+              <td className="text-center text-xs sm:text-sm">{loan.loan_term_approved} mos</td>
+              <td className="text-center text-xs sm:text-sm">
                 {loan.release_date ? new Date(loan.release_date).toLocaleDateString() : 'N/A'}
               </td>
-              <td className="text-center">
+              <td className="text-center text-xs sm:text-sm">
                 {loan.maturity_date ? new Date(loan.maturity_date).toLocaleDateString() : 'N/A'}
               </td>
-              <td className="text-right">{formatCurrency(loan.outstanding_balance)}</td>
-              <td className="text-center">
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(loan.outstanding_balance)}</td>
+              <td className="text-center text-xs sm:text-sm">
                 <span className="badge badge-success badge-sm">{loan.status}</span>
               </td>
             </tr>
@@ -513,17 +515,17 @@ function LoanReports() {
           isLoading={isLoading}
           renderRow={(sched) => (
             <tr key={sched.schedule_id} className="hover">
-              <td className="text-center">{sched.loan_ref_number}</td>
-              <td className="text-center">{sched.full_name}</td>
-              <td className="text-center">{sched.installment_no}</td>
-              <td className="text-center">
+              <td className="text-center text-xs sm:text-sm">{sched.loan_ref_number}</td>
+              <td className="text-center text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{sched.full_name}</td>
+              <td className="text-center text-xs sm:text-sm">{sched.installment_no}</td>
+              <td className="text-center text-xs sm:text-sm">
                 {sched.due_date ? new Date(sched.due_date).toLocaleDateString() : 'N/A'}
               </td>
-              <td className="text-right">{formatCurrency(sched.principal_due)}</td>
-              <td className="text-right">{formatCurrency(sched.interest_due)}</td>
-              <td className="text-right">{formatCurrency(sched.fee_due)}</td>
-              <td className="text-right">{formatCurrency(sched.total_due)}</td>
-              <td className="text-center">
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(sched.principal_due)}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(sched.interest_due)}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(sched.fee_due)}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(sched.total_due)}</td>
+              <td className="text-center text-xs sm:text-sm">
                 <span className={`badge badge-sm ${
                   sched.payment_status === 'PAID' ? 'badge-success' :
                   sched.payment_status === 'OVERDUE' ? 'badge-error' :
@@ -532,7 +534,7 @@ function LoanReports() {
                   {sched.payment_status}
                 </span>
               </td>
-              <td className="text-center">
+              <td className="text-center text-xs sm:text-sm">
                 {sched.paid_at ? new Date(sched.paid_at).toLocaleDateString() : '-'}
               </td>
             </tr>
@@ -558,15 +560,15 @@ function LoanReports() {
           isLoading={isLoading}
           renderRow={(loan) => (
             <tr key={loan.loan_id} className="hover bg-red-50">
-              <td className="text-center">{loan.loan_ref_number}</td>
-              <td className="text-center">{loan.account_number}</td>
-              <td className="text-center">{loan.name}</td>
-              <td className="text-right">{formatCurrency(loan.principal)}</td>
-              <td className="text-right">{formatCurrency(loan.outstanding_balance)}</td>
-              <td className="text-center">
+              <td className="text-center text-xs sm:text-sm">{loan.loan_ref_number}</td>
+              <td className="text-center text-xs sm:text-sm">{loan.account_number}</td>
+              <td className="text-center text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{loan.name}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(loan.principal)}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(loan.outstanding_balance)}</td>
+              <td className="text-center text-xs sm:text-sm">
                 {loan.maturity_date ? new Date(loan.maturity_date).toLocaleDateString() : 'N/A'}
               </td>
-              <td className="text-right text-red-600 font-semibold">
+              <td className="text-right text-xs sm:text-sm text-red-600 font-semibold">
                 {formatCurrency(loan.remaining_penalty_fees)}
               </td>
             </tr>
@@ -595,18 +597,18 @@ function LoanReports() {
           isLoading={isLoading}
           renderRow={(payment) => (
             <tr key={payment.payment_id} className="hover">
-              <td className="text-center">{payment.receipt_no}</td>
-              <td className="text-center">{payment.loan_ref_number}</td>
-              <td className="text-center">{payment.full_name}</td>
-              <td className="text-center">
+              <td className="text-center text-xs sm:text-sm">{payment.receipt_no}</td>
+              <td className="text-center text-xs sm:text-sm">{payment.loan_ref_number}</td>
+              <td className="text-center text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{payment.full_name}</td>
+              <td className="text-center text-xs sm:text-sm">
                 {payment.payment_date ? new Date(payment.payment_date).toLocaleDateString() : 'N/A'}
               </td>
-              <td className="text-right">{formatCurrency(payment.principal)}</td>
-              <td className="text-right">{formatCurrency(payment.interest)}</td>
-              <td className="text-right">{formatCurrency(payment.fees)}</td>
-              <td className="text-right font-semibold">{formatCurrency(payment.total_amount)}</td>
-              <td className="text-center">{payment.payment_method}</td>
-              <td className="text-center">
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(payment.principal)}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(payment.interest)}</td>
+              <td className="text-right text-xs sm:text-sm">{formatCurrency(payment.fees)}</td>
+              <td className="text-right text-xs sm:text-sm font-semibold">{formatCurrency(payment.total_amount)}</td>
+              <td className="text-center text-xs sm:text-sm">{payment.payment_method}</td>
+              <td className="text-center text-xs sm:text-sm">
                 <span className="badge badge-success badge-sm">{payment.status}</span>
               </td>
             </tr>

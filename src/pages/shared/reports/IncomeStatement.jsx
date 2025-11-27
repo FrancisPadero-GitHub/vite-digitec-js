@@ -177,12 +177,12 @@ function IncomeStatement() {
 
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="px-2 sm:px-4 lg:px-6 min-h-screen py-4">
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Income Statement</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Income Statement</h1>
         {!isLoading && (filteredDetails?.length > 0 || filteredSummary?.length > 0) && (
-          <div className="flex gap-2">
+          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
             <ExportIncomeStatementPDF
               incomeData={preparePDFData()}
               selectedYear={selectedYear}
@@ -215,22 +215,22 @@ function IncomeStatement() {
       />
 
       {/* Summary Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
         {isLoading ? (
-          <div className="col-span-full flex justify-center items-center py-12">
+          <div className="col-span-full flex justify-center items-center py-8 sm:py-12">
             <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : (
           <>
             {/* Total Income Card */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-4 sm:p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold uppercase tracking-wide">Total Income</h3>
-                <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide">Total Income</h3>
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-3xl font-bold">{formatCurrency(filteredTotalIncome || totalIncome)}</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(filteredTotalIncome || totalIncome)}</p>
             </div>
 
             {/* Individual Category Cards */}
@@ -253,17 +253,17 @@ function IncomeStatement() {
               };
 
               return (
-                <div key={index} className={`bg-gradient-to-br ${colors[index % colors.length]} rounded-lg shadow-lg p-6 text-white`}>
+                <div key={index} className={`bg-gradient-to-br ${colors[index % colors.length]} rounded-lg shadow-lg p-4 sm:p-6`}>
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold uppercase tracking-wide">
+                    <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide truncate">
                       {formatCategoryName(item.category)}
                     </h3>
-                    <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       {icons[item.category] || icons.service_fee}
                     </svg>
                   </div>
-                  <p className="text-3xl font-bold">{formatCurrency(item.total_amount)}</p>
-                  <p className="text-sm mt-2 opacity-80">
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(item.total_amount)}</p>
+                  <p className="text-xs sm:text-sm mt-2 opacity-80 truncate">
                     {(() => {
                       const total = filteredSummary.length ? filteredTotalIncome : totalIncome;
                       const percentage = total > 0 ? ((item.total_amount / total) * 100).toFixed(1) : '0.0';
@@ -278,10 +278,10 @@ function IncomeStatement() {
       </div>
 
       {/* Detailed Transactions Section */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Transaction Details</h2>
+      <div className="rounded-lg shadow-lg p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">Transaction Details</h2>
         {isLoading ? (
-          <div className="flex justify-center items-center py-12">
+          <div className="flex justify-center items-center py-8 sm:py-12">
             <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : (
@@ -305,12 +305,12 @@ function IncomeStatement() {
 
               return (
                 <tr key={item.id || idx}>
-                  <td className="text-center">{accountNo}</td>
-                  <td className="text-center">{memberName}</td>
-                  <td className="text-center">{loanRef}</td>
-                  <td className="text-center">{category}</td>
-                  <td className="text-center">{date}</td>
-                  <td className="text-center">{amount}</td>
+                  <td className="text-center text-xs sm:text-sm">{accountNo}</td>
+                  <td className="text-center text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">{memberName}</td>
+                  <td className="text-center text-xs sm:text-sm">{loanRef}</td>
+                  <td className="text-center text-xs sm:text-sm">{category}</td>
+                  <td className="text-center text-xs sm:text-sm">{date}</td>
+                  <td className="text-center text-xs sm:text-sm">{amount}</td>
                 </tr>
               )
             }}
