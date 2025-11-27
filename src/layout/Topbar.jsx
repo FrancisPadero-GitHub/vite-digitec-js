@@ -21,9 +21,9 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-// import SettingsIcon from "@mui/icons-material/Settings";
+import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
-// import HelpIcon from "@mui/icons-material/Help";
+import HelpIcon from "@mui/icons-material/Help";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 // components
@@ -144,10 +144,13 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
           <MenuOutlinedIcon className="w-6 h-6" />
         </label>
 
-        <div className="flex justify-center ml-6">
+        {/* <div className="flex justify-center ml-6">
           <span className="mr-2">Page : </span>
           <span className="text-warning" title="Developmental, will be removed in the future">{getRoleLabel(role) || "Role Not Found"}</span>
-        </div>
+        </div> */}
+        <span className="text-primary font-bold text-sm sm:text-base md:text-lg ml-2">
+          DigiTEC – ECTEC Multi-Purpose Cooperative Portal
+        </span>
       </div>
 
       {/* DATE, NOTIFS, PROFILE */}
@@ -508,7 +511,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                   </button>
                 </li>
               )}
-              {/* SETTINGS  AND HELP COMMENT OUT SA RAW
+              SETTINGS  AND HELP COMMENT OUT SA RAW
               <li>
                 <button
                   title="Settings button"
@@ -532,7 +535,7 @@ const Topbar = ({ role }) => {      // expecting an argument in layout as member
                   <HelpIcon className="text-base-content/60" fontSize="small" />
                   Help
                 </button>
-              </li> */}
+              </li>
               <li>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-base-content">
