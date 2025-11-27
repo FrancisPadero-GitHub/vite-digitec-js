@@ -170,9 +170,9 @@ const Topbar = ({ role, onToggleSidebar }) => {
         </div>
 
         {/* DATE, NOTIFS, PROFILE */}
-        <div className="flex items-center gap-4 text-sm select-none">
+        <div className="flex items-center text-sm select-none">
 
-        <div className="hidden lg:block">{dateTimeStr}</div>
+        <div className="hidden lg:block mr-5">{dateTimeStr}</div>
 
         {/* NOTIFICATIONS */}
         <div ref={notifRef} className="relative">
@@ -180,7 +180,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
             className="indicator relative"
             onClick={() => setShowDropdown((prev) => !prev)}
           >
-            <NotificationsIcon className="w-6 h-6 cursor-pointer" />
+            <NotificationsIcon className="cursor-pointer" style={{ width: "32px", height: "32px" }} />
             {notifications && notifications?.length > 0 && (
               <span className="indicator-item badge badge-accent">
                 {notifications.filter((n) => !n.is_read).length}
