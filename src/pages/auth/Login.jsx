@@ -28,7 +28,6 @@ const Login = () => {
     setError,
     clearErrors,
     watch,
-    setValue,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
@@ -42,7 +41,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleCancel = () => {
-    navigate(-1);
+    navigate("/");
   };
 
   const redirect = () => {
@@ -185,9 +184,9 @@ const Login = () => {
                     type="checkbox"
                     {...register("terms", {
                       required: "You must agree to the terms and conditions",
+                      onChange: () => clearErrors("root"),
                     })}
                     className="checkbox checkbox-xs mt-0.5 flex-shrink-0"
-                    onChange={(e) => setValue("terms", e.target.checked)}
                   />
                   <span className="text-xs leading-relaxed">
                     I hereby acknowledge and agree to the{" "}
