@@ -20,7 +20,6 @@ const Login = () => {
   // hooks
   const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // react hook form
   const {
@@ -29,6 +28,7 @@ const Login = () => {
     setError,
     clearErrors,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
@@ -187,7 +187,7 @@ const Login = () => {
                       required: "You must agree to the terms and conditions",
                     })}
                     className="checkbox checkbox-xs mt-0.5 flex-shrink-0"
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    onChange={(e) => setValue("terms", e.target.checked)}
                   />
                   <span className="text-xs leading-relaxed">
                     I hereby acknowledge and agree to the{" "}
