@@ -10,6 +10,7 @@ import { openNotificationModal, closeNotificationModal, setSelectedNotification,
 // fetch hooks
 import { useMembers } from "../backend/hooks/shared/useFetchMembers";
 import { useFetchNotifications } from "../backend/hooks/shared/useFetchNotifications";
+import { useMemberRole } from "../backend/context/useMemberRole";
 
 // mutation hooks
 import { useMarkAsRead } from "../backend/hooks/shared/useMarkAsRead";
@@ -35,6 +36,8 @@ import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for n
 import placeHolderAvatar from '../assets/placeholder-avatar.png';
 
 const Topbar = ({ role, onToggleSidebar }) => {
+  const {memberRole} = useMemberRole();
+  console.log(memberRole)
   const navigate = useNavigate();
   // to fetch member name for the logged in id
   const { user } = useAuth();
@@ -150,7 +153,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
         </button>
 
         {/* LOGO */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 lg:ml-[5vh]">
           <div className="flex-shrink-0"></div>
             <img
               src={logo}
@@ -161,7 +164,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
 
           <div className="leading-tight">
             {/* short label on very small screens, full title on sm+ */}
-            <span className="font-bold tracking-wide text-gray-250 text-sm sm:text-base md:text-xl lg:text-xl block truncate">
+            <span className="font-bold tracking-wide text-gray-250 text-md sm:text-xl md:text-xl lg:text-xl block truncate">
               <span className="inline md:hidden">DigiTEC – ECTEC</span>
               <span className="hidden md:inline">DigiTEC – ECTEC Multi-Purpose Cooperative Portal</span>
             </span>

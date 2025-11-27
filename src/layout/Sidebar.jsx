@@ -168,7 +168,7 @@ const sidebarConfig = {
     {
       section: "System Settings",
       items: [
-        { label: "Settings", icon: SettingsIcon, path: "/admin/system-settings" },
+        { label: "Settings", icon: SettingsIcon, path: "/admin/settings" },
       ],
     },
   ],

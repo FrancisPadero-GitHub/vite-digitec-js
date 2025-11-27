@@ -34,6 +34,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import AdminCreateUserForm from "./pages/admin/AdminCreateUserForm";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import AdminHelp from "./pages/admin/AdminHelp";
 
 // TREASURER PAGES
 import CoopShareCapital from "./pages/treasurer/CoopShareCapital";
@@ -45,6 +46,7 @@ import CoopLoansPayments from "./pages/treasurer/CoopLoansPayments";
 import CoopLoanPaymentSchedules from "./pages/treasurer/CoopLoanPaymentSchedules";
 import LoanProducts from "./pages/treasurer/LoanProducts";
 import TreasurerSettings from "./pages/treasurer/Settings";
+import TreasurerHelp from "./pages/treasurer/TreasurerHelp";
 
 // BOD Pages
 import LoanApplicationsV2 from "./pages/board/LoanApplicationsV2";
@@ -52,6 +54,7 @@ import LoanAccounts from "./pages/board/LoanAccounts";
 import LoanAccountDetails from "./pages/board/LoanAccountDetails";
 import BoardSettings from "./pages/board/Settings";
 import Announcement from "./pages/board/Announcement";
+import BoardHelp from "./pages/board/BoardHelp";
 
 // REGULAR AND ASSOCIATE PAGES
 import MemberDashboardV2 from "./pages/members/MemberDashboardV2";
@@ -105,7 +108,8 @@ function AppRoutes() {
   const adminRoutes = [
     { index: true, element: <UserManagement /> },
     { path: "add-member", element: <AddMember /> },
-    { path: "system-settings", element: <SystemSettings /> },
+    { path: "settings", element: <SystemSettings /> },
+    { path: "help", element: <AdminHelp /> },
     { path: "activity-logs", element: <ActivityLogs /> },
     { path: "create-user-login", element: <AdminCreateUserForm /> },
   ];
@@ -116,6 +120,7 @@ function AppRoutes() {
     { path: "coop-loans/loan-applications", element: <LoanApplicationsV2 /> },
     { path: "loan-account/details/:loan_id", element: <LoanAccountDetails /> },
     { path: "settings", element: <BoardSettings /> },
+    { path: "help", element: <BoardHelp /> },
     { path: "announcements", element: <Announcement /> },
   ];
 
@@ -126,6 +131,7 @@ function AppRoutes() {
     { path: "coop-loans/releases", element: <CoopLoansReleases /> },
     { path: "settings/loan-products", element: <LoanProducts /> },
     { path: "settings", element: <TreasurerSettings /> },
+    { path: "help", element: <TreasurerHelp /> },
   ];
 
   const regularMemberRoutes = [

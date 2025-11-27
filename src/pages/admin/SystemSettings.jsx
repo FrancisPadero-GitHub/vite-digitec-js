@@ -1,8 +1,8 @@
 const SystemSettings = () => {
   return (
-    <>
-      <h1 className="text-2xl font-bold">Settings</h1>
-    </>
+    <div>
+      <h1 className="text-2xl">To be added system settings in the future according to the president</h1>
+    </div>
   )
 };
 
