@@ -3,7 +3,7 @@ import { useForm, Controller, useWatch } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useNavigate } from "react-router-dom";
 
 // fetch hooks
@@ -408,13 +408,13 @@ function ClubFunds() {
           />
           <div className="flex justify-between gap-4">
             <button
-              className="btn btn-primary"
+              className="btn btn-neutral whitespace-nowrap"
               title="Manage Monthly Dues"
               aria-label="Manage Monthly Dues"
               type="button"
               onClick={() => navigate(`/${memberRole}/monthly-dues`)}
             >
-              <ExitToAppIcon />
+              <CalendarMonthIcon />
                 Monthly Dues
             </button>
             {memberRole !== "board" && (

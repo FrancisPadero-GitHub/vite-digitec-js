@@ -195,12 +195,13 @@ function MonthlyDues() {
   });
 
   return (
+    <div className="m-3">
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Monthly Dues</h1>
         <button
-          className="btn btn-primary"
+          className="btn btn-neutral whitespace-nowrap"
           onClick={() => navigate(`/${memberRole}/club-funds`)}
         >
           Back
@@ -430,6 +431,7 @@ function MonthlyDues() {
         </div>
       </div>
     </div>
+  </div>
   )
 }
 
