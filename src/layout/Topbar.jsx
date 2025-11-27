@@ -10,7 +10,6 @@ import { openNotificationModal, closeNotificationModal, setSelectedNotification,
 // fetch hooks
 import { useMembers } from "../backend/hooks/shared/useFetchMembers";
 import { useFetchNotifications } from "../backend/hooks/shared/useFetchNotifications";
-import { useMemberRole } from "../backend/context/useMemberRole";
 
 // mutation hooks
 import { useMarkAsRead } from "../backend/hooks/shared/useMarkAsRead";
@@ -36,8 +35,6 @@ import { getRoleLabel, getRolePath } from "../constants/Roles"; // Remains for n
 import placeHolderAvatar from '../assets/placeholder-avatar.png';
 
 const Topbar = ({ role, onToggleSidebar }) => {
-  const {memberRole} = useMemberRole();
-  console.log(memberRole)
   const navigate = useNavigate();
   // to fetch member name for the logged in id
   const { user } = useAuth();

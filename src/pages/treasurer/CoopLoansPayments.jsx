@@ -663,7 +663,7 @@ function CoopLoansPayments() {
             return (
               <tr
                 key={id}
-                onDoubleClick={() => openViewModal(row)}
+                onClick={() => openViewModal(row)}
                 className="transition-colors cursor-pointer hover:bg-base-200/70"
               >
                 {/* Ref no */}

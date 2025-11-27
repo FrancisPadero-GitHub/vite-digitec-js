@@ -527,7 +527,7 @@ function LoanApplications() {
               <tr
                 key={`${TABLE_PREFIX}${row.application_id}`}
                 className="cursor-pointer hover:bg-base-200/50"
-                onDoubleClick={() => openEditModal(row)}
+                onClick={() => openEditModal(row)}
               >
                 {/* Application ID */}
                 <td className="text-center px-2 py-2 text-xs font-medium">

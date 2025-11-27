@@ -1,6 +1,7 @@
 import { useState, Fragment } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import { Toaster, toast } from "react-hot-toast";
 
 // mutation hooks
 import { useAddMember } from "../../backend/hooks/admin/useAddMembers";
@@ -70,6 +71,15 @@ function AddMember (){
   const handleAvatarUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file");
+      return;
+    }
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      alert("Image must be smaller than 2MB");
+      return;
+    }
     setPreviewAvatar(URL.createObjectURL(file));
     setAvatarFile(file);
   };
@@ -98,7 +108,10 @@ function AddMember (){
     };
 
     add_member(normalized, {
-      onSuccess: () => navigate("/admin"),
+      onSuccess: () => {
+        toast.success("Member registered successfully")
+        setTimeout(() => navigate("/admin"), 1500);
+        },
       onError: (err) => console.error("Failed to submit:", err.message),
     });
   };
@@ -125,7 +138,7 @@ function AddMember (){
     { label: "Barangay", name: "barangay", type: "text", required: true, group: "Address", autoComplete: "address-line2" },
     { label: "City / Municipality", name: "city_municipality", type: "text", required: true, group: "Address", autoComplete: "address-level2" },
     { label: "Province", name: "province", type: "text", required: true, group: "Address", autoComplete: "address-level1" },
-    { label: "ZIP Code", name: "zip_code", type: "text", inputMode: "numeric", required: true, pattern: "^[0-9]{4}$", autoComplete: "postal-code" },
+    { label: "ZIP Code", name: "zip_code", type: "text", inputMode: "numeric", required: true, pattern: /^[0-9]{4}$/, maxLength: 4, autoComplete: "postal-code" },
 
     // Dependents grouped together
     { label: "Spouse Name", name: "spouse_name", type: "text", group: "Dependents", autoComplete: "off" },
@@ -134,7 +147,7 @@ function AddMember (){
 
   // Employment fields
   const employmentFields = [
-    { label: "Name of Office/Line of Business", name: "office_name", type: "text", required: true, autoComplete: "organization" },
+    { label: "Name of Office / Line of Business", name: "office_name", type: "text", required: true, autoComplete: "organization" },
     { label: "Title & Position", name: "title_and_position", type: "text", required: true, autoComplete: "organization-title" },
     { label: "Office Address", name: "office_address", type: "text", required: false, autoComplete: "street-address" },
     { label: "Office Contact Number", name: "office_contact_number", type: "text", required: false, pattern: /^[0-9+()\-.\s]+$/, autoComplete: "tel" }
@@ -164,7 +177,7 @@ function AddMember (){
     { label: "Joined Date", name: "joined_date", type: "date", required: false, group: "Account Info" },
 
     // Membership Fee
-    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: false },
+    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: true },
     {
       label: "Fee Status", name: "membership_fee_status", type: "select", autoComplete: "off",
       options: [
@@ -172,7 +185,7 @@ function AddMember (){
         { label: "Unpaid", value: "Unpaid" },
         { label: "Partial", value: "Partial" },
       ],
-      group: "Membership Fee", required: false
+      group: "Membership Fee", required: true
     },
 
     {
@@ -182,14 +195,14 @@ function AddMember (){
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Membership Fee", required: false
+      group: "Membership Fee", required: true
     },
 
     { label: "Payment Date", name: "membership_payment_date", type: "date", group: "Membership Fee", required: false },
     { label: "Remarks", name: "membership_remarks", type: "text", group: "Membership Fee", required: false },
 
     // Initial Share Capital
-    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: false },
+    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: true },
     {
       label: "Payment Method", name: "share_capital_payment_method", type: "select", autoComplete: "off",
       options: [
@@ -197,7 +210,7 @@ function AddMember (){
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Share Capital", required: false
+      group: "Share Capital", required: true
     },
 
     { label: "Payment Date", name: "share_capital_payment_date", autoComplete: "off", type: "date", group: "Share Capital", required: false },
@@ -206,6 +219,7 @@ function AddMember (){
 
   return (
     <div className="min-h-screen py-5">
+      <Toaster position="bottom-left" />
       <div className="max-w-4xl mx-auto bg-base-100 shadow-lg rounded-xl p-6 space-y-6">
         <header>
           <h1 className="text-3xl font-bold">Register New Member</h1>

@@ -22,6 +22,8 @@ import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 // constants
 import placeHolderAvatar from "../../assets/placeholder-avatar.png"
 
+// This page allows admin to create a new user login for a member
+
 export default function AdminCreateUserForm() {
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
@@ -43,21 +45,22 @@ export default function AdminCreateUserForm() {
         );
 
 
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset, watch, formState: { errors } } = useForm({
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
       accountNo: "",
     },
   });
 
   const onSubmit = async (values) => {
-    if (values.password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+    // Ensure passwords match (form validation covers this too)
+    if (values.password !== values.confirmPassword) {
+      toast.error("Passwords do not match.");
       return;
     }
 
-    // console.log(values)
     createUser.mutate(
       {
         email: values.email,
@@ -159,7 +162,10 @@ export default function AdminCreateUserForm() {
                   <Controller
                     name="email"
                     control={control}
-                    rules={{ required: true }}
+                    rules={{
+                      required: 'Email is required',
+                      pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email address' }
+                    }}
                     render={({ field }) => (
                       <input
                         {...field}
@@ -167,12 +173,12 @@ export default function AdminCreateUserForm() {
                         type="email"
                         placeholder="user@example.com"
                         autoComplete="email"
-                        className="input input-bordered w-full pl-10"
-                        required
+                        className={`input input-bordered w-full pl-10 ${errors.email ? 'input-error' : ''}`}
                       />
                     )}
                   />
                 </div>
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
               </div>
 
               {/* Password */}
@@ -185,7 +191,10 @@ export default function AdminCreateUserForm() {
                   <Controller
                     name="password"
                     control={control}
-                    rules={{ required: true, minLength: 6 }}
+                    rules={{
+                      required: 'Password is required',
+                      minLength: { value: 6, message: 'Password must be at least 6 characters' }
+                    }}
                     render={({ field }) => (
                       <input
                         {...field}
@@ -193,7 +202,7 @@ export default function AdminCreateUserForm() {
                         type={showPassword ? "text" : "password"}
                         placeholder="At least 6 characters"
                         autoComplete="new-password"
-                        className="input input-bordered w-full pl-10 pr-10"
+                        className={`input input-bordered w-full pl-10 pr-10 ${errors.password ? 'input-error' : ''}`}
                       />
                     )}
                   />
@@ -206,6 +215,37 @@ export default function AdminCreateUserForm() {
                     {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
                   </button>
                 </div>
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+
+              </div>
+
+              {/* Confirm Password */}
+              <div className="form-control">
+                <label className="label" htmlFor="confirmPassword">
+                  <span className="label-text">Confirm Temporary Password</span>
+                </label>
+                <div className="relative">
+                  <LockOutlinedIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60" />
+                  <Controller
+                    name="confirmPassword"
+                    control={control}
+                    rules={{
+                      required: 'Please confirm the password',
+                      validate: (value) => value === watch('password') || 'Passwords do not match'
+                    }}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        id="confirmPassword"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Re-type temporary password"
+                        autoComplete="new-password"
+                        className={`input input-bordered w-full pl-10 pr-10 ${errors.confirmPassword ? 'input-error' : ''}`}
+                      />
+                    )}
+                  />
+                </div>
+                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
                 <label className="label">
                   <span className="label-text-alt text-base-content/60">User can change this after first login.</span>
                 </label>

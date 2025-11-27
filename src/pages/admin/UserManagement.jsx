@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo, useTransition } from "react";
+import { Toaster, toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
 
 // fetch hooks
@@ -8,7 +9,7 @@ import { useMembers } from "../../backend/hooks/shared/useFetchMembers.js";
 import { useUpdateMember } from "../../backend/hooks/admin/useEditMember.js";
 
 // components
-import MainDataTable from "../treasurer/components/MainDataTable.jsx";
+import DataTableV2 from "../shared/components/DataTableV2.jsx";
 import FilterToolbar from "../shared/components/FilterToolbar.jsx";
 import ViewMemberModal from "./modals/ViewMemberModal.jsx";
 
@@ -17,6 +18,8 @@ import { ROLE_COLORS } from "../../constants/Color.js";
 import getYearsMonthsDaysDifference from "../../constants/DateCalculation.js";
 import defaultAvatar from '../../assets/placeholder-avatar.png';
 
+// utils
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 
 
 // JSX
@@ -26,45 +29,86 @@ function UserManagement() {
   // custom states
   const { mutate: updateMemberRole, isPending } = useUpdateMember();
 
-  // fetch all members with pagination
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  const { data: members_data, isLoading, isError, error } = useMembers({ page, limit });
+  // fetch all members
+  const { data: members_data, isLoading, isError, error } = useMembers({});
   const membersRaw = members_data?.data || [];
-  const total = members_data?.count || 0;
 
   // filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const TABLE_PREFIX = "UID";
-  // filters members
-  const members = membersRaw
-    .map((row) => {
-      const displayName = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
-      return {
-        ...row,
-        generatedId: `${TABLE_PREFIX}_${row.member_id}`,
-        displayName,
-        searchKey: `${displayName} ${row.email ?? ""}`.toLowerCase(),
-        role: row.account_role,
-        status: row.account_status,
-        avatar: row.avatar_url
-      };
-    })
-    .filter((row) => {
-      const doNotShowRoles = ["admin"];
-      if (doNotShowRoles.includes(row.account_role)) return false;
+  /**
+   * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
+   * it needs to be paired with useMemo on the filtered data
+   */
+  const [isFilterPending, startTransition] = useTransition();
 
-      const matchesSearch =
-        searchTerm === "" ||
-        row.generatedId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.searchKey.includes(searchTerm.toLowerCase());
-      const matchesRole = roleFilter === "" || row.role === roleFilter;
-      const matchesStatus = statusFilter === "" || row.status === statusFilter;
-      return matchesSearch && matchesRole && matchesStatus;
+  // Update filter handlers to use startTransition
+  const handleSearchChange = (value) => {
+    startTransition(() => {
+      setSearchTerm(value);
     });
+  };
+  const handleRoleChange = (value) => {
+    startTransition(() => {
+      setRoleFilter(value);
+    });
+  };
+  const handleStatusChange = (value) => {
+    startTransition(() => {
+      setStatusFilter(value);
+    });
+  };
+
+  // Reduces the amount of filtering per change so its good delay
+  const debouncedSearch = useDebounce(searchTerm, 250);
+
+  const TABLE_PREFIX = "UID";
+  // filters members using useMemo for performance
+  const members = useMemo(() => {
+    return membersRaw
+      .map((row) => {
+        const displayName = `${row.f_name ?? ""} ${row.l_name ?? ""}`.trim();
+        return {
+          ...row,
+          displayName,
+          searchKey: `${displayName} ${row.email ?? ""}`.toLowerCase(),
+          role: row.account_role,
+          status: row.account_status,
+          avatar: row.avatar_url
+        };
+      })
+      .filter((row) => {
+        const doNotShowRoles = ["admin"];
+        if (doNotShowRoles.includes(row.account_role)) return false;
+
+        const matchesSearch =
+          debouncedSearch === "" ||
+          row.generatedId.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          row.searchKey.includes(debouncedSearch.toLowerCase()) ||
+          row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase());
+        const matchesRole = roleFilter === "" || row.role === roleFilter;
+        const matchesStatus = statusFilter === "" || row.status === statusFilter;
+        return matchesSearch && matchesRole && matchesStatus;
+      });
+  }, [membersRaw, debouncedSearch, roleFilter, statusFilter]);
+
+  // for the subtext of data table
+  const activeFiltersText = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+    roleFilter ? `Role: ${roleFilter}` : null,
+    statusFilter ? `Status: ${statusFilter}` : null,
+  ]
+    .filter(Boolean)
+    .join(" - ") || "Showing all members";
+
+  // clear filters button
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("");
+    setStatusFilter("");
+  };
 
 
   // modal state
@@ -89,6 +133,10 @@ function UserManagement() {
       member_id: selectedMember.member_id,
       account_role: newRole,
       account_status: accStatus,
+    },{
+      onSuccess: () => {
+        toast.success("Member updated successfully");
+      }
     });
     setEditModalOpen(false);
   };
@@ -154,64 +202,63 @@ function UserManagement() {
         { label: "Account Status", value: selectedMember?.account_status || "N/A" },
         { label: "Application Date", value: selectedMember?.application_date || "N/A" },
         { label: "Joined Date", value: selectedMember?.joined_date || "N/A" },
+        { label: "Login Credentials", value: selectedMember?.login_id ? "Yes" : "No" },
       ],
     },
   ];
 
   return (
-    <div>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold">Members and Role Management</h1>
-          <div className="flex flex-row items-center gap-3">
-            <Link className="btn btn-neutral whitespace-nowrap" to="add-member">
-              + Create User
-            </Link>
-          </div>
+    <div className="m-3">
+      <Toaster position="bottom-left"/>
+      <div className="space-y-4">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-5">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isFilterPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Roles",
+                value: roleFilter,
+                onChange: handleRoleChange,
+                options: [
+                  { label: "Treasurer", value: "treasurer" },
+                  { label: "Board of Director", value: "board" },
+                  { label: "Regular Member", value: "regular-member" },
+                  { label: "Associate Member", value: "associate-member" },
+                ],
+              },
+              {
+                label: "All Status",
+                value: statusFilter,
+                onChange: handleStatusChange,
+                options: [
+                  { label: "Active", value: "Active" },
+                  { label: "Inactive", value: "Inactive" },
+                  { label: "Revoked", value: "Revoked" },
+                ],
+              },
+            ]}
+          />
+          <Link className="btn btn-neutral whitespace-nowrap" to="add-member">
+            + Create User
+          </Link>
         </div>
 
-        <FilterToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          dropdowns={[
-            {
-              label: "Role",
-              value: roleFilter,
-              onChange: setRoleFilter,
-              options: [
-                { label: "Admin", value: "admin" },
-                { label: "Treasurer", value: "treasurer" },
-                { label: "Board of Director", value: "board" },
-                { label: "Regular Member", value: "regular-member" },
-                { label: "Associate Member", value: "associate-member" },
-              ],
-            },
-            {
-              label: "Status",
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: "Active", value: "Active" },
-                { label: "Inactive", value: "Inactive" },
-                { label: "Revoked", value: "Revoked" },
-              ],
-            },
-          ]}
-        />
-
-        <MainDataTable
-          headers={["Account No.", "User", "Role", "Joined date", "Tenure", "Account status"]}
+        <DataTableV2
+          title={"Members and Role Management"}
+          filterActive={activeFiltersText !== "Showing all members"}
+          subtext={activeFiltersText}
+          showLinkPath={false}
+          headers={["Account No.", "User", "Role", "Joined date", "Tenure", "Account status", "Login Credentials"]}
           data={members}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          page={page}
-          limit={limit}
-          total={total}
-          setPage={setPage}
           renderRow={(row) => {
-
-            // Calculte the years months and days since joined
+            
+            // Calculate the years months and days since joined
             const { years, months, days } = row.joined_date
               ? getYearsMonthsDaysDifference(row.joined_date)
               : { years: 0, months: 0, days: 0 };
@@ -219,8 +266,9 @@ function UserManagement() {
             return (
               <tr
                 key={`${TABLE_PREFIX}${row.member_id}`}
+                className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openModal(row)}
-                className="cursor-pointer hover:bg-base-200/70 transition-colors"
+                
               >
                 {/* Account No. */}
                 <td className="px-4 py-2 text-center text-info font-medium">
@@ -296,6 +344,14 @@ function UserManagement() {
                     </span>
                   ) : (
                     <span className="badge font-semibold badge-error">Not Provided</span>
+                  )}
+                </td>
+                {/* Login Credentials */}
+                <td className="px-4 py-2 text-center">
+                  {row.login_id ? (
+                    <span className="badge badge-success">Yes</span>
+                  ) : (
+                    <span className="badge badge-error">No</span>
                   )}
                 </td>
               </tr>

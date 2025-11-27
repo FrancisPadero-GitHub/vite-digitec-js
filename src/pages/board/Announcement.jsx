@@ -158,7 +158,7 @@ function Announcement() {
                 announcements?.map((announcement) => (
                   <div
                     key={announcement.id}
-                    onDoubleClick={() => handleDoubleClick(announcement)}
+                    onClick={() => handleDoubleClick(announcement)}
                     className="border-b border-base-300 p-4 hover:bg-base-200 cursor-pointer transition-colors duration-150"
                   >
                     <div className="flex items-start gap-4">

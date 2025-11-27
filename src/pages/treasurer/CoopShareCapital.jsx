@@ -417,7 +417,7 @@ function CoopShareCapital() {
             const isDisabled = !row?.full_name; // condition (you can adjust logic)
             return (
               <tr key={id}
-                onDoubleClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
+                onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
                 className={`text-center ${isDisabled ?
                   "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
               >

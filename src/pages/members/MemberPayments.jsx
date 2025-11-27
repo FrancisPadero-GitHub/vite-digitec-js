@@ -184,7 +184,7 @@ function MemberPayments() {
             const paymentMethod = row?.payment_method;
 
             return (
-              <tr key={id} onDoubleClick={() => openViewModal(row)} className="text-center hover:bg-base-200/50">
+              <tr key={id} onClick={() => openViewModal(row)} className="text-center hover:bg-base-200/50">
                 {/* Payment Ref. */}
                 <td className="text-center font-medium text-xs">
                   {TABLE_PREFIX}{id}

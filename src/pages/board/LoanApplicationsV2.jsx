@@ -615,7 +615,7 @@ function LoanApplicationsV2() {
             return (
               <tr key={id}
                 className="cursor-pointer hover:bg-base-200/50 text-center"
-                onDoubleClick={() => openEditModal(row)}
+                onClick={() => openEditModal(row)}
               >
 
                 {/* Account No. */}
