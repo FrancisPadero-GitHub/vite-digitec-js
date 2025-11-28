@@ -81,32 +81,26 @@ const Login = () => {
   const isFormValid = watchedFields[0] && watchedFields[1] && watchedFields[2] && isValid;
 
   return (
-    <div className="min-h-screen font-inter bg-base-200">
+    <div className="m-3in-h-screen bg-cover bg-center" style={{ backgroundImage: `url(${auth_bg})` }}>
       <Toaster position="bottom-right" />
       <section className="min-h-screen flex justify-center items-center px-4 py-8">
-        <div className="card w-full max-w-[900px] min-h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden flex flex-col lg:flex-row">
+        <div className="card w-full max-w-[550px] min-w-[400px] min-h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden lg:flex-row">
           {/* Image Section - Hidden on mobile, visible on lg and up */}
-          <figure className="hidden lg:block lg:w-1/2 h-auto">
-            <img 
-              src={auth_bg}
-              alt="Login background illustration"
-              className="w-full h-full object-cover"
-            />
-          </figure>
+
 
           {/* Form Section */}
-          <div className="card-body w-full lg:w-1/2 justify-center p-6 md:p-8">
+          <div className="card-body w-full lg:w-1/2 justify-center sm:p-5 md:p-8">
             {/* Logo */}
             <img 
               src={digitec_logo} 
               alt="Fraternity Logo" 
-              className="w-28 h-24 mx-auto mb-4" 
+              className="w-28 h-28 mx-auto" 
             />
             <h2 className="text-2xl md:text-3xl font-bold text-center text-green-800 mb-4">
               Welcome to DigiTEC!
             </h2>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
               {/* Email Field */}
               <div>
                 <div className="relative w-full">
@@ -131,10 +125,21 @@ const Login = () => {
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                  <p className="text-red-500 text-sm mt-2 ml-2">{errors.email.message}</p>
                 )}
               </div>
-
+              <div className="flex justify-end" >
+                {/* Forgot Password */}
+                <button
+                  title="Recover your account here"
+                  type="button"
+                  onClick={redirect}
+                  className="link text-gray-500 hover:text-gray-700 text-xs sm:text-right whitespace-nowrap"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              
               {/* Password Field */}
               <div>
                 <div className="relative w-full">
@@ -167,17 +172,17 @@ const Login = () => {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                  <p className="text-red-500 text-sm mt-2 ml-2">{errors.password.message}</p>
                 )}
               </div>
 
               {/* Server error */}
               {errors.root && (
-                <p className="text-red-600 text-center text-sm">{errors.root.message}</p>
+                <p className="text-red-500 text-center text-sm">{errors.root.message}</p>
               )}
 
               {/* Terms and Forgot Password Section */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs mt-2">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-start gap-3 text-xs mt-2">
                 {/* Terms Checkbox */}
                 <label className="flex items-start gap-2 flex-1">
                   <input
@@ -207,22 +212,11 @@ const Login = () => {
                     </button>
                   </span>
                 </label>
-
-                {/* Forgot Password */}
-                <button
-                  title="Forgot password"
-                  type="button"
-                  onClick={redirect}
-                  className="link text-gray-500 hover:text-gray-700 text-xs sm:text-right whitespace-nowrap"
-                >
-                  Forgot Password?
-                </button>
               </div>
-
-              {/* Checkbox error */}
-              {errors.terms && (
-                <p className="text-red-500 text-xs mt-1">{errors.terms.message}</p>
-              )}
+                {/* Checkbox error */}
+                {errors.terms && (
+                  <span className="text-red-500 text-sm ml-2">{errors.terms.message}</span>
+                )}
 
               {/* Buttons */}
               <div className="space-y-3 mt-4">
