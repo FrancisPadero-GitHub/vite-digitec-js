@@ -4,7 +4,6 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 // Insert function
 const insertClubfunds = async (formData) => {
-
   const {
     account_number = null,
     amount = 0,
@@ -30,10 +29,12 @@ const insertClubfunds = async (formData) => {
   const { data, error } = await supabase
     .from("club_funds_contributions")
     .insert(payload)
-    .select(`
+    .select(
+      `
       *,
       members!club_funds_contributions_account_number_fkey (f_name, l_name)
-    `)
+    `
+    )
     .single();
 
   if (error) {
@@ -43,7 +44,9 @@ const insertClubfunds = async (formData) => {
   const memberData = data.members;
   return {
     ...data,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : "N/A",
   };
 };
 
@@ -59,7 +62,12 @@ export const useAddClubFunds = () => {
 
       queryClient.invalidateQueries({
         queryKey: ["view_club_fund_contributions"],
-        exact: false
+        exact: false,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["monthly_dues_records"],
+        exact: false,
       });
 
       queryClient.invalidateQueries({

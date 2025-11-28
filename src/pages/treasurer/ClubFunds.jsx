@@ -20,6 +20,7 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
+import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
 
 // constants
 import { CLUB_CATEGORY_COLORS, PAYMENT_METHOD_COLORS, } from "../../constants/Color";
@@ -268,13 +269,34 @@ function ClubFunds() {
     setModalType(null);
   };
 
-  const handleDelete = (contribution_id) => {
-    mutateDelete({
-      table: "club_funds_contributions",
-      column_name: "contribution_id",
-      id: contribution_id,
-    });
-    closeModal();
+  // Delete confirmation modal state & handlers
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  const openDeleteModal = (contribution_id) => {
+    setDeleteTargetId(contribution_id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteTargetId(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      mutateDelete({
+        table: "club_funds_contributions",
+        column_name: "contribution_id",
+        id: deleteTargetId,
+      }, {
+        onSuccess: () => {
+          toast.success("Transaction deleted successfully");
+        }
+      });
+      closeDeleteModal();
+      closeModal();
+    }
   };
 
   const onSubmit = (data) => {
@@ -537,7 +559,7 @@ function ClubFunds() {
         onSubmit={handleSubmit(onSubmit)}
         isPending={isAddPending || isEditPending}
         status={isAddPending || isEditPending || !isDirty}
-        deleteAction={() => handleDelete(getValues("contribution_id"))}
+        deleteAction={() => openDeleteModal(getValues("contribution_id"))}
       >
         {/* Member Combobox with Controller */}
         <div className="form-control w-full">
@@ -573,7 +595,7 @@ function ClubFunds() {
                           <div className="avatar">
                             <div className="mask mask-circle w-10 h-10">
                               <img
-                                src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
+                                src={member.avatar_url || placeHolderAvatar}
                                 alt={`${member.f_name} ${member.l_name}`}
                               />
                             </div>
@@ -701,6 +723,17 @@ function ClubFunds() {
           </div>
         )}
       </FormModal>
+
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={closeDeleteModal}
+          onConfirm={confirmDelete}
+          title="Delete Contribution"
+          message="Are you sure you want to delete this contribution? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          isLoading={false}
+        />
     </div>
   );
 }

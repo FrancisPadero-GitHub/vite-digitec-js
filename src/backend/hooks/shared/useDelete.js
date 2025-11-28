@@ -12,7 +12,7 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
 
 const markAsDelete = async ({ table, column_name, id }) => {
   if (!id) throw new Error("Invalid ID provided for deletion");
-  
+
   const { data, error } = await supabase
     .from(table)
     .update({ deleted_at: new Date().toISOString() })
@@ -32,9 +32,19 @@ export const useDelete = (table) => {
     mutationFn: markAsDelete,
     onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
-      queryClient.invalidateQueries({queryKey: [table], exact: false});   // invalidate base table query
-      queryClient.invalidateQueries({ queryKey: [`view_${table}`], exact: false }); // invalidate view query
-      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false});
+      queryClient.invalidateQueries({ queryKey: [table], exact: false }); // invalidate base table query
+      queryClient.invalidateQueries({
+        queryKey: [`view_${table}`],
+        exact: false,
+      }); // invalidate view query
+      queryClient.invalidateQueries({
+        queryKey: ["monthly_dues_records"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
 
       // log activity
       try {

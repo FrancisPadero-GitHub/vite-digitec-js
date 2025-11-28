@@ -41,7 +41,7 @@ function FilterToolbar({
               <button
                 type="button"
                 title="Clear Filter"
-                className="btn btn-ghost btn-square btn-sm text-error hover:bg-warning/10"
+                className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10"
                 onClick={onReset}
               >
                 <ClearIcon />

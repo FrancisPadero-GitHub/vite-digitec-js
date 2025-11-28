@@ -36,10 +36,12 @@ const updateClubFunds = async (formData) => {
     .from("club_funds_contributions")
     .update(payload)
     .eq("contribution_id", contribution_id)
-    .select(`
+    .select(
+      `
       *,
       members!club_funds_contributions_account_number_fkey (f_name,l_name)
-    `)
+    `
+    )
     .single();
 
   if (error) {
@@ -50,7 +52,9 @@ const updateClubFunds = async (formData) => {
   const memberData = data.members;
   return {
     ...data,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : account_number
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : account_number,
   };
 };
 
@@ -63,7 +67,14 @@ export const useEditClubFunds = () => {
     mutationFn: updateClubFunds,
     onSuccess: async (data) => {
       console.log("Contribution Updated!", data);
-      queryClient.invalidateQueries({ queryKey: ["view_club_fund_contributions"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["view_club_fund_contributions"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["monthly_dues_records"],
+        exact: false,
+      });
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

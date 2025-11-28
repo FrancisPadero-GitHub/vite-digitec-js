@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-table';
 
 import { useFetchMonthlyDuesRecords } from '../../../backend/hooks/shared/useFetchMonthlyDuesRecords';
-import FilterAltOffOutlinedIcon from '@mui/icons-material/FilterAltOffOutlined';
+import ClearIcon from "@mui/icons-material/Clear";
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
@@ -25,6 +25,15 @@ function MonthlyDues() {
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMember, setSelectedMember] = useState('all');
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
+
+  // Whether any filter is active
+  const hasActiveFilters = (
+    (memberSearch && memberSearch.trim().length > 0) ||
+    selectedMember !== 'all' ||
+    selectedYear !== currentYear ||
+    startMonth !== 0 ||
+    endMonth !== 11
+  );
 
   const { data: monthlyDuesRecords, isLoading, isError, error } = useFetchMonthlyDuesRecords({
     year: selectedYear,
@@ -107,7 +116,7 @@ function MonthlyDues() {
     {
       accessorKey: 'member',
       header: 'Members',
-      cell: info => <div className="font-medium text-base-content whitespace-nowrap">{info.getValue()}</div>,
+      cell: info => <div className="font-sm text-base-content whitespace-nowrap">{info.getValue()}</div>,
       meta: { isSticky: true }
     },
     ...filteredMonths.map(month => ({
@@ -196,10 +205,10 @@ function MonthlyDues() {
 
   return (
     <div className="m-3">
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Page Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Monthly Dues</h1>
+        <h1 className="text-lg lg:text-2xl font-bold">Monthly Dues</h1>
         <button
           className="btn btn-neutral whitespace-nowrap"
           onClick={() => navigate(`/${memberRole}/club-funds`)}
@@ -209,152 +218,152 @@ function MonthlyDues() {
       </div>
 
       {/* Filters Card */}
-      <section className="border border-base-content/5 bg-base-100 rounded-2xl">
-        <div className="p-4">
-          <div className="flex items-end justify-between mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
-              {/* Member Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Member</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={selectedMember === 'all' ? memberSearch : selectedMemberName}
-                    onChange={(e) => {
-                      setMemberSearch(e.target.value);
-                      setShowMemberDropdown(true);
-                      if (selectedMember !== 'all') {
-                        setSelectedMember('all');
-                      }
-                    }}
-                    onFocus={() => setShowMemberDropdown(true)}
-                    placeholder="Search members..."
-                    className="input input-bordered w-full"
-                  />
-                  {showMemberDropdown && (
-                    <>
-                      <div className="fixed inset-0 z-10"onClick={() => setShowMemberDropdown(false)}/>
-                      <div className="absolute z-20 w-full mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-lg max-h-60 overflow-auto">
-                        <div
-                          onClick={() => {
-                            setSelectedMember('all');
-                            setMemberSearch('');
-                            setShowMemberDropdown(false);
-                          }}
-                          className="px-4 py-2 hover:bg-base-200 cursor-pointer border-b border-base-content/10 font-medium"
-                        >
-                          All Members
-                        </div>
-                        {filteredMemberOptions.length > 0 ? (
-                          filteredMemberOptions.map(member => (
-                            <div
-                              key={member.account_number}
-                              onClick={() => {
-                                setSelectedMember(member.account_number);
-                                setMemberSearch('');
-                                setShowMemberDropdown(false);
-                              }}
-                              className="px-4 py-2 hover:bg-base-200 cursor-pointer"
-                            >
-                              <div className="font-medium">{member.full_name}</div>
-                              <div className="text-xs opacity-60">{member.account_number}</div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="px-4 py-2 text-sm opacity-60 italic">
-                            No members found
-                          </div>
-                        )}
+      <div className="p-2">
+        <div className="flex items-end justify-between">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
+            {/* Member Filter */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-sm">Member</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={selectedMember === 'all' ? memberSearch : selectedMemberName}
+                  onChange={(e) => {
+                    setMemberSearch(e.target.value);
+                    setShowMemberDropdown(true);
+                    if (selectedMember !== 'all') {
+                      setSelectedMember('all');
+                    }
+                  }}
+                  onFocus={() => setShowMemberDropdown(true)}
+                  placeholder="Search members..."
+                  className="input input-bordered w-full"
+                />
+                {showMemberDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-10"onClick={() => setShowMemberDropdown(false)}/>
+                    <div className="absolute z-20 w-full mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      <div
+                        onClick={() => {
+                          setSelectedMember('all');
+                          setMemberSearch('');
+                          setShowMemberDropdown(false);
+                        }}
+                        className="px-4 py-2 hover:bg-base-200 cursor-pointer border-b border-base-content/10 font-sm"
+                      >
+                        All Members
                       </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Year Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Year</span>
-                </label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="select select-bordered w-full"
-                >
-                  {yearOptions.map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Start Month Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">From Month</span>
-                </label>
-                <select
-                  value={startMonth}
-                  onChange={(e) => {
-                    const newStart = Number(e.target.value);
-                    setStartMonth(newStart);
-                    if (newStart >= endMonth) {
-                      setEndMonth(Math.min(newStart + 1, 11));
-                    }
-                  }}
-                  className="select select-bordered w-full"
-                >
-                  {availableStartMonths.map((month) => {
-                    const monthIndex = MONTHS.indexOf(month);
-                    return (
-                      <option key={month} value={monthIndex}>{month}</option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              {/* End Month Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">To Month</span>
-                </label>
-                <select
-                  value={endMonth}
-                  onChange={(e) => {
-                    const newEnd = Number(e.target.value);
-                    setEndMonth(newEnd);
-                    if (newEnd <= startMonth) {
-                      setStartMonth(Math.max(newEnd - 1, 0));
-                    }
-                  }}
-                  className="select select-bordered w-full"
-                >
-                  {availableEndMonths.map((month) => {
-                    const monthIndex = MONTHS.indexOf(month);
-                    return (
-                      <option key={month} value={monthIndex}>{month}</option>
-                    );
-                  })}
-                </select>
+                      {filteredMemberOptions.length > 0 ? (
+                        filteredMemberOptions.map(member => (
+                          <div
+                            key={member.account_number}
+                            onClick={() => {
+                              setSelectedMember(member.account_number);
+                              setMemberSearch('');
+                              setShowMemberDropdown(false);
+                            }}
+                            className="px-4 py-2 hover:bg-base-200 cursor-pointer"
+                          >
+                            <div className="font-sm">{member.full_name}</div>
+                            <div className="text-xs opacity-60">{member.account_number}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm opacity-60 italic">
+                          No members found
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Clear Filters Button */}
+            {/* Year Filter */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-sm">Year</span>
+              </label>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="select select-bordered w-full"
+              >
+                {yearOptions.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Start Month Filter */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-sm">From Month</span>
+              </label>
+              <select
+                value={startMonth}
+                onChange={(e) => {
+                  const newStart = Number(e.target.value);
+                  setStartMonth(newStart);
+                  if (newStart >= endMonth) {
+                    setEndMonth(Math.min(newStart + 1, 11));
+                  }
+                }}
+                className="select select-bordered w-full"
+              >
+                {availableStartMonths.map((month) => {
+                  const monthIndex = MONTHS.indexOf(month);
+                  return (
+                    <option key={month} value={monthIndex}>{month}</option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* End Month Filter */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-sm">To Month</span>
+              </label>
+              <select
+                value={endMonth}
+                onChange={(e) => {
+                  const newEnd = Number(e.target.value);
+                  setEndMonth(newEnd);
+                  if (newEnd <= startMonth) {
+                    setStartMonth(Math.max(newEnd - 1, 0));
+                  }
+                }}
+                className="select select-bordered w-full"
+              >
+                {availableEndMonths.map((month) => {
+                  const monthIndex = MONTHS.indexOf(month);
+                  return (
+                    <option key={month} value={monthIndex}>{month}</option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+
+          {/* Clear Filters Button (shows only when there are active filters) */}
+          {hasActiveFilters && (
             <button
               type="button"
               title="Clear Filters"
               className="btn btn-ghost btn-circle text-error hover:bg-error/10 ml-4"
               onClick={handleResetFilters}
             >
-              <FilterAltOffOutlinedIcon />
+              <ClearIcon />
             </button>
-          </div>
+          )}
         </div>
-      </section>
+      </div>
 
       {/* Monthly Table */}
-      <div className="bg-base-100 rounded-lg shadow-lg overflow-hidden mt-6">
+      <div className="bg-base-100 rounded-lg shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-green-700 px-6 py-4">
           <h2 className="text-xl font-semibold text-white">
             Club Funds Monthly Payables Record ({selectedYear}) - {MONTHS[startMonth]} to {MONTHS[endMonth]}
@@ -430,6 +439,7 @@ function MonthlyDues() {
           </div>
         </div>
       </div>
+      
     </div>
   </div>
   )
