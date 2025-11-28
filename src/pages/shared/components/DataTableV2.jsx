@@ -28,7 +28,7 @@ function DataTableV2({
       {title && (
       <div className="flex flex-row justify-between items-center">
         <h2 className="p-3">
-          <span className="text-2xl font-bold">{title}</span>
+          <span className="md:text-2xl lg:text-2xl font-bold">{title}</span>
           {/* <span className={`text-xl font-semibold`}>{title}</span> */}
           {/* Only shows if showLinkPath is true which is associated with dashboard elements */}
           {showLinkPath ? (

@@ -210,7 +210,7 @@ function UserManagement() {
     <div className="m-3">
       <Toaster position="bottom-left"/>
       <div className="space-y-4">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -240,7 +240,7 @@ function UserManagement() {
               },
             ]}
           />
-          <Link className="btn btn-neutral whitespace-nowrap" to="add-member">
+          <Link className="btn btn-neutral whitespace-nowrap lg:ml-auto self-start lg:self-center" to="add-member">
             + Create User
           </Link>
         </div>

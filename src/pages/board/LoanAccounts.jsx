@@ -153,7 +153,7 @@ function LoanAccounts() {
   return (
     <div className="m-3">
       <div className="space-y-4">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}

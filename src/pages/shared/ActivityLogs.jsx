@@ -91,7 +91,7 @@ export default function ActivityLogs() {
   return (
     <div className="m-3">
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
         {/* Dropdown toolbar */}
         <FilterToolbar
           searchTerm={searchTerm}

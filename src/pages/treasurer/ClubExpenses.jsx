@@ -264,7 +264,7 @@ function ClubExpenses() {
     <div className="m-3">
       <Toaster position="bottom-left" />
       <div className="space-y-4"> 
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -312,7 +312,7 @@ function ClubExpenses() {
           />
           {memberRole !== "board" && (
             <button
-              className="btn btn-neutral whitespace-nowrap"
+              className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center"
               title="Add Expenses"
               aria-label="Add Expenses"
               type="button"

@@ -20,6 +20,7 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
+import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
 
 // Constants
 import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
@@ -249,13 +250,33 @@ function CoopShareCapital() {
     setModalType(null);
   };
 
-  const handleDelete = (coop_contri_id) => {
-    mutateDelete({
-      table: "coop_cbu_contributions",
-      column_name: "coop_contri_id",
-      id: coop_contri_id
-    });
-    closeModal();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  const openDeleteModal = (coop_contri_id) => {
+    setDeleteTargetId(coop_contri_id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteTargetId(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      mutateDelete({
+        table: "coop_cbu_contributions",
+        column_name: "coop_contri_id",
+        id: deleteTargetId,
+      }, {
+        onSuccess: () => {
+          toast.success("Transaction deleted successfully");
+        }
+      });
+      closeDeleteModal();
+      closeModal();
+    }
   };
 
   const onSubmit = (data) => {
@@ -264,7 +285,7 @@ function CoopShareCapital() {
       return;
     }
 
-    // console.log(`coop test`, data )
+    console.log(`coop test`, data )
     if (modalType === "add") {
       mutateAdd(data,
         {
@@ -317,7 +338,7 @@ function CoopShareCapital() {
     <div className="m-3">
       <Toaster position="bottom-left" />
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -373,7 +394,7 @@ function CoopShareCapital() {
           />
           {memberRole !== "board" && (
             <button
-              className="btn btn-neutral whitespace-nowrap"
+              className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center"
               title="Add contribution"
               aria-label="Add Contribution"
               type="button"
@@ -382,8 +403,10 @@ function CoopShareCapital() {
               <AddCircleIcon />
               Coop Contribution
             </button>
-          )}
+            )}
         </div>
+
+
 
         <DataTableV2
           title="Coop Share Capital Contributions"
@@ -497,7 +520,7 @@ function CoopShareCapital() {
         onSubmit={handleSubmit(onSubmit)}
         isPending={isAddPending || isEditPending}
         status={isAddPending || isEditPending || !isDirty}
-        deleteAction={() => handleDelete(control._formValues.coop_contri_id)}
+        deleteAction={() => openDeleteModal(control._formValues.coop_contri_id)}
       >
         <div className="form-control w-full">
           <label className="label text-sm font-semibold mb-2">Member Account</label>
@@ -631,6 +654,17 @@ function CoopShareCapital() {
           </div>
         ))}
       </FormModal>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        title="Delete Contribution"
+        message="Are you sure you want to delete this coop share capital contribution? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={false}
+      />
     </div>
   );
 }
