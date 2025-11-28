@@ -220,15 +220,15 @@ function DashboardV2() {
   }, [currentSummary, prevSummary, loading, error, errorMessage]);
 
   return (
-    <div className="m-2 sm:m-3 lg:m-4">
+    <div className="m-3">
       <Toaster position="bottom-left"/>
-      <div className="space-y-4">
-        <h1 className="text-xl sm:text-2xl font-bold px-2 sm:px-0">Dashboard</h1>
-        <div className="flex flex-col xl:flex-row gap-4">
+      <div className="space-y-3">
+        <h1 className="text-lg lg:text-2xl font-bold px-2 sm:px-0">Dashboard</h1>
+        <div className="flex flex-col xl:flex-row gap-3">
           {/* LEFT SIDE - Main Content */}
-          <div className="flex-1 flex flex-col gap-4 lg:gap-6">
+          <div className="flex-1 flex flex-col gap-3">
             {/* Total Card Stats  */}
-            <section className="mb-2 sm:mb-4 px-2 sm:px-0">
+            <section className="px-2 sm:px-0">
               <div className="flex items-center mb-3">
                 <h2 className="text-lg sm:text-xl font-semibold mr-2">Overall Totals</h2>
                 {/* Universal Filter */}
@@ -299,7 +299,7 @@ function DashboardV2() {
             </section>
 
             {/* Data Tables */}
-            <div className="space-y-4 lg:space-y-6">
+            <div className="space-y-3">
               <DataTableV2
                 title={"Share Capital / Coop"}
                 type={"compact"}
@@ -488,7 +488,7 @@ function DashboardV2() {
           </div>
 
           {/* RIGHT SIDE - Sidebar */}
-          <div className="w-full xl:w-[350px] 2xl:w-[400px] flex flex-col gap-4 lg:gap-6">
+          <div className="w-full xl:w-[350px] 2xl:w-[400px] flex flex-col gap-3">
             {/* RECENT ACTIVITIES */}
             <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-row justify-between items-center mb-4">
