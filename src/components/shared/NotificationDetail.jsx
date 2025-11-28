@@ -87,12 +87,12 @@ function NotificationDetail({
       <div className="card w-full bg-base-200 border border-base-200">
         <div className="card-body">
           {/* Metadata Section: Type and Date/Time */}
-          <div className="flex items-center justify-between border-b pb-4 mb-5">
+          <div className="flex flex-col sm:flex-row md:flex-row lg:flex-row justify-between border-b pb-4 mb-5">
             <span className={`badge ${badgeClass} text-md font-bold`}>
               {title || "Untitled Notification"}
             </span>
             {createdAt && (
-              <span className="text-sm text-base-content/60">
+              <span className="text-sm text-base-content/60 mt-2 sm:mt-0 md:mt-0 lg:mt-0">
                 {format(new Date(createdAt), "MMM d, yyyy 'at' h:mm a")}
               </span>
             )}
