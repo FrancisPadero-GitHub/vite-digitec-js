@@ -604,6 +604,7 @@ function CoopShareCapital() {
                       autoComplete={autoComplete}
                       value={field.value}
                       placeholder="Enter Amount"
+                      onWheel={(e) => e.target.blur()}
                       onChange={(e) => {
                         const raw = e.target.value;
                         if (raw === "") {

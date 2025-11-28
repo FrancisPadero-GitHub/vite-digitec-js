@@ -6,7 +6,7 @@ function ViewMemberModal({ open, close, member, children, onSave, isSaving }) {
   return (
     <div className="modal modal-open" onClick={close}>
       <div
-        className="modal-box max-w-3xl max-h-[90vh] overflow-y-auto space-y-6"
+        className="modal-box max-w-sm md:max-w-3xl max-h-[90vh] overflow-y-auto space-y-6 w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

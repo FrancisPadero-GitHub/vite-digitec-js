@@ -1,6 +1,4 @@
-import React from 'react'
-
-
+import PropTypes from "prop-types";
 /**
  * the {children} body would be where the form fields would go 
  * any design or even how many fields would be up to the parent component 
@@ -24,7 +22,7 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, isPendin
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-6 overflow-hidden w-[50rem] max-w-full">
+      <div className="modal-box space-y-6 overflow-hidden max-w-sm md:max-w-[50rem] w-full mx-4">
         <h2 className="text-2xl font-semibold">{`${title}`}</h2>
         <form 
           onSubmit={(e) => {
@@ -70,5 +68,14 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, isPendin
     </dialog>
   )
 }
+LoanAccModal.propTypes = {
+  title: PropTypes.string.isRequired,
+  open: PropTypes.bool.isRequired,
+  close: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
+  onSubmit: PropTypes.func,
+  status: PropTypes.bool,
+  isPending: PropTypes.bool,
+};
 
 export default LoanAccModal

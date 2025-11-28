@@ -12,6 +12,7 @@ function BoardFormModal({
   type,
   isPending,
   isDisabled,
+  delDisabled,
   memberRole,
 }) {
 
@@ -43,17 +44,19 @@ function BoardFormModal({
 
   return (
     <dialog open className="modal" onClose={close}>
-      <div className="modal-box space-y-6 overflow-visible w-[45rem] max-w-full">
+      <div className="modal-box space-y-6 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-[45rem] w-full mx-4">
         <h2 className="text-2xl font-semibold">{title}</h2>
         <form onSubmit={handleFormSubmit}>
-          {children}
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            {children}
+          </div>
 
           <div className="flex justify-between items-center gap-2 mt-6">
             {action && (
               <button
                 type="button"
                 className="btn btn-error"
-                disabled={status}
+                disabled={status || delDisabled}
                 onClick={deleteAction}
               >
                 Delete
@@ -93,6 +96,7 @@ BoardFormModal.propTypes = {
   type: PropTypes.string,
   isPending: PropTypes.bool,
   isDisabled: PropTypes.bool,
+  delDisabled: PropTypes.bool,
   memberRole: PropTypes.string,
 };
 

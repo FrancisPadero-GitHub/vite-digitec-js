@@ -52,6 +52,7 @@ import { genLoanRefNo, getLocalDateString} from "./helpers/utils"
 // JSX COMPONENT
 function LoanApplicationsV2() {
   const today = getLocalDateString(new Date());
+  const todayWithTimezone = new Date().toISOString();
 
   // redux data state for later modals data population
   const dispatch = useDispatch();
@@ -214,7 +215,7 @@ function LoanApplicationsV2() {
       purpose: "",
       loan_term: 0,
       reviewed_by: "",
-      updated_at: today,
+      updated_at:  todayWithTimezone,
       application_date: today,
       status: "",
     }
@@ -327,8 +328,8 @@ function LoanApplicationsV2() {
       // directly submit the loan application edit if not approved
       mutateUpdateLoanApp({
         application_id: formDataLoanApp.application_id,
-        reviewed_by: formDataLoanApp.reviewed_by,
-        updated_at: today,
+        reviewed_by: board_id,
+        updated_at: todayWithTimezone,
         status: formDataLoanApp.status,
       },
         {
@@ -352,8 +353,8 @@ function LoanApplicationsV2() {
 
     mutateUpdateLoanApp({
       application_id: formDataLoanAcc.application_id,
-      reviewed_by: formDataLoanAcc.reviewed_by,
-      updated_at: today,
+      reviewed_by: board_id,
+      updated_at: todayWithTimezone,
       status: "Approved", // set status to approved when loan account is created
     }, {
       onSuccess: () => {
@@ -594,7 +595,7 @@ function LoanApplicationsV2() {
           filterActive={activeFiltersText !== "Showing all loan applications"}
           subtext={activeFiltersText}
           showLinkPath={false}
-          headers={["Account No.", "Name", "Loan Product", "Loan Amount", "Loan Term", "Application Date", "Status"]}
+          headers={["Account No.", "Name", "Loan Product", "Loan Amount", "Loan Term", "Application Date", "Status", "Last Updated By", "On"]}
           data={loanApplicationsFiltered}
           isLoading={isLoading}
           isError={isError}
@@ -611,6 +612,10 @@ function LoanApplicationsV2() {
               ? new Date(row.application_date).toLocaleDateString()
               : "Not Found";
             const appStatus = row?.status || false;
+            const lastUpdatedBy = row?.reviewed_by || "-";
+            const lastUpdatedOn = row?.updated_at
+              ? new Date(row.updated_at).toLocaleString()
+              : "-";
 
             return (
               <tr key={id}
@@ -679,6 +684,15 @@ function LoanApplicationsV2() {
                     <span className="badge font-semibold badge-error">Not Provided</span>
                   )}
                 </td>
+
+                {/* Last Updated By */}
+                <td>
+                  {lastUpdatedBy}
+                </td>
+                {/* Last Updated On */}
+                <td>
+                  {lastUpdatedOn}
+                </td>
               </tr>
             )
           }}
@@ -689,7 +703,7 @@ function LoanApplicationsV2() {
           open={state && mode === 'loanApplication'}
           close={closeLoanAppModal}
           // disable form delete and submit/save button if loan is already approved or update is pending
-          status={isLoanAlreadyApproved || isUpdateLoanAppPending}
+          delDisabled={true}
           action={action === "edit"}
           deleteAction={() => deleteLoanApp(loan_app_id)}  // pass the application id to delete function
           onSubmit={handleSubmitLoanApp(onSubmitLoanApp)}
@@ -961,6 +975,7 @@ function LoanApplicationsV2() {
                         ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
                         : new Decimal(selectedProduct?.max_amount || 9999999)}
                       placeholder={watchLoanApp("amount")}
+                      onWheel={(e) => e.target.blur()}
                       {...field}
                       className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
                     />

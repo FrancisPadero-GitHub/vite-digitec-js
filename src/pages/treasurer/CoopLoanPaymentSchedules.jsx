@@ -1,5 +1,6 @@
 import {useState, useMemo, useTransition} from 'react'
 import { useNavigate } from 'react-router';
+import SubdirectoryArrowLeftIcon from '@mui/icons-material/SubdirectoryArrowLeft';
 
 // react redux stuff
 import { useDispatch } from 'react-redux';
@@ -315,15 +316,13 @@ function CoopLoanPaymentSchedules() {
               },
             ]}
           />
-
-          <div className="flex flex-row items-center gap-3">
-            <button
-              className="btn btn-neutral whitespace-nowrap"
-              onClick={handleGoToPayments}
-            >
-              Go to Payments
-            </button>
-          </div>
+          <button
+            className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center"
+            onClick={handleGoToPayments}
+          >
+            <SubdirectoryArrowLeftIcon />
+            Go to Payments
+          </button>
         </div>
       
         <DataTableV2

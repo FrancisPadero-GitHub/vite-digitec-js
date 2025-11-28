@@ -84,7 +84,7 @@ const Login = () => {
     <div className="m-3in-h-screen bg-cover bg-center" style={{ backgroundImage: `url(${auth_bg})` }}>
       <Toaster position="bottom-right" />
       <section className="min-h-screen flex justify-center items-center px-4 py-8">
-        <div className="card w-full max-w-[550px] min-w-[400px] min-h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden lg:flex-row">
+        <div className="card w-full max-w-[550px] min-w-[350px] min-h-[500px] mx-auto bg-base-100 shadow-lg rounded-lg overflow-hidden lg:flex-row">
           {/* Image Section - Hidden on mobile, visible on lg and up */}
 
 

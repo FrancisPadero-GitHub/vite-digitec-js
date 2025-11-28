@@ -193,14 +193,14 @@ function Announcement() {
       {/* Dynamic Modal */}
       {isModalOpen && (
         <dialog open className="modal modal-open">
-          <div className="modal-box max-w-2xl">
+          <div className="modal-box overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl w-full mx-4">
             <h3 className="font-bold text-lg mb-4">
               {modalMode === 'add' && 'Send New Announcement'}
               {modalMode === 'edit' && 'Edit Announcement'}
               {modalMode === 'view' && 'Announcement Details'}
             </h3>
 
-            <div className="space-y-4">
+            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
               {/* View Mode */}
               {modalMode === 'view' && selectedAnnouncement && (
                 <>

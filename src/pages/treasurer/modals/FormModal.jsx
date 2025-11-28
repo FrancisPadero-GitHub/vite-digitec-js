@@ -1,4 +1,4 @@
-import React from 'react'
+import Proptypes from "prop-types";
 
 
 /**
@@ -31,7 +31,7 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
 
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-6 overflow-visible sm:w-[25rem] md:w-[30rem] lg:w-[40rem] max-w-full">
+      <div className="modal-box space-y-6 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] w-full mx-4">
         <p className="text-xl md:text-2xl lg:text-2xl font-semibold" >{title}</p>
         <form
           onSubmit={(e) => {
@@ -44,7 +44,9 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
           }}
         >
           
-          {children}
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            {children}
+          </div>
 
           <div className="flex justify-between items-center gap-2 mt-6">
             {action && (
@@ -78,5 +80,16 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
     </dialog>
   )
 }
+FormModal.propTypes = {
+  table: Proptypes.string.isRequired,
+  open: Proptypes.bool.isRequired,
+  close: Proptypes.func.isRequired,
+  action: Proptypes.bool,
+  children: Proptypes.node,
+  onSubmit: Proptypes.func,
+  deleteAction: Proptypes.func,
+  status: Proptypes.bool,
+  isPending: Proptypes.bool,
+};
 
 export default FormModal

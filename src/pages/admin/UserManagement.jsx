@@ -1,6 +1,7 @@
 import { useState, useMemo, useTransition } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers.js";
@@ -240,8 +241,8 @@ function UserManagement() {
               },
             ]}
           />
-          <Link className="btn btn-neutral whitespace-nowrap lg:ml-auto self-start lg:self-center" to="add-member">
-            + Create User
+          <Link className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center" to="add-member">
+            <AddCircleIcon />Create User
           </Link>
         </div>
 

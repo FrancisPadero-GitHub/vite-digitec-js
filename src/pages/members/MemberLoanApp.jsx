@@ -733,7 +733,7 @@ function MemberLoanApp() {
               },
             ]}
           />
-          <button className="btn btn-neutral whitespace-nowrap lg:ml-auto self-start lg:self-center" onClick={openAddModal} aria-label="Apply for loan">
+          <button className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center" onClick={openAddModal} aria-label="Apply for loan">
             Apply For A Loan
           </button>
         </div>
@@ -857,7 +857,7 @@ function MemberLoanApp() {
                             <div className="flex justify-between"><span className="text-green-700">Loanable (%):</span><span className="font-semibold">{Number(percentage) || 0}%</span></div>
                             <div className="flex justify-between"><span className="text-green-700">Max Loanable Amount:</span><span className="font-bold text-green-800">₱{Number(totalLoanable).toLocaleString() || 0}</span></div>
                           </div>
-                          <p className="text-[10px] mt-2 text-green-600">Amount field capped; based on current share capital eligibility.</p>
+                          <p className="text-[10px] mt-2 text-green-600">Amount field is capped based on current share capital eligibility % and your coop balance.</p>
                         </div>
                       ) : (
                         <div className="mt-3 p-3 bg-base-100 rounded-lg border border-gray-200">
@@ -912,12 +912,12 @@ function MemberLoanApp() {
                       ) : (
                         <input
                           type="number"
-                          step="0.01"
                           {...register(field.name, {
                             required: field.required,
                             min: field.validation?.min,
                             max: field.validation?.max,
                           })}
+                          onWheel={(e) => e.target.blur()}
                           disabled={field.disabled}
                           placeholder={field.placeholder}
                           className={`input input-bordered w-full transition-all duration-200 ${hasAmount ? "font-bold text-xl" : "text-sm"

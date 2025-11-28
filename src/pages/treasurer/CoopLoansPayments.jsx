@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import Decimal from 'decimal.js';
 import { createPortal } from 'react-dom';
 import WarningIcon from '@mui/icons-material/Warning';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 import { useForm, Controller } from 'react-hook-form';
 import { Toaster, toast } from 'react-hot-toast';
@@ -627,13 +628,13 @@ function CoopLoansPayments() {
           />
           {memberRole !== "board" && (
             <button
-              className="btn btn-neutral whitespace-nowrap"
+              className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center"
               title="Add payment"
               aria-label="Add Payment"
               type="button"
               onClick={openAddModal}
             >
-              {/* <AddCircleIcon/> */}
+              <AddCircleIcon/>
               Add Payments
             </button>
           )}
@@ -1036,7 +1037,7 @@ function CoopLoansPayments() {
                           id="total_amount"
                           type="number"
                           autoComplete="off"
-                          step="0.01"
+                          onWheel={(e) => e.target.blur()}
                           value={field.value}
                           placeholder="Enter Payment Amount" //AMOUNT LIMIT TO BE ADDED
                           onChange={(e) => {
@@ -1157,7 +1158,7 @@ function CoopLoansPayments() {
         {/* View Payment Details Modal */}
         {viewPaymentData && (
           <dialog open className="modal">
-            <div className="modal-box w-11/12 max-w-2xl">
+            <div className="modal-box max-w-sm md:max-w-2xl w-full mx-4">
               {/* Header */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                 <h3 className="text-xl font-bold">Payment Details</h3>

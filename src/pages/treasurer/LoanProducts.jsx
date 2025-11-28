@@ -217,7 +217,7 @@ function LoanProducts() {
                     <input
                       id={name}
                       type="number"
-                      step="0.01"
+                      onWheel={(e) => e.target.blur()}
                       autoComplete={autoComplete}
                       placeholder={`Enter ${label}`}
                       {...register(name, { 
