@@ -56,12 +56,12 @@ const addLoanAcc = async (formData) => {
 };
 
 const sendTreasurerNotification = async (loanAccData, senderAccountNumber) => {
-  const message = `Loan approved for member ${loanAccData.account_number}. Principal: ₱${loanAccData.principal?.toLocaleString() || '0'} | Loan Ref: ${loanAccData.loan_ref_number || 'N/A'}`;
+  const message = `Loan approved for member ${loanAccData.account_number}. Principal: ₱${loanAccData.principal?.toLocaleString() || "0"} | Loan Ref: ${loanAccData.loan_ref_number || "N/A"}`;
 
   const { error } = await supabase.rpc("send_notification", {
     p_title: "Pending release for approved loan",
     p_message: message,
-    p_type: "loan_approval",
+    p_type: "loan_release",
     p_target: "role:treasurer",
     p_sender: senderAccountNumber,
   });
@@ -73,7 +73,7 @@ const sendTreasurerNotification = async (loanAccData, senderAccountNumber) => {
 };
 
 const sendMemberNotification = async (loanAccData, senderAccountNumber) => {
-  const message = `Your loan application has been approved. Loan Ref: ${loanAccData.loan_ref_number || 'N/A'} | Approved Principal: ₱${loanAccData.principal?.toLocaleString() || '0'}`;
+  const message = `Your loan application has been approved. Loan Ref: ${loanAccData.loan_ref_number || "N/A"} | Approved Principal: ₱${loanAccData.principal?.toLocaleString() || "0"}`;
 
   const { error } = await supabase.rpc("send_notification", {
     p_title: "Loan Approved",
@@ -98,11 +98,26 @@ export const useAddLoanAcc = () => {
     mutationFn: addLoanAcc,
     onSuccess: async (data) => {
       console.log("✅ Loan Account Added!", data);
-      queryClient.invalidateQueries({ queryKey: ["loan_accounts"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["get_funds_summary"], exact: false, });
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: false }); // for the badge notification
+      queryClient.invalidateQueries({
+        queryKey: ["loan_accounts"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["view_loan_accounts"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingLoanReleases"],
+        exact: false,
+      }); // for the badge notification
       queryClient.invalidateQueries(["notifications"]);
 
       // log activity

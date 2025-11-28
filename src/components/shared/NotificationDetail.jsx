@@ -39,7 +39,7 @@ function NotificationDetail({
   const dispatch = useDispatch();
 
   // Loan-related notification type check (derived, no state updates)
-  const loanTypes = ["loan_application", "loan_application_status", "loan_approval"];
+  const loanTypes = ["loan_application", "loan_application_status", "loan_approval", "loan_release"];
   const normalizedType = type?.toLowerCase();
   const isLoan = normalizedType ? loanTypes.includes(normalizedType) : false;
 
@@ -48,8 +48,13 @@ function NotificationDetail({
 
   // Fix: set path only when normalizedType changes, not in render body
   useEffect(() => {
+    // This is for the board to view loan applications
     if (normalizedType === "loan_application") {
       setPath("loan-applications");
+    }
+    // For treasurer and members to view loan accounts
+    else if (normalizedType === "loan_release") {
+      setPath("releases");
     }
   }, [normalizedType]);
 
@@ -57,6 +62,13 @@ function NotificationDetail({
     dispatch(closeNotificationModal());
     navigate(`/${memberRole}/coop-loans/${path || "loan-accounts"}`);
   };
+
+  // Friendly label for the link based on the notification/loan type
+  const loanLabel = normalizedType === "loan_application"
+    ? "Applications"
+    : normalizedType === "loan_release"
+    ? "Releases"
+    : "Accounts";
 
   return (
     <div className="flex flex-col space-y-6">
@@ -115,7 +127,7 @@ function NotificationDetail({
                 className="text-primary underline underline-offset-2 text-sm inline-flex items-center gap-2 cursor-pointer hover:text-primary/80"
                 aria-label="View loan accounts"
               >
-                <span>Go to Loan {normalizedType === "loan_application" ? "Applications" : "Accounts"}</span>
+                <span>Go to Loan {loanLabel}</span>
               </div>
             </div>
           )}

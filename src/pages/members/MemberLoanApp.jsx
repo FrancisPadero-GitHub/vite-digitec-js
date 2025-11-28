@@ -826,7 +826,7 @@ function MemberLoanApp() {
           cancelAction={() => handleCancel(getValues())} // pass all form data
         >
 
-          <div className="max-h-[70vh] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="max-h-[70vh] pr-1 custom-scrollbar">
             {fields.map((field) => {
               // Loan Product
               if (field.name === "loan_product") {
