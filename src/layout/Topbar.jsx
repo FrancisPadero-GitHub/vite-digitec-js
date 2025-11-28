@@ -1,4 +1,23 @@
 import { useState, useEffect, useRef } from "react";
+// Custom bell jiggle animation
+const bellJiggleStyle = `
+@keyframes bell-jiggle {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(-15deg); }
+  20% { transform: rotate(10deg); }
+  30% { transform: rotate(-10deg); }
+  40% { transform: rotate(6deg); }
+  50% { transform: rotate(-4deg); }
+  60% { transform: rotate(2deg); }
+  70% { transform: rotate(-1deg); }
+  80% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+.bell-jiggle {
+  animation: bell-jiggle 1s cubic-bezier(.36,.07,.19,.97) both;
+  animation-iteration-count: infinite;
+}
+`;
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useAuth } from "../backend/context/AuthProvider";
@@ -136,7 +155,10 @@ const Topbar = ({ role, onToggleSidebar }) => {
   }, [showDropdown]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-neutral text-white px-4 py-3 flex justify-between items-center shadow-lg z-50">
+    <>
+      {/* Inject custom bell jiggle animation style */}
+      <style>{bellJiggleStyle}</style>
+      <header className="fixed top-0 left-0 right-0 bg-neutral text-white px-4 py-3 flex justify-between items-center shadow-lg z-50">
 
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">
@@ -177,11 +199,14 @@ const Topbar = ({ role, onToggleSidebar }) => {
         {/* NOTIFICATIONS */}
         <div ref={notifRef} className="relative">
           <button
-            className={`indicator relative ${notifications && notifications.filter((n) => !n.is_read).length > 0 ? 'animate-bounce' : 'mt-2'}`}
+            className={`indicator relative`}
             onClick={() => setShowDropdown((prev) => !prev)}
           >
-            <NotificationsIcon className="cursor-pointer" style={{ width: "32px", height: "32px"}} />
-            {notifications && notifications?.length > 0 && (
+            <NotificationsIcon
+              className={`cursor-pointer ${notifications && notifications.filter((n) => !n.is_read).length > 0 ? 'bell-jiggle' : ''}`}
+              style={{ width: "32px", height: "32px" }}
+            />
+            {notifications && notifications?.length > 0 && notifications.some((n) => !n.is_read) && (
               <span className="indicator-item badge badge-accent">
                 {notifications.filter((n) => !n.is_read).length}
               </span>
@@ -591,7 +616,8 @@ const Topbar = ({ role, onToggleSidebar }) => {
         </div>
       </div>
     </div>
-    </header>
+      </header>
+    </>
   );
 };
 
