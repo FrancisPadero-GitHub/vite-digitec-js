@@ -225,7 +225,7 @@ function UserManagement() {
                   { label: "Treasurer", value: "treasurer" },
                   { label: "Board of Director", value: "board" },
                   { label: "Regular Member", value: "regular-member" },
-                  { label: "Associate Member", value: "associate-member" },
+                  // { label: "Associate Member", value: "associate-member" },
                 ],
               },
               {

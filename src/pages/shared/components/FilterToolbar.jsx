@@ -56,7 +56,7 @@ function FilterToolbar({
             type="button"
             aria-expanded={isExpanded}
             aria-controls="filterDropdowns"
-            className="underline underline-offset-2 text-sm text-primary self-center lg:self-center"
+            className="underline underline-offset-2 text-sm text-primary self-center lg:self-center cursor-pointer"
             onClick={toggleExpanded}
           >
             {isExpanded ? "Hide Filters" : "Show Filters"}
@@ -67,7 +67,7 @@ function FilterToolbar({
       {/* Dropdowns container */}
       <div
         id="filterDropdowns"
-        className={`${isExpanded ? "flex" : "hidden"} flex-col lg:flex-row gap-3 w-full lg:flex-1 lg:flex-wrap`}
+        className={`${isExpanded ? "flex" : "hidden"} flex-col lg:flex-row gap-3 w-full lg:flex-1 lg:flex-wrap` }
       >
         {dropdowns.map((dropdown, idx) => (
           <select

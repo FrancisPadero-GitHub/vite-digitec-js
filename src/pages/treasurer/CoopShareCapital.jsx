@@ -406,8 +406,6 @@ function CoopShareCapital() {
             )}
         </div>
 
-
-
         <DataTableV2
           title="Coop Share Capital Contributions"
           subtext={activeFiltersText}
