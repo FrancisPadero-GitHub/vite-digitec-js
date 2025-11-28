@@ -16,6 +16,7 @@ import { useDelete } from "../../backend/hooks/shared/useDelete";
 import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
+import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
 
 // constants
 import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
@@ -197,13 +198,34 @@ function ClubExpenses() {
     setModalType(null);
   };
 
-  const handleDelete = (transaction_id) => {
-    mutateDelete({
-      table: "club_funds_expenses",
-      column_name: "transaction_id",
-      id: transaction_id,
-    });
-    closeModal();
+  // Delete confirmation modal state & handlers
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  const openDeleteModal = (transaction_id) => {
+    setDeleteTargetId(transaction_id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteTargetId(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      mutateDelete({
+        table: "club_funds_expenses",
+        column_name: "transaction_id",
+        id: deleteTargetId,
+      }, {
+        onSuccess: () => {
+          toast.success("Transaction deleted successfully");
+        }
+      });
+      closeDeleteModal();
+      closeModal();
+    }
   };
 
   // Form submission through RHF
@@ -384,7 +406,7 @@ function ClubExpenses() {
         onSubmit={handleSubmit(onSubmit)}
         isPending={isAddPending || isEditPending}
         status={isAddPending || isEditPending || !isDirty}
-        deleteAction={() => handleDelete(getValues("contribution_id"))}
+        deleteAction={() => openDeleteModal(getValues("transaction_id"))}
       >
         {fields.map(({ label, name, type, options, autoComplete, optional }) => (
           <div key={name} className="form-control w-full mt-2">
@@ -469,6 +491,16 @@ function ClubExpenses() {
         ))}
 
       </FormModal>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={false}
+      />
     </div>
   );
 }
