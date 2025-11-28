@@ -215,7 +215,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
 
           {/* DROPDOWN LIST */}
           {showDropdown && (
-            <div className="absolute left-1/2 -translate-x-1/2 right-auto sm:right-0 sm:left-auto sm:translate-x-0 mt-3 w-80 bg-base-100 text-base-content shadow-2xl border border-base-300 z-40 animate-[fadeIn_0.2s_ease-out]">
+            <div className="absolute -translate-x-1/2 left-0 right-auto sm:right-0 sm:left-auto sm:translate-x-0 mt-3 w-70 md:w-90 lg:w-95 bg-base-100 text-base-content shadow-2xl border border-base-300 z-40 animate-[fadeIn_0.2s_ease-out]">
               {/* Header */}
               <div className="p-4 flex justify-between items-center border-b border-base-300 bg-base-200/50">
                 <h3 className="font-bold text-lg flex items-center gap-2">
