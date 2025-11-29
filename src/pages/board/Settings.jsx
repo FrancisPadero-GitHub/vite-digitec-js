@@ -25,10 +25,10 @@ function Settings() {
 
   const getSettingDescription = (key) => {
     const descriptions = {
-      'tenure': 'years of membership required',
-      'age': 'years old minimum age requirement',
-      'share_capital': 'PHP minimum share capital required',
-      'share_capital_percentage': 'Percentage of share capital required'
+      'tenure': 'years of membership required.',
+      'age': 'years old minimum age requirement.',
+      'share_capital': 'PHP minimum share capital required.',
+      'share_capital_percentage': 'Percentage of share capital loan (LAD) loanable.'
     }
     return descriptions[key] || ''
   }
@@ -114,14 +114,14 @@ function Settings() {
                       <button
                         onClick={() => handleUpdate(setting)}
                         disabled={updateMutation.isPending}
-                        className="flex-1 px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed transition-colors"
                       >
                         {updateMutation.isPending ? 'Saving...' : 'Save'}
                       </button>
                       <button
                         onClick={handleCancelEdit}
                         disabled={updateMutation.isPending}
-                        className="flex-1 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                        className="flex-1 px-4 py-2 bg-base-200 text-base-content rounded-md hover:bg-base-300 disabled:bg-base-300 disabled:text-base-300 disabled:cursor-not-allowed transition-colors border border-base-300"
                       >
                         Cancel
                       </button>
@@ -132,10 +132,10 @@ function Settings() {
                     {/* Current Value Display */}
                     <div className="mb-4">
                       <div className="flex items-baseline">
-                        <span className="text-4xl font-bold text-blue-600">
+                        <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
                           {setting.value}
                         </span>
-                        <span className="ml-2">
+                        <span className="ml-2 text-base-content">
                           {setting.key === 'tenure'}
                           {setting.key === 'age' && 'years'}
                           {setting.key === 'share_capital' && 'PHP'}
@@ -145,14 +145,14 @@ function Settings() {
                     </div>
 
                     {/* Last Updated */}
-                    <div className="text-xs mb-4">
+                    <div className="text-xs mb-4 text-base-content/70">
                       Last updated: {new Date(setting.updated_at).toLocaleDateString()}
                     </div>
 
                     {/* Edit Button */}
                     <button
                       onClick={() => handleEdit(setting)}
-                      className="w-full px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
