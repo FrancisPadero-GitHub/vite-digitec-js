@@ -286,7 +286,7 @@ function IncomeStatement() {
             />
 
         </div>
-      )}
+        )}
         {/* Detailed Transactions Section */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">

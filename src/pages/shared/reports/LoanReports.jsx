@@ -310,7 +310,7 @@ function LoanReports() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold">Loan Reports</h1>
         {!isLoading && filteredActiveLoans.length > 0 && (
-          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex justify-end my-4 gap-2">
             <ExportLoanReportsPDF
               loanData={preparePDFData()}
               selectedYear={selectedYear}
@@ -348,22 +348,22 @@ function LoanReports() {
         <div className="space-y-4 sm:space-y-6">
           {/* Top Row - Main Metrics */}
           <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-blue-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-blue-500">
               <div className="text-xs sm:text-sm mb-1">Active Loans</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">{summary.totalActiveLoans}</div>
               <div className="text-xs mt-1">Total loan accounts</div>
             </div>
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-green-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-green-500">
               <div className="text-xs sm:text-sm mb-1">Total Principal Released</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{formatCurrency(summary.totalPrincipal)}</div>
               <div className="text-xs mt-1">Amount disbursed</div>
             </div>
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-purple-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-purple-500">
               <div className="text-xs sm:text-sm mb-1">Total Interest</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600">{formatCurrency(summary.totalInterest)}</div>
               <div className="text-xs mt-1">Total interest charges</div>
             </div>
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-indigo-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-indigo-500">
               <div className="text-xs sm:text-sm mb-1">Total Receivable Amount</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-indigo-600">{formatCurrency(summary.totalLoanAmountDue)}</div>
               <div className="text-xs mt-1">Principal + Interest</div>
@@ -372,7 +372,7 @@ function LoanReports() {
 
           {/* Middle Row - Payment Progress */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-teal-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-teal-500">
               <div className="text-xs sm:text-sm mb-1">Total Payments Made</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600">{formatCurrency(summary.totalPaid)}</div>
               <div className="text-xs mt-1 truncate">
@@ -381,14 +381,14 @@ function LoanReports() {
                   : '0% of total repayable'}
               </div>
             </div>
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-orange-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-orange-500">
               <div className="text-xs sm:text-sm mb-1">Outstanding Balance</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600">{formatCurrency(summary.totalOutstanding)}</div>
               <div className="text-xs mt-1 truncate">
                 {formatCurrency(summary.totalOutstandingExcludingPenalties)} + {formatCurrency(summary.totalRemainingPenalties)} penalties
               </div>
             </div>
-            <div className="rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-amber-500">
+            <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-amber-500">
               <div className="text-xs sm:text-sm mb-1">Total Penalties</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-600">{formatCurrency(summary.totalPenalties)}</div>
               <div className="text-xs mt-1 truncate">

@@ -267,10 +267,10 @@ function ClubCoopFunds() {
   return (
     <div className="px-2 sm:px-4 lg:px-6 min-h-screen py-4">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold">Club/Coop Funds Report</h1>
         {!isLoading && (filteredContributions?.length > 0 || filteredExpenses?.length > 0 || filteredLoanReleases?.length > 0) && (
-          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex ml-auto my-4 gap-2">
             <ExportClubCoopFundsPDF
               fundsData={preparePDFData()}
               selectedYear={selectedYear}
