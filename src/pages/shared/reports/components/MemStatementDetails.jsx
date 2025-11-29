@@ -344,7 +344,7 @@ function MemStatementDetails() {
 
   return (
     <div className="px-2 sm:px-4 lg:px-6">
-      <div className="space-y-4">
+      <div className="space-y-2">
         {/* Header Section */}
         <div className="shadow-md rounded-lg p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">

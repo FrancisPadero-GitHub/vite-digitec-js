@@ -158,7 +158,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
     <>
       {/* Inject custom bell jiggle animation style */}
       <style>{bellJiggleStyle}</style>
-      <header className="fixed top-0 left-0 right-0 bg-neutral text-white px-4 py-3 flex justify-between items-center shadow-lg z-50">
+      <header className="fixed top-0 left-0 right-0 bg-neutral text-white px-4 py-3 flex justify-between items-center shadow-lg z-40">
 
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">

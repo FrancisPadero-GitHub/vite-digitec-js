@@ -95,7 +95,7 @@ function Settings() {
 
                 {/* Card Body - Value Display or Edit */}
                 {editingId === setting.id ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <div>
                       <label className="block text-sm font-medium mb-2">
                         Value

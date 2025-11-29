@@ -48,7 +48,7 @@ function DataTableV2({
 
       <div className="border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md overflow-hidden">
         {/* Scroll wrapper */}
-        <div className={`${type === "compact" ? "max-h-[50vh]" : "max-h-[75vh]"} min-h-[17vh] overflow-y-auto overflow-x-auto`}>
+        <div className={`${type === "compact" ? "max-h-[50vh]" : "max-h-[70vh]"} min-h-[17vh] overflow-y-auto overflow-x-auto`}>
           <table className="table w-full min-w-max">
             <thead className="sticky top-0 bg-base-200/80 backdrop-blur-md z-10">
               <tr>

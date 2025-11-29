@@ -205,7 +205,7 @@ function MonthlyDues() {
 
   return (
     <div className="m-3">
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-lg lg:text-2xl font-bold">Monthly Dues</h1>

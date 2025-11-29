@@ -188,7 +188,7 @@ function LoanProducts() {
           status={submitDisabled}
           deleteAction={() => (toast.error("Temporary disabled"))}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] px-1">
             {fields.map(({ label, name, type, options, autoComplete }) => (
               <div key={name} className="form-control w-full">
                 <label htmlFor={name} className="label text-sm font-semibold mb-1 sm:mb-2">

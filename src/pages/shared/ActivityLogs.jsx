@@ -90,7 +90,7 @@ export default function ActivityLogs() {
 
   return (
     <div className="m-3">
-      <div className="space-y-4">
+      <div className="space-y-2">
         <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
         {/* Dropdown toolbar */}
         <FilterToolbar

@@ -115,7 +115,7 @@ function LoanAccountDetails() {
 
         {/* Loan Account Info Card */}
         {accountData && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {/* Account Header */}
             <div className="border border-base-content/10 rounded-2xl bg-base-100 p-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">

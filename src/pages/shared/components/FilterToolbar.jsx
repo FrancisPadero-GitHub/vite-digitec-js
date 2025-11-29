@@ -17,10 +17,10 @@ function FilterToolbar({
 
   return (
     <div>
-      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-2 w-full">
+      <div className="flex flex-row lg:items-center gap-5 w-full">
         {/* Search bar and clear button - fixed width on large screens */}
         {onSearchChange && onReset && (
-          <div className="flex items-center gap-2 w-full lg:w-[400px]">
+          <div className="flex items-center gap-2 mb-2 w-full sm:w-[250px] md:w-[300px] lg:w-[400px]">
             <label className="input input-bordered flex items-center bg-base-100 w-full lg:self-top">
               <SearchIcon className="text-base-content/50" />
               <input
@@ -67,7 +67,7 @@ function FilterToolbar({
       {/* Dropdowns container */}
       <div
         id="filterDropdowns"
-        className={`${isExpanded ? "flex" : "hidden"} flex-col lg:flex-row gap-3 w-full lg:flex-1 lg:flex-wrap` }
+        className={`${isExpanded ? "grid grid-cols-2 gap-3 md:flex md:flex-row md:flex-wrap md:gap-3" : "hidden"} w-full lg:flex-1`}
       >
         {dropdowns.map((dropdown, idx) => (
           <select
@@ -75,7 +75,7 @@ function FilterToolbar({
             id={`dropdown-${idx}`}
             name={dropdown.value || idx}
             key={idx}
-            className={`select select-bordered ${dropdown.className ?? "w-full lg:w-[150px]"}`}
+            className={`select select-bordered ${dropdown.className ?? "w-full md:w-[150px]"}`}
             value={dropdown.value}
             onChange={(e) => dropdown.onChange(e.target.value)}
           >

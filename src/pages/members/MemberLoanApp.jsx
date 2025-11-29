@@ -685,7 +685,7 @@ function MemberLoanApp() {
   return (
     <div className="m-3">
       <Toaster position="bottom-left" />
-      <div className="space-y-4">
+      <div className="space-y-2">
         {/* Put a restriction here if a certain criteria is not met */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
           <FilterToolbar
