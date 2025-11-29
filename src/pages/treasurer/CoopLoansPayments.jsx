@@ -1252,10 +1252,10 @@ function CoopLoansPayments() {
               </div>
 
               {/* Fixed Modal Actions */}
-              <div className="flex justify-between pt-4 border-t border-gray-200 mt-4 flex-shrink-0">
+              <div className={`flex justify-${memberRole === "treasurer" ? "between" : "end"} pt-4 border-t border-gray-200 mt-4 flex-shrink-0`}>
                 <div className="modal-action mt-0">
-                  {showEditModal && (
-                    <button onClick={editModal} className="btn btn-primary">Edit</button>
+                  {showEditModal && memberRole === "treasurer" && (
+                    <button onClick={editModal} className="btn btn-primary max-w-xs">Edit</button>
                   )}
                 </div>
                 <div className="modal-action mt-0">
