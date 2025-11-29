@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * DateFilterReports
@@ -25,17 +25,18 @@ export default function DateFilterReports({
   onClear,
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <label htmlFor="year-filter" className="text-sm font-medium text-gray-700">
-            Year:
+    <div className="card-body p-4">
+      <div className="flex items-center gap-4 flex-nowrap w-full">
+        {/* Year Filter (inline) */}
+        <div className="form-control w-auto">
+          <label htmlFor="year-filter" className="label py-1 mb-0">
+            <span className="label-text font-semibold text-base-content">Year</span>
           </label>
           <select
             id="year-filter"
             value={selectedYear}
             onChange={(e) => onYearChange?.(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="select select-bordered select-sm min-w-[120px]"
           >
             <option value="all">All Years</option>
             {yearOptions.map((year) => (
@@ -44,15 +45,16 @@ export default function DateFilterReports({
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label htmlFor="month-filter" className="text-sm font-medium text-gray-700">
-            Month:
+        {/* Month Filter (inline) */}
+        <div className="form-control w-auto">
+          <label htmlFor="month-filter" className="label py-1 mb-0">
+            <span className="label-text font-semibold text-base-content">Month</span>
           </label>
           <select
             id="month-filter"
             value={selectedMonth}
             onChange={(e) => onMonthChange?.(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="select select-bordered select-sm min-w-[120px]"
           >
             <option value="all">All Months</option>
             {months.map(month => (
@@ -61,15 +63,34 @@ export default function DateFilterReports({
           </select>
         </div>
 
+        {/* Clear Button (inline) */}
         {(selectedYear !== 'all' || selectedMonth !== 'all') && (
-          <button
-            onClick={() => onClear?.()}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Clear Filters
-          </button>
+          <div className="form-control w-auto self-end ml-auto">
+            <button
+              onClick={() => onClear?.()}
+              className="btn btn-primary btn-sm sm:btn-md w-auto gap-2"
+            >
+              Clear Filters
+            </button>
+          </div>
         )}
       </div>
     </div>
   );
 }
+
+DateFilterReports.propTypes = {
+  selectedYear: PropTypes.string.isRequired,
+  selectedMonth: PropTypes.string.isRequired,
+  onYearChange: PropTypes.func.isRequired,
+  onMonthChange: PropTypes.func.isRequired,
+  yearOptions: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
+  })),  
+  months: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
+  })),
+  onClear: PropTypes.func,
+};
