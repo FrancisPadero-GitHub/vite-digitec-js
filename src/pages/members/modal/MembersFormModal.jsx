@@ -6,7 +6,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-2 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl lg:max-w-3xl w-full mx-4">
+      <div className="modal-box space-y-2 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl lg:max-w-2xl w-full">
         <div className="flex gap-2 justify-between" >
           <h2 className="text-lg lg:text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
           <button type="button" className="btn btn-ghost" onClick={close}>
@@ -28,7 +28,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
             {children}
           </div>
 
-          <div className="flex justify-between items-center gap-2 mt-2">
+          <div className="flex justify-between items-center gap-2">
             {action && (
               <button
                 type="button"

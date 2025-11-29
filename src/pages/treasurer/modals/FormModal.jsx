@@ -31,7 +31,7 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
 
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-6 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] w-full mx-4">
+      <div className="modal-box space-y-6 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] w-full">
         <p className="text-xl md:text-2xl lg:text-2xl font-semibold" >{title}</p>
         <form
           onSubmit={(e) => {
