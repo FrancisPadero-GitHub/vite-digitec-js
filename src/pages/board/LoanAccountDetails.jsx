@@ -107,7 +107,7 @@ function LoanAccountDetails() {
     <div className="m-3">
       <div className="mb-6 space-y-4">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Loan Account Details</h1>
+          <h1 className="text-lg lg:text-2xl font-bold">Loan Account Details</h1>
           <div className="flex flex-row items-center gap-3">
             <button onClick={() => navigate(-1)} className="btn btn-neutral whitespace-nowrap">Back</button>
           </div>
@@ -323,19 +323,14 @@ function LoanAccountDetails() {
             </div>
           </div>
         )}
-        <div className="flex justify-between my-4" >
-          <h3 className="text-lg font-semibold mt-1 ">Payment Schedules & Records</h3>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate(`/${memberRole}/coop-loans/payments`)}
-          >
-            Go to payments
-          </button>
+
+        <div>
+          <h1 className="text-lg lg:text-2xl font-semibold md:mb-4 lg:mb-4">Payment Schedules & Records</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4 items-start">
           {/* Loan Schedule List */}
-          <div className="border border-base-content/10 rounded-xl bg-base-100 p-4 shadow-sm">
+          <div>
             <LoanScheduleCardList
               data={loanSchedRaw}
               isLoading={isLoading}
@@ -345,11 +340,12 @@ function LoanAccountDetails() {
               setPage={setPage}
             />
           </div>
-
           {/* Payment Record */}
-          <div className="border border-base-content/10 rounded-xl bg-base-100 p-4 shadow-sm">
+          <div>
             <DataTableV2 
               title="Payment Records"
+              showLinkPath={true}
+              linkPath={`/${memberRole}/coop-loans/payments`}
               headers={["Schedule ID", "Date Paid", "Amount Paid", "Payment Method"]}
               subtext={"Recent Payments"}
               data={filteredPayments}
@@ -395,8 +391,6 @@ function LoanAccountDetails() {
             />
           </div>
         </div>
-        
-
       </div>
     </div>
   );

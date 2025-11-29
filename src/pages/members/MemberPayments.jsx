@@ -47,7 +47,7 @@ function MemberPayments() {
     const matchesStatusFilter = statusFilter === "" || row.status === statusFilter;
     const matchesPaymentMethod = paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
 
-    const date = row.contribution_date ? new Date(row.contribution_date) : null;
+    const date = row.payment_date ? new Date(row.payment_date) : null;
     const matchesYear =
       yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
 
