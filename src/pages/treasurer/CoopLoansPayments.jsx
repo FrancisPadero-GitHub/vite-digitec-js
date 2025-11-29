@@ -367,9 +367,10 @@ function CoopLoansPayments() {
   const debouncedQueryMem = useDebounce(queryMem, 250); // 250ms delay feels natural
   const filteredMembers =
     debouncedQueryMem === ""
-      ? members
+      ? (members || []).filter((m) => m.account_role === "regular-member")
       : members.filter((m) =>
-        `${m.account_number} ${m.f_name} ${m.l_name}`
+        m.account_role === "regular-member" &&
+        `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
           .toLowerCase()
           .includes(debouncedQueryMem.toLowerCase())
       );
@@ -573,7 +574,7 @@ function CoopLoansPayments() {
     <div className="m-3">
       <Toaster position="bottom-left" />
       <div className="space-y-2">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -628,7 +629,9 @@ function CoopLoansPayments() {
           />
           {memberRole !== "board" && (
             <button
-              className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center"
+              className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+                         fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
+                         lg:static lg:ml-auto lg:self-center lg:opacity-100"
               title="Add payment"
               aria-label="Add Payment"
               type="button"
@@ -746,61 +749,63 @@ function CoopLoansPayments() {
                   name="account_number"
                   control={control}
                   render={({ field }) => (
-                    <Combobox
-                      value={members.find((m) => m.account_number === field.value) || null}
-                      onChange={(member) => {
-                        field.onChange(member?.account_number);
-                        setValue("account_number", member?.account_number || "");
-                        setValue("member_id", member?.member_id || null);
-                        setValue("loan_ref_number", "");
-                        setValue("loan_id", null);
-                      }}
-                    >
-                      <ComboboxInput
-                        required
-                        className="input input-sm input-bordered w-full"
-                        placeholder="Search by Account Number or Name..."
-                        displayValue={(member) =>
-                          member ? `${member.account_number} - ${member.f_name} ${member.l_name}`.trim() : ""
-                        }
-                        onChange={(e) => setQueryMem(e.target.value)}
-                      />
+                    <div className="relative">
+                      <Combobox
+                        value={members.find((m) => m.account_number === field.value) || null}
+                        onChange={(member) => {
+                          field.onChange(member?.account_number);
+                          setValue("account_number", member?.account_number || "");
+                          setValue("member_id", member?.member_id || null);
+                          setValue("loan_ref_number", "");
+                          setValue("loan_id", null);
+                        }}
+                      >
+                        <ComboboxInput
+                          required
+                          className="input input-sm input-bordered w-full"
+                          placeholder="Search by Account Number or Name..."
+                          displayValue={(member) =>
+                            member ? `${member.account_number} - ${member.f_name} ${member.l_name}`.trim() : ""
+                          }
+                          onChange={(e) => setQueryMem(e.target.value)}
+                        />
 
-                      {/* Search option dropdown: account number, avatar, member name, role */}
-                      <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                        {filteredMembers.length === 0 ? (
-                          <div className="px-4 py-2 text-base-content/60">No members found.</div>
-                        ) : (
-                          filteredMembers.map((member) => (
-                            <ComboboxOption
-                              key={member.account_number}
-                              value={member}
-                              className={({ focus }) =>
-                                `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
-                              }
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="avatar">
-                                  <div className="mask mask-circle w-10 h-10">
-                                    <img
-                                      src={member.avatar_url || `https://i.pravatar.cc/40?u=${member.member_id || member.l_name}`}
-                                      alt={`${member.f_name} ${member.l_name}`}
-                                    />
+                        {/* Search option dropdown: account number, avatar, member name, role */}
+                        <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                          {filteredMembers.length === 0 ? (
+                            <div className="px-4 py-2 text-base-content/60">No members found.</div>
+                          ) : (
+                            filteredMembers.map((member) => (
+                              <ComboboxOption
+                                key={member.account_number}
+                                value={member}
+                                className={({ focus }) =>
+                                  `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
+                                }
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="avatar">
+                                    <div className="mask mask-circle w-10 h-10">
+                                      <img
+                                        src={member.avatar_url || placeHolderAvatar}
+                                        alt={`${member.f_name} ${member.l_name}`}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col flex-1 min-w-0">
+                                    <span className="font-mono text-sm font-semibold">{member.account_number}</span>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                                      <span className="text-xs italic">({member.account_role})</span>
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <span className="font-mono text-sm font-semibold">{member.account_number}</span>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                                    <span className="text-xs italic">({member.account_role})</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </ComboboxOption>
-                          ))
-                        )}
-                      </ComboboxOptions>
-                    </Combobox>
+                              </ComboboxOption>
+                            ))
+                          )}
+                        </ComboboxOptions>
+                      </Combobox>
+                    </div>
                   )}
                 />
               </div>
@@ -817,54 +822,55 @@ function CoopLoansPayments() {
                     const selectedMember = data.find(m => m.account_number === selectedAccount);
                     // console.log(selectedMember)
                     return (
-                      <Combobox
-                        value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
-                        onChange={(loan) => {
-                          field.onChange(loan?.loan_ref_number);
-                          setValue("loan_ref_number", loan?.loan_ref_number || "");
-                          setValue("loan_id", loan?.loan_id || null);
-                        }}
-                        disabled={!selectedAccount}
-                      >
-                        <ComboboxInput
-                          required
-                          className="input input-sm input-bordered w-full disabled:bg-base-200"
-                          placeholder={selectedAccount ? `Search loan account (e.g., LAPP-12345)` : "Select a member first"}
-                          displayValue={(loan) => loan?.loan_ref_number || ""}
-                          onChange={(e) => setQueryLoan(e.target.value)}
-                        />
-                        <ComboboxOptions className="absolute z-[800] w-[44%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                          {filteredLoanAcc.length === 0 ? (
-                            <div className="px-4 py-2 text-base-content/60">
-                              {selectedAccount ? "No loan accounts found for this member." : "Select a member first."}
-                            </div>
-                          ) : (
-                            filteredLoanAcc.map((loan) => (
-                              <ComboboxOption
-                                key={loan.loan_ref_number}
-                                value={loan}
-                                className={({ focus }) =>
-                                  `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
-                                  }`
-                                }
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="font-mono text-sm font-semibold">{loan.loan_ref_number}</span>
-                                  <span>
-                                    <span className="text-xs mr-1">
-                                      Amount Due:
+                      <div className="relative">
+                        <Combobox
+                          value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
+                          onChange={(loan) => {
+                            field.onChange(loan?.loan_ref_number);
+                            setValue("loan_ref_number", loan?.loan_ref_number || "");
+                            setValue("loan_id", loan?.loan_id || null);
+                          }}
+                          disabled={!selectedAccount}
+                        >
+                          <ComboboxInput
+                            required
+                            className="input input-sm input-bordered w-full disabled:bg-base-200"
+                            placeholder={selectedAccount ? `Search loan account (e.g., LAPP-12345)` : "Select a member first"}
+                            displayValue={(loan) => loan?.loan_ref_number || ""}
+                            onChange={(e) => setQueryLoan(e.target.value)}
+                          />
+                          <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                            {filteredLoanAcc.length === 0 ? (
+                              <div className="px-4 py-2 text-base-content/60">
+                                {selectedAccount ? "No loan accounts found for this member." : "Select a member first."}
+                              </div>
+                            ) : (
+                              filteredLoanAcc.map((loan) => (
+                                <ComboboxOption
+                                  key={loan.loan_ref_number}
+                                  value={loan}
+                                  className={({ focus }) =>
+                                    `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                                    }`
+                                  }
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-mono text-sm font-semibold">{loan.loan_ref_number}</span>
+                                    <span>
+                                      <span className="text-xs mr-1">
+                                        Amount Due:
+                                      </span>
+                                      <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1 rounded">
+                                        ₱{selectedMember && `${selectedMember?.total_amount_due}`}
+                                      </span>
                                     </span>
-                                    <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1 rounded">
-                                      ₱{selectedMember && `${selectedMember?.total_amount_due}`}
-                                    </span>
-                                  </span>
-
-                                </div>
-                              </ComboboxOption>
-                            ))
-                          )}
-                        </ComboboxOptions>
-                      </Combobox>
+                                  </div>
+                                </ComboboxOption>
+                              ))
+                            )}
+                          </ComboboxOptions>
+                        </Combobox>
+                      </div>
                     );
                   }}
                 />

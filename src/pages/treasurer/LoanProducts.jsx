@@ -151,15 +151,17 @@ function LoanProducts() {
   ];
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8">
+    <div className="m-3">
       <Toaster position='bottom-left' />
-      <div className="space-y-6">
+      <div className="space-y-2">
 
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Loan Products</h1>
-          <button 
-            className="btn btn-neutral whitespace-nowrap w-full sm:w-auto px-4 py-2 text-sm sm:text-base"
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-lg lg:text-2xl font-bold text-gray-900">Loan Products</h1>
+        <button 
+            className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+                      fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
+                      lg:static lg:ml-auto lg:self-center lg:opacity-100"
             onClick={loanProductOpenModal}
           >
             + Add Loan Product
@@ -167,7 +169,7 @@ function LoanProducts() {
         </div>
 
         {/* Products Grid */}
-        <div className="w-full space-y-4 sm:space-y-6">
+        <div className="w-full space-y-4 sm:space-y-4">
           <Products
             data={data}
             isLoading={isLoading}

@@ -2,6 +2,7 @@
 // no pagination controls included since Im still looking for ways to implement it properly
 import { Link } from "react-router-dom";
 import React from "react";
+import PropTypes from 'prop-types';
 
 function DataTableV2({
   title,
@@ -48,7 +49,7 @@ function DataTableV2({
 
       <div className="border border-base-content/5 bg-base-100/90 rounded-2xl shadow-md overflow-hidden">
         {/* Scroll wrapper */}
-        <div className={`${type === "compact" ? "max-h-[50vh]" : "max-h-[70vh]"} min-h-[17vh] overflow-y-auto overflow-x-auto`}>
+        <div className={`${type === "compact" ? "max-h-[50vh]" : "max-h-[75vh]"} min-h-[17vh] overflow-y-auto overflow-x-auto`}>
           <table className="table w-full min-w-max">
             <thead className="sticky top-0 bg-base-200/80 backdrop-blur-md z-10">
               <tr>
@@ -106,5 +107,20 @@ function DataTableV2({
   );
 }
 
+
+DataTableV2.propTypes = {
+  title: PropTypes.string,
+  subtext: PropTypes.string,
+  type: PropTypes.string,
+  headers: PropTypes.arrayOf(PropTypes.string),
+  showLinkPath: PropTypes.bool,
+  linkPath: PropTypes.string,
+  data: PropTypes.array,
+  filterActive: PropTypes.bool,
+  isLoading: PropTypes.bool,
+  isError: PropTypes.bool,
+  error: PropTypes.object,
+  renderRow: PropTypes.func.isRequired,
+};
 
 export default React.memo(DataTableV2);

@@ -372,7 +372,7 @@ function ClubFunds() {
     <div className="m-3">
       <Toaster position="bottom-left" />
       <div className="space-y-2">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -430,18 +430,22 @@ function ClubFunds() {
           />
           <div className="flex gap-4 lg:ml-auto justify-between lg:self-center">
             <button
-              className="btn btn-neutral whitespace-nowrap"
+              className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+                         fixed bottom-25 right-4 z-20 opacity-80 hover:opacity-100
+                         lg:static lg:ml-auto lg:self-center lg:opacity-100"
               title="Manage Monthly Dues"
               aria-label="Manage Monthly Dues"
               type="button"
               onClick={() => navigate(`/${memberRole}/monthly-dues`)}
             >
               <CalendarMonthIcon />
-                Monthly Dues
+              Monthly Dues
             </button>
             {memberRole !== "board" && (
               <button
-                className="btn btn-neutral whitespace-nowrap"
+                className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+                           fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
+                           lg:static lg:ml-auto lg:self-center lg:opacity-100"
                 title="Add contribution"
                 aria-label="Add Contribution"
                 type="button"
@@ -568,6 +572,7 @@ function ClubFunds() {
             name="account_number"
             control={control}
             render={({ field }) => (
+              <div className="relative">
               <Combobox
                 value={members.find((m) => m.account_number === field.value) || null}
                 onChange={(member) => field.onChange(member?.account_number)}
@@ -579,7 +584,7 @@ function ClubFunds() {
                   displayValue={(member) => (member ? member.account_number : "")}
                   onChange={(e) => setQuery(e.target.value)}
                 />
-                <ComboboxOptions className="absolute z-[800] w-[93%] mt-1 rounded-lg bg-base-100 shadow-lg max-h-[50vh] overflow-auto border border-base-200">
+                <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
                   {filteredMembers.length === 0 ? (
                     <div className="px-4 py-2 text-base-content/60">No members found.</div>
                   ) : (
@@ -613,6 +618,7 @@ function ClubFunds() {
                   )}
                 </ComboboxOptions>
               </Combobox>
+              </div>
             )}
           />
         </div>

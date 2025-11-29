@@ -272,7 +272,7 @@ function CoopLoanPaymentSchedules() {
   return (
     <div className="m-3">
       <div className="space-y-2">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-2">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <FilterToolbar
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
@@ -317,7 +317,9 @@ function CoopLoanPaymentSchedules() {
             ]}
           />
           <button
-            className="btn btn-neutral whitespace-nowrap lg:ml-auto self-end lg:self-center"
+          className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+                      fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
+                      lg:static lg:ml-auto lg:self-center lg:opacity-100"
             onClick={handleGoToPayments}
           >
             <SubdirectoryArrowLeftIcon />
