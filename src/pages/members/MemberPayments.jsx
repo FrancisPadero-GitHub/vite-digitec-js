@@ -6,7 +6,7 @@ import { useFetchLoanPayments } from '../../backend/hooks/shared/useFetchPayment
 // components
 import FilterToolbar from '../shared/components/FilterToolbar';
 import DataTableV2 from '../shared/components/DataTableV2';
-import FormModal from '../treasurer/modals/FormModal';
+import ReceiptModal from '../treasurer/modals/ReceiptModal';
 
 // constants
 import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
@@ -14,7 +14,6 @@ import { PAYMENT_METHOD_COLORS } from '../../constants/Color';
 // utils
 import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
 import { display } from '../../constants/numericFormat';
-import { createPdfReceipt } from '../treasurer/utils/receiptPDF';
 
 function MemberPayments() {
   const { data: loanPaymentsData, isLoading, isError, error } = useFetchLoanPayments({ useLoggedInMember: true });
@@ -106,6 +105,8 @@ function MemberPayments() {
     setViewPaymentData(null);
   };
 
+  const [showReceipt, setShowReceipt] = useState(false);
+
   return (
     <div className="m-3">
       <div className="space-y-2">
@@ -182,12 +183,11 @@ function MemberPayments() {
               ? new Date(row.payment_date).toLocaleDateString()
               : "Not Found";
             const paymentMethod = row?.payment_method;
-
             return (
               <tr key={id} onClick={() => openViewModal(row)} className="text-center hover:bg-base-200/50">
                 {/* Payment Ref. */}
                 <td className="text-center font-medium text-xs">
-                  {TABLE_PREFIX}{id}
+                  {TABLE_PREFIX}_{id}
                 </td>
 
                 {/* Loan Ref No. */}
@@ -225,111 +225,142 @@ function MemberPayments() {
           }}
         />
 
+        <ReceiptModal
+          open={showReceipt}
+          onClose={() => setShowReceipt(false)}
+          payment={viewPaymentData}
+        />
+        
+
         {/* View only data modal */}
         {viewPaymentData && (
-          <FormModal
-            table="Payment Details"
-            open={true}
-            close={closeViewModal}
-            action={false}
-            onSubmit={() => {}} // just passing a dummy function to disable submit
-          >
-            {/* Payment Info Section */}
-            <div className="bg-base-100 p-2.5 rounded-lg border border-gray-200 mb-3">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
-                  <div className="text-sm font-mono font-semibold">
-                    #{viewPaymentData.schedule_id ? `${viewPaymentData.schedule_id}` : <span className="text-gray-400">-</span>}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                  <span
-                    className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${
-                      viewPaymentData.status === "Full"
-                        ? "bg-blue-50 border border-blue-300 text-blue-800"
-                        : "bg-yellow-50 border border-yellow-300 text-yellow-800"
-                    }`}
-                  >
-                    {viewPaymentData.status}
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Payment Ref</label>
-                  <div className="text-sm font-semibold">{TABLE_PREFIX}_{viewPaymentData.payment_id}</div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
-                  <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Payment Date</label>
-                  <div className="text-sm font-semibold">{viewPaymentData.payment_date}</div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
-                  <div className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${PAYMENT_METHOD_COLORS[viewPaymentData.payment_method]}`}>
-                    {viewPaymentData.payment_method}
-                  </div>
+          <dialog open className="modal overflow-hidden">
+            <div className="modal-box max-w-sm md:max-w-2xl w-full flex flex-col max-h-2xl">
+              {/* Fixed Header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-xl font-bold">Payment Details</h3>
+                <div className={`badge badge-lg font-semibold ${
+                  viewPaymentData.status === "Full"
+                    ? "badge-info"
+                    : "badge-warning"
+                }`}>
+                  {viewPaymentData.status}
                 </div>
               </div>
-            </div>
 
-            {/* Amount Breakdown Section */}
-            <div className="bg-base-100 p-3 rounded-lg border border-base-300">
-              <h4 className="text-xs font-bold text-gray-600 mb-3">Payment Breakdown</h4>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Principal</span>
-                  <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200">
-                    <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto overflow-x-hidden flex-1">
+                {/* Payment Info Section */}
+                <div className="bg-base-100 p-2.5 rounded-lg border border-gray-200 mb-3">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
+                      <div className="text-sm font-mono font-semibold">
+                        #{viewPaymentData.schedule_id ? `${viewPaymentData.schedule_id}` : <span className="text-gray-400">-</span>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                      <span
+                        className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${
+                          viewPaymentData.status === "Full"
+                            ? "bg-blue-50 border border-blue-300 text-blue-800"
+                            : "bg-yellow-50 border border-yellow-300 text-yellow-800"
+                        }`}
+                      >
+                        {viewPaymentData.status}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payment Ref</label>
+                      <div className="text-sm font-semibold">{TABLE_PREFIX}_{viewPaymentData.payment_id}</div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
+                      <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payment Date</label>
+                      <div className="text-sm font-semibold">{viewPaymentData.payment_date}</div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
+                      <div className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${PAYMENT_METHOD_COLORS[viewPaymentData.payment_method]}`}>
+                        {viewPaymentData.payment_method}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Receipt No.</label>
+                    <div className="text-sm font-mono font-bold">{viewPaymentData.receipt_no}</div>
                   </div>
                 </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Interest</span>
-                  <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200">
-                    <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Fees</span>
-                  <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200">
-                    <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
-                  </div>
-                </div>
-                
-                <div className="pt-2 border-t border-base-300">
-                  <div className="flex justify-between items-center">
-                    <span className="text-base font-bold">Total Amount</span>
-                    <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
-                      <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+
+                {/* Amount Breakdown Section */}
+                <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                  <h4 className="text-xs font-bold text-gray-600 mb-3">Payment Breakdown</h4>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Principal</span>
+                      <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200 w-28 text-right">
+                        <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Interest</span>
+                      <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200 w-28 text-right">
+                        <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Fees</span>
+                      <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200 w-28 text-right">
+                        <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2 border-t border-base-300">
+                      <div className="flex justify-between items-center">
+                        <span className="text-base font-bold">Total Amount</span>
+                        <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                          <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Fixed Modal Actions */}
+              <div className="flex justify-between pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
+                {/* <button 
+                  className="btn btn-sm btn-primary"
+                  onClick={() => {
+                    createPdfReceipt(viewPaymentData);
+                  }}
+                >
+                  <PictureAsPdfIcon fontSize="small" />
+                  Export PDF
+                </button> */}
+                <button 
+                  className="btn btn-sm btn-primary mr-2"
+                  onClick={() => setShowReceipt(true)}
+                >
+                  <PictureAsPdfIcon fontSize="small" className="mr-1" />
+                  View Receipt
+                </button>
+                <button onClick={closeViewModal} className="btn btn-sm">Close</button>
+              </div>
             </div>
-            <div className="flex justify-start">
-            <button 
-              className="btn btn-sm btn-primary mt-3"
-              onClick={() => {
-                // console.log(viewPaymentData)
-                createPdfReceipt(viewPaymentData);
-              }}
-            >
-              <PictureAsPdfIcon fontSize="small" />
-              Export PDF
-            </button>
-          </div>
-          </FormModal>
+          </dialog>
         )}
       </div>
     </div>

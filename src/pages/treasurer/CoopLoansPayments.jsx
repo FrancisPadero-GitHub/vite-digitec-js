@@ -1163,10 +1163,10 @@ function CoopLoansPayments() {
 
         {/* View Payment Details Modal */}
         {viewPaymentData && (
-          <dialog open className="modal">
-            <div className="modal-box max-w-sm md:max-w-2xl w-full mx-4">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+          <dialog open className="modal overflow-hidden">
+            <div className="modal-box max-w-sm md:max-w-2xl w-full flex flex-col max-h-2xl">
+              {/* Fixed Header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 flex-shrink-0">
                 <h3 className="text-xl font-bold">Payment Details</h3>
                 <div className={`badge badge-lg font-semibold ${viewPaymentData.status === "PAID" ? "badge-success" : "badge-info"
                   }`}>
@@ -1174,94 +1174,95 @@ function CoopLoansPayments() {
                 </div>
               </div>
 
-              {/* Account Info Section */ }
-              <div className="bg-base-200 p-3 rounded-lg mb-3">
-                <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
-                <div className="grid grid-cols-3 gap-2.5">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Account Number</label>
-                    <div className="text-sm font-semibold">{viewPaymentData.account_number}</div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
-                    <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <button onClick={() => setShowReceipt(true)} className="btn btn-warning w-20 h-5">Receipt</button>
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto overflow-x-hidden flex-1">
+                {/* Account Info Section */}
+                <div className="bg-base-200 p-3 rounded-lg mb-3">
+                  <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
+                  <div className="flex flex-col lg:flex-row lg:justify-between gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Account Number</label>
+                      <div className="text-sm font-semibold">{viewPaymentData.account_number}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref Number</label>
+                      <div className="text-sm font-mono font-bold">{viewPaymentData.loan_ref_number}</div>
+                    </div>
+                    <div className="self-center lg:self-end">
+                      <button onClick={() => setShowReceipt(true)} className="btn btn-warning max-h-6">View Receipt</button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Payment Info Section */}
-              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
-                <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Information</h4>
-                <div className="grid grid-cols-4 gap-2.5 mb-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
-                    <div className="text-sm font-mono font-bold">#{viewPaymentData.schedule_id}</div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Payment ID</label>
-                    <div className="text-sm font-mono font-bold">LP_{viewPaymentData.payment_id}</div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Payment Date</label>
-                    <div className="text-sm font-semibold">{dayjs(viewPaymentData.payment_date).format('MM/DD/YYYY')}</div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
-                    <div className="text-sm font-semibold">{viewPaymentData.payment_method}</div>
+                {/* Payment Info Section */}
+                <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                  <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Information</h4>
+                  <div className="grid grid-cols-4 gap-2.5 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
+                      <div className="text-sm font-mono font-bold">#{viewPaymentData.schedule_id}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payment ID</label>
+                      <div className="text-sm font-mono font-bold">LP_{viewPaymentData.payment_id}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payment Date</label>
+                      <div className="text-sm font-semibold">{dayjs(viewPaymentData.payment_date).format('MM/DD/YYYY')}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
+                      <div className="text-sm font-semibold">{viewPaymentData.payment_method}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Payment details */}
-              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
-                <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Breakdown</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Principal</span>
-                    <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200">
-                      <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Interest</span>
-                    <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200">
-                      <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Fees</span>
-                    <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200">
-                      <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-base-300">
+                {/* Payment details */}
+                <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                  <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Breakdown</h4>
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-base font-bold">Total Amount</span>
-                      <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
-                        <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                      <span className="text-sm text-gray-600">Principal</span>
+                      <div className="px-2 py-1 bg-blue-50 rounded border border-blue-200 w-28 text-right">
+                        <span className="text-sm font-bold text-blue-900">₱{viewPaymentData.principal.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Interest</span>
+                      <div className="px-2 py-1 bg-purple-50 rounded border border-purple-200 w-28 text-right">
+                        <span className="text-sm font-bold text-purple-900">₱{viewPaymentData.interest.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Fees</span>
+                      <div className="px-2 py-1 bg-amber-50 rounded border border-amber-200 w-28 text-right">
+                        <span className="text-sm font-bold text-amber-900">₱{viewPaymentData.fees.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-base-300">
+                      <div className="flex justify-between items-center">
+                        <span className="text-base font-bold">Total Amount</span>
+                        <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                          <span className="text-lg font-bold text-green-900">₱{viewPaymentData.total_amount.toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Modal Actions */}
-              <div className='flex justify-between' >
-                <div className="modal-action">
+              {/* Fixed Modal Actions */}
+              <div className="flex justify-between pt-4 border-t border-gray-200 mt-4 flex-shrink-0">
+                <div className="modal-action mt-0">
                   {showEditModal && (
                     <button onClick={editModal} className="btn btn-primary">Edit</button>
                   )}
                 </div>
-                <div className="modal-action">
+                <div className="modal-action mt-0">
                   <button onClick={closeViewModal} className="btn btn-primary">Close</button>
                 </div>
               </div>
-
             </div>
-            <form method="dialog" className="modal-backdrop" onClick={closeViewModal}><button>close</button></form>
           </dialog>
         )}
       </div>

@@ -53,7 +53,7 @@ export default function ReceiptModal({ open, onClose, payment }) {
       onClick={onClose}
     >
       <div 
-        className="bg-white w-[32rem] max-w-[95vw] rounded-2xl shadow-2xl overflow-hidden"
+        className="bg-white w-full max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
         onClick={handleModalClick} 
       >
         {/* Header */}
@@ -76,8 +76,8 @@ export default function ReceiptModal({ open, onClose, payment }) {
           </button>
         </div>
 
-        {/* Receipt Content */}
-        <div className="p-6">
+        {/* Receipt Content (scrollable center) */}
+        <div className="p-6 flex-1 overflow-y-auto min-h-0">
           {/* Receipt Number Badge */}
           <div className="flex justify-center mb-6">
             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg px-4 py-2">
