@@ -15,7 +15,7 @@ import PropTypes from "prop-types";
  * 
  */
 
-function LoanAccModal({ title, open, close, children, onSubmit, status, isPending }) { // deleteAction
+function LoanAccModal({ title, open, close, children, onSubmit, status, isPending, isError }) { // deleteAction
 
 
   // if open is false, don't render anything
@@ -50,7 +50,7 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, isPendin
                 {onSubmit ? "Back" : "Close"}
               </button>
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status || isPending}>
+                <button type="submit" className="btn btn-primary" disabled={status || isPending || isError}>
                   {isPending ? (
                     <>
                       <span className="loading loading-spinner loading-sm"></span>
@@ -76,6 +76,7 @@ LoanAccModal.propTypes = {
   onSubmit: PropTypes.func,
   status: PropTypes.bool,
   isPending: PropTypes.bool,
+  isError: PropTypes.bool,
 };
 
 export default LoanAccModal

@@ -868,6 +868,8 @@ function LoanApplicationsV2() {
           title={"Loan Account Details"}
           open={state && mode === 'loanAccount'}
           close={closeLoanAccModal}
+          // disables the form submit button if there are errors in the loan account form or calculation is ongoing
+          isError={Object.keys(errorsLoanAcc).length > 0}
           status={isCalculating}
           isPending={isUpdateLoanAppPending || isAddLoanAccPending}
           onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)} // No operation on submit for now
@@ -970,10 +972,6 @@ function LoanApplicationsV2() {
                     <input
                       value={field.value ?? ''}
                       type="number"
-                      min={selectedProduct?.min_amount || 0}
-                      max={productCode === "S_CAP_LOANS"
-                        ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
-                        : new Decimal(selectedProduct?.max_amount || 9999999)}
                       placeholder={watchLoanApp("amount")}
                       onWheel={(e) => e.target.blur()}
                       {...field}
