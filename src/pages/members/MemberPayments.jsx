@@ -120,8 +120,8 @@ function MemberPayments() {
                 value: statusFilter,
                 onChange: setStatusFilter,
                 options: [
-                  { label: "Full", value: "Full" },
-                  { label: "Partial", value: "Partial" },
+                  { label: "Paid", value: "PAID" },
+                  { label: "Partial", value: "PARTIAL" },
                 ],
               },
               {

@@ -24,7 +24,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
             onSubmit(e);
           }}
         >
-          <div className="max-h-[60vh] overflow-y-auto pr-2">
+          <div className="max-h-[60vh] overflow-y-auto p-2">
             {children}
           </div>
 

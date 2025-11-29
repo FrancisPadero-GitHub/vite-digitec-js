@@ -44,11 +44,11 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
           }}
         >
           
-          <div className="max-h-[60vh] overflow-y-auto pr-2">
+          <div className="max-h-[60vh] overflow-y-auto p-2">
             {children}
           </div>
 
-          <div className="flex justify-between items-center gap-2 mt-6">
+          <div className="flex justify-between items-center gap-2">
             {action && (
               <button
                 type="button"

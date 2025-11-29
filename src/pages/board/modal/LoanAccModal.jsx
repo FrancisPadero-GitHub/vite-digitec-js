@@ -35,11 +35,11 @@ function LoanAccModal({ title, open, close, children, onSubmit, status, isPendin
           }}
         >
           {/* make form body scrollable to prevent overlap in smaller screens */}
-          <div className="max-h-[60vh] overflow-y-auto pr-2">
+          <div className="max-h-[60vh] overflow-y-auto p-2">
             {children}
           </div>
 
-          <div className="flex justify-between items-center gap-2 mt-6">
+          <div className="flex justify-between items-center gap-2 mt-2">
             <div className="flex gap-2 ml-auto">
               <button 
                 type="button" 
