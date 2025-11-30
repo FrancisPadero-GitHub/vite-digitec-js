@@ -14,8 +14,6 @@ import Layout from "./layout/Layout";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import NotFound from "./pages/NotFound";
-import Terms from "./pages/agreements/Terms";
-import Privacy from "./pages/agreements/Privacy";
 
 // SHARED PAGES 
 import DashboardV2 from "./pages/shared/DashboardV2";
@@ -75,6 +73,7 @@ import MemberSettings from "./pages/members/MemberSettings";
 import MemberClubFunds from "./pages/members/MemberClubFunds";
 import Profile from "./pages/members/Profile";
 import MemberLoanAcc from "./pages/members/MemberLoanAcc";
+
 
 
 const queryClient = new QueryClient();
@@ -172,8 +171,6 @@ function AppRoutes() {
     { path: "/login", element: <Login /> },
     { path: "/forgot-password", element: <ForgotPassword /> },
     { path: "/reset-password", element: <ResetPassword /> },
-    { path: "/terms", element: <Terms /> },
-    { path: "/privacy", element: <Privacy /> },
     {
       path: "/admin",
       element: (
