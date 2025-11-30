@@ -230,7 +230,7 @@ function DashboardV2() {
             {/* Total Card Stats  */}
             <section className="px-2 sm:px-0">
               <div className="flex items-center mb-3">
-                <h2 className="text-lg sm:text-xl font-semibold mr-2">Overall Totals</h2>
+                <h2 className="text-md font-semibold mr-2">Overall Totals</h2>
                 {/* Universal Filter */}
                 <div className="dropdown dropdown-bottom sm:dropdown-right">
                   <label tabIndex={0} className="btn btn-sm btn-ghost">

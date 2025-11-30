@@ -253,324 +253,326 @@ function MemberProfile() {
 
 
   return (
-    <div>
-      <Toaster position="bottom-left" />
-      {/* Breadcrumb */}
-      <div className="text-2xl font-bold flex items-center gap-2 mb-4">
-        <button onClick={() => navigate(-1)} className="text-primary hover:underline">
-          Member Records
-        </button>
-        <span className="text-base-content">| Member Profile</span>
-      </div>
+    <div className="m-3" >
+      <div className="space-y-3">
+        <Toaster position="bottom-left" />
+        {/* Breadcrumb */}
+        <div className="text-lg lg:text-2xl font-bold flex items-center gap-2 mb-4">
+          <button onClick={() => navigate(-1)} className="text-primary hover:underline">
+            Member Records
+          </button>
+          <span className="text-base-content">| Member Profile</span>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        {/* LEFT COLUMN */}
-        <div className="space-y-6">
-          {/* MAIN DETAILS */}
-          <section className="card bg-base-100 shadow">
-            <div className="bg-primary text-primary-content text-center p-6 rounded-t">
-              <div className="flex justify-center mb-2">
-                <div className="relative w-28 h-28 mx-auto">
-                  <img
-                    src={memberInfo?.avatar_url || placeHolderAvatar}
-                    alt="Profile Picture"
-                    className="rounded-full ring-4 ring-base-200 w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <h2 className="text-lg font-semibold">{displayName}</h2>
-              <span className="badge badge-neutral">
-                {memberInfo?.account_role}
-              </span>
-              <p className="text-sm mt-2">
-                Member Since:{" "}
-                {memberInfo?.joined_date
-                  ? new Date(memberInfo.joined_date).toLocaleDateString()
-                  : "N/A"}
-              </p>
-            </div>
-
-            <div className="card-body p-4 grid grid-cols-3 text-center">
-              {topInfo.map((stat, i) => (
-                <div key={i}>
-                  <h3 className="text-lg font-bold">{stat.value}</h3>
-                  <p className="text-sm text-gray-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="card bg-base-100 shadow">
-            <div className="card-body">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="card-title text-primary">Loan Eligibility</h2>
-
-                  {/* Eligibility rules */}
-                  <div className="dropdown dropdown-hover dropdown-right">
-                    <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-gray-400 hover:text-gray-500">
-                      <InfoIcon fontSize="small" />
-                    </div>
-                    <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-64 p-4 shadow bg-base-200 text-base-content">
-                      <div className="card-body p-0">
-                        <h3 className="font-semibold text-sm mb-2">Eligibility Requirements</h3>
-                        <ul className="text-xs space-y-1.5">
-                          {eligibilityInfo.map((item, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              <span>{item.rule}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+            {/* MAIN DETAILS */}
+            <section className="card bg-base-100 shadow">
+              <div className="bg-primary text-primary-content text-center p-6 rounded-t">
+                <div className="flex justify-center mb-2">
+                  <div className="relative w-28 h-28 mx-auto">
+                    <img
+                      src={memberInfo?.avatar_url || placeHolderAvatar}
+                      alt="Profile Picture"
+                      className="rounded-full ring-4 ring-base-200 w-full h-full object-cover"
+                    />
                   </div>
                 </div>
-
-                {/* Eligible/Ineligible badge */}
-                {eligibilityInfo.every(item => item.passed) ? (
-                  <span className="badge badge-success gap-2">
-                    <CheckCircleIcon sx={{ fontSize: 16 }} />Eligible
-                  </span>
-                ) : (
-                  <span className="badge badge-error gap-2">
-                    <CancelIcon sx={{ fontSize: 16 }} />Not Eligible
-                  </span>
-                )}
+                <h2 className="text-lg font-semibold">{displayName}</h2>
+                <span className="badge badge-neutral">
+                  {memberInfo?.account_role}
+                </span>
+                <p className="text-sm mt-2">
+                  Member Since:{" "}
+                  {memberInfo?.joined_date
+                    ? new Date(memberInfo.joined_date).toLocaleDateString()
+                    : "N/A"}
+                </p>
               </div>
 
-              {/* Member's loan elibility info */}
-              <div className="space-y-3">
-                {eligibilityInfo.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className={`${item.passed ? 'text-success' : 'text-error'}`}>
-                      {item.passed ? (
-                        <CheckCircleIcon fontSize="small" />
-                      ) : (
-                        <CancelIcon fontSize="small" />
-                      )}
-                    </div>
-                    <div className="flex-1 flex justify-between items-center gap-2">
-                      <span className="font-medium text-sm">{item.label}:</span>
-                      <p className={`text-sm font-semibold whitespace-nowrap ${item.passed ? 'text-success' : 'text-error'}`}>
-                        {item.value}
-                      </p>
-                    </div>
+              <div className="card-body p-4 grid grid-cols-3 text-center">
+                {topInfo.map((stat, i) => (
+                  <div key={i}>
+                    <h3 className="text-lg font-bold">{stat.value}</h3>
+                    <p className="text-sm text-gray-500">{stat.label}</p>
                   </div>
                 ))}
               </div>
-              {memberRole === 'board' && (
-                <Fragment>
-                  <div className="divider my-2"></div>
-                  {/* Toggle for Other Loan Products */}
-                  <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm">Other Loan Products Access</h3>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {isEligible
-                          ? "Member can access all loan products"
-                          : "Member limited to share capital loan only"}
-                      </p>
+            </section>
+
+            <section className="card bg-base-100 shadow">
+              <div className="card-body">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="card-title text-primary">Loan Eligibility</h2>
+
+                    {/* Eligibility rules */}
+                    <div className="dropdown dropdown-hover dropdown-right">
+                      <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-gray-400 hover:text-gray-500">
+                        <InfoIcon fontSize="small" />
+                      </div>
+                      <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-64 p-4 shadow bg-base-200 text-base-content">
+                        <div className="card-body p-0">
+                          <h3 className="font-semibold text-sm mb-2">Eligibility Requirements</h3>
+                          <ul className="text-xs space-y-1.5">
+                            {eligibilityInfo.map((item, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-primary">•</span>
+                                <span>{item.rule}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
                     </div>
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-success"
-                      checked={isEligible}
-                      onChange={handleToggleEligibility}
-                      disabled={isUpdating}
-                    />
                   </div>
-                </Fragment>
-              )}
 
-            </div>
-          </section>
+                  {/* Eligible/Ineligible badge */}
+                  {eligibilityInfo.every(item => item.passed) ? (
+                    <span className="badge badge-success gap-2">
+                      <CheckCircleIcon sx={{ fontSize: 16 }} />Eligible
+                    </span>
+                  ) : (
+                    <span className="badge badge-error gap-2">
+                      <CancelIcon sx={{ fontSize: 16 }} />Not Eligible
+                    </span>
+                  )}
+                </div>
 
-
-          {/* PERSONAL DETAILS */}
-          <section className="card bg-base-100 shadow">
-            <div className="card-body">
-              <div className="flex justify-start items-center mb-4">
-                <h2 className="card-title text-primary">
-                  Personal Information
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                {personalInfo.map(({ name, label, optional }) => {
-                  // Show optional fields only if they have values
-                  if (optional) {
-                    const value = name === "displayName" ? displayName : memberInfo?.[name];
-                    const displayValue = name === "displayName" ? displayName : (memberInfo?.[name] || "—");
-                    if (value == null || displayValue === "—") { return null; }
-                  }
-
-                  return (
-                    <div key={name}>
-                      <p className="text-xs text-gray-500 uppercase">{label}</p>
-                      <p className="font-medium">
-                        {name === "displayName"
-                          ? displayName
-                          : memberInfo?.[name] || "—"}
-                      </p>
+                {/* Member's loan elibility info */}
+                <div className="space-y-3">
+                  {eligibilityInfo.map((item, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className={`${item.passed ? 'text-success' : 'text-error'}`}>
+                        {item.passed ? (
+                          <CheckCircleIcon fontSize="small" />
+                        ) : (
+                          <CancelIcon fontSize="small" />
+                        )}
+                      </div>
+                      <div className="flex-1 flex justify-between items-center gap-2">
+                        <span className="font-medium text-sm">{item.label}:</span>
+                        <p className={`text-sm font-semibold whitespace-nowrap ${item.passed ? 'text-success' : 'text-error'}`}>
+                          {item.value}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+                {memberRole === 'board' && (
+                  <Fragment>
+                    <div className="divider my-2"></div>
+                    {/* Toggle for Other Loan Products */}
+                    <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm">Other Loan Products Access</h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {isEligible
+                            ? "Member can access all loan products"
+                            : "Member limited to share capital loan only"}
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-success"
+                        checked={isEligible}
+                        onChange={handleToggleEligibility}
+                        disabled={isUpdating}
+                      />
+                    </div>
+                  </Fragment>
+                )}
+
               </div>
+            </section>
+
+
+            {/* PERSONAL DETAILS */}
+            <section className="card bg-base-100 shadow">
+              <div className="card-body">
+                <div className="flex justify-start items-center mb-4">
+                  <h2 className="card-title text-primary">
+                    Personal Information
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {personalInfo.map(({ name, label, optional }) => {
+                    // Show optional fields only if they have values
+                    if (optional) {
+                      const value = name === "displayName" ? displayName : memberInfo?.[name];
+                      const displayValue = name === "displayName" ? displayName : (memberInfo?.[name] || "—");
+                      if (value == null || displayValue === "—") { return null; }
+                    }
+
+                    return (
+                      <div key={name}>
+                        <p className="text-xs text-gray-500 uppercase">{label}</p>
+                        <p className="font-medium">
+                          {name === "displayName"
+                            ? displayName
+                            : memberInfo?.[name] || "—"}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <section className="md:col-span-2 space-y-6">
+            <div className="tabs tabs-lift">
+              {/* SHARE CAPITAL TAB */}
+              <FinanceTab
+                label="Share Capital"
+                icon={<AccountBalanceIcon fontSize="small" className="mr-2" />}
+                headers={["Ref No.", "Amount", "Payment Type", "Date", "Remarks"]}
+                data={coopContributions}
+                isDefault={true}
+                renderRow={(entry) => (
+                  <tr key={entry.coop_contri_id} className="text-center">
+                    <td className="text-info font-medium text-xs">SCC_{entry.coop_contri_id}</td>
+                    <td className="font-semibold text-success">₱{entry.amount.toLocaleString()}</td>
+                    <td>
+                      {entry.category ? (
+                        <span
+                          className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[entry.category]}`}
+                        >
+                          {entry.category}
+                        </span>
+                      ) : (
+                        <span className="badge font-semibold badge-error">
+                          Not Provided
+                        </span>
+                      )}
+                    </td>
+                    <td className="font-medium text-xs">{entry.contribution_date}</td>
+                    <td className="text-xs w-[200px] max-w-[200px]">
+                      <div
+                        className="cursor-help truncate w-full"
+                        title={entry.remarks || "No remarks provided"}
+                      >
+                        {entry.remarks || "—"}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              />
+
+              {/* CLUB FUNDS TAB */}
+              <FinanceTab
+                label="Club Funds"
+                icon={<SavingsIcon fontSize="small" className="mr-2" />}
+                headers={["Ref No.", "Amount", "Category", "Method", "Date", "Remarks"]}
+                data={clubFunds}
+                renderRow={(entry) => (
+                  <tr key={entry.contribution_id} className="text-center">
+                    <td className="text-info font-medium text-xs">
+                      CFC_{entry.contribution_id}
+                    </td>
+                    <td className="font-semibold text-success">
+                      ₱{entry.amount.toLocaleString()}
+                    </td>
+                    <td>
+                      <span
+                        className={`font-semibold ${CLUB_CATEGORY_COLORS[entry.category]}`}
+                      >
+                        {entry.category || "Not Provided"}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[entry.payment_method]}`}
+                      >
+                        {entry.payment_method || "Not Provided"}
+                      </span>
+                    </td>
+                    <td className="text-xs font-medium">{entry.payment_date}</td>
+                    <td className="text-xs w-[200px] max-w-[200px]">
+                      <div
+                        className="cursor-help truncate w-full"
+                        title={entry.remarks || "No remarks provided"}
+                      >
+                        {entry.remarks || "—"}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              />
+
+              {/* ONGOING LOANS */}
+              <FinanceTab
+                label="Ongoing Loans"
+                icon={<HandshakeIcon className="mr-2" />}
+                headers={[
+                  "Loan Ref No.",
+                  "Principal",
+                  "Total Repayable",
+                  "Total Paid",
+                  "Release Date",
+                  "Maturity Date",
+                ]}
+                data={activeLoans}
+                renderRow={(loan) => (
+                  <tr
+                    key={loan.loan_id}
+                    className="cursor-pointer hover:bg-base-200/50 text-center"
+                    onClick={() => openModal(loan)}
+                  >
+                    <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
+                    <td className="font-medium text-xs">₱{Number(loan.principal || 0).toLocaleString()}</td>
+                    <td className="font-medium text-xs">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
+                    <td className="font-medium text-xs text-success">₱{Number(loan.total_paid || 0).toLocaleString()}</td>
+                    <td className="font-medium text-xs">
+                      {loan.release_date
+                        ? dayjs(loan.release_date).format("MMM D, YYYY")
+                        : "—"}
+                    </td>
+                    <td className="font-medium text-xs">
+                      {loan.maturity_date
+                        ? dayjs(loan.maturity_date).format("MMM D, YYYY")
+                        : "—"}
+                    </td>
+                  </tr>
+                )}
+              />
+
+              {/* PAST LOANS */}
+              <FinanceTab
+                label="Past Loans"
+                icon={<HandshakeIcon className="mr-2" />}
+                headers={[
+                  "Loan Ref No.",
+                  "Principal",
+                  "Total Repayable",
+                  "Release Date",
+                  "Maturity Date",
+                ]}
+                data={pastLoans}
+                renderRow={(loan) => (
+                  <tr key={loan.loan_id} className="text-center">
+                    <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
+                    <td className="font-medium text-xs">₱{Number(loan.principal || 0).toLocaleString()}</td>
+                    <td className="font-medium text-xs">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
+                    <td className="font-medium text-xs">
+                      {loan.release_date
+                        ? dayjs(loan.release_date).format("MMM D, YYYY")
+                        : "—"}
+                    </td>
+                    <td className="font-medium text-xs">
+                      {loan.maturity_date
+                        ? dayjs(loan.maturity_date).format("MMM D, YYYY")
+                        : "—"}
+                    </td>
+                  </tr>
+                )}
+              />
+
             </div>
           </section>
         </div>
-
-        {/* RIGHT COLUMN */}
-        <section className="md:col-span-2 space-y-6">
-          <div className="tabs tabs-lift">
-            {/* SHARE CAPITAL TAB */}
-            <FinanceTab
-              label="Share Capital"
-              icon={<AccountBalanceIcon fontSize="small" className="mr-2" />}
-              headers={["Ref No.", "Amount", "Payment Type", "Date", "Remarks"]}
-              data={coopContributions}
-              isDefault={true}
-              renderRow={(entry) => (
-                <tr key={entry.coop_contri_id} className="text-center">
-                  <td className="text-info font-medium text-xs">SCC_{entry.coop_contri_id}</td>
-                  <td className="font-semibold text-success">₱{entry.amount.toLocaleString()}</td>
-                  <td>
-                    {entry.category ? (
-                      <span
-                        className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[entry.category]}`}
-                      >
-                        {entry.category}
-                      </span>
-                    ) : (
-                      <span className="badge font-semibold badge-error">
-                        Not Provided
-                      </span>
-                    )}
-                  </td>
-                  <td className="font-medium text-xs">{entry.contribution_date}</td>
-                  <td className="text-xs w-[200px] max-w-[200px]">
-                    <div
-                      className="cursor-help truncate w-full"
-                      title={entry.remarks || "No remarks provided"}
-                    >
-                      {entry.remarks || "—"}
-                    </div>
-                  </td>
-                </tr>
-              )}
-            />
-
-            {/* CLUB FUNDS TAB */}
-            <FinanceTab
-              label="Club Funds"
-              icon={<SavingsIcon fontSize="small" className="mr-2" />}
-              headers={["Ref No.", "Amount", "Category", "Method", "Date", "Remarks"]}
-              data={clubFunds}
-              renderRow={(entry) => (
-                <tr key={entry.contribution_id} className="text-center">
-                  <td className="text-info font-medium text-xs">
-                    CFC_{entry.contribution_id}
-                  </td>
-                  <td className="font-semibold text-success">
-                    ₱{entry.amount.toLocaleString()}
-                  </td>
-                  <td>
-                    <span
-                      className={`font-semibold ${CLUB_CATEGORY_COLORS[entry.category]}`}
-                    >
-                      {entry.category || "Not Provided"}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge badge-soft font-semibold ${PAYMENT_METHOD_COLORS[entry.payment_method]}`}
-                    >
-                      {entry.payment_method || "Not Provided"}
-                    </span>
-                  </td>
-                  <td className="text-xs font-medium">{entry.payment_date}</td>
-                  <td className="text-xs w-[200px] max-w-[200px]">
-                    <div
-                      className="cursor-help truncate w-full"
-                      title={entry.remarks || "No remarks provided"}
-                    >
-                      {entry.remarks || "—"}
-                    </div>
-                  </td>
-                </tr>
-              )}
-            />
-
-            {/* ONGOING LOANS */}
-            <FinanceTab
-              label="Ongoing Loans"
-              icon={<HandshakeIcon className="mr-2" />}
-              headers={[
-                "Loan Ref No.",
-                "Principal",
-                "Total Repayable",
-                "Total Paid",
-                "Release Date",
-                "Maturity Date",
-              ]}
-              data={activeLoans}
-              renderRow={(loan) => (
-                <tr
-                  key={loan.loan_id}
-                  className="cursor-pointer hover:bg-base-200/50 text-center"
-                  onClick={() => openModal(loan)}
-                >
-                  <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
-                  <td className="font-medium text-xs">₱{Number(loan.principal || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs text-success">₱{Number(loan.total_paid || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs">
-                    {loan.release_date
-                      ? dayjs(loan.release_date).format("MMM D, YYYY")
-                      : "—"}
-                  </td>
-                  <td className="font-medium text-xs">
-                    {loan.maturity_date
-                      ? dayjs(loan.maturity_date).format("MMM D, YYYY")
-                      : "—"}
-                  </td>
-                </tr>
-              )}
-            />
-
-            {/* PAST LOANS */}
-            <FinanceTab
-              label="Past Loans"
-              icon={<HandshakeIcon className="mr-2" />}
-              headers={[
-                "Loan Ref No.",
-                "Principal",
-                "Total Repayable",
-                "Release Date",
-                "Maturity Date",
-              ]}
-              data={pastLoans}
-              renderRow={(loan) => (
-                <tr key={loan.loan_id} className="text-center">
-                  <td className="font-medium text-info text-xs">{loan.loan_ref_number}</td>
-                  <td className="font-medium text-xs">₱{Number(loan.principal || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs">₱{Number(loan.total_amount_due || 0).toLocaleString()}</td>
-                  <td className="font-medium text-xs">
-                    {loan.release_date
-                      ? dayjs(loan.release_date).format("MMM D, YYYY")
-                      : "—"}
-                  </td>
-                  <td className="font-medium text-xs">
-                    {loan.maturity_date
-                      ? dayjs(loan.maturity_date).format("MMM D, YYYY")
-                      : "—"}
-                  </td>
-                </tr>
-              )}
-            />
-
-          </div>
-        </section>
       </div>
     </div>
   );
