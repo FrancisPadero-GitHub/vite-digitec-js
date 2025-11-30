@@ -197,7 +197,7 @@ function IncomeStatement() {
           </div>
         </div>
         {/* Summary Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {isLoading ? (
             <div className="col-span-full flex justify-center items-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />
@@ -209,7 +209,6 @@ function IncomeStatement() {
                 <div className="card-body px-4 py-3">
                   <div className="flex items-center justify-between">
                     <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Total Income</h3>
-                    
                   </div>
                   <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(filteredTotalIncome || totalIncome)}</p>
                 </div>
