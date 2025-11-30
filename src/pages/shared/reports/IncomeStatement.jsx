@@ -179,7 +179,7 @@ function IncomeStatement() {
   return (
     <div className="m-3">
       <div className='space-y-2'>
-        <h1 className="text-lg lg:text-2xl sm:text-3xl font-bold text-base-content">Income Statement</h1>
+        <h1 className="text-lg lg:text-2xl sm:text-lg lg:text-2xl font-bold text-base-content">Income Statement</h1>
 
         {/* Header Section - responsive: date filters left, exports right on lg+; stacked on mobile */}
         <div className="flex flex-row">
@@ -206,14 +206,12 @@ function IncomeStatement() {
             <>
               {/* Total Income Card */}
               <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl">
-                <div className="card-body p-5">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="card-body px-4 py-3">
+                  <div className="flex items-center justify-between">
                     <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Total Income</h3>
-                    <svg className="w-8 h-8 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    
                   </div>
-                  <p className="text-3xl font-bold text-white">{formatCurrency(filteredTotalIncome || totalIncome)}</p>
+                  <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(filteredTotalIncome || totalIncome)}</p>
                 </div>
               </div>
 
@@ -226,30 +224,16 @@ function IncomeStatement() {
                 ];
                 const style = cardStyles[index % cardStyles.length];
                 
-                const icons = {
-                  service_fee: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  ),
-                  interest_income: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  ),
-                  penalty_income: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  )
-                };
-
                 return (
                   <div key={index} className={`card bg-gradient-to-br ${style.gradient} ${style.text} shadow-xl`}>
-                    <div className="card-body p-5">
+                    <div className="card-body px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="card-title text-sm font-semibold uppercase tracking-wide truncate text-white">
                           {formatCategoryName(item.category)}
                         </h3>
-                        <svg className="w-8 h-8 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          {icons[item.category] || icons.service_fee}
-                        </svg>
+                        
                       </div>
-                      <p className="text-3xl font-bold text-white">{formatCurrency(item.total_amount)}</p>
+                      <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(item.total_amount)}</p>
                       <p className="text-sm mt-2 opacity-90 text-white">
                         {(() => {
                           const total = filteredSummary.length ? filteredTotalIncome : totalIncome;
