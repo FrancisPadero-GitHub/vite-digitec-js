@@ -294,7 +294,7 @@ function Announcement() {
             </div>
 
             {/* Scrollable Content */}
-            <div className="overflow-y-auto overflow-x-hidden flex-1 py-4 px-1">
+            <div className="overflow-y-auto overflow-x-hidden flex-1 py-4 pl-1 pr-2">
               {/* View Mode */}
               {modalMode === 'view' && selectedAnnouncement && (
                 <div className="space-y-4">

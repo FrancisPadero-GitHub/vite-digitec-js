@@ -47,7 +47,8 @@ function BoardFormModal({
       <div className="modal-box space-y-6 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-[45rem] w-full mx-4">
         <h2 className="text-2xl font-semibold">{title}</h2>
         <form onSubmit={handleFormSubmit}>
-          <div className="max-h-[60vh] overflow-y-auto p-2">
+          {/* Control the paddings on the parent not here cause every modal usage is different for very pages */}
+          <div className="max-h-[60vh] overflow-y-auto mb-4 mt-2">
             {children}
           </div>
 

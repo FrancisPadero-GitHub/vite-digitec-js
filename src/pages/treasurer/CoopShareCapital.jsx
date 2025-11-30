@@ -524,7 +524,8 @@ function CoopShareCapital() {
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => openDeleteModal(control._formValues.coop_contri_id)}
       >
-        <div className="form-control w-full">
+        <div className="pl-1 pr-2">
+          <div className="form-control">
           <label className="label text-sm font-semibold mb-2">Member Account</label>
           <Controller
             name="account_number"
@@ -658,6 +659,8 @@ function CoopShareCapital() {
             )}
           </div>
         ))}
+        </div>
+
       </FormModal>
 
       <DeleteConfirmationModal

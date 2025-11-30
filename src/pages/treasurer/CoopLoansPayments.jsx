@@ -737,133 +737,69 @@ function CoopLoansPayments() {
           status={isAddPending || isEditPending}
           deleteAction={() => handleDelete(watch("payment_id"))}
         >
-          {/* ACCOUNT SELECTION */}
-          <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-200 mb-3">
-            <h4 className="text-xs font-bold text-gray-600 mb-2">Account Selection</h4>
+          <div className="pl-1 pr-2">
+            {/* ACCOUNT SELECTION */}
+            <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-200 mb-3">
+              <h4 className="text-xs font-bold text-gray-600 mb-2">Account Selection</h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              {/* Member Account */}
-              <div className="form-control w-full">
-                <label className="label text-xs font-medium text-gray-600 mb-1">Member Account</label>
-                <Controller
-                  name="account_number"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="relative">
-                      <Combobox
-                        value={members.find((m) => m.account_number === field.value) || null}
-                        onChange={(member) => {
-                          field.onChange(member?.account_number);
-                          setValue("account_number", member?.account_number || "");
-                          setValue("member_id", member?.member_id || null);
-                          setValue("loan_ref_number", "");
-                          setValue("loan_id", null);
-                        }}
-                      >
-                        <ComboboxInput
-                          required
-                          className="input input-sm input-bordered w-full"
-                          placeholder="Search by Account Number or Name..."
-                          displayValue={(member) =>
-                            member ? `${member.account_number} - ${member.f_name} ${member.l_name}`.trim() : ""
-                          }
-                          onChange={(e) => setQueryMem(e.target.value)}
-                        />
-
-                        {/* Search option dropdown: account number, avatar, member name, role */}
-                        <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                          {filteredMembers.length === 0 ? (
-                            <div className="px-4 py-2 text-base-content/60">No members found.</div>
-                          ) : (
-                            filteredMembers.map((member) => (
-                              <ComboboxOption
-                                key={member.account_number}
-                                value={member}
-                                className={({ focus }) =>
-                                  `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
-                                }
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="avatar">
-                                    <div className="mask mask-circle w-10 h-10">
-                                      <img
-                                        src={member.avatar_url || placeHolderAvatar}
-                                        alt={`${member.f_name} ${member.l_name}`}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col flex-1 min-w-0">
-                                    <span className="font-mono text-sm font-semibold">{member.account_number}</span>
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                                      <span className="text-xs italic">({member.account_role})</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </ComboboxOption>
-                            ))
-                          )}
-                        </ComboboxOptions>
-                      </Combobox>
-                    </div>
-                  )}
-                />
-              </div>
-
-              {/* Loan Account */}
-              <div className="form-control w-full">
-                <label className="label text-xs font-medium text-gray-600 mb-1">Loan Account</label>
-                <Controller
-                  name="loan_ref_number"
-                  control={control}
-                  render={({ field }) => {
-                    const selectedAccount = watch("account_number");
-                    const data = loan_acc_view?.data || [];
-                    const selectedMember = data.find(m => m.account_number === selectedAccount);
-                    // console.log(selectedMember)
-                    return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                {/* Member Account */}
+                <div className="form-control w-full">
+                  <label className="label text-xs font-medium text-gray-600 mb-1">Member Account</label>
+                  <Controller
+                    name="account_number"
+                    control={control}
+                    render={({ field }) => (
                       <div className="relative">
                         <Combobox
-                          value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
-                          onChange={(loan) => {
-                            field.onChange(loan?.loan_ref_number);
-                            setValue("loan_ref_number", loan?.loan_ref_number || "");
-                            setValue("loan_id", loan?.loan_id || null);
+                          value={members.find((m) => m.account_number === field.value) || null}
+                          onChange={(member) => {
+                            field.onChange(member?.account_number);
+                            setValue("account_number", member?.account_number || "");
+                            setValue("member_id", member?.member_id || null);
+                            setValue("loan_ref_number", "");
+                            setValue("loan_id", null);
                           }}
-                          disabled={!selectedAccount}
                         >
                           <ComboboxInput
                             required
-                            className="input input-sm input-bordered w-full disabled:bg-base-200"
-                            placeholder={selectedAccount ? `Search loan account (e.g., LAPP-12345)` : "Select a member first"}
-                            displayValue={(loan) => loan?.loan_ref_number || ""}
-                            onChange={(e) => setQueryLoan(e.target.value)}
+                            className="input input-sm input-bordered w-full"
+                            placeholder="Search by Account Number or Name..."
+                            displayValue={(member) =>
+                              member ? `${member.account_number} - ${member.f_name} ${member.l_name}`.trim() : ""
+                            }
+                            onChange={(e) => setQueryMem(e.target.value)}
                           />
+
+                          {/* Search option dropdown: account number, avatar, member name, role */}
                           <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                            {filteredLoanAcc.length === 0 ? (
-                              <div className="px-4 py-2 text-base-content/60">
-                                {selectedAccount ? "No loan accounts found for this member." : "Select a member first."}
-                              </div>
+                            {filteredMembers.length === 0 ? (
+                              <div className="px-4 py-2 text-base-content/60">No members found.</div>
                             ) : (
-                              filteredLoanAcc.map((loan) => (
+                              filteredMembers.map((member) => (
                                 <ComboboxOption
-                                  key={loan.loan_ref_number}
-                                  value={loan}
+                                  key={member.account_number}
+                                  value={member}
                                   className={({ focus }) =>
-                                    `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
-                                    }`
+                                    `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
                                   }
                                 >
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-mono text-sm font-semibold">{loan.loan_ref_number}</span>
-                                    <span>
-                                      <span className="text-xs mr-1">
-                                        Amount Due:
-                                      </span>
-                                      <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1 rounded">
-                                        ₱{selectedMember && `${selectedMember?.total_amount_due}`}
-                                      </span>
-                                    </span>
+                                  <div className="flex items-center gap-3">
+                                    <div className="avatar">
+                                      <div className="mask mask-circle w-10 h-10">
+                                        <img
+                                          src={member.avatar_url || placeHolderAvatar}
+                                          alt={`${member.f_name} ${member.l_name}`}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                      <span className="font-mono text-sm font-semibold">{member.account_number}</span>
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                                        <span className="text-xs italic">({member.account_role})</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </ComboboxOption>
                               ))
@@ -871,229 +807,295 @@ function CoopLoansPayments() {
                           </ComboboxOptions>
                         </Combobox>
                       </div>
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* PAYMENT DETAILS */}
-          <div className="bg-white p-2.5 rounded-lg border border-gray-200 mb-3">
-            <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Details</h4>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-2.5">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
-                <div className="text-sm font-mono font-bold">{schedId ? `#${schedId}` : <span className="text-gray-400">-</span>}</div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Due Date</label>
-                <div className="text-sm font-semibold">{dueDate || <span className="text-gray-400">-</span>}</div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                {paymentStatus ? (
-                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-bold
-                    ${paymentStatus === "OVERDUE"
-                      ? "bg-red-50 border-red-300 text-red-800"
-                      : paymentStatus === "PARTIALLY PAID"
-                        ? "bg-blue-50 border-blue-300 text-blue-800"
-                        : "bg-gray-50 border-gray-300 text-gray-700"
-                    }`}>
-                    <span className={paymentStatus === "OVERDUE" ? "text-red-600" : "text-gray-500"}>●</span>
-                    {paymentStatus}
-                  </div>
-                ) : (
-                  <span className="text-sm text-gray-400">-</span>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Outstanding Balance</label>
-                <div className="text-sm font-bold text-amber-700">
-                  {balance ? `₱${display(new Decimal(balance ?? 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}` : <span className="text-gray-400">-</span>}
-                </div>
-              </div>
-            </div>
-
-            {/* Financial Breakdown */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-2.5 border-t border-gray-200">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Amount</label>
-                <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
-                  <div className="text-sm font-bold text-blue-900">₱{display(totalDue.minus(feeDue).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
-                </div>
-              </div>
-
-              {/* If OVERDUE, show months and penalties */}
-              {paymentStatus === "OVERDUE" && (
-                <>
-                {/* Display either overdue months or payments missed (if more than 1 overdues) */}
-                {overdueScheduleCount > 1 ? (
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Payments Missed</label>
-                    <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
-                      <div 
-                        title='Overdue payments for which penalties have occurred' 
-                        className="text-sm font-bold text-red-900"
-                      >
-                          {overPaymentCount.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                ): (
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Overdue</label>
-                    <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
-                      <div className="text-sm font-bold text-red-900">{mosOverdue.toLocaleString()} mos</div>
-                    </div>
-                  </div>
-                )}
-                
-                {totalPenaltyOccured > feeDue ? (                  
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Total Penalty</label>
-                    <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
-                      <div
-                        title='Total accumulated penalties from all overdue payments'
-                        className="text-sm font-bold text-red-900"
-                      >
-                        ₱{totalPenaltyOccured}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Penalty</label>
-                    <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
-                      <div className="text-sm font-bold text-red-900">₱{display(feeDue.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
-                    </div>
-                  </div>
-                  )}
-                </>
-              )}
-
-              {/* For PARTIALLY PAID */}
-              {paymentStatus === "PARTIALLY PAID" && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Already Paid</label>
-                  <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
-                    <div className="text-sm font-bold text-blue-900">₱{display(amountPaid.toNumber())}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Total Payable */}
-              <div className={paymentStatus === "OVERDUE" || paymentStatus === "PARTIALLY PAID" ? "" : "md:col-span-2"}>
-                <label className="block text-xs font-bold text-gray-500 mb-1">Total Payable</label>
-                <div className="px-2 py-1.5 bg-green-50 rounded border border-green-400">
-                  <div className="text-sm font-bold text-green-900">₱{display(totalPayableAllOverdueUnpaid)}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* PAYMENT FORM */}
-          <div className="bg-gray-50 px-2.5 py-0.5 rounded-lg border border-gray-200">
-            <h4 className="text-xs font-bold text-gray-600 mb-2">Enter Payment</h4>
-
-            {fields.map(({ label, name, type, options, autoComplete }) => (
-              <div key={name} className="form-control w-full mb-1.5 overflow-visible relative">
-                <label htmlFor={name} className="label text-xs font-medium text-gray-600">{label}</label>
-
-                {name === "total_amount" ? (
-                  <Controller
-                    name="total_amount"
-                    control={control}
-                    rules={{
-                      required: true,
-                      validate: (value) => {
-                        if (value <= 0) return "Amount cannot be zero or negative";
-
-                        // Skip validation checks when editing an existing payment
-                        if (loanPaymentModal.type === "edit") {
-
-                          return true;
-                        }
-
-                        const remainingDue = totalPayableAllOverdueUnpaidDecimal;
-                        // console.log("Remaining Due: ", remainingDue)
-                        const minRequiredAmount = remainingDue.mul(0.3).toDecimalPlaces(2, Decimal.ROUND_HALF_UP); // 30% of remaining amount
-                        const inputValue = new Decimal(value || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-                        // console.log("Input Value: ", inputValue);
-
-                        if (paymentStatus === "OVERDUE" && mosOverdue > 0) {
-                          if (inputValue.lt(remainingDue))
-                            return `For OVERDUE payments, amount must cover the full remaining payable of ₱${remainingDue.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        }
-                        if (inputValue.lt(minRequiredAmount))
-                          return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
-                        if (inputValue.gt(remainingDue))
-                          return `Amount cannot exceed total payable of ₱${remainingDue.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        if (inputValue.gt(new Decimal(balance || 0)))
-                          return `Amount cannot exceed outstanding balance of ₱${display(new Decimal(balance || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}`;
-                        return true;
-                      },
-                    }}
-                    render={({ field, fieldState: { error } }) => (
-                      <>
-                        <input
-                          id="total_amount"
-                          type="number"
-                          autoComplete="off"
-                          onWheel={(e) => e.target.blur()}
-                          value={field.value}
-                          placeholder="Enter Payment Amount" //AMOUNT LIMIT TO BE ADDED
-                          onChange={(e) => {
-                            const raw = e.target.value;
-                            if (raw === "") { field.onChange(""); return; }
-                            const value = new Decimal(raw).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber();
-                            field.onChange(value < 0 ? 0 : value);
-                          }}
-                          className={`input input-bordered w-full font-bold ${error ? "input-error border-red-400" : "border-green-400 focus:border-green-600"}`}
-                        />
-                        {error && (
-                          <span className="text-xs text-error mt-1 block">{error.message}</span>
-                        )}
-                      </>
                     )}
                   />
-                ) : type === "select" ? (
-                  <select
-                    id={name}
-                    autoComplete={autoComplete}
-                    {...register(name, { required: true })}
-                    className="select select-bordered w-full"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Select {label}</option>
-                    {options?.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                ) : type === "readonly" ? (
-                  <input
-                    id={name}
-                    type="text"
-                    {...register(name)}
-                    readOnly
-                    title="Auto Generated"
-                    placeholder="Will be auto-generated"
-                    className="input input-bordered w-full bg-gray-100 cursor-not-allowed text-gray-500"
+                </div>
+
+                {/* Loan Account */}
+                <div className="form-control w-full">
+                  <label className="label text-xs font-medium text-gray-600 mb-1">Loan Account</label>
+                  <Controller
+                    name="loan_ref_number"
+                    control={control}
+                    render={({ field }) => {
+                      const selectedAccount = watch("account_number");
+                      const data = loan_acc_view?.data || [];
+                      const selectedMember = data.find(m => m.account_number === selectedAccount);
+                      // console.log(selectedMember)
+                      return (
+                        <div className="relative">
+                          <Combobox
+                            value={filteredLoanAcc.find((loan) => loan.loan_ref_number === field.value) || null}
+                            onChange={(loan) => {
+                              field.onChange(loan?.loan_ref_number);
+                              setValue("loan_ref_number", loan?.loan_ref_number || "");
+                              setValue("loan_id", loan?.loan_id || null);
+                            }}
+                            disabled={!selectedAccount}
+                          >
+                            <ComboboxInput
+                              required
+                              className="input input-sm input-bordered w-full disabled:bg-base-200"
+                              placeholder={selectedAccount ? `Search loan account (e.g., LAPP-12345)` : "Select a member first"}
+                              displayValue={(loan) => loan?.loan_ref_number || ""}
+                              onChange={(e) => setQueryLoan(e.target.value)}
+                            />
+                            <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                              {filteredLoanAcc.length === 0 ? (
+                                <div className="px-4 py-2 text-base-content/60">
+                                  {selectedAccount ? "No loan accounts found for this member." : "Select a member first."}
+                                </div>
+                              ) : (
+                                filteredLoanAcc.map((loan) => (
+                                  <ComboboxOption
+                                    key={loan.loan_ref_number}
+                                    value={loan}
+                                    className={({ focus }) =>
+                                      `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary text-primary-content" : "hover:bg-base-200"
+                                      }`
+                                    }
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-mono text-sm font-semibold">{loan.loan_ref_number}</span>
+                                      <span>
+                                        <span className="text-xs mr-1">
+                                          Amount Due:
+                                        </span>
+                                        <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1 rounded">
+                                          ₱{selectedMember && `${selectedMember?.total_amount_due}`}
+                                        </span>
+                                      </span>
+                                    </div>
+                                  </ComboboxOption>
+                                ))
+                              )}
+                            </ComboboxOptions>
+                          </Combobox>
+                        </div>
+                      );
+                    }}
                   />
-                ) : (
-                  <input
-                    id={name}
-                    type={type}
-                    autoComplete={autoComplete}
-                    {...register(name, { required: true })}
-                    className="input input-bordered w-full"
-                  />
-                )}
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* PAYMENT DETAILS */}
+            <div className="bg-white p-2.5 rounded-lg border border-gray-200 mb-3">
+              <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Details</h4>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-2.5">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Schedule ID</label>
+                  <div className="text-sm font-mono font-bold">{schedId ? `#${schedId}` : <span className="text-gray-400">-</span>}</div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Due Date</label>
+                  <div className="text-sm font-semibold">{dueDate || <span className="text-gray-400">-</span>}</div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                  {paymentStatus ? (
+                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-bold
+                      ${paymentStatus === "OVERDUE"
+                        ? "bg-red-50 border-red-300 text-red-800"
+                        : paymentStatus === "PARTIALLY PAID"
+                          ? "bg-blue-50 border-blue-300 text-blue-800"
+                          : "bg-gray-50 border-gray-300 text-gray-700"
+                      }`}>
+                      <span className={paymentStatus === "OVERDUE" ? "text-red-600" : "text-gray-500"}>●</span>
+                      {paymentStatus}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-gray-400">-</span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Outstanding Balance</label>
+                  <div className="text-sm font-bold text-amber-700">
+                    {balance ? `₱${display(new Decimal(balance ?? 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}` : <span className="text-gray-400">-</span>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Breakdown */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-2.5 border-t border-gray-200">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Amount</label>
+                  <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
+                    <div className="text-sm font-bold text-blue-900">₱{display(totalDue.minus(feeDue).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
+                  </div>
+                </div>
+
+                {/* If OVERDUE, show months and penalties */}
+                {paymentStatus === "OVERDUE" && (
+                  <>
+                  {/* Display either overdue months or payments missed (if more than 1 overdues) */}
+                  {overdueScheduleCount > 1 ? (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Payments Missed</label>
+                      <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
+                        <div 
+                          title='Overdue payments for which penalties have occurred' 
+                          className="text-sm font-bold text-red-900"
+                        >
+                            {overPaymentCount.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  ): (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Overdue</label>
+                      <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
+                        <div className="text-sm font-bold text-red-900">{mosOverdue.toLocaleString()} mos</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {totalPenaltyOccured > feeDue ? (                  
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Total Penalty</label>
+                      <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
+                        <div
+                          title='Total accumulated penalties from all overdue payments'
+                          className="text-sm font-bold text-red-900"
+                        >
+                          ₱{totalPenaltyOccured}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Penalty</label>
+                      <div className="px-2 py-1.5 bg-red-50 rounded border border-red-200">
+                        <div className="text-sm font-bold text-red-900">₱{display(feeDue.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}</div>
+                      </div>
+                    </div>
+                    )}
+                  </>
+                )}
+
+                {/* For PARTIALLY PAID */}
+                {paymentStatus === "PARTIALLY PAID" && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Already Paid</label>
+                    <div className="px-2 py-1.5 bg-blue-50 rounded border border-blue-200">
+                      <div className="text-sm font-bold text-blue-900">₱{display(amountPaid.toNumber())}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Total Payable */}
+                <div className={paymentStatus === "OVERDUE" || paymentStatus === "PARTIALLY PAID" ? "" : "md:col-span-2"}>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">Total Payable</label>
+                  <div className="px-2 py-1.5 bg-green-50 rounded border border-green-400">
+                    <div className="text-sm font-bold text-green-900">₱{display(totalPayableAllOverdueUnpaid)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PAYMENT FORM */}
+            <div className="bg-gray-50 px-2.5 py-0.5 rounded-lg border border-gray-200">
+              <h4 className="text-xs font-bold text-gray-600 mb-2">Enter Payment</h4>
+
+              {fields.map(({ label, name, type, options, autoComplete }) => (
+                <div key={name} className="form-control w-full mb-1.5 overflow-visible relative">
+                  <label htmlFor={name} className="label text-xs font-medium text-gray-600">{label}</label>
+
+                  {name === "total_amount" ? (
+                    <Controller
+                      name="total_amount"
+                      control={control}
+                      rules={{
+                        required: true,
+                        validate: (value) => {
+                          if (value <= 0) return "Amount cannot be zero or negative";
+
+                          // Skip validation checks when editing an existing payment
+                          if (loanPaymentModal.type === "edit") {
+
+                            return true;
+                          }
+
+                          const remainingDue = totalPayableAllOverdueUnpaidDecimal;
+                          // console.log("Remaining Due: ", remainingDue)
+                          const minRequiredAmount = remainingDue.mul(0.3).toDecimalPlaces(2, Decimal.ROUND_HALF_UP); // 30% of remaining amount
+                          const inputValue = new Decimal(value || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+                          // console.log("Input Value: ", inputValue);
+
+                          if (paymentStatus === "OVERDUE" && mosOverdue > 0) {
+                            if (inputValue.lt(remainingDue))
+                              return `For OVERDUE payments, amount must cover the full remaining payable of ₱${remainingDue.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                          }
+                          if (inputValue.lt(minRequiredAmount))
+                            return `Amount must be at least 30% of remaining payable (₱${minRequiredAmount.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+                          if (inputValue.gt(remainingDue))
+                            return `Amount cannot exceed total payable of ₱${remainingDue.toNumber().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                          if (inputValue.gt(new Decimal(balance || 0)))
+                            return `Amount cannot exceed outstanding balance of ₱${display(new Decimal(balance || 0).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber())}`;
+                          return true;
+                        },
+                      }}
+                      render={({ field, fieldState: { error } }) => (
+                        <>
+                          <input
+                            id="total_amount"
+                            type="number"
+                            autoComplete="off"
+                            onWheel={(e) => e.target.blur()}
+                            value={field.value}
+                            placeholder="Enter Payment Amount" //AMOUNT LIMIT TO BE ADDED
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") { field.onChange(""); return; }
+                              const value = new Decimal(raw).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber();
+                              field.onChange(value < 0 ? 0 : value);
+                            }}
+                            className={`input input-bordered w-full font-bold ${error ? "input-error border-red-400" : "border-green-400 focus:border-green-600"}`}
+                          />
+                          {error && (
+                            <span className="text-xs text-error mt-1 block">{error.message}</span>
+                          )}
+                        </>
+                      )}
+                    />
+                  ) : type === "select" ? (
+                    <select
+                      id={name}
+                      autoComplete={autoComplete}
+                      {...register(name, { required: true })}
+                      className="select select-bordered w-full"
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Select {label}</option>
+                      {options?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  ) : type === "readonly" ? (
+                    <input
+                      id={name}
+                      type="text"
+                      {...register(name)}
+                      readOnly
+                      title="Auto Generated"
+                      placeholder="Will be auto-generated"
+                      className="input input-bordered w-full bg-gray-100 cursor-not-allowed text-gray-500"
+                    />
+                  ) : (
+                    <input
+                      id={name}
+                      type={type}
+                      autoComplete={autoComplete}
+                      {...register(name, { required: true })}
+                      className="input input-bordered w-full"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </FormModal>
 
@@ -1252,17 +1254,21 @@ function CoopLoansPayments() {
               </div>
 
               {/* Fixed Modal Actions */}
-              <div className={`flex justify-${memberRole === "treasurer" ? "between" : "end"} pt-4 border-t border-gray-200 mt-4 flex-shrink-0`}>
+              <div className={`flex justify-${memberRole === "treasurer" ? "between" : "end"} pt-4 border-t border-gray-200 mt-2 flex-shrink-0`}>
                 <div className="modal-action mt-0">
                   {showEditModal && memberRole === "treasurer" && (
-                    <button onClick={editModal} className="btn btn-primary max-w-xs">Edit</button>
+                    <button onClick={editModal} className="btn btn-sm btn-primary">Edit</button>
                   )}
                 </div>
                 <div className="modal-action mt-0">
-                  <button onClick={closeViewModal} className="btn btn-primary">Close</button>
+                  <button onClick={closeViewModal} className="btn btn-sm">Close</button>
                 </div>
               </div>
             </div>
+            {/* Backdrop enables outside click to close */}
+            <form method="dialog" className="modal-backdrop" onSubmit={closeViewModal}>
+              <button aria-label="Close"></button>
+            </form>
           </dialog>
         )}
       </div>
