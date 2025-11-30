@@ -127,7 +127,10 @@ const insertMember = async (formData) => {
 
   // --- 5. Insert coop contribution (only if amount > 0) ---
   let newCoop = null;
-  if (payment.initial_share_capital && parseFloat(payment.initial_share_capital) > 0) {
+  if (
+    payment.initial_share_capital &&
+    parseFloat(payment.initial_share_capital) > 0
+  ) {
     const coop = {
       source: "Member Contribution",
       amount: payment.initial_share_capital,
@@ -160,10 +163,19 @@ export const useAddMember = () => {
     mutationFn: insertMember,
     onSuccess: async (data) => {
       console.log("New member created:", data);
-      queryClient.invalidateQueries({queryKey: ["members"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["club_funds_contributions"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["coop_cbu_contributions"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false});
+      queryClient.invalidateQueries({ queryKey: ["members"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["club_funds_contributions"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["coop_cbu_contributions"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
 
       // log activities
       try {
@@ -180,7 +192,7 @@ export const useAddMember = () => {
           });
         }
 
-        // log share capital if included  
+        // log share capital if included
         if (data.coop) {
           await logActivity({
             action: `Created coop share capital contribution for ${data.member.f_name} ${data.member.l_name} (${data.member.account_number}): ₱${Number(data.coop.amount).toLocaleString()} - ${data.coop.category}`,

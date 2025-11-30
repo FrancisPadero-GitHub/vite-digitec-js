@@ -177,7 +177,7 @@ function AddMember (){
     { label: "Joined Date", name: "joined_date", type: "date", required: false, group: "Account Info" },
 
     // Membership Fee
-    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: true },
+    { label: "Membership Fee", name: "membership_fee", type: "number", group: "Membership Fee", required: false },
     {
       label: "Fee Status", name: "membership_fee_status", type: "select", autoComplete: "off",
       options: [
@@ -185,7 +185,7 @@ function AddMember (){
         { label: "Unpaid", value: "Unpaid" },
         { label: "Partial", value: "Partial" },
       ],
-      group: "Membership Fee", required: true
+      group: "Membership Fee", required: false
     },
 
     {
@@ -195,14 +195,14 @@ function AddMember (){
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Membership Fee", required: true
+      group: "Membership Fee", required: false
     },
 
     { label: "Payment Date", name: "membership_payment_date", type: "date", group: "Membership Fee", required: false },
     { label: "Remarks", name: "membership_remarks", type: "text", group: "Membership Fee", required: false },
 
     // Initial Share Capital
-    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: true },
+    { label: "Initial Share Capital Amount", name: "initial_share_capital", type: "number", group: "Share Capital", required: false },
     {
       label: "Payment Method", name: "share_capital_payment_method", type: "select", autoComplete: "off",
       options: [
@@ -210,7 +210,7 @@ function AddMember (){
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Share Capital", required: true
+      group: "Share Capital", required: false
     },
 
     { label: "Payment Date", name: "share_capital_payment_date", autoComplete: "off", type: "date", group: "Share Capital", required: false },
@@ -218,201 +218,71 @@ function AddMember (){
   ];
 
   return (
-    <div className="min-h-screen py-5">
-      <Toaster position="bottom-left" />
-      <div className="max-w-4xl mx-auto bg-base-100 shadow-lg rounded-xl p-6 space-y-6">
-        <header>
-          <h1 className="text-3xl font-bold">Register New Member</h1>
-          <p className="text-base-content/70">Fill out the fields below to register a new member.</p>
-        </header>
+    <div className="m-3">
+      <div className="space-y-3" > 
+        <Toaster position="bottom-left" />
+        <div className="max-w-4xl mx-auto bg-base-100 shadow-lg rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <header>
+            <h1 className="text-2xl sm:text-3xl font-bold">Register New Member</h1>
+            <p className="text-sm sm:text-base text-base-content/70">Fill out the fields below to register a new member.</p>
+          </header>
 
-        <div className="tabs tabs-border mb-6">
-          <div className={`tab ${activeTab === 0 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
-            1. Personal Info
-          </div>
-          <div className={`tab ${activeTab === 1 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
-            2. Employment/Profession
-          </div>
-          <div className={`tab ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
-            3. Membership
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {isError && <p className="text-red-500">{error.message}</p>}
-          {isSuccess && (<p className="text-green-600">Member registered successfully!</p>)}
-          {isPending && (
-            <div className="alert alert-info">
-              <span className="loading loading-spinner loading-sm"></span>
-              <span>Saving member...</span>
+          <div className="tabs tabs-border mb-4 sm:mb-6 flex-col sm:flex-row">
+            <div className={`tab text-xs sm:text-sm ${activeTab === 0 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+              1. Personal Info
             </div>
-          )}
+            <div className={`tab text-xs sm:text-sm ${activeTab === 1 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+              2. Employment/Profession
+            </div>
+            <div className={`tab text-xs sm:text-sm ${activeTab === 2 ? "tab-active" : "text-gray-500 pointer-events-none"}`}>
+              3. Membership
+            </div>
+          </div>
 
-          {/* PERSONAL DETAILS TAB */}
-          {activeTab === 0 && (
-            <>
-              {/* Avatar Upload */}
-              <div className="flex justify-center mb-6">
-                <div className="avatar cursor-pointer relative group">
-                  <div className="w-24 h-24 rounded-full ring ring-neutral ring-offset-base-100 ring-offset-2 overflow-hidden">
-                    <img
-                      src={previewAvatar || placeholderAvatar}
-                      alt="User avatar"
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <div className="absolute bottom-0 right-0 bg-base-100 rounded-full p-2 shadow-md text-base-content">
-                    <CameraAltIcon fontSize="small" />
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    aria-label="Upload profile image"
-                    onChange={handleAvatarUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-8">
+            {isError && <p className="text-red-500">{error.message}</p>}
+            {isSuccess && (<p className="text-green-600">Member registered successfully!</p>)}
+            {isPending && (
+              <div className="alert alert-info">
+                <span className="loading loading-spinner loading-sm"></span>
+                <span>Saving member...</span>
               </div>
+            )}
 
-              {/* Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {personalFields.map(({ label, name, type, options, group, autoComplete }, idx) => {
-                const prevGroup = idx > 0 ? personalFields[idx - 1].group : null;
-
-                return (
-                  <Fragment key={name}>
-                    {/* Section header: full width */}
-                    {group && group !== prevGroup && (
-                      <div className="col-span-1 md:col-span-2">
-                        <h3 className="text-lg font-semibold mt-4 mb-2">{group}</h3>
-                        <hr className="border-gray-300 mb-4" />
-                      </div>
-                    )}
-
-                    {/* Field itself */}
-                    <div className="form-control w-full col-span-1">
-                      <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
-
-                      {type === "select" ? (
-                        <select
-                          id={name}
-                          autoComplete={autoComplete || "off"}
-                          {...register(name, {required: personalFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
-                          className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
-                        >
-                          <option value="" disabled>Select {label}</option>
-                          {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                        </select>
-                      ) : (
-                        <input
-                          id={name}
-                          type={type}
-                          autoComplete={autoComplete || "off"}
-                          {...register(name, {
-                            required: `${label} is required`,
-                            pattern: name === "contact_number" ? {
-                              value: /^[0-9+()\-.\s]+$/,
-                              message: "Only numbers and symbols like +, -, (, ) allowed",
-                            } : undefined
-                          })}
-                          onInput={name === "contact_number" ? (e) => {
-                            e.target.value = e.target.value.replace(/[^0-9+()\-.\s]/g, "");
-                          } : undefined}
-                          className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
-                        />
-                      )}
-                      {/* tracks invalid fields */}
-                      {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)} 
+            {/* PERSONAL DETAILS TAB */}
+            {activeTab === 0 && (
+              <>
+                {/* Avatar Upload */}
+                <div className="flex justify-center mb-4 sm:mb-6">
+                  <div className="avatar cursor-pointer relative group">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full ring ring-neutral ring-offset-base-100 ring-offset-2 overflow-hidden">
+                      <img
+                        src={previewAvatar || placeholderAvatar}
+                        alt="User avatar"
+                        className="object-cover w-full h-full"
+                      />
                     </div>
-                  </Fragment>
-                );
-              })}
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  title="Next Button"
-                  type="button"
-                  onClick={() => handleNext([
-                    "f_name", "l_name", "civil_status", "birthday", "place_of_birth",
-                    "block_no", "barangay", "city_municipality", "province", "zip_code",
-                    "contact_number", "email"
-                  ])}
-                  className="btn btn-primary"
-                >
-                  Next
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* EMPLOYMENT TAB */}
-          {activeTab === 1 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {employmentFields.map(({ label, name, type, autoComplete }) => (
-                  <div key={name} className="form-control w-full">
-                    <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
-
+                    <div className="absolute bottom-0 right-0 bg-base-100 rounded-full p-2 shadow-md text-base-content">
+                      <CameraAltIcon fontSize="small" />
+                    </div>
                     <input
-                      id={name}
-                      type={type}
-                      autoComplete={autoComplete || "off"}
-                      {...register(name, {
-                        required: employmentFields.find(f => f.name === name)?.required ? `${label} is required` : false,
-                        pattern: name === "office_contact_number" ? {
-                          value: /^[0-9+()\-.\s]+$/,
-                          message: "Only numbers and symbols like +, -, (, ) allowed",
-                        } : undefined
-                      })}
-                      onInput={name === "office_contact_number" ? (e) => {
-                        e.target.value = e.target.value.replace(/[^0-9+()\-.\s]/g, "");
-                      } : undefined}
-                      className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                      type="file"
+                      accept="image/*"
+                      aria-label="Upload profile image"
+                      onChange={handleAvatarUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
                     />
-                  
-                    {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
                   </div>
-                ))}
-              </div>
-              <div className="flex justify-between">
-                <button
-                  title="Back Button"
-                  type="button"
-                  className="btn btn-soft"
-                  onClick={() => setActiveTab(0)}
-                >
-                  Back
-                </button>
-                <button
-                  title="Next Button"
-                  type="button"
-                  onClick={() =>
-                    handleNext([
-                      "office_name",
-                      "title_and_position",
-                      "office_address",
-                      "office_contact_number"
-                    ])
-                  }
-                  className="btn btn-primary"
-                >
-                  Next
-                </button>
-              </div>
-            </>
-          )}
+                </div>
 
-          {/* MEMBERSHIP DETAILS TAB */}
-          {activeTab === 2 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {membershipFields.map(({ label, name, type, options, group, autoComplete }, idx) => {
-                  const prevGroup = idx > 0 ? membershipFields[idx - 1].group : null;
+                {/* Inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {personalFields.map(({ label, name, type, options, group, autoComplete }, idx) => {
+                  const prevGroup = idx > 0 ? personalFields[idx - 1].group : null;
 
-                  // Divided into subsections (account info, membership fee, share capital)
                   return (
                     <Fragment key={name}>
+                      {/* Section header: full width */}
                       {group && group !== prevGroup && (
                         <div className="col-span-1 md:col-span-2">
                           <h3 className="text-lg font-semibold mt-4 mb-2">{group}</h3>
@@ -422,24 +292,17 @@ function AddMember (){
 
                       {/* Field itself */}
                       <div className="form-control w-full col-span-1">
-                        <label htmlFor={name} className="label"><span className="label-text font-medium">{label}</span></label>
+                        <label htmlFor={name} className="label"><span className="label-text text-sm sm:text-base font-medium">{label}</span></label>
+
                         {type === "select" ? (
                           <select
                             id={name}
                             autoComplete={autoComplete || "off"}
-                            {...register(name, {
-                              required: membershipFields.find(f => f.name === name)?.required
-                                ? `${label} is required`
-                                : false
-                            })}
-                            className={`select select-bordered w-full ${errors[name] ? "select-error" : ""}`}
+                            {...register(name, {required: personalFields.find(f => f.name === name)?.required ? `${label} is required` : false })}
+                            className={`select select-bordered w-full text-sm sm:text-base ${errors[name] ? "select-error" : ""}`}
                           >
                             <option value="" disabled>Select {label}</option>
-                            {options?.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
+                            {options?.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
                           </select>
                         ) : (
                           <input
@@ -447,46 +310,185 @@ function AddMember (){
                             type={type}
                             autoComplete={autoComplete || "off"}
                             {...register(name, {
-                              required: membershipFields.find(f => f.name === name)?.required
-                                ? `${label} is required`
-                                : false
+                              required: `${label} is required`,
+                              pattern: name === "contact_number" ? {
+                                value: /^[0-9+()\-.\s]+$/,
+                                message: "Only numbers and symbols like +, -, (, ) allowed",
+                              } : undefined
                             })}
-                            className={`input input-bordered w-full ${errors[name] ? "input-error" : ""}`}
+                            onInput={name === "contact_number" ? (e) => {
+                              e.target.value = e.target.value.replace(/[^0-9+()\-.\s]/g, "");
+                            } : undefined}
+                            className={`input input-bordered w-full text-sm sm:text-base ${errors[name] ? "input-error" : ""}`}
                           />
                         )}
-                          {/* Validation message */}
-                          {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
+                        {/* tracks invalid fields */}
+                        {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)} 
                       </div>
                     </Fragment>
                   );
                 })}
-              </div>
-              <div className="flex justify-between">
-                <button 
-                  title="Back Button"
-                  type="button" 
-                  className="btn btn-soft" 
-                  onClick={() => setActiveTab(1)}
-                  >Back
-                </button>
-                <button
-                  title="Submit button"
-                  type="submit"
-                  disabled={isPending}
-                  className="btn btn-success">
-                  {isPending ? (
-                    <>
-                      <span className="loading loading-spinner loading-sm"></span>
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit"
-                  )}
-                </button>
-              </div>
-            </>
-          )}
-        </form>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    title="Next Button"
+                    type="button"
+                    onClick={() => handleNext([
+                      "f_name", "l_name", "civil_status", "birthday", "place_of_birth",
+                      "block_no", "barangay", "city_municipality", "province", "zip_code",
+                      "contact_number", "email"
+                    ])}
+                    className="btn btn-primary btn-sm sm:btn-md"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* EMPLOYMENT TAB */}
+            {activeTab === 1 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {employmentFields.map(({ label, name, type, autoComplete }) => (
+                    <div key={name} className="form-control w-full">
+                      <label htmlFor={name} className="label"><span className="label-text text-sm sm:text-base font-medium">{label}</span></label>
+
+                      <input
+                        id={name}
+                        type={type}
+                        autoComplete={autoComplete || "off"}
+                        {...register(name, {
+                          required: employmentFields.find(f => f.name === name)?.required ? `${label} is required` : false,
+                          pattern: name === "office_contact_number" ? {
+                            value: /^[0-9+()\-.\s]+$/,
+                            message: "Only numbers and symbols like +, -, (, ) allowed",
+                          } : undefined
+                        })}
+                        onInput={name === "office_contact_number" ? (e) => {
+                          e.target.value = e.target.value.replace(/[^0-9+()\-.\s]/g, "");
+                        } : undefined}
+                        className={`input input-bordered w-full text-sm sm:text-base ${errors[name] ? "input-error" : ""}`}
+                      />
+                    
+                      {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between">
+                  <button
+                    title="Back Button"
+                    type="button"
+                    className="btn btn-soft btn-sm sm:btn-md"
+                    onClick={() => setActiveTab(0)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    title="Next Button"
+                    type="button"
+                    onClick={() =>
+                      handleNext([
+                        "office_name",
+                        "title_and_position",
+                        "office_address",
+                        "office_contact_number"
+                      ])
+                    }
+                    className="btn btn-primary btn-sm sm:btn-md"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* MEMBERSHIP DETAILS TAB */}
+            {activeTab === 2 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {membershipFields.map(({ label, name, type, options, group, autoComplete }, idx) => {
+                    const prevGroup = idx > 0 ? membershipFields[idx - 1].group : null;
+
+                    // Divided into subsections (account info, membership fee, share capital)
+                    return (
+                      <Fragment key={name}>
+                        {group && group !== prevGroup && (
+                          <div className="col-span-1 md:col-span-2">
+                            <h3 className="text-lg font-semibold mt-4 mb-2">{group}</h3>
+                            <hr className="border-gray-300 mb-4" />
+                          </div>
+                        )}
+
+                        {/* Field itself */}
+                        <div className="form-control w-full col-span-1">
+                          <label htmlFor={name} className="label"><span className="label-text text-sm sm:text-base font-medium">{label}</span></label>
+                          {type === "select" ? (
+                            <select
+                              id={name}
+                              autoComplete={autoComplete || "off"}
+                              {...register(name, {
+                                required: membershipFields.find(f => f.name === name)?.required
+                                  ? `${label} is required`
+                                  : false
+                              })}
+                              className={`select select-bordered w-full text-sm sm:text-base ${errors[name] ? "select-error" : ""}`}
+                            >
+                              <option value="" disabled>Select {label}</option>
+                              {options?.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              id={name}
+                              type={type}
+                              autoComplete={autoComplete || "off"}
+                              {...register(name, {
+                                required: membershipFields.find(f => f.name === name)?.required
+                                  ? `${label} is required`
+                                  : false
+                              })}
+                              className={`input input-bordered w-full text-sm sm:text-base ${errors[name] ? "input-error" : ""}`}
+                            />
+                          )}
+                            {/* Validation message */}
+                            {errors[name] && (<p className="text-red-500 text-sm">{errors[name].message}</p>)}
+                        </div>
+                      </Fragment>
+                    );
+                  })}
+                </div>
+                <div className="flex justify-between">
+                  <button 
+                    title="Back Button"
+                    type="button" 
+                    className="btn btn-soft btn-sm sm:btn-md" 
+                    onClick={() => setActiveTab(1)}
+                    >Back
+                  </button>
+                  <button
+                    title="Submit button"
+                    type="submit"
+                    disabled={isPending}
+                    className="btn btn-success btn-sm sm:btn-md">
+                    {isPending ? (
+                      <>
+                        <span className="loading loading-spinner loading-sm"></span>
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit"
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   );
