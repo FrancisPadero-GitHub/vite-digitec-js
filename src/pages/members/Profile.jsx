@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Edit, Check, VerifiedUserOutlined } from "@mui/icons-material";
+import { Toaster, toast } from "react-hot-toast";
 
 // fetch hooks
 import { useFetchProfile } from "../../backend/hooks/member/useFetchProfile";
@@ -62,6 +63,7 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
+ 
 
   // use query hook to fetch profile data (and coop data for total share capital)
   const { data: myProfile, isLoading, isError } = useFetchProfile();
@@ -87,11 +89,13 @@ function Profile() {
 
   // Password change states
   const changePassword = useChangePassword(); // <-- our mutation hook
+  const isChanging = changePassword.isLoading || changePassword.isPending;
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState("")
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
 
   // Prefill form data when profile is fetched
@@ -117,6 +121,7 @@ function Profile() {
 
   const handlePasswordChange = (e) => {
     e.preventDefault();
+    if (isChanging) return; // prevent double submits
 
     // Check confirm
     if (newPassword !== confirmPassword) {
@@ -130,6 +135,7 @@ function Profile() {
       {
         onSuccess: (data) => {
           setSuccess(data.message)
+          toast.success(data.message || "Password updated successfully!");
           setCurrentPassword("");
           setNewPassword("");
           setConfirmPassword("");
@@ -151,6 +157,7 @@ function Profile() {
           setIsEditing(false);
           setSaving(false)
           setPreviewAvatar(null); // clear only when DB + cache updated
+          toast.success("Profile updated successfully!");
         },
       }
     );
@@ -161,6 +168,7 @@ if (isError) return <div>Something went wrong, try refreshing</div>
 
   return (
     <div className="min-h-screen p-3 md:p-1">
+      <Toaster position="bottom-left" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* LEFT COLUMN - PROFILE */}
         <div className="space-y-6">
@@ -207,7 +215,7 @@ if (isError) return <div>Something went wrong, try refreshing</div>
             <div className="card-body p-4 grid grid-cols-3 text-center">
               <div>
                 <h3 className="text-lg font-bold">{myProfile?.account_number}</h3>
-                <p className="text-sm text-gray-500">ID NO.</p>
+                <p className="text-sm text-gray-500">Account No.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold">₱ {display(totalShareCapital)}</h3>
@@ -327,34 +335,49 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                 <div className="form-control">
                   <label className="label"><span className="label-text">Current Password</span></label>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     className="input input-bordered w-full"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
+                    disabled={isChanging}
                   />
                 </div>
 
                 <div className="form-control">
                   <label className="label"><span className="label-text">New Password</span></label>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     className="input input-bordered w-full"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
+                    disabled={isChanging}
                   />
                 </div>
 
                 <div className="form-control">
                   <label className="label"><span className="label-text">Confirm New Password</span></label>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     className="input input-bordered w-full"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    disabled={isChanging}
                   />
+                </div>
+
+                {/* Show/Hide Password Checkbox - toggles all password inputs */}
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    id="showPasswords"
+                    type="checkbox"
+                    checked={showPassword}
+                    onChange={(e) => setShowPassword(e.target.checked)}
+                    className="checkbox checkbox-sm"
+                  />
+                  <label htmlFor="showPasswords" className="text-sm text-gray-600 select-none">Show Passwords</label>
                 </div>
 
                 {passwordError && (<div className="text-error text-sm">{passwordError}</div>)}
@@ -362,8 +385,15 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                 {success && (<div className="text-success text-sm">{success}</div>)}
 
                 <div className="card-actions justify-end mt-6">
-                  <button type="submit" className="btn btn-primary hover:btn-neutral text-white">
-                    Update Password
+                  <button type="submit" className="btn btn-primary hover:btn-neutral text-white" disabled={isChanging}>
+                    {isChanging ? (
+                      <>
+                        <span className="loading loading-spinner loading-sm" aria-hidden></span>
+                        <span className="ml-2">Updating...</span>
+                      </>
+                    ) : (
+                      "Update Password"
+                    )}
                   </button>
                 </div>
               </form>
