@@ -1,4 +1,5 @@
 import placeholderAvatar from "../../../assets/placeholder-avatar.png";
+import Proptypes from "prop-types";
 
 function ViewMemberModal({ open, close, member, children, onSave, isSaving }) {
   if (!open || !member) return null;
@@ -56,8 +57,20 @@ function ViewMemberModal({ open, close, member, children, onSave, isSaving }) {
           </button>
         </div>
       </div>
+      {/* Backdrop enables outside click to close */}
+      <form method="dialog" className="modal-backdrop" onSubmit={close}>
+        <button aria-label="Close"></button>
+      </form>
     </div>
   );
 }
+ViewMemberModal.propTypes = {
+  open: Proptypes.bool.isRequired,
+  close: Proptypes.func.isRequired,
+  member: Proptypes.object.isRequired,
+  children: Proptypes.node.isRequired,
+  onSave: Proptypes.func,
+  isSaving: Proptypes.bool,
+};
 
 export default ViewMemberModal;

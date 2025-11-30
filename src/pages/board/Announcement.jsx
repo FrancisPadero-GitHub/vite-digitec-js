@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, Fragment, useMemo, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 // fetch hooks
 import { useFetchAnnouncement } from '../../backend/hooks/board/useFetchAnnouncements'
@@ -6,6 +6,10 @@ import { useFetchAnnouncement } from '../../backend/hooks/board/useFetchAnnounce
 // mutation hooks
 import { useSendAnnouncement } from '../../backend/hooks/board/useSendAnnouncemnt'
 import { useEditAnnouncement } from '../../backend/hooks/board/useEditAnnouncement'
+import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce'
+
+// Components
+import FilterToolbar from '../shared/components/FilterToolbar'
 
 // MUI Icons
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -119,14 +123,91 @@ function Announcement() {
     reset({ message: '' });
   };
 
+  // Filter toolbar state and handlers
+  const [searchTerm, setSearchTerm] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  const handleSearchChange = (value) => {
+    startTransition(() => setSearchTerm(value));
+  };
+  const handleYearChange = (value) => {
+    startTransition(() => setYearFilter(value));
+  };
+  const handleMonthChange = (value) => {
+    startTransition(() => setMonthFilter(value));
+  };
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setYearFilter("");
+    setMonthFilter("");
+  };
+
+  const debouncedSearch = useDebounce(searchTerm, 250);
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => ({ label: (currentYear - i).toString(), value: (currentYear - i).toString() }));
+  const monthOptions = [
+    { label: 'January', value: 'January' }, { label: 'February', value: 'February' }, { label: 'March', value: 'March' },
+    { label: 'April', value: 'April' }, { label: 'May', value: 'May' }, { label: 'June', value: 'June' },
+    { label: 'July', value: 'July' }, { label: 'August', value: 'August' }, { label: 'September', value: 'September' },
+    { label: 'October', value: 'October' }, { label: 'November', value: 'November' }, { label: 'December', value: 'December' },
+  ];
+
+  const monthNameToNumber = {
+    January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+    July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+  };
+
+  const filteredAnnouncements = useMemo(() => {
+    const list = announcements || [];
+    return list.filter((a) => {
+      const msg = (a.message || "").toString();
+      const created = a.created_at ? new Date(a.created_at) : null;
+      const matchesSearch =
+        debouncedSearch === "" ||
+        msg.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        a.id.toLocaleString().includes(debouncedSearch) ||
+        (a.sender_id && a.sender_id.toString().includes(debouncedSearch));
+        
+      const matchesYear = yearFilter === "" || (created && created.getFullYear().toString() === yearFilter);
+      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const matchesMonth = monthFilter === "" || (created && (created.getMonth() + 1) === filterMonthNumber);
+
+      return matchesSearch && matchesYear && matchesMonth;
+    });
+  }, [announcements, debouncedSearch, yearFilter, monthFilter]);
+
   return (
-    <div className="p-6">
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Announcements</h1>
+    <div className="m-3">
+      <div className="space-y-3">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-2">
+          <FilterToolbar
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            isFilterPending={isPending}
+            onReset={handleClearFilters}
+            dropdowns={[
+              {
+                label: "All Year",
+                value: yearFilter,
+                onChange: handleYearChange,
+                options: yearOptions,
+              },
+              {
+                label: "All Month",
+                value: monthFilter,
+                onChange: handleMonthChange,
+                options: monthOptions,
+              },
+            ]}
+          />
           <div className="flex flex-row items-center gap-3">
             <button
-              className="btn btn-neutral whitespace-nowrap"
+              className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+                         fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
+                         lg:static lg:ml-auto lg:self-center lg:opacity-100"
               onClick={handleAddNew}
             >
               Send Announcement
@@ -147,15 +228,16 @@ function Announcement() {
               <span>Error loading announcements: {error?.message}</span>
             </div>
           )}
-
-          {!isLoading && !isError && (
-            <div className="max-h-[600px] overflow-y-auto">
-              {announcements?.length === 0 ? (
+          <h1 className="text-2xl font-semibold px-4 py-2">Announcements</h1>
+          <div className="divider my-0"></div>
+          {!isLoading && !isError && (            
+            <div className="max-h-[75vh] overflow-y-auto">
+              {filteredAnnouncements?.length === 0 ? (
                 <div className="text-center p-8 text-gray-500">
                   No announcements found
                 </div>
               ) : (
-                announcements?.map((announcement) => (
+                filteredAnnouncements?.map((announcement) => (
                   <div
                     key={announcement.id}
                     onClick={() => handleDoubleClick(announcement)}
@@ -180,6 +262,9 @@ function Announcement() {
                         <p className="text-xs text-gray-500 mt-1">
                           Sender ID: {announcement.sender_id}
                         </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Receiver ID: {announcement.recipient_id}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -193,67 +278,102 @@ function Announcement() {
       {/* Dynamic Modal */}
       {isModalOpen && (
         <dialog open className="modal modal-open">
-          <div className="modal-box overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl w-full mx-4">
-            <h3 className="font-bold text-lg mb-4">
-              {modalMode === 'add' && 'Send New Announcement'}
-              {modalMode === 'edit' && 'Edit Announcement'}
-              {modalMode === 'view' && 'Announcement Details'}
-            </h3>
+          <div className="modal-box max-w-sm md:max-w-2xl w-full mx-4 flex flex-col max-h-[90vh]">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-base-300 flex-shrink-0">
+              <h3 className="font-bold text-xl">
+                {modalMode === 'add' && 'Send New Announcement'}
+                {modalMode === 'edit' && 'Edit Announcement'}
+                {modalMode === 'view' && 'Announcement Details'}
+              </h3>
+              {modalMode === 'view' && (
+                <div className="badge badge-primary badge-lg">
+                  ID: {selectedAnnouncement?.id}
+                </div>
+              )}
+            </div>
 
-            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto overflow-x-hidden flex-1 py-4 px-1">
               {/* View Mode */}
               {modalMode === 'view' && selectedAnnouncement && (
-                <>
-                  <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">ID</span>
-                    </label>
-                    <p className="text-sm">{selectedAnnouncement.id}</p>
+                <div className="space-y-4">
+                  <div className="card bg-base-200">
+                    <div className="card-body p-4">
+                      <label className="label py-1">
+                        <span className="label-text font-semibold text-base">Message</span>
+                      </label>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedAnnouncement.message}
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">Message</span>
-                    </label>
-                    <p className="text-sm whitespace-pre-wrap">{selectedAnnouncement.message}</p>
-                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="form-control">
+                      <label className="label py-1">
+                        <span className="label-text font-semibold">Created At</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-sm">
+                          {new Date(selectedAnnouncement.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">Created At</span>
-                    </label>
-                    <p className="text-sm">
-                      {new Date(selectedAnnouncement.created_at).toLocaleString()}
-                    </p>
-                  </div>
+                    <div className="form-control">
+                      <label className="label py-1">
+                        <span className="label-text font-semibold">Sender ID</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <p className="text-sm font-mono">{selectedAnnouncement.sender_id}</p>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">Sender ID</span>
-                    </label>
-                    <p className="text-sm">{selectedAnnouncement.sender_id}</p>
+                    <div className="form-control">
+                      <label className="label py-1">
+                        <span className="label-text font-semibold">Recipient ID</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <p className="text-sm font-mono">{selectedAnnouncement.recipient_id}</p>
+                      </div>
+                    </div>
+
+
                   </div>
-                </>
+                </div>
               )}
 
               {/* Add/Edit Mode */}
               {(modalMode === 'add' || modalMode === 'edit') && (
-                <>
+                <div className="space-y-4">
                   {modalMode === 'edit' && selectedAnnouncement && (
-                    <div>
-                      <label className="label">
-                        <span className="label-text font-semibold">ID</span>
-                      </label>
-                      <p className="text-sm">{selectedAnnouncement.id}</p>
+                    <div className="alert alert-info">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <span>Editing announcement ID: <strong>{selectedAnnouncement.id}</strong></span>
                     </div>
                   )}
 
-                  <div>
+                  <div className="form-control">
                     <label className="label">
                       <span className="label-text font-semibold">Message</span>
+                      <span className="label-text-alt text-base-content/60">
+                        {getValues('message')?.length || 0} / 1000
+                      </span>
                     </label>
                     <textarea
-                      className={`textarea textarea-bordered w-full h-32 ${errors.message ? 'textarea-error' : ''}`}
+                      className={`textarea textarea-bordered w-full h-40 ${errors.message ? 'textarea-error' : ''} my-4`}
                       placeholder="Enter your announcement message..."
                       {...register('message', {
                         required: 'Message is required',
@@ -269,70 +389,89 @@ function Announcement() {
                     />
                     {errors.message && (
                       <label className="label">
-                        <span className="label-text-alt text-error">{errors.message.message}</span>
+                        <span className="label-text-alt text-error flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {errors.message.message}
+                        </span>
                       </label>
                     )}
                     <label className="label">
-                      <span className="label-text-alt text-gray-500">
-                        {getValues('message')?.length || 0} / 1000 characters
+                      <span className="label-text-alt text-base-content/60">
+                        Write a clear and concise announcement for all members
                       </span>
                     </label>
                   </div>
-                </>
+                </div>
               )}
             </div>
 
-            <div className="modal-action">
+            {/* Fixed Footer Actions */}
+            <div className="flex justify-between pt-4 border-t border-base-300 mt-4 flex-shrink-0">
               {modalMode === 'view' && (
                 <Fragment>
                   <button
-                    className="btn btn-neutral"
+                    className="btn btn-sm sm:btn-md btn-ghost gap-2"
                     onClick={closeModal}
                   >
                     <CloseIcon fontSize="small" />
-                    Close
+                    <span className="hidden sm:inline">Close</span>
                   </button>
-                  <button
-                    className="btn btn-error"
-                    onClick={handleDelete}
-                  >
-                    <DeleteIcon fontSize="small" />
-                    Delete
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleEdit}
-                  >
-                    <EditIcon fontSize="small" />
-                    Edit
-                  </button>
-
+                  <div className="flex gap-2">
+                    <button
+                      className="btn btn-sm sm:btn-md btn-error gap-2"
+                      disabled
+                      onClick={handleDelete}
+                    >
+                      <DeleteIcon fontSize="small" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </button>
+                    <button
+                      className="btn btn-sm sm:btn-md btn-primary gap-2"
+                      onClick={handleEdit}
+                    >
+                      <EditIcon fontSize="small" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </button>
+                  </div>
                 </Fragment>
               )}
 
               {(modalMode === 'add' || modalMode === 'edit') && (
                 <Fragment>
                   <button
-                    className="btn btn-neutral"
+                    className="btn btn-sm sm:btn-md btn-ghost gap-2"
                     onClick={handleCancel}
                     disabled={isSending || isEditing}
                   >
                     <CloseIcon fontSize="small" />
-                    {isDirty ? 'Discard Changes' : 'Cancel'}
+                    <span className="hidden sm:inline">
+                      {isDirty ? 'Discard' : 'Cancel'}
+                    </span>
                   </button>
 
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-sm sm:btn-md btn-primary gap-2"
                     onClick={handleSubmit(onSubmit)}
                     disabled={!isValid || !isDirty || isSending || isEditing}
                   >
                     {(isSending || isEditing) ? (
-                      <span className="loading loading-spinner loading-sm"></span>
+                      <Fragment>
+                        <span className="loading loading-spinner loading-sm"></span>
+                        <span className="hidden sm:inline">Processing...</span>
+                      </Fragment>
                     ) : (
-                      modalMode === 'add' ? 'Send' : 'Save Changes'
+                      <Fragment>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="hidden sm:inline">
+                          {modalMode === 'add' ? 'Send' : 'Save Changes'}
+                        </span>
+                      </Fragment>
                     )}
                   </button>
-
                 </Fragment>
               )}
             </div>

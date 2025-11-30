@@ -7,7 +7,7 @@ async function fetchAnnouncement() {
     .select("*")
     .eq("type", "general")
     .is("deleted_at", null)
-    .order("created_at", { ascending: false });
+    .order("id", { ascending: false });
 
   if (error) throw new Error(error.message);
   return data;

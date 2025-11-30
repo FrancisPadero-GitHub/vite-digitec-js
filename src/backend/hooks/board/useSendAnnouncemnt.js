@@ -13,12 +13,22 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber";
  * @param {string|number|string[]} [params.target] - Recipient ID(s) or 'all'.
  * @param {string|number|null} [params.sender_id] - Account number of sender.
  */
-const sendAnnouncement = async ({ message, type = "general", target = "all", sender_id = null }) => {
+const sendAnnouncement = async ({
+  message,
+  type = "general",
+  target = "all",
+  sender_id = null,
+}) => {
   if (!message || message.trim().length === 0) {
     throw new Error("Message cannot be empty.");
   }
 
-  console.log("📤 Calling send_notification with:", { message, type, target, sender_id });
+  console.log("📤 Calling send_notification with:", {
+    message,
+    type,
+    target,
+    sender_id,
+  });
 
   const { data, error } = await supabase.rpc("send_notification", {
     p_title: "Announcement",
@@ -47,12 +57,13 @@ export function useSendAnnouncement() {
   const { data: accountNumber } = useFetchAccountNumber();
 
   return useMutation({
-    mutationFn: ({ message, type = "general", target = "all" }) =>
+    mutationFn: ({ title, message, type = "general", target = "all" }) =>
       sendAnnouncement({
+        title,
         message,
         type,
         target,
-        sender_id: accountNumber
+        sender_id: accountNumber,
       }),
 
     onSuccess: (data) => {

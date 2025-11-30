@@ -79,6 +79,10 @@ function BoardFormModal({
           </div>
         </form>
       </div>
+      {/* Backdrop enables outside click to close */}
+      <form method="dialog" className="modal-backdrop" onSubmit={close}>
+        <button aria-label="Close"></button>
+      </form>
     </dialog>
   );
 }

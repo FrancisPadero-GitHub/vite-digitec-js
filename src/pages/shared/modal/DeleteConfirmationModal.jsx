@@ -39,6 +39,10 @@ const DeleteConfirmationModal = ({
           </button>
         </div>
       </div>
+      {/* Backdrop enables outside click to close */}
+      <form method="dialog" className="modal-backdrop" onSubmit={onClose}>
+        <button aria-label="Close"></button>
+      </form>
     </div>
   );
 };
