@@ -139,9 +139,9 @@ function LoanProducts() {
       name: "repayment_freq",
       type: "select",
       options: [
-        { label: "Monthly", value: "Monthly" },
-        { label: "Bi-Monthly", value: "Bi-Monthly" },
-        { label: "Weekly", value: "Weekly" },
+        { label: "Monthly", value: "monthly" },
+        { label: "Bi-Monthly", value: "bi-monthly" },
+        { label: "Weekly", value: "weekly" },
       ],
     },
     { label: "Minimum Amount (₱)", name: "min_amount", type: "number" },
@@ -169,15 +169,13 @@ function LoanProducts() {
         </div>
 
         {/* Products Grid */}
-        <div className="w-full space-y-4 sm:space-y-4">
-          <Products
-            data={data}
-            isLoading={isLoading}
-            isError={!!error}
-            error={error}
-            onEdit={loanProductEditModal}
-          />
-        </div>
+        <Products
+          data={data}
+          isLoading={isLoading}
+          isError={!!error}
+          error={error}
+          onEdit={loanProductEditModal}
+        />
 
         {/* Modal */}
         <FormModal
@@ -190,10 +188,10 @@ function LoanProducts() {
           status={submitDisabled}
           deleteAction={() => (toast.error("Temporary disabled"))}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] pl-1 pr-2">
             {fields.map(({ label, name, type, options, autoComplete }) => (
               <div key={name} className="form-control w-full">
-                <label htmlFor={name} className="label text-sm font-semibold mb-1 sm:mb-2">
+                <label htmlFor={name} className="label font-semibold mb-1 sm:mb-2">
                   {label}
                 </label>
 
@@ -203,11 +201,8 @@ function LoanProducts() {
                     id={name}
                     autoComplete={autoComplete}
                     {...register(name, { required: `${label} is required` })}
-                    className="select select-bordered w-full text-sm sm:text-base"
+                    className="select select-bordered w-full"
                   >
-                    <option value="" disabled>
-                      Select {label}
-                    </option>
                     {options?.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
@@ -219,12 +214,13 @@ function LoanProducts() {
                     <input
                       id={name}
                       type="number"
+                      step="any"
+                      inputMode="decimal"
                       onWheel={(e) => e.target.blur()}
                       autoComplete={autoComplete}
-                      placeholder={`Enter ${label}`}
+                      
                       {...register(name, { 
                         required: `${label} is required`,
-                        min: { value: 0, message: `${label} must be 0 or greater` }
                       })}
                       className={`input input-bordered w-full text-sm sm:text-base ${
                         errors[name] ? "input-error" : ""
@@ -242,7 +238,7 @@ function LoanProducts() {
                       id={name}
                       type={type}
                       autoComplete={autoComplete}
-                      placeholder={`Enter ${label}`}
+                      
                       {...register(name, { required: `${label} is required` })}
                       className="input input-bordered w-full text-sm sm:text-base"
                     />

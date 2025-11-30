@@ -416,186 +416,188 @@ function CoopLoansReleases() {
           isDisabled={watch("status") === "Active"}
           memberRole={memberRole}
         >
-          {/* Release dates */}
-          <div className="p-3 bg-white rounded-lg border-2 border-gray-200 mb-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="font-bold mb-2">Loan Release</h3>
+          <div className="pl-1 pr-2">
+            {/* Release dates */}
+            <div className="p-3 bg-white rounded-lg border-2 border-gray-200 mb-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="font-bold mb-2">Loan Release</h3>
 
-              <div className="mb-3">
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
-                  ${watch("status") === "Active"
-                    ? "bg-green-50 border-green-300 text-green-800"
-                    : "bg-yellow-50 border-yellow-300 text-yellow-700"
-                  }`}>
-                  <span className={watch("status") === "Active" ? "text-green-600" : "text-yellow-500"}>●</span>
-                  {watch("status")}
+                <div className="mb-3">
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
+                    ${watch("status") === "Active"
+                      ? "bg-green-50 border-green-300 text-green-800"
+                      : "bg-yellow-50 border-yellow-300 text-yellow-700"
+                    }`}>
+                    <span className={watch("status") === "Active" ? "text-green-600" : "text-yellow-500"}>●</span>
+                    {watch("status")}
+                  </div>
+                  <input type="hidden" value={watch("status")} />
                 </div>
-                <input type="hidden" value={watch("status")} />
+
               </div>
 
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">
-                  {watch("status") === "Active" ? "Released On" : "Release Date"}
-                </label>
-                {watch("status") === "Active" ? (
-                  <div className="px-3 py-2 bg-green-50 rounded border border-green-200 flex items-center gap-2">
-                    <CheckCircleOutlinedIcon fontSize="small" className="text-green-600" />
-                    <div className="text-sm font-semibold text-green-900">
-                      {watch("release_date") ? dayjs(watch("release_date")).format('MMM DD, YYYY') : "N/A"}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    {watch("status") === "Active" ? "Released On" : "Release Date"}
+                  </label>
+                  {watch("status") === "Active" ? (
+                    <div className="px-3 py-2 bg-green-50 rounded border border-green-200 flex items-center gap-2">
+                      <CheckCircleOutlinedIcon fontSize="small" className="text-green-600" />
+                      <div className="text-sm font-semibold text-green-900">
+                        {watch("release_date") ? dayjs(watch("release_date")).format('MMM DD, YYYY') : "N/A"}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <input
-                    type="date"
-                    {...register("release_date", { required: true })}
-                    className="input input-bordered w-full border-green-400 focus:border-green-600"
-                  />
-                )}
-                {errors.release_date && (<p className="text-error text-xs mt-1">Release date is required</p>)}
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => setValue("release_date", dayjs().format('YYYY-MM-DD'))}
-                  disabled={!!watch("release_date") || watch("status") === "Active"}
-                  className={`w-full px-3 py-2 rounded-lg font-semibold text-sm transition-all
-                    ${watch("release_date") || watch("status") === "Active"
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
-                    }`}
-                >
-                  {watch("release_date") ? "✓ Date Set" : "Set to Today"}
-                </button>
-              </div>
-            </div>
-
-            {/* if release date is present and it's not yet active */}
-            {watch("release_date") && watch("status") !== "Active" && (
-              <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded flex items-center gap-2">
-                <CheckCircleOutlinedIcon fontSize="inherit" className="text-green-700 text-[14px]" />
-                <span className="text-xs text-green-800 leading-tight">
-                  <strong>Ready to release:</strong> Click &ldquo;Release&rdquo; to activate this loan and generate the payment schedule.
-                </span>
-              </div>
-            )}
-
-            {/* if release date is not yet set */}
-            {!watch("release_date") && watch("status") !== "Active" && (
-              <div className="mt-2 p-2 bg-amber-50 border border-amber-300 rounded flex items-start gap-2">
-                <span className="text-xs text-amber-800">
-                  <strong>Pending:</strong> Set a release date to proceed with loan activation.
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Account info */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
-            <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref No.</label>
-                <div className="text-sm font-mono font-bold">{watch("loan_ref_number")}</div>
-                <input type="hidden" value={watch("loan_ref_number")} />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
-                <div className="text-sm font-semibold">{watch("account_number")}</div>
-                <input type="hidden" {...register("account_number")} />
-              </div>
-
-              <div className="md:col-span-1 col-span-2">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Account Holder</label>
-                <div className="text-sm font-bold">{watch("applicant_name")}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Loan details */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
-            <div className="mb-4 flex items-center justify-between">
-              <h4 className="text-xs font-bold text-gray-600 mb-2">Loan Details</h4>
-
-              {/* Loan Type */}
-              <span className="text-xs font-semibold text-gray-700 badge badge-ghost">{watch("loanProductName") || "N/A"}</span>
-            </div>
-
-            {/* Principal */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Principal</label>
-                <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
-                  <div className="text-sm font-semibold">
-                    ₱{watch("net_principal") ? parseFloat(watch("net_principal")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
-                  </div>
+                  ) : (
+                    <input
+                      type="date"
+                      {...register("release_date", { required: true })}
+                      className="input input-bordered w-full border-green-400 focus:border-green-600"
+                    />
+                  )}
+                  {errors.release_date && (<p className="text-error text-xs mt-1">Release date is required</p>)}
                 </div>
-                <input type="hidden" {...register("net_principal", { required: true })} />
-                {errors.net_principal && (<p className="text-error text-xs mt-1">Required</p>)}
+
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => setValue("release_date", dayjs().format('YYYY-MM-DD'))}
+                    disabled={!!watch("release_date") || watch("status") === "Active"}
+                    className={`w-full px-3 py-2 rounded-lg font-semibold text-sm transition-all
+                      ${watch("release_date") || watch("status") === "Active"
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+                      }`}
+                  >
+                    {watch("release_date") ? "✓ Date Set" : "Set to Today"}
+                  </button>
+                </div>
               </div>
 
-              {/* Total interest */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
-                <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
-                  <div className="text-sm font-semibold">
-                    ₱{watch("total_interest") ? parseFloat(watch("total_interest")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
-                  </div>
+              {/* if release date is present and it's not yet active */}
+              {watch("release_date") && watch("status") !== "Active" && (
+                <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded flex items-center gap-2">
+                  <CheckCircleOutlinedIcon fontSize="inherit" className="text-green-700 text-[14px]" />
+                  <span className="text-xs text-green-800 leading-tight">
+                    <strong>Ready to release:</strong> Click &ldquo;Release&rdquo; to activate this loan and generate the payment schedule.
+                  </span>
                 </div>
-                <input type="hidden" {...register("total_interest", { required: true })} />
-                {errors.total_interest && (<p className="text-error text-xs mt-1">Required</p>)}
-              </div>
+              )}
 
-              {/* Total amount due */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Total Amount Due</label>
-                <div className="px-3 py-2 bg-blue-100 rounded border border-blue-300">
-                  <div className="text-sm font-bold">
-                    ₱{watch("total_amount_due") ? parseFloat(watch("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
-                  </div>
+              {/* if release date is not yet set */}
+              {!watch("release_date") && watch("status") !== "Active" && (
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-300 rounded flex items-start gap-2">
+                  <span className="text-xs text-amber-800">
+                    <strong>Pending:</strong> Set a release date to proceed with loan activation.
+                  </span>
                 </div>
-                <input type="hidden" {...register("total_amount_due", { required: true })} />
-                {errors.total_amount_due && (<p className="text-error text-xs mt-1">Required</p>)}
+              )}
+            </div>
+
+            {/* Account info */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+              <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref No.</label>
+                  <div className="text-sm font-mono font-bold">{watch("loan_ref_number")}</div>
+                  <input type="hidden" value={watch("loan_ref_number")} />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
+                  <div className="text-sm font-semibold">{watch("account_number")}</div>
+                  <input type="hidden" {...register("account_number")} />
+                </div>
+
+                <div className="md:col-span-1 col-span-2">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Account Holder</label>
+                  <div className="text-sm font-bold">{watch("applicant_name")}</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Payment Schedule */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Schedule</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">First Due Date</label>
-                {watch("status") === "Active" ? (
-                  <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
+            {/* Loan details */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+              <div className="mb-4 flex items-center justify-between">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Loan Details</h4>
+
+                {/* Loan Type */}
+                <span className="text-xs font-semibold text-gray-700 badge badge-ghost">{watch("loanProductName") || "N/A"}</span>
+              </div>
+
+              {/* Principal */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Principal</label>
+                  <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
                     <div className="text-sm font-semibold">
-                      {watch("first_due") ? dayjs(watch("first_due")).format('MM/DD/YYYY') : "N/A"}
+                      ₱{watch("net_principal") ? parseFloat(watch("net_principal")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
                     </div>
                   </div>
-                ) : (
-                  <input
-                    type="date"
-                    {...register("first_due", { required: true })}
-                    className="input input-bordered w-full border-gray-400 focus:border-blue-600 font-semibold"
-                  />
-                )}
-                {errors.first_due && (<p className="text-error text-xs mt-1">First due date is required</p>)}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Maturity Date</label>
-                <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
-                  <div className="text-sm font-semibold text-gray-900">
-                    {watch("maturity_date") ? dayjs(watch("maturity_date")).format('MM/DD/YYYY') : "N/A"}
-                  </div>
+                  <input type="hidden" {...register("net_principal", { required: true })} />
+                  {errors.net_principal && (<p className="text-error text-xs mt-1">Required</p>)}
                 </div>
-                {/* hidden registered field to submit value */}
-                <input type="hidden" {...register("maturity_date", { required: true })} />
-                {errors.maturity_date && (<p className="text-error text-xs mt-1">Maturity date required</p>)}
+
+                {/* Total interest */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
+                  <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
+                    <div className="text-sm font-semibold">
+                      ₱{watch("total_interest") ? parseFloat(watch("total_interest")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                    </div>
+                  </div>
+                  <input type="hidden" {...register("total_interest", { required: true })} />
+                  {errors.total_interest && (<p className="text-error text-xs mt-1">Required</p>)}
+                </div>
+
+                {/* Total amount due */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Total Amount Due</label>
+                  <div className="px-3 py-2 bg-blue-100 rounded border border-blue-300">
+                    <div className="text-sm font-bold">
+                      ₱{watch("total_amount_due") ? parseFloat(watch("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                    </div>
+                  </div>
+                  <input type="hidden" {...register("total_amount_due", { required: true })} />
+                  {errors.total_amount_due && (<p className="text-error text-xs mt-1">Required</p>)}
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Schedule */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200">
+              <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Schedule</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">First Due Date</label>
+                  {watch("status") === "Active" ? (
+                    <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                      <div className="text-sm font-semibold">
+                        {watch("first_due") ? dayjs(watch("first_due")).format('MM/DD/YYYY') : "N/A"}
+                      </div>
+                    </div>
+                  ) : (
+                    <input
+                      type="date"
+                      {...register("first_due", { required: true })}
+                      className="input input-bordered w-full border-gray-400 focus:border-blue-600 font-semibold"
+                    />
+                  )}
+                  {errors.first_due && (<p className="text-error text-xs mt-1">First due date is required</p>)}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Maturity Date</label>
+                  <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {watch("maturity_date") ? dayjs(watch("maturity_date")).format('MM/DD/YYYY') : "N/A"}
+                    </div>
+                  </div>
+                  {/* hidden registered field to submit value */}
+                  <input type="hidden" {...register("maturity_date", { required: true })} />
+                  {errors.maturity_date && (<p className="text-error text-xs mt-1">Maturity date required</p>)}
+                </div>
               </div>
             </div>
           </div>

@@ -565,170 +565,172 @@ function ClubFunds() {
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => openDeleteModal(getValues("contribution_id"))}
       >
-        {/* Member Combobox with Controller */}
-        <div className="form-control w-full">
-          <label className="label text-sm font-semibold mb-2">Member Account</label>
-          <Controller
-            name="account_number"
-            control={control}
-            render={({ field }) => (
-              <div className="relative">
-              <Combobox
-                value={members.find((m) => m.account_number === field.value) || null}
-                onChange={(member) => field.onChange(member?.account_number)}
-              >
-                <ComboboxInput
-                  required
-                  className="input input-bordered w-full"
-                  placeholder="Search by Account Number or Name..."
-                  displayValue={(member) => (member ? member.account_number : "")}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                  {filteredMembers.length === 0 ? (
-                    <div className="px-4 py-2 text-base-content/60">No members found.</div>
-                  ) : (
-                    filteredMembers.map((member) => (
-                      <ComboboxOption
-                        key={member.account_number}
-                        value={member}
-                        className={({ focus }) =>
-                          `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
-                        }
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="avatar">
-                            <div className="mask mask-circle w-10 h-10">
-                              <img
-                                src={member.avatar_url || placeHolderAvatar}
-                                alt={`${member.f_name} ${member.l_name}`}
-                              />
+        <div className="pl-1 pr-2">
+          {/* Member Combobox with Controller */}
+          <div className="form-control w-full">
+            <label className="label text-sm font-semibold mb-2">Member Account</label>
+            <Controller
+              name="account_number"
+              control={control}
+              render={({ field }) => (
+                <div className="relative">
+                <Combobox
+                  value={members.find((m) => m.account_number === field.value) || null}
+                  onChange={(member) => field.onChange(member?.account_number)}
+                >
+                  <ComboboxInput
+                    required
+                    className="input input-bordered w-full"
+                    placeholder="Search by Account Number or Name..."
+                    displayValue={(member) => (member ? member.account_number : "")}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                    {filteredMembers.length === 0 ? (
+                      <div className="px-4 py-2 text-base-content/60">No members found.</div>
+                    ) : (
+                      filteredMembers.map((member) => (
+                        <ComboboxOption
+                          key={member.account_number}
+                          value={member}
+                          className={({ focus }) =>
+                            `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
+                          }
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="avatar">
+                              <div className="mask mask-circle w-10 h-10">
+                                <img
+                                  src={member.avatar_url || placeHolderAvatar}
+                                  alt={`${member.f_name} ${member.l_name}`}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <span className="font-mono text-sm font-semibold">{member.account_number}</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
+                                <span className="text-xs italic">({member.account_role})</span>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex flex-col flex-1 min-w-0">
-                            <span className="font-mono text-sm font-semibold">{member.account_number}</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                              <span className="text-xs italic">({member.account_role})</span>
-                            </div>
-                          </div>
-                        </div>
-                      </ComboboxOption>
-                    ))
-                  )}
-                </ComboboxOptions>
-              </Combobox>
-              </div>
-            )}
-          />
-        </div>
-
-        {fields.map(({ label, name, type, options, autoComplete, optional }) => (
-          <div key={name} className="form-control w-full mt-2">
-            <label htmlFor={name}>
-              <span className="label text-sm font-semibold mb-2">{label}
-                {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
-              </span>
-            </label>
-
-            {name === "amount" ? (
-              <Controller
-                name="amount"
-                control={control}
-                rules={{
-                  required: true,
-                  min: {
-                    value: 1,
-                    message: "Amount must be greater than 0",
-                  },
-                  validate: (value) => value > 0 || "Amount cannot be zero or negative",
-                }}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <input
-                      id="amount"
-                      type="number"
-                      autoComplete={autoComplete}
-                      value={field.value}
-                      placeholder="Enter Amount"
-                      onWheel={(e) => e.target.blur()}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        if (raw === "") {
-                          field.onChange(""); // allow clearing
-                          return;
-                        }
-
-                        const value = Number(raw);
-                        field.onChange(value < 0 ? 0 : value);
-                      }}
-                      className={`input input-bordered w-full ${error ? "input-error" : ""
-                        }`}
-                    />
-                    {error && (
-                      <span className="text-sm text-error mt-1 block">
-                        {error.message}
-                      </span>
+                        </ComboboxOption>
+                      ))
                     )}
-                  </>
-                )}
-              />
-            ) : type === "select" ? (
-              <select
-                id={name}
-                autoComplete={autoComplete}
-                {...register(name, { required: name !== "remarks" })}
-                className="select select-bordered w-full"
-              >
-                <option value="" disabled>
-                  Select {label}
-                </option>
-                {options?.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                  </ComboboxOptions>
+                </Combobox>
+                </div>
+              )}
+            />
+          </div>
+
+          {fields.map(({ label, name, type, options, autoComplete, optional }) => (
+            <div key={name} className="form-control w-full mt-2">
+              <label htmlFor={name}>
+                <span className="label text-sm font-semibold mb-2">{label}
+                  {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
+                </span>
+              </label>
+
+              {name === "amount" ? (
+                <Controller
+                  name="amount"
+                  control={control}
+                  rules={{
+                    required: true,
+                    min: {
+                      value: 1,
+                      message: "Amount must be greater than 0",
+                    },
+                    validate: (value) => value > 0 || "Amount cannot be zero or negative",
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <>
+                      <input
+                        id="amount"
+                        type="number"
+                        autoComplete={autoComplete}
+                        value={field.value}
+                        placeholder="Enter Amount"
+                        onWheel={(e) => e.target.blur()}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (raw === "") {
+                            field.onChange(""); // allow clearing
+                            return;
+                          }
+
+                          const value = Number(raw);
+                          field.onChange(value < 0 ? 0 : value);
+                        }}
+                        className={`input input-bordered w-full ${error ? "input-error" : ""
+                          }`}
+                      />
+                      {error && (
+                        <span className="text-sm text-error mt-1 block">
+                          {error.message}
+                        </span>
+                      )}
+                    </>
+                  )}
+                />
+              ) : type === "select" ? (
+                <select
+                  id={name}
+                  autoComplete={autoComplete}
+                  {...register(name, { required: name !== "remarks" })}
+                  className="select select-bordered w-full"
+                >
+                  <option value="" disabled>
+                    Select {label}
                   </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                id={name}
-                autoComplete={autoComplete}
-                type={type}
-                {...register(name, { required: name !== "remarks" })}
-                className="input input-bordered w-full"
-              />
-            )}
-          </div>
-        ))}
-
-        {/* if category = Monthly Dues, show period fields (since members can pay in advance) */}
-        {watchedCategory === "Monthly Dues" && (
-          <div className="flex justify-between gap-4">
-            <div className="form-control w-full mt-2">
-              <label htmlFor="period_start">
-                <span className="label text-sm font-semibold mb-2">Starting Month</span>
-              </label>
-              <input
-                id="period_start"
-                type="month"
-                {...register("period_start", { required: true })}
-                className="input input-bordered w-full"
-              />
+                  {options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  id={name}
+                  autoComplete={autoComplete}
+                  type={type}
+                  {...register(name, { required: name !== "remarks" })}
+                  className="input input-bordered w-full"
+                />
+              )}
             </div>
+          ))}
 
-            <div className="form-control w-full mt-2">
-              <label htmlFor="period_end">
-                <span className="label text-sm font-semibold mb-2">Ending Month</span>
-              </label>
-              <input
-                id="period_end"
-                type="month"
-                {...register("period_end", { required: true })}
-                className="input input-bordered w-full"
-              />
+          {/* if category = Monthly Dues, show period fields (since members can pay in advance) */}
+          {watchedCategory === "Monthly Dues" && (
+            <div className="flex justify-between gap-4">
+              <div className="form-control w-full mt-2">
+                <label htmlFor="period_start">
+                  <span className="label text-sm font-semibold mb-2">Starting Month</span>
+                </label>
+                <input
+                  id="period_start"
+                  type="month"
+                  {...register("period_start", { required: true })}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div className="form-control w-full mt-2">
+                <label htmlFor="period_end">
+                  <span className="label text-sm font-semibold mb-2">Ending Month</span>
+                </label>
+                <input
+                  id="period_end"
+                  type="month"
+                  {...register("period_end", { required: true })}
+                  className="input input-bordered w-full"
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+         </div>
       </FormModal>
 
         <DeleteConfirmationModal

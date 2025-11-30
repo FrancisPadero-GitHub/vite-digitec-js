@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useState } from 'react';
+import { Wallet, Briefcase, CreditCard, Users } from 'lucide-react';
 
 // fetch hooks
 import { useFetchMemberDetails } from '../../../../backend/hooks/member/useFetchMemberDetails';
@@ -19,6 +20,14 @@ import DateFilterReports from './DateFilterReports';
 
 
 import digitecLogo from '../../../../assets/digitec-logo.png'
+
+// Format currency
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP'
+  }).format(amount || 0);
+};
 
 
 function MemStatementDetails() {
@@ -349,7 +358,7 @@ function MemStatementDetails() {
         <div className="bg-base-100 shadow-md rounded-lg p-4 sm:p-6 gap-4">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-4 mb-4">
             <div className="w-full lg:w-1/2">
-              <h1 className="text-lg lg:text-2xl sm:text-3xl font-bold">Member Statement</h1>
+              <h1 className="text-lg lg:text-2xl sm:text-lg lg:text-2xl font-bold">Member Statement</h1>
               <div className="mt-3 lg:mt-0">
                 <DateFilterReports
                   selectedYear={selectedYear}
@@ -389,17 +398,15 @@ function MemStatementDetails() {
         </div>
         
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-2 my-4">
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
           {/* Share Capital Total */}
           <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl">
-            <div className="card-body p-5">
+            <div className="card-body px-4 py-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Share Capital Total</h3>
-              <svg className="w-8 h-8 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+                <Users className="w-8 h-8 text-white opacity-80" />
               </div>
-              <p className="text-3xl font-bold text-white">{display(coopContributionsTotal || 0)}</p>
+              <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(coopContributionsTotal || 0)}</p>
               <p className="text-sm mt-2 opacity-90 text-white">{filteredCoopContributions.length} contributions</p>
             </div>
           </div>
@@ -409,11 +416,9 @@ function MemStatementDetails() {
             <div className="card-body p-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Club Funds Total</h3>
-                <svg className="w-8 h-8 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                <Wallet className="w-8 h-8 text-white opacity-80" />
               </div>
-              <p className="text-3xl font-bold text-white">{display(clubFundsTotal || 0)}</p>
+              <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(clubFundsTotal || 0)}</p>
               <p className="text-sm mt-2 opacity-90 text-white">{filteredClubFunds.length} transactions</p>
             </div>
           </div>
@@ -423,12 +428,10 @@ function MemStatementDetails() {
             <div className="card-body p-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="card-title text-sm font-semibold uppercase tracking-wide truncate text-white">Active Loans</h3>
-                <svg className="w-8 h-8 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <Briefcase className="w-8 h-8 text-white opacity-80" />
               </div>
-              <p className="text-3xl font-bold text-white">{onGoingLoans.length}</p>
-              <p className="text-sm mt-2 opacity-90 text-white">Outstanding: {display(onGoingLoans?.outstanding_balance || 0)}</p>
+              <p className="text-lg lg:text-2xl font-bold text-white">{onGoingLoans.length}</p>
+              <p className="text-sm mt-2 opacity-90 text-white">Outstanding: {formatCurrency(onGoingLoans?.outstanding_balance || 0)}</p>
             </div>
           </div>
 
@@ -437,12 +440,10 @@ function MemStatementDetails() {
             <div className="card-body p-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="card-title text-sm font-semibold uppercase tracking-wide truncate text-white">Loan Payments</h3>
-                <svg className="w-8 h-8 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
-                </svg>
+                <CreditCard className="w-8 h-8 text-white opacity-80" />
               </div>
-              <p className="text-3xl font-bold text-white">{filteredLoanPayments.length}</p>
-              <p className="text-sm mt-2 opacity-90 text-white">Total paid: {display(activeLoans?.total_paid || 0)}</p>
+              <p className="text-lg lg:text-2xl font-bold text-white">{filteredLoanPayments.length}</p>
+              <p className="text-sm mt-2 opacity-90 text-white">Total paid: {formatCurrency(activeLoans?.total_paid || 0)}</p>
             </div>
           </div>
         </div>
@@ -476,7 +477,7 @@ function MemStatementDetails() {
         <div className='grid grid-cols-1 xl:grid-cols-2 gap-4 my-4' >
           {/* Coop Contributions (Share Capital) */}
           <div className="bg-base-100 shadow-md rounded-lg p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">Share Capital Contributions</h2>
+            <h2 className="text-lg lg:text-2xl font-bold mb-4">Share Capital Contributions</h2>
 
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-300">
@@ -541,7 +542,7 @@ function MemStatementDetails() {
 
           {/* Club Funds */}
           <div className="bg-base-100 shadow-md rounded-lg p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">Club Funds History</h2>
+            <h2 className="text-lg lg:text-2xl font-bold mb-4">Club Funds History</h2>
 
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-300">
@@ -607,7 +608,7 @@ function MemStatementDetails() {
 
         {/* Active Loans */}
         <div className=" bg-base-100 shadow-md rounded-lg p-4 sm:p-6 mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Active Loan Balances</h2>
+          <h2 className="text-lg lg:text-2xl font-bold mb-4">Active Loan Balances</h2>
 
           <div className="overflow-y-auto overflow-x-auto max-h-[55vh] min-h-[20vh]">
             <table className="min-w-full divide-y divide-gray-300">
@@ -657,7 +658,7 @@ function MemStatementDetails() {
 
         {/* Loan Payment History */}
         <div className="bg-base-100 shadow-md rounded-lg p-4 sm:p-6 mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Loan Payment History</h2>
+          <h2 className="text-lg lg:text-2xl font-bold mb-4">Loan Payment History</h2>
 
           <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[20vh]">
             <table className="min-w-full divide-y divide-gray-300">
@@ -710,7 +711,7 @@ function MemStatementDetails() {
         {/* Past Loans (Optional) */}
         {pastLoans.length > 0 && (
           <div className="bg-base-100 shadow-md rounded-lg p-4 sm:p-6 mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">Closed Loans</h2>
+            <h2 className="text-lg lg:text-2xl font-bold mb-4">Closed Loans</h2>
 
             <div className="overflow-y-auto overflow-x-auto max-h-[35vh] min-h-[17vh]">
               <table className="min-w-full divide-y divide-gray-300">

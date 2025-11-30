@@ -31,8 +31,8 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
 
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-6 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] w-full">
-        <p className="text-xl md:text-2xl lg:text-2xl font-semibold" >{title}</p>
+      <div className="modal-box overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] w-full">
+        <p className="text-lg lg:text-2xl font-semibold" >{title}</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -43,8 +43,8 @@ function FormModal({ table, open, close, action, children, onSubmit, deleteActio
             onSubmit(e);
           }}
         >
-          
-          <div className="max-h-[60vh] overflow-y-auto p-2">
+          {/* Control the paddings on the parent not here cause every modal usage is different for very pages */}
+          <div className="max-h-[60vh] overflow-y-auto mb-4 mt-2">
             {children}
           </div>
 

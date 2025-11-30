@@ -6,7 +6,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
   if (!open) return null
   return (
     <dialog open className='modal' onClose={close}>
-      <div className="modal-box space-y-2 overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl lg:max-w-2xl w-full">
+      <div className="modal-box overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl lg:max-w-2xl w-full">
         <div className="flex gap-2 justify-between" >
           <h2 className="text-lg lg:text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
           <button type="button" className="btn btn-ghost" onClick={close}>
@@ -24,7 +24,8 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
             onSubmit(e);
           }}
         >
-          <div className="max-h-[60vh] overflow-y-auto p-2">
+          {/* Control the paddings on the parent not here cause every modal usage is different for very pages */}
+          <div className="max-h-[60vh] overflow-y-auto mb-4 mt-2">
             {children}
           </div>
 

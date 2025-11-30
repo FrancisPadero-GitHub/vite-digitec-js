@@ -249,7 +249,7 @@ function MemberPayments() {
               </div>
 
               {/* Scrollable Content */}
-              <div className="overflow-y-auto overflow-x-hidden flex-1">
+              <div className="overflow-y-auto overflow-x-hidden flex-1 pr-2">
                 {/* Payment Info Section */}
                 <div className="bg-base-100 p-2.5 rounded-lg border border-gray-200 mb-3">
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -338,7 +338,6 @@ function MemberPayments() {
                   </div>
                 </div>
               </div>
-
               {/* Fixed Modal Actions */}
               <div className="flex justify-between pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
                 {/* <button 
@@ -360,6 +359,10 @@ function MemberPayments() {
                 <button onClick={closeViewModal} className="btn btn-sm">Close</button>
               </div>
             </div>
+            {/* Backdrop enables outside click to close */}
+            <form method="dialog" className="modal-backdrop" onSubmit={closeViewModal}>
+              <button aria-label="Close"></button>
+            </form>
           </dialog>
         )}
       </div>

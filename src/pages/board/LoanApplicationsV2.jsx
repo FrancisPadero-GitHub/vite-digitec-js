@@ -713,153 +713,154 @@ function LoanApplicationsV2() {
           type={isLoanApproved}
           memberRole={memberRole}
         >
-          {/* Loan decision */}
-          <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircleOutlinedIcon fontSize="sma ll" color="info" />
-              <h3 className="font-bold">Application Decision</h3>
+          <div className="pr-2">
+            {/* Loan decision */}
+            <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircleOutlinedIcon fontSize="sma ll" color="info" />
+                <h3 className="font-bold">Application Decision</h3>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
+                {LOAN_APPLICATION_STATUSES.map((status) => {
+                  // this only determines the colors of the buttons based on status
+                  const isSelected = watchLoanApp("status") === status;
+                  const isApproved = status === "Approved";
+                  const isDenied = status === "Denied";
+
+                  return (
+                    <label
+                      key={status}
+                      className={`relative cursor-pointer px-3 py-2 rounded-lg font-semibold text-sm text-center transition-all border-2
+                          ${isSelected
+                          ? isApproved
+                            ? 'bg-green-600 text-white border-green-600 shadow-lg scale-105'
+                            : isDenied
+                              ? 'bg-red-600 text-white border-red-600 shadow-lg scale-105'
+                              : 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                        }
+                          ${isLoanAlreadyApproved ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
+                    >
+                      <input
+                        type="radio"
+                        value={status}
+                        {...registerLoanApp("status", { required: true })}
+                        disabled={isLoanCancelled || isLoanAlreadyApproved}
+                        className="sr-only"
+                      />
+                      {status}
+                    </label>
+                  );
+                })}
+              </div>
+
+              {watchLoanApp("status") === "Approved" && !isLoanAlreadyApproved && (
+                <div className="p-3 bg-green-50 border border-green-300 rounded-lg flex items-start gap-2">
+                  <CheckCircleOutlinedIcon fontSize="small" color="success" />
+                  <p className="text-sm text-green-800">
+                    <strong>Approved:</strong> Click &ldquo;Next&rdquo; to review and confirm loan release details.
+                  </p>
+                </div>
+              )}
+
+              {watchLoanApp("status") === "Denied" && (
+                <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
+                  <p className="text-sm text-red-800">
+                    <strong>Denied:</strong> This application will be declined. The applicant will be notified.
+                  </p>
+                </div>
+              )}
+
+              {watchLoanApp("status") === "Cancelled" && (
+                <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
+                  <p className="text-sm text-red-800">
+                    <strong>Cancelled:</strong> This application has been cancelled.
+                  </p>
+                </div>
+              )}
+
+              {errorsLoanApp.status && (<p className="text-error text-sm mt-2">Application status is required</p>)}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
-              {LOAN_APPLICATION_STATUSES.map((status) => {
-                // this only determines the colors of the buttons based on status
-                const isSelected = watchLoanApp("status") === status;
-                const isApproved = status === "Approved";
-                const isDenied = status === "Denied";
+            {/* Application details (ref no, date, acc number, name) */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Ref No.</label>
+                  <div className="text-sm font-mono font-bold text-gray-900">
+                    {`${TABLE_PREFIX}${watchLoanApp("application_id") || ""}`}
+                  </div>
+                  <input type="hidden" {...registerLoanApp("application_id")} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Application Date</label>
+                  <div className="text-sm font-semibold text-gray-900">
+                    {watchLoanApp("application_date") && dayjs(watchLoanApp("application_date")).format("MMM D, YYYY")}
+                  </div>
+                  <input type="hidden" {...registerLoanApp("application_date")} />
+                </div>
 
-                return (
-                  <label
-                    key={status}
-                    className={`relative cursor-pointer px-3 py-2 rounded-lg font-semibold text-sm text-center transition-all border-2
-                        ${isSelected
-                        ? isApproved
-                          ? 'bg-green-600 text-white border-green-600 shadow-lg scale-105'
-                          : isDenied
-                            ? 'bg-red-600 text-white border-red-600 shadow-lg scale-105'
-                            : 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                      }
-                        ${isLoanAlreadyApproved ? 'opacity-50 cursor-not-allowed' : ''}
-                      `}
-                  >
-                    <input
-                      type="radio"
-                      value={status}
-                      {...registerLoanApp("status", { required: true })}
-                      disabled={isLoanCancelled || isLoanAlreadyApproved}
-                      className="sr-only"
-                    />
-                    {status}
-                  </label>
-                );
-              })}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
+                  <div className="text-sm font-semibold text-gray-900">{watchLoanApp("account_number")}</div>
+                  <input type="hidden" {...registerLoanApp("account_number")} />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Applicant Name</label>
+                  <div className="text-sm font-bold text-gray-900">{watchLoanApp("full_name")}</div>
+                  <input type="hidden" {...registerLoanApp("full_name")} />
+                </div>
+              </div>
             </div>
 
-            {watchLoanApp("status") === "Approved" && !isLoanAlreadyApproved && (
-              <div className="p-3 bg-green-50 border border-green-300 rounded-lg flex items-start gap-2">
-                <CheckCircleOutlinedIcon fontSize="small" color="success" />
-                <p className="text-sm text-green-800">
-                  <strong>Approved:</strong> Click &ldquo;Next&rdquo; to review and confirm loan release details.
-                </p>
-              </div>
-            )}
-
-            {watchLoanApp("status") === "Denied" && (
-              <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
-                <p className="text-sm text-red-800">
-                  <strong>Denied:</strong> This application will be declined. The applicant will be notified.
-                </p>
-              </div>
-            )}
-
-            {watchLoanApp("status") === "Cancelled" && (
-              <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
-                <p className="text-sm text-red-800">
-                  <strong>Cancelled:</strong> This application has been cancelled.
-                </p>
-              </div>
-            )}
-
-            {errorsLoanApp.status && (<p className="text-error text-sm mt-2">Application status is required</p>)}
-          </div>
-
-          {/* Application details (ref no, date, acc number, name) */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Ref No.</label>
-                <div className="text-sm font-mono font-bold text-gray-900">
-                  {`${TABLE_PREFIX}${watchLoanApp("application_id") || ""}`}
+            {/* Loan details (product, term, amount) */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200">
+              <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center">Loan Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Loan Product</label>
+                  <div className="text-sm font-semibold text-gray-900 px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                    {watchLoanApp("product_name") || "N/A"}
+                  </div>
+                  {errorsLoanApp.product_name && (<p className="text-error text-xs mt-1">Required</p>)}
                 </div>
-                <input type="hidden" {...registerLoanApp("application_id")} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Application Date</label>
-                <div className="text-sm font-semibold text-gray-900">
-                  {watchLoanApp("application_date") && dayjs(watchLoanApp("application_date")).format("MMM D, YYYY")}
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Term</label>
+                  <div className="text-sm font-semibold text-gray-900 px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                    {watchLoanApp("loan_term") ? `${watchLoanApp("loan_term")} months` : "N/A"}
+                  </div>
+                  {errorsLoanApp.loan_term && (<p className="text-error text-xs mt-1">Required</p>)}
                 </div>
-                <input type="hidden" {...registerLoanApp("application_date")} />
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
-                <div className="text-sm font-semibold text-gray-900">{watchLoanApp("account_number")}</div>
-                <input type="hidden" {...registerLoanApp("account_number")} />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Applicant Name</label>
-                <div className="text-sm font-bold text-gray-900">{watchLoanApp("full_name")}</div>
-                <input type="hidden" {...registerLoanApp("full_name")} />
-              </div>
-            </div>
-          </div>
-
-          {/* Loan details (product, term, amount) */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center">Loan Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Loan Product</label>
-                <div className="text-sm font-semibold text-gray-900 px-3 py-2 bg-gray-50 rounded border border-gray-200">
-                  {watchLoanApp("product_name") || "N/A"}
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Amount Requested</label>
+                  <div className="px-4 py-1 bg-blue-50 rounded-lg border-2 border-blue-200">
+                    <div className="text-lg font-bold text-blue-900">
+                      ₱{watchLoanApp("amount") ? parseFloat(watchLoanApp("amount")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                    </div>
+                  </div>
+                  <input
+                    type="hidden"
+                    {...registerLoanApp("amount", { required: true, min: selectedProduct?.min_amount || 0, max: selectedProduct?.max_amount || 9999999, })}
+                  />
+                  {errorsLoanApp.amount && (<p className="text-error text-xs mt-1">Invalid amount range</p>)}
                 </div>
-                {errorsLoanApp.product_name && (<p className="text-error text-xs mt-1">Required</p>)}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Term</label>
-                <div className="text-sm font-semibold text-gray-900 px-3 py-2 bg-gray-50 rounded border border-gray-200">
-                  {watchLoanApp("loan_term") ? `${watchLoanApp("loan_term")} months` : "N/A"}
-                </div>
-                {errorsLoanApp.loan_term && (<p className="text-error text-xs mt-1">Required</p>)}
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Amount Requested</label>
-                <div className="px-4 py-1 bg-blue-50 rounded-lg border-2 border-blue-200">
-                  <div className="text-lg font-bold text-blue-900">
-                    ₱{watchLoanApp("amount") ? parseFloat(watchLoanApp("amount")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
-                  </div>
+                <label className="block text-xs font-medium text-gray-500 mb-2 mt-2">Loan Purpose</label>
+                <div className="text-sm text-gray-900 leading-relaxed px-3 py-2.5 bg-gray-50 rounded border border-gray-200">
+                  {watchLoanApp("purpose") || "No purpose provided"}
                 </div>
-                <input
-                  type="hidden"
-                  {...registerLoanApp("amount", { required: true, min: selectedProduct?.min_amount || 0, max: selectedProduct?.max_amount || 9999999, })}
-                />
-                {errorsLoanApp.amount && (<p className="text-error text-xs mt-1">Invalid amount range</p>)}
+                <textarea {...registerLoanApp("purpose", { required: false })} className="hidden" />
+                {errorsLoanApp.purpose && (<p className="text-error text-xs mt-1">Required</p>)}
               </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-2 mt-2">Loan Purpose</label>
-              <div className="text-sm text-gray-900 leading-relaxed px-3 py-2.5 bg-gray-50 rounded border border-gray-200">
-                {watchLoanApp("purpose") || "No purpose provided"}
-              </div>
-              <textarea {...registerLoanApp("purpose", { required: false })} className="hidden" />
-              {errorsLoanApp.purpose && (<p className="text-error text-xs mt-1">Required</p>)}
             </div>
           </div>
-
         </BoardFormModal>
 
 
@@ -874,279 +875,281 @@ function LoanApplicationsV2() {
           isPending={isUpdateLoanAppPending || isAddLoanAccPending}
           onSubmit={handleSubmitLoanAcc(onSubmitLoanAcc)} // No operation on submit for now
         >
-          {/* Loan Account details go here */}
-          {/* Hidden fields */}
-          <input type="hidden" {...registerLoanAcc("loan_id")} />
-          {/* Approval Amount */}
-          <div className="p-3 bg-green-50 rounded-lg border-2 border-green-300 mb-4 overflow-y-auto">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="font-bold">Approval Amount</h3>
-              <p className="text-xs text-green-600 italic">(Adjust if needed)</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* Share Capital Info */}
-              <div className="md:col-span-1">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Club&apos;s Share Capital Balance</label>
-                <div className={`px-4 py-2 rounded-lg border-2 flex items-center justify-between gap-3 ${
-                  isErrorShareCapital 
-                    ? 'border-red-300 bg-red-50' 
-                    : 'border-teal-200 bg-teal-50'
-                }`}>
-                  <div className="text-base font-bold text-teal-800">
-                    {isLoadingShareCapital && (
-                      <span className="flex items-center gap-2 text-teal-600">
-                        <AiOutlineLoading3Quarters className="animate-spin" /> Loading...
-                      </span>
-                    )}
-                    {isErrorShareCapital && (
-                      <span className="text-red-600 text-sm">
-                        Error loading share capital
-                      </span>
-                    )}
-                    {!isLoadingShareCapital && !isErrorShareCapital && (
-                      <>₱{display(shareCapitalBalance)}</>
-                    )}
-                  </div>
-                </div>
-                {isErrorShareCapital && errorShareCapital && (
-                  <p className="text-xs text-red-500 mt-1 truncate">
-                    {(errorShareCapital?.message || 'Unknown error').toString()}
-                  </p>
-                )}
+          <div className="pr-2">
+            {/* Loan Account details go here */}
+            {/* Hidden fields */}
+            <input type="hidden" {...registerLoanAcc("loan_id")} />
+            {/* Approval Amount */}
+            <div className="p-3 bg-green-50 rounded-lg border-2 border-green-300 mb-4 overflow-y-auto">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="font-bold">Approval Amount</h3>
+                <p className="text-xs text-green-600 italic">(Adjust if needed)</p>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Amount Requested</label>
-                <div className="px-3 py-2 bg-white rounded border border-gray-200">
-                  <div className=" font-bold text-gray-700">
-                    ₱{watchLoanApp("amount") ? parseFloat(watchLoanApp("amount")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Share Capital Info */}
+                <div className="md:col-span-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Club&apos;s Share Capital Balance</label>
+                  <div className={`px-4 py-2 rounded-lg border-2 flex items-center justify-between gap-3 ${
+                    isErrorShareCapital 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-teal-200 bg-teal-50'
+                  }`}>
+                    <div className="text-base font-bold text-teal-800">
+                      {isLoadingShareCapital && (
+                        <span className="flex items-center gap-2 text-teal-600">
+                          <AiOutlineLoading3Quarters className="animate-spin" /> Loading...
+                        </span>
+                      )}
+                      {isErrorShareCapital && (
+                        <span className="text-red-600 text-sm">
+                          Error loading share capital
+                        </span>
+                      )}
+                      {!isLoadingShareCapital && !isErrorShareCapital && (
+                        <>₱{display(shareCapitalBalance)}</>
+                      )}
+                    </div>
                   </div>
+                  {isErrorShareCapital && errorShareCapital && (
+                    <p className="text-xs text-red-500 mt-1 truncate">
+                      {(errorShareCapital?.message || 'Unknown error').toString()}
+                    </p>
+                  )}
                 </div>
-                <input type="hidden" {...registerLoanAcc("amount_req", { required: true })} value={watchLoanApp("amount")} />
-              </div>
 
-            
-              {/* Principal / Approval Amount */}
-              <Controller
-                defaultValue={watchLoanApp("amount") || 0}
-                name="principal"
-                control={control}
-                rules={{
-                  required: "Principal amount is required",
-                  validate: (value) => {
-                    // Use Decimal for precise money comparisons
-                    try {
-                      const D_value = new Decimal(value || 0);
-                      
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Amount Requested</label>
+                  <div className="px-3 py-2 bg-white rounded border border-gray-200">
+                    <div className=" font-bold text-gray-700">
+                      ₱{watchLoanApp("amount") ? parseFloat(watchLoanApp("amount")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                    </div>
+                  </div>
+                  <input type="hidden" {...registerLoanAcc("amount_req", { required: true })} value={watchLoanApp("amount")} />
+                </div>
 
-                      if (D_value.lte(0)) return "Amount cannot be zero or negative";
+              
+                {/* Principal / Approval Amount */}
+                <Controller
+                  defaultValue={watchLoanApp("amount") || 0}
+                  name="principal"
+                  control={control}
+                  rules={{
+                    required: "Principal amount is required",
+                    validate: (value) => {
+                      // Use Decimal for precise money comparisons
+                      try {
+                        const D_value = new Decimal(value || 0);
+                        
 
-                      const D_min = new Decimal(selectedProduct?.min_amount || 0);
-                      const D_max = productCode === "S_CAP_LOANS"
-                        ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
-                        : new Decimal(selectedProduct?.max_amount || 9999999);
+                        if (D_value.lte(0)) return "Amount cannot be zero or negative";
 
-                      if (D_value.lt(D_min)) return `Amount must be at least ₱${D_min.toFixed(2)}`;
-                      if (productCode === "S_CAP_LOANS") {
-                        const shareCap = new Decimal(shareCapitalBalance || 0);
-                        if (shareCap.gt(0) && D_value.gt(shareCap)) {
-                          return `Amount exceeds the club's share capital balance (max ₱${shareCap.toFixed(2)}). Cannot approve loan greater than share capital.`;
+                        const D_min = new Decimal(selectedProduct?.min_amount || 0);
+                        const D_max = productCode === "S_CAP_LOANS"
+                          ? new Decimal(redux_data?.amount || 9999999) // 80% of share capital for S_CAP_LOANS, this is basically the loanable amount of the LAD not really the product max amount
+                          : new Decimal(selectedProduct?.max_amount || 9999999);
+
+                        if (D_value.lt(D_min)) return `Amount must be at least ₱${D_min.toFixed(2)}`;
+                        if (productCode === "S_CAP_LOANS") {
+                          const shareCap = new Decimal(shareCapitalBalance || 0);
+                          if (shareCap.gt(0) && D_value.gt(shareCap)) {
+                            return `Amount exceeds the club's share capital balance (max ₱${shareCap.toFixed(2)}). Cannot approve loan greater than share capital.`;
+                          }
+                          if (D_value.gt(D_max)) {
+                            return `For ${redux_data?.product_name}, maximum allowed is 80% member's of share capital`;
+                          }
+                        } else {
+                          return D_value.gt(D_max) ? `Amount must not exceed ₱${D_max.toFixed(2)}` : true;
                         }
-                        if (D_value.gt(D_max)) {
-                          return `For ${redux_data?.product_name}, maximum allowed is 80% member's of share capital`;
-                        }
-                      } else {
-                        return D_value.gt(D_max) ? `Amount must not exceed ₱${D_max.toFixed(2)}` : true;
+                        return true;
+                      } catch {
+                        // Fallback to built-in message on error parsing Decimal
+                        return "Invalid amount";
                       }
-                      return true;
-                    } catch {
-                      // Fallback to built-in message on error parsing Decimal
-                      return "Invalid amount";
                     }
-                  }
-                }}
-                render={({ field }) => (
-                  <div>
-                    <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
-                    <input
-                      value={field.value ?? ''}
-                      type="number"
-                      placeholder={watchLoanApp("amount")}
-                      onWheel={(e) => e.target.blur()}
-                      {...field}
-                      className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
-                    />
-                    {errorsLoanAcc.principal && (
-                      <p className="text-error text-xs mt-1">
-                        {errorsLoanAcc.principal.message}
-                      </p>
+                  }}
+                  render={({ field }) => (
+                    <div>
+                      <label className="block text-xs font-bold text-green-700 mb-1">Principal / Approval Amount</label>
+                      <input
+                        value={field.value ?? ''}
+                        type="number"
+                        placeholder={watchLoanApp("amount")}
+                        onWheel={(e) => e.target.blur()}
+                        {...field}
+                        className="input input-bordered w-full border-green-400 focus:border-green-600 font-bold"
+                      />
+                      {errorsLoanAcc.principal && (
+                        <p className="text-error text-xs mt-1">
+                          {errorsLoanAcc.principal.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* EDITABLE SECTION - Dates */}
+            <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
+              <h3 className="font-bold mb-2">Loan Schedule</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-blue-700 mb-1">First Due / Start Date</label>
+                  <input
+                    type="date"
+                    defaultValue={dayjs().add(1, 'month').format('YYYY-MM-DD') || ""}
+                    {...registerLoanAcc("first_due", { required: true })}
+                    className="input input-bordered w-full border-blue-400 focus:border-blue-600"
+                  />
+                  {errorsLoanAcc.first_due && (<p className="text-error text-xs mt-1">Date required to calculate schedule</p>)}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-blue-700 mb-1">Maturity Date</label>
+                  <input
+                    type="date"
+                    title="Precalculated based on first due date"
+                    // this is now being auto calculated in the useEffect above
+                    // defaultValue={dayjs().add(watchLoanAcc("loan_term_approved"), 'month').format('YYYY-MM-DD')}
+                    {...registerLoanAcc("maturity_date", { required: true })}
+                    className="input input-bordered w-full border-blue-400 focus:border-blue-600"
+                  />
+                  {errorsLoanAcc.maturity_date && (<p className="text-error text-xs mt-1">Required</p>)}
+                </div>
+              </div>
+            </div>
+
+            {/* Application details (ref no, loan ref no, account no, name) */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+              <h4 className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Application Details</h4>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Ref No.</label>
+                  <div className="text-sm font-mono font-bold text-gray-900">
+                    {`${TABLE_PREFIX}${watchLoanAcc("application_id") || ""}`}
+                  </div>
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref No.</label>
+                  <div className="text-sm font-mono font-bold text-gray-900">{watchLoanAcc("loan_ref_number")}</div>
+                  <input type="hidden" {...registerLoanAcc("loan_ref_number")} />
+                  {errorsLoanAcc.loan_ref_number && (<p className="text-error text-xs mt-1">Required</p>)}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
+                  <div className="text-sm font-semibold text-gray-900">{watchLoanApp("account_number")}</div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Applicant</label>
+                  <div className="text-sm font-bold text-gray-900">{watchLoanApp("full_name")}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Loan Terms */}
+            <div className="bg-white p-3 rounded-lg border border-gray-200">
+              <h4 className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Loan Terms & Calculations</h4>
+
+              {/* Interest info and status */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
+                  <span className="text-xs font-medium text-gray-500">Interest Rate:</span>
+                  <span className="text-xs font-bold">{watchLoanAcc("interest_rate")}%</span>
+                  <input type="hidden" {...registerLoanAcc("interest_rate", { required: true })} />
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
+                  <span className="text-xs font-medium text-gray-500">Loan Term:</span>
+                  <span className="text-xs font-bold">{watchLoanAcc("loan_term_approved")} months</span>
+                  <input type="hidden" {...registerLoanAcc("loan_term_approved", { required: true })} />
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
+                  <span className="text-xs font-medium text-gray-500">Method:</span>
+                  <span className="text-xs font-bold">{watchLoanAcc("interest_method")}</span>
+                  <input type="hidden" {...registerLoanAcc("interest_method", { required: true })} />
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+                  <span className="text-xs font-medium text-gray-500">Status:</span>
+                  <span className="text-xs font-bold">{watchLoanAcc("status")}</span>
+                  <input type="hidden" {...registerLoanAcc("status")} />
+                </div>
+              </div>
+
+              {/* GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Service fee */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Service Fee</label>
+                  <div className={`relative px-4 py-2 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border-2 border-purple-300 ${isCalculating ? "opacity-50" : ""}`}>
+                    <div className="text-xl font-bold text-purple-900 text-right">
+                      <span title={`₱${display(watchLoanAcc("service_fee")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("service_fee")) || "0.00"}</span>
+                    </div>
+                    {isCalculating && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 animate-spin">
+                        <AiOutlineLoading3Quarters size={20} />
+                      </span>
                     )}
                   </div>
-                )}
-              />
-            </div>
-          </div>
-
-          {/* EDITABLE SECTION - Dates */}
-          <div className="p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mb-4">
-            <h3 className="font-bold mb-2">Loan Schedule</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-blue-700 mb-1">First Due / Start Date</label>
-                <input
-                  type="date"
-                  defaultValue={dayjs().add(1, 'month').format('YYYY-MM-DD') || ""}
-                  {...registerLoanAcc("first_due", { required: true })}
-                  className="input input-bordered w-full border-blue-400 focus:border-blue-600"
-                />
-                {errorsLoanAcc.first_due && (<p className="text-error text-xs mt-1">Date required to calculate schedule</p>)}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-blue-700 mb-1">Maturity Date</label>
-                <input
-                  type="date"
-                  title="Precalculated based on first due date"
-                  // this is now being auto calculated in the useEffect above
-                  // defaultValue={dayjs().add(watchLoanAcc("loan_term_approved"), 'month').format('YYYY-MM-DD')}
-                  {...registerLoanAcc("maturity_date", { required: true })}
-                  className="input input-bordered w-full border-blue-400 focus:border-blue-600"
-                />
-                {errorsLoanAcc.maturity_date && (<p className="text-error text-xs mt-1">Required</p>)}
-              </div>
-            </div>
-          </div>
-
-          {/* Application details (ref no, loan ref no, account no, name) */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
-            <h4 className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Application Details</h4>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Ref No.</label>
-                <div className="text-sm font-mono font-bold text-gray-900">
-                  {`${TABLE_PREFIX}${watchLoanAcc("application_id") || ""}`}
+                  <input type="hidden" {...registerLoanAcc("service_fee", { required: true })} />
                 </div>
-              </div>
 
-              <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref No.</label>
-                <div className="text-sm font-mono font-bold text-gray-900">{watchLoanAcc("loan_ref_number")}</div>
-                <input type="hidden" {...registerLoanAcc("loan_ref_number")} />
-                {errorsLoanAcc.loan_ref_number && (<p className="text-error text-xs mt-1">Required</p>)}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
-                <div className="text-sm font-semibold text-gray-900">{watchLoanApp("account_number")}</div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Applicant</label>
-                <div className="text-sm font-bold text-gray-900">{watchLoanApp("full_name")}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Loan Terms */}
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <h4 className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Loan Terms & Calculations</h4>
-
-            {/* Interest info and status */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
-                <span className="text-xs font-medium text-gray-500">Interest Rate:</span>
-                <span className="text-xs font-bold">{watchLoanAcc("interest_rate")}%</span>
-                <input type="hidden" {...registerLoanAcc("interest_rate", { required: true })} />
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
-                <span className="text-xs font-medium text-gray-500">Loan Term:</span>
-                <span className="text-xs font-bold">{watchLoanAcc("loan_term_approved")} months</span>
-                <input type="hidden" {...registerLoanAcc("loan_term_approved", { required: true })} />
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-full border border-purple-200">
-                <span className="text-xs font-medium text-gray-500">Method:</span>
-                <span className="text-xs font-bold">{watchLoanAcc("interest_method")}</span>
-                <input type="hidden" {...registerLoanAcc("interest_method", { required: true })} />
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
-                <span className="text-xs font-medium text-gray-500">Status:</span>
-                <span className="text-xs font-bold">{watchLoanAcc("status")}</span>
-                <input type="hidden" {...registerLoanAcc("status")} />
-              </div>
-            </div>
-
-            {/* GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Service fee */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Service Fee</label>
-                <div className={`relative px-4 py-2 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border-2 border-purple-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-purple-900 text-right">
-                    <span title={`₱${display(watchLoanAcc("service_fee")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("service_fee")) || "0.00"}</span>
+                {/* Total interest */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
+                  <div className={`relative px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300 ${isCalculating ? "opacity-50" : ""}`}>
+                    <div className="text-xl font-bold text-blue-900 text-right">
+                      <span title={`₱${display(watchLoanAcc("total_interest")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("total_interest")) || "0.00"}</span>
+                    </div>
+                    {isCalculating && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 animate-spin">
+                        <AiOutlineLoading3Quarters size={20} />
+                      </span>
+                    )}
                   </div>
-                  {isCalculating && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 animate-spin">
-                      <AiOutlineLoading3Quarters size={20} />
-                    </span>
-                  )}
+                  <input type="hidden" {...registerLoanAcc("total_interest", { required: true })} />
                 </div>
-                <input type="hidden" {...registerLoanAcc("service_fee", { required: true })} />
-              </div>
 
-              {/* Total interest */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
-                <div className={`relative px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-blue-900 text-right">
-                    <span title={`₱${display(watchLoanAcc("total_interest")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("total_interest")) || "0.00"}</span>
+                {/* Monthly amount due */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Due</label>
+                  <div className={`relative px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-300 ${isCalculating ? "opacity-50" : ""}`}>
+                    <div className="text-xl font-bold text-emerald-900 text-right">
+                      <span title={`₱${display(watchLoanAcc("monthly_payment")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("monthly_payment")) || "0.00"}</span>
+                    </div>
+                    {isCalculating && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-spin">
+                        <AiOutlineLoading3Quarters size={20} />
+                      </span>
+                    )}
                   </div>
-                  {isCalculating && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 animate-spin">
-                      <AiOutlineLoading3Quarters size={20} />
-                    </span>
-                  )}
+                  <input type="hidden" {...registerLoanAcc("monthly_payment", { required: true })} />
                 </div>
-                <input type="hidden" {...registerLoanAcc("total_interest", { required: true })} />
-              </div>
 
-              {/* Monthly amount due */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Monthly Due</label>
-                <div className={`relative px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-emerald-900 text-right">
-                    <span title={`₱${display(watchLoanAcc("monthly_payment")) || "0.00"}`} className="truncate block max-w-full">₱{display(watchLoanAcc("monthly_payment")) || "0.00"}</span>
+
+                {/* Total amount due */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Total Amount Due</label>
+                  <div className={`relative px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 ${isCalculating ? "opacity-50" : ""}`}>
+                    <div className="text-xl font-bold text-right">
+                      <span title={`₱${watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}`} className="truncate block max-w-full">₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</span>
+                    </div>
+                    {isCalculating && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 animate-spin">
+                        <AiOutlineLoading3Quarters size={20} />
+                      </span>
+                    )}
                   </div>
-                  {isCalculating && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-spin">
-                      <AiOutlineLoading3Quarters size={20} />
-                    </span>
-                  )}
+                  <input type="hidden" {...registerLoanAcc("total_amount_due", { required: true })} />
                 </div>
-                <input type="hidden" {...registerLoanAcc("monthly_payment", { required: true })} />
+
               </div>
-
-
-              {/* Total amount due */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Total Amount Due</label>
-                <div className={`relative px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 ${isCalculating ? "opacity-50" : ""}`}>
-                  <div className="text-xl font-bold text-right">
-                    <span title={`₱${watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}`} className="truncate block max-w-full">₱{watchLoanAcc("total_amount_due") ? parseFloat(watchLoanAcc("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</span>
-                  </div>
-                  {isCalculating && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 animate-spin">
-                      <AiOutlineLoading3Quarters size={20} />
-                    </span>
-                  )}
-                </div>
-                <input type="hidden" {...registerLoanAcc("total_amount_due", { required: true })} />
-              </div>
-
             </div>
           </div>
         </LoanAccModal>

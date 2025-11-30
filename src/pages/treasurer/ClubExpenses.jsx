@@ -410,89 +410,90 @@ function ClubExpenses() {
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => openDeleteModal(getValues("transaction_id"))}
       >
-        {fields.map(({ label, name, type, options, autoComplete, optional }) => (
-          <div key={name} className="form-control w-full mt-2">
-            <label htmlFor={name} className="label mb-1">
-              <span className="label-text font-medium text-gray-700">{label}</span>
-              {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
-            </label>
+        <div className="pl-1 pr-2">
+          {fields.map(({ label, name, type, options, autoComplete, optional }) => (
+            <div key={name} className="form-control w-full mt-2">
+              <label htmlFor={name} className="label mb-1">
+                <span className="label-text font-medium text-gray-700">{label}</span>
+                {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
+              </label>
 
-            {name === "amount" ? (
-              <Controller
-                name="amount"
-                control={control}
-                rules={{
-                  required: true,
-                  min: {
-                    value: 1,
-                    message: "Amount must be greater than 0",
-                  },
-                  validate: (value) => value > 0 || "Amount cannot be zero or negative",
-                }}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <input
-                      id="amount"
-                      type="number"
-                      autoComplete={autoComplete}
-                      value={field.value}
-                      placeholder="Enter Amount"
-                      onWheel={(e) => e.target.blur()}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        if (raw === "") {
-                          field.onChange(""); // allow clearing
-                          return;
-                        }
+              {name === "amount" ? (
+                <Controller
+                  name="amount"
+                  control={control}
+                  rules={{
+                    required: true,
+                    min: {
+                      value: 1,
+                      message: "Amount must be greater than 0",
+                    },
+                    validate: (value) => value > 0 || "Amount cannot be zero or negative",
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <>
+                      <input
+                        id="amount"
+                        type="number"
+                        autoComplete={autoComplete}
+                        value={field.value}
+                        placeholder="Enter Amount"
+                        onWheel={(e) => e.target.blur()}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (raw === "") {
+                            field.onChange(""); // allow clearing
+                            return;
+                          }
 
-                        const value = Number(raw);
-                        field.onChange(value < 0 ? 0 : value);
-                      }}
-                      className={`input input-bordered w-full ${error ? "input-error" : ""
-                        }`}
-                    />
-                    {error && (
-                      <span className="text-sm text-error mt-1 block">
-                        {error.message}
-                      </span>
-                    )}
-                  </>
-                )}
-              />
-            ) : type === "select" ? (
-              <select
-                id={name}
-                {...register(name, { required: true })}
-                className="select select-bordered w-full"
-                required
-              >
-                <option value="" disabled>Select {label}</option>
-                {options?.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}</option>
-                ))}
-              </select>
-            ) : name === "description" ? (
-              <textarea
-                id={name}
-                rows={4}
-                {...register(name, { required: false })}
-                className="textarea textarea-bordered w-full"
-                placeholder={`Enter ${label}`}
-              ></textarea>
-            ) : (
-              <input
-                id={name}
-                type={type}
-                {...register(name, { required: true })}
-                className="input input-bordered w-full"
-                placeholder={`Enter ${label}`}
-                autoComplete={autoComplete}
-              />
-            )}
-          </div>
-        ))}
-
+                          const value = Number(raw);
+                          field.onChange(value < 0 ? 0 : value);
+                        }}
+                        className={`input input-bordered w-full ${error ? "input-error" : ""
+                          }`}
+                      />
+                      {error && (
+                        <span className="text-sm text-error mt-1 block">
+                          {error.message}
+                        </span>
+                      )}
+                    </>
+                  )}
+                />
+              ) : type === "select" ? (
+                <select
+                  id={name}
+                  {...register(name, { required: true })}
+                  className="select select-bordered w-full"
+                  required
+                >
+                  <option value="" disabled>Select {label}</option>
+                  {options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}</option>
+                  ))}
+                </select>
+              ) : name === "description" ? (
+                <textarea
+                  id={name}
+                  rows={4}
+                  {...register(name, { required: false })}
+                  className="textarea textarea-bordered w-full"
+                  placeholder={`Enter ${label}`}
+                ></textarea>
+              ) : (
+                <input
+                  id={name}
+                  type={type}
+                  {...register(name, { required: true })}
+                  className="input input-bordered w-full"
+                  placeholder={`Enter ${label}`}
+                  autoComplete={autoComplete}
+                />
+              )}
+            </div>
+          ))}
+        </div>
       </FormModal>
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
