@@ -428,7 +428,7 @@ function ClubFunds() {
               },
             ]}
           />
-          <div className="flex gap-4 lg:ml-auto justify-between lg:self-center">
+          <div className="flex gap-2 lg:ml-auto justify-between lg:self-center">
             <button
               className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
                          fixed bottom-25 right-4 z-20 opacity-80 hover:opacity-100
@@ -456,7 +456,6 @@ function ClubFunds() {
               </button>
             )}
           </div>
-          
         </div>
 
         <DataTableV2

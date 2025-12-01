@@ -307,26 +307,8 @@ function LoanReports() {
   return (
     <div className="px-2 sm:px-4 lg:px-6 min-h-screen py-4">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">Loan Reports</h1>
-        {!isLoading && filteredActiveLoans.length > 0 && (
-          <div className="flex justify-end my-4 gap-2">
-            <ExportLoanReportsPDF
-              loanData={preparePDFData()}
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              cooperativeName="DigiTEC | ECTEC Multi-Purpose Cooperative"
-              cooperativeAddress= "Trinitas Bugo, Cagayan de Oro City"
-              cooperativeContact= "Contact: 09123456789 | Email: eaglesclubectec@gmail.com"
-              logoDataUrl={digitecLogo}
-            />
-            <ExcelExportButton
-              data={prepareExcelData()}
-              fileName={`loan_reports_${new Date().toISOString().slice(0, 10)}.xlsx`}
-              sheetName='Loan Reports'
-            />
-          </div>
-        )}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-lg lg:text-2xl font-bold">Loan Reports</h1>
       </div>
 
       {/* Date Filter */}
@@ -347,7 +329,7 @@ function LoanReports() {
       {!isLoading && (
         <div className="space-y-4 sm:space-y-6">
           {/* Top Row - Main Metrics */}
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-blue-500">
               <div className="text-xs sm:text-sm mb-1">Active Loans</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">{summary.totalActiveLoans}</div>
@@ -371,7 +353,7 @@ function LoanReports() {
           </div>
 
           {/* Middle Row - Payment Progress */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-teal-500">
               <div className="text-xs sm:text-sm mb-1">Total Payments Made</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600">{formatCurrency(summary.totalPaid)}</div>
@@ -398,7 +380,7 @@ function LoanReports() {
           </div>
 
           {/* Bottom Row - Overdue Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div className="bg-red-50 rounded-lg shadow-md p-4 sm:p-5 border-l-4 border-red-500">
               <div className="text-xs sm:text-sm text-red-700 font-semibold mb-1">⚠️ Overdue Loans</div>
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">{summary.totalOverdueLoans}</div>
@@ -421,6 +403,24 @@ function LoanReports() {
           </div>
         </div>
       )}
+        {!isLoading && filteredActiveLoans.length > 0 && (
+          <div className="flex justify-end my-4 gap-2">
+            <ExportLoanReportsPDF
+              loanData={preparePDFData()}
+              selectedYear={selectedYear}
+              selectedMonth={selectedMonth}
+              cooperativeName="DigiTEC | ECTEC Multi-Purpose Cooperative"
+              cooperativeAddress= "Trinitas Bugo, Cagayan de Oro City"
+              cooperativeContact= "Contact: 09123456789 | Email: eaglesclubectec@gmail.com"
+              logoDataUrl={digitecLogo}
+            />
+            <ExcelExportButton
+              data={prepareExcelData()}
+              fileName={`loan_reports_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName='Loan Reports'
+            />
+          </div>
+        )}
 
       {/* Tabs */}
       <div className="tabs tabs-boxed shadow mb-2 mt-6 sm:mt-8 rounded-lg overflow-x-auto">

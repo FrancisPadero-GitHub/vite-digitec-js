@@ -15,19 +15,22 @@ function Reports() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Reports</h1>
+      <h1 className="text-lg lg:text-2xl font-bold mb-4 sm:mb-6">Reports</h1>
 
       <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {reportButtons.map((report) => (
           <Link
             key={report.path}
             to={report.path}
-            className="flex items-center gap-3 p-4 sm:p-6 hover:bg-gray-50 hover:text-gray-800 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+            className="flex items-center gap-2 p-3 sm:p-4 bg-base-100 hover:bg-gray-50 hover:text-gray-800 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 min-h-[56px]"
           >
-            <span className="text-2xl sm:text-3xl">{report.icon}</span>
-            <span className="text-base sm:text-lg font-semibold">{report.label}</span>
+            <span className="text-xl sm:text-2xl">{report.icon}</span>
+            <span className="text-sm sm:text-base font-semibold">{report.label}</span>
           </Link>
         ))}
+      </div>
+      <div className="mt-6 text-xs text-gray-500 text-center">
+        <em>More reports will be implemented in the future.</em>
       </div>
     </div>
   )

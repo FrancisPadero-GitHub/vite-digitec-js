@@ -268,27 +268,7 @@ function ClubCoopFunds() {
     <div className="px-2 sm:px-4 lg:px-6 min-h-screen py-4">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold">Club/Coop Funds Report</h1>
-        {!isLoading && (filteredContributions?.length > 0 || filteredExpenses?.length > 0 || filteredLoanReleases?.length > 0) && (
-          <div className="flex ml-auto my-4 gap-2">
-            <ExportClubCoopFundsPDF
-              fundsData={preparePDFData()}
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              cooperativeName="DigiTEC | ECTEC Multi-Purpose Cooperative"
-              cooperativeAddress="123 Cooperative Street, City, Province"
-              cooperativeContact="Tel: +63 123 456 7890 | Email: info@digiteccoop.com"
-              logoDataUrl={digitecLogo}
-            />
-            <ExcelExportButton
-              data={prepareExcelData()}
-              fileName={`club_coop_funds_${new Date()
-                .toISOString()
-                .slice(0, 10)}.xlsx`}
-              sheetName='Funds Report'
-            />
-          </div>
-        )}
+        <h1 className="text-lg lg:text-2xl font-bold">Club/Coop Funds Report</h1>
       </div>
 
       {/* Date Filter */}
@@ -303,7 +283,7 @@ function ClubCoopFunds() {
       />
 
       {/* Summary Cards Section */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {isLoading ? (
           <div className="col-span-full flex justify-center items-center py-8 sm:py-12">
             <span className="loading loading-spinner loading-lg text-primary" />
@@ -311,79 +291,85 @@ function ClubCoopFunds() {
         ) : (
           <>
             {/* Share Capital Contributions Card */}
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide">Share Capital</h3>
-                <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+            <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white shadow-xl">
+              <div className="card-body px-4 py-3">
+                <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Share Capital</h3>
+                <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(shareCapitalContributions)}</p>
+                <p className="text-xs sm:text-sm mt-2 opacity-90 text-white">Inflows</p>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(shareCapitalContributions)}</p>
-              <p className="text-xs sm:text-sm mt-2 opacity-80">Inflows</p>
             </div>
 
             {/* Total Loan Releases Card */}
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide">Loan Releases</h3>
-                <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+            <div className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-xl">
+              <div className="card-body px-4 py-3">
+                <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Loan Releases</h3>
+                <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(totalLoanReleases)}</p>
+                <p className="text-xs sm:text-sm mt-2 opacity-90 text-white">Outflows</p>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(totalLoanReleases)}</p>
-              <p className="text-xs sm:text-sm mt-2 opacity-80">Outflows</p>
             </div>
 
             {/* Club Fund Contributions Card */}
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide">Club Funds</h3>
-                <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+            <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white shadow-xl">
+              <div className="card-body px-4 py-3">
+                <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Club Funds</h3>
+                <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(clubFundContributions)}</p>
+                <p className="text-xs sm:text-sm mt-2 opacity-90 text-white">Inflows</p>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(clubFundContributions)}</p>
-              <p className="text-xs sm:text-sm mt-2 opacity-80">Inflows</p>
             </div>
 
             {/* Total Expenses Card */}
-            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide">Expenses</h3>
-                <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+            <div className="card bg-gradient-to-br from-red-500 to-red-600 text-white shadow-xl">
+              <div className="card-body px-4 py-3">
+                <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Expenses</h3>
+                <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(totalExpenses)}</p>
+                <p className="text-xs sm:text-sm mt-2 opacity-90 text-white">Outflows</p>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(totalExpenses)}</p>
-              <p className="text-xs sm:text-sm mt-2 opacity-80">Outflows</p>
             </div>
 
             {/* Cash on Hand Card */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-4 sm:p-6 col-span-full xs:col-span-2 lg:col-span-1">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wide">Cash on Hand</h3>
-                <svg className="w-6 h-6 sm:w-8 sm:h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl">
+              <div className="card-body px-4 py-3">
+                <h3 className="card-title text-sm font-semibold uppercase tracking-wide text-white">Cash on Hand</h3>
+                <p className="text-lg lg:text-2xl font-bold text-white">{formatCurrency(cashOnHand)}</p>
+                <p className="text-xs sm:text-sm mt-2 opacity-90 text-white">General Fund</p>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(cashOnHand)}</p>
-              <p className="text-xs sm:text-sm mt-2 opacity-80">General Fund</p>
             </div>
           </>
         )}
       </div>
 
+      {/* Export buttons below cards */}
+      {!isLoading && (filteredContributions?.length > 0 || filteredExpenses?.length > 0 || filteredLoanReleases?.length > 0) && (
+        <div className="flex justify-end mb-4 gap-2">
+          <ExportClubCoopFundsPDF
+            fundsData={preparePDFData()}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            cooperativeName="DigiTEC | ECTEC Multi-Purpose Cooperative"
+            cooperativeAddress="123 Cooperative Street, City, Province"
+            cooperativeContact="Tel: +63 123 456 7890 | Email: info@digiteccoop.com"
+            logoDataUrl={digitecLogo}
+          />
+          <ExcelExportButton
+            data={prepareExcelData()}
+            fileName={`club_coop_funds_${new Date()
+              .toISOString()
+              .slice(0, 10)}.xlsx`}
+            sheetName='Funds Report'
+          />
+        </div>
+      )}
+
       {/* Contributions Section */}
-      <div className="rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center">
-          Fund Contributions (Inflows)
-        </h2>
+      <div className="mb-5">
         {isLoading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
             <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : (
           <DataTableV2
+            title={"Fund Contributions (" + filteredContributions.length + " Inflow Records)"}
+            subtext={"Combined Coop Share Capital and Club Fund Contributions"}
             showLinkPath={false}
             headers={["Date", "Member Name", "Account No", "Fund Type", "Amount"]}
             data={filteredContributions}
@@ -412,16 +398,15 @@ function ClubCoopFunds() {
       </div>
 
       {/* Expenses Section */}
-      <div className="rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center">
-          Club Expenses (Outflows)
-        </h2>
+      <div className="mb-5">
         {isLoading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
             <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : (
           <DataTableV2
+            title={"Club Expenses (" + filteredExpenses.length + " Outflow Records)"}
+            subtext={"Expenses related to club/coop operations"}
             showLinkPath={false}
             headers={["Date", "Ref No", "Title", "Category", "Amount"]}
             data={filteredExpenses}
@@ -450,16 +435,15 @@ function ClubCoopFunds() {
       </div>
 
       {/* Loan Releases Section */}
-      <div className="rounded-lg shadow-lg p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center">
-          Loan Releases (Outflows)
-        </h2>
+      <div className="mb-5">
         {isLoading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
             <span className="loading loading-spinner loading-lg text-primary" />
           </div>
         ) : (
           <DataTableV2
+            title={"Loan Releases (" + filteredLoanReleases.length + " Outflow Records)"}
+            subtext={"Released loan amounts to members"}
             showLinkPath={false}
             headers={["Date", "Loan Ref", "Account No", "Principal"]}
             data={filteredLoanReleases}
