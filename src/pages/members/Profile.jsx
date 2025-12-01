@@ -10,7 +10,7 @@ import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 import { useUpdateProfile } from "../../backend/hooks/member/useUpdateProfile";
 import { useChangePassword } from "../../backend/hooks/member/useChangePassword";
 
-// assets 
+// assets
 import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
@@ -27,18 +27,22 @@ const formFields = [
   { name: "f_name", label: "First Name" },
   { name: "m_name", label: "Middle Name" },
   { name: "l_name", label: "Last Name" },
-  { name: "birthday", label: "Birthday", type: "date" },  
+  { name: "birthday", label: "Birthday", type: "date" },
   { name: "email", label: "Email", type: "email", colSpan: "sm:col-span-2" },
   { name: "contact_number", label: "Contact Number" },
-  { name: "civil_status", label: "Civil Status", type: "select", options: ["Single", "Married", "Widowed", "Separated"] },
-  
+  {
+    name: "civil_status",
+    label: "Civil Status",
+    type: "select",
+    options: ["Single", "Married", "Widowed", "Separated"],
+  },
+
   { name: "place_of_birth", label: "Place of Birth", colSpan: "sm:col-span-2" },
 
-  
-  { name: "block_no", label: "Block / Street", },
-  { name: "barangay", label: "Barangay", },
-  { name: "city_municipality", label: "City / Municipality", },
-  { name: "province", label: "Province", },
+  { name: "block_no", label: "Block / Street" },
+  { name: "barangay", label: "Barangay" },
+  { name: "city_municipality", label: "City / Municipality" },
+  { name: "province", label: "Province" },
   { name: "zip_code", label: "ZIP Code", colSpan: "sm:col-span-1" },
 
   { name: "spouse_name", label: "Spouse Name" },
@@ -63,7 +67,6 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
- 
 
   // use query hook to fetch profile data (and coop data for total share capital)
   const { data: myProfile, isLoading, isError } = useFetchProfile();
@@ -77,15 +80,16 @@ function Profile() {
   );
 
   // mutation hook to update profile
-  const { mutate: updateProfile} = useUpdateProfile();
+  const { mutate: updateProfile } = useUpdateProfile();
   const [saving, setSaving] = useState(false);
 
   // for displaying membership months and age
-  const membershipMonths = calculateMembershipMonths(myProfile?.application_date);
+  const membershipMonths = calculateMembershipMonths(
+    myProfile?.application_date
+  );
 
   // form data state
   const [formData, setFormData] = useState({});
-
 
   // Password change states
   const changePassword = useChangePassword(); // <-- our mutation hook
@@ -93,10 +97,9 @@ function Profile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [success, setSuccess] = useState("")
+  const [success, setSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
 
   // Prefill form data when profile is fetched
   useEffect(() => {
@@ -134,7 +137,7 @@ function Profile() {
       { currentPassword, newPassword },
       {
         onSuccess: (data) => {
-          setSuccess(data.message)
+          setSuccess(data.message);
           toast.success(data.message || "Password updated successfully!");
           setCurrentPassword("");
           setNewPassword("");
@@ -155,7 +158,7 @@ function Profile() {
       {
         onSuccess: () => {
           setIsEditing(false);
-          setSaving(false)
+          setSaving(false);
           setPreviewAvatar(null); // clear only when DB + cache updated
           toast.success("Profile updated successfully!");
         },
@@ -163,21 +166,25 @@ function Profile() {
     );
   };
 
-if (isLoading) return <div>Loading...</div>
-if (isError) return <div>Something went wrong, try refreshing</div>
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Something went wrong, try refreshing</div>;
 
   return (
-    <div className="min-h-screen p-3 md:p-1">
+    <div className="m-3">
       <Toaster position="bottom-left" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {/* LEFT COLUMN - PROFILE */}
-        <div className="space-y-6">
+        <div className="space-y-2">
           <section className="card bg-base-100 shadow">
             <div className="bg-primary text-primary-content text-center p-6 rounded-t">
               <div className="flex justify-center mb-2">
                 <div className="relative w-28 h-28">
                   <img
-                    src={previewAvatar || myProfile?.avatar_url || placeholderAvatar}
+                    src={
+                      previewAvatar ||
+                      myProfile?.avatar_url ||
+                      placeholderAvatar
+                    }
                     className="rounded-full ring-4 ring-base-200 w-full h-full object-cover"
                   />
                   {isEditing && (
@@ -214,11 +221,15 @@ if (isError) return <div>Something went wrong, try refreshing</div>
             </div>
             <div className="card-body p-4 grid grid-cols-3 text-center">
               <div>
-                <h3 className="text-lg font-bold">{myProfile?.account_number}</h3>
+                <h3 className="text-lg font-bold">
+                  {myProfile?.account_number}
+                </h3>
                 <p className="text-sm text-gray-500">Account No.</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold">₱ {display(totalShareCapital)}</h3>
+                <h3 className="text-lg font-bold">
+                  ₱ {display(totalShareCapital)}
+                </h3>
                 <p className="text-sm text-gray-500">Share Capital</p>
               </div>
               <div>
@@ -246,22 +257,32 @@ if (isError) return <div>Something went wrong, try refreshing</div>
         </div>
 
         {/* RIGHT COLUMN - EDIT PROFILE */}
-        <div className="md:col-span-2 space-y-6">
+        <div className="md:col-span-2 space-y-2">
           <div className="card bg-base-100 shadow">
             <div className="card-body">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="card-title text-xl">Edit Profile</h2>
                 {!isEditing ? (
-                  <button onClick={() => setIsEditing(true)} className="btn btn-sm btn-primary text-white">
-                    <Edit fontSize="small"/> Edit
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="btn btn-sm btn-primary text-white"
+                  >
+                    <Edit fontSize="small" /> Edit
                   </button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={() => setIsEditing(false)} className="btn btn-sm btn-ghost">
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="btn btn-sm btn-ghost"
+                    >
                       Cancel
                     </button>
 
-                    <button onClick={handleSave} className="btn btn-sm btn-primary text-white" disabled={saving}>
+                    <button
+                      onClick={handleSave}
+                      className="btn btn-sm btn-primary text-white"
+                      disabled={saving}
+                    >
                       {saving ? (
                         <span className="loading loading-spinner loading-sm"></span>
                       ) : (
@@ -270,20 +291,22 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                     </button>
                   </div>
                 )}
-
               </div>
 
               {/* FORM FIELDS */}
               <form className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 {formFields.map((field) => {
-                  const { name, label, type = "text", colSpan, options } = field;
+                  const {
+                    name,
+                    label,
+                    type = "text",
+                    colSpan,
+                    options,
+                  } = field;
                   const value = formData[name] ?? "";
 
                   return (
-                    <div
-                      key={name}
-                      className={`form-control ${colSpan || ""}`}
-                    >
+                    <div key={name} className={`form-control ${colSpan || ""}`}>
                       <label className="label">
                         <span className="label-text">{label}</span>
                       </label>
@@ -294,8 +317,9 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                           value={value}
                           onChange={handleInputChange}
                           disabled={!isEditing}
-                          className={`select select-bordered w-full ${!isEditing ? "bg-base-200" : ""
-                            }`}
+                          className={`select select-bordered w-full ${
+                            !isEditing ? "bg-base-200" : ""
+                          }`}
                         >
                           <option value="">Select</option>
                           {options?.map((opt) => (
@@ -306,7 +330,13 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                         </select>
                       ) : (
                         <input
-                          type={isEditing ? type : name === "birthday" ? "text" : type}
+                          type={
+                            isEditing
+                              ? type
+                              : name === "birthday"
+                                ? "text"
+                                : type
+                          }
                           name={name}
                           value={
                             name === "birthday" && !isEditing && value
@@ -315,8 +345,9 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                           }
                           onChange={handleInputChange}
                           readOnly={!isEditing}
-                          className={`input input-bordered w-full ${!isEditing ? "bg-base-200" : ""
-                            }`}
+                          className={`input input-bordered w-full ${
+                            !isEditing ? "bg-base-200" : ""
+                          }`}
                         />
                       )}
                     </div>
@@ -333,7 +364,9 @@ if (isError) return <div>Something went wrong, try refreshing</div>
 
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 <div className="form-control">
-                  <label className="label"><span className="label-text">Current Password</span></label>
+                  <label className="label">
+                    <span className="label-text">Current Password</span>
+                  </label>
                   <input
                     type={showPassword ? "text" : "password"}
                     className="input input-bordered w-full"
@@ -345,7 +378,9 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                 </div>
 
                 <div className="form-control">
-                  <label className="label"><span className="label-text">New Password</span></label>
+                  <label className="label">
+                    <span className="label-text">New Password</span>
+                  </label>
                   <input
                     type={showPassword ? "text" : "password"}
                     className="input input-bordered w-full"
@@ -357,7 +392,9 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                 </div>
 
                 <div className="form-control">
-                  <label className="label"><span className="label-text">Confirm New Password</span></label>
+                  <label className="label">
+                    <span className="label-text">Confirm New Password</span>
+                  </label>
                   <input
                     type={showPassword ? "text" : "password"}
                     className="input input-bordered w-full"
@@ -377,18 +414,34 @@ if (isError) return <div>Something went wrong, try refreshing</div>
                     onChange={(e) => setShowPassword(e.target.checked)}
                     className="checkbox checkbox-sm"
                   />
-                  <label htmlFor="showPasswords" className="text-sm text-gray-600 select-none">Show Passwords</label>
+                  <label
+                    htmlFor="showPasswords"
+                    className="text-sm text-gray-600 select-none"
+                  >
+                    Show Passwords
+                  </label>
                 </div>
 
-                {passwordError && (<div className="text-error text-sm">{passwordError}</div>)}
+                {passwordError && (
+                  <div className="text-error text-sm">{passwordError}</div>
+                )}
 
-                {success && (<div className="text-success text-sm">{success}</div>)}
+                {success && (
+                  <div className="text-success text-sm">{success}</div>
+                )}
 
                 <div className="card-actions justify-end mt-6">
-                  <button type="submit" className="btn btn-primary hover:btn-neutral text-white" disabled={isChanging}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary hover:btn-neutral text-white"
+                    disabled={isChanging}
+                  >
                     {isChanging ? (
                       <>
-                        <span className="loading loading-spinner loading-sm" aria-hidden></span>
+                        <span
+                          className="loading loading-spinner loading-sm"
+                          aria-hidden
+                        ></span>
                         <span className="ml-2">Updating...</span>
                       </>
                     ) : (
@@ -399,8 +452,6 @@ if (isError) return <div>Something went wrong, try refreshing</div>
               </form>
             </div>
           </div>
-
-
         </div>
       </div>
     </div>
