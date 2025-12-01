@@ -33,7 +33,7 @@ const Login = () => {
     defaultValues: {
       email: "",
       password: "",
-      terms: false
+      terms: true
     },
     mode: "onChange",
   });
@@ -188,7 +188,7 @@ const Login = () => {
                   <input
                     type="checkbox"
                     {...register("terms", {
-                      required: "You must agree to the terms and conditions",
+                      required: "Please check to accept the terms and conditions.",
                       onChange: () => clearErrors("root"),
                     })}
                     className="checkbox checkbox-xs mt-0.5 flex-shrink-0"
