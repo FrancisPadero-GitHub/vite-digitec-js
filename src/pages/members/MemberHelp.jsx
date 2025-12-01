@@ -456,7 +456,7 @@ function MemberHelp() {
       {filteredSections.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-600">
-            No help topics found for &ldquo;{searchQuery}&rdquo;
+            No help topics found for &quot;{searchQuery}&quot;
           </p>
           <button onClick={() => setSearchQuery("")} className="btn btn-link">
             Clear search
@@ -468,8 +468,9 @@ function MemberHelp() {
       <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
         <h3 className="font-semibold text-lg mb-2">Still need help?</h3>
         <p className="text-sm text-gray-700 mb-4">
-          If you couldn&apos;t find the answer you&apos;re looking for, please contact the
-          cooperative office or submit a request through the contact form.
+          If you couldn&apos;t find the answer you&apos;re looking for, please
+          contact the cooperative office or submit a request through the contact
+          form.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <button className="btn btn-primary btn-sm flex items-center gap-1">
