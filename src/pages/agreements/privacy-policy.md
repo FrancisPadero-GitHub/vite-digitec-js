@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last Updated:** November 13, 2025
+**Last Updated:** November 30, 2025
 
 ---
 
@@ -30,7 +30,7 @@ We collect the following information to operate the **DigiTEC** system:
 
 ---
 
-## What Third-Parties Do We Share Your Information With?
+## Who Do We Share Your Information With?
 
 DigiTEC uses the following third-party services to operate:
 
@@ -74,7 +74,7 @@ Contact: **0992 334 3822**
 
 ---
 
-## Disclosure of Your Information
+## Disclosure Of Your Information
 
 We may disclose your information only in the following circumstances:
 
@@ -94,15 +94,15 @@ To ECTEC officers (Treasurer, Board of Directors) as necessary for their officia
 
 ## Data Retention
 
-Financial records, including contributions, loans, and transactions, are **retained indefinitely** to maintain accurate. historical records and comply with cooperative financial practices. Even when transactions are marked as deleted, the data remains in the database for auditing purposes.
+Financial records, including contributions, loans, and transactions, are **retained indefinitely** to maintain accurate, historical records and comply with cooperative financial practices. Even when transactions are marked as deleted, the data remains in the database for auditing purposes.
 
 User accounts marked as **"Inactive"** or **"Revoked"** are retained in the system but access is restricted.
 
 ---
 
-## Updates to This Policy
+## Updates To This Policy
 
-We may update this Privacy Policy as DigiTEC evolves. Any changes will be communicated through announcements posted by board officers on the system dashboard.
+We may update this Privacy Policy as DigiTEC evolves. Any changes will be communicated through announcements posted by board officers through the system's notifications.
 
 **Continued use of the system after updates constitutes acceptance of the revised policy.**
 

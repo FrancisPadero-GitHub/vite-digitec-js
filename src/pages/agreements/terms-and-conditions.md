@@ -1,18 +1,18 @@
-# Terms and Conditions
+# Terms And Conditions
 
-**Last Updated:** November 13, 2025
+**Last Updated:** November 30, 2025
 
 ---
 
-## Welcome to DigiTEC!
+## Welcome To DigiTEC!
 
 These Terms and Conditions ("Terms") constitute a binding agreement between DigiTEC ("DigiTEC," "we," "us," or "our") and you ("you," "your," or "user"), a registered member of the East CDO Timbalo Eagles Club (ECTEC) who has been granted access to the DigiTEC fund management system.
 
-By logging into and using DigiTEC, you acknowledge that you have read, understood, and agree to be bound by these Terms, as well as our Privacy Policy. If you do not agree with any part of these Terms, please discontinue use of the system and contact the administrator at 0992 334 3822.
+By logging into and using DigiTEC, you acknowledge that you have read, understood, and agree to be bound by these Terms, as well as our Privacy Policy. If you do not agree with any part of these Terms, please discontinue use of the system and contact support at 0992 334 3822.
 
 ---
 
-## Acceptance of Terms
+## Acceptance Of Terms
 
 By accessing or using DigiTEC, you confirm that:
 
@@ -38,24 +38,22 @@ Access is granted based on your membership status and assigned role within the o
 
 As a DigiTEC user, you agree to:
 
-**Provide accurate information**  
+### Provide accurate information  
 Ensure all personal and financial information you submit is truthful and up-to-date.
 
-**Maintain confidentiality**  
+### Maintain confidentiality  
 Keep your login credentials secure and do not share them with others.
 
-**Use the system appropriately**  
+### Use the system appropriately  
 Access only the information and features authorized for your role.
 
-**Report issues promptly**  
+### Report issues promptly  
 Notify administrators of any errors, security concerns, or suspicious activity.
 
-**Comply with ECTEC policies**  
+### Comply with ECTEC policies  
 Follow all organizational rules and cooperative guidelines.
 
 ---
-
-## Account Security
 
 ## Account Security
 
@@ -80,7 +78,7 @@ By using DigiTEC, you consent to:
 
 ---
 
-## Financial Transactions & Accuracy
+## Financial Transactions And Accuracy
 
 ### Transaction Records
 
@@ -97,7 +95,7 @@ By using DigiTEC, you consent to:
 ### Payment Confirmation
 
 - Payment records entered by the Treasurer are subject to verification and may be corrected if errors are identified.
-- You should verify payment amounts and dates in your dashboard after each transaction.
+- You should verify payment amounts and other necessary details in your account after each transaction.
 
 > **No Financial Advice:** DigiTEC is a record-keeping and management tool. It does not provide financial, legal, or investment advice.
 
@@ -125,7 +123,7 @@ This system was developed in collaboration with ECTEC to address their financial
 
 ---
 
-## Modification to Terms
+## Modification To Terms
 
 We reserve the right to update or modify these Terms at any time. Changes will be communicated through announcements posted in the system notifications.
 
@@ -133,7 +131,7 @@ Continued use of DigiTEC after changes are posted constitutes acceptance of the 
 
 ---
 
-## Limitation of Liability
+## Limitation Of Liability
 
 To the fullest extent permitted by law, DigiTEC and its developers shall not be held liable for:
 

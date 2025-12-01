@@ -200,7 +200,7 @@ const Login = () => {
                       onClick={() => navigate("/terms")}
                       className="link text-green-800 hover:text-green-700"
                     >
-                      Terms of Service
+                      Terms and Conditions
                     </button>{" "}
                     and{" "}
                     <button
