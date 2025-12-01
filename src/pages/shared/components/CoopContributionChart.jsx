@@ -1,12 +1,19 @@
-
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import React, { useMemo } from "react";
+import PropTypes from "prop-types";
 
 const CoopContributionChart = ({
   data = [],
   isLoading = false,
   isError = false,
-  error = null
+  error = null,
 }) => {
   const currentYear = new Date().getFullYear();
 
@@ -59,14 +66,19 @@ const CoopContributionChart = ({
   if (finalData.length === 0) {
     return (
       <div className="flex justify-center items-center" style={{ height: 400 }}>
-        <p className="text-gray-400">No contribution data available for {currentYear}</p>
+        <p className="text-gray-400">
+          No contribution data available for {currentYear}
+        </p>
       </div>
     );
   }
 
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <AreaChart data={finalData} margin={{ top: 20, right:25, left: -15, bottom: 10 }}>
+      <AreaChart
+        data={finalData}
+        margin={{ top: 20, right: 25, left: -15, bottom: 10 }}
+      >
         <defs>
           <linearGradient id="colorCapital" x1="0" y1="0" x2="0" y2="1">
             <stop offset="50%" stopColor="#82ca9d" stopOpacity={0.8} />
@@ -86,6 +98,17 @@ const CoopContributionChart = ({
       </AreaChart>
     </ResponsiveContainer>
   );
+};
+CoopContributionChart.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      contribution_date: PropTypes.string,
+      amount: PropTypes.number,
+    })
+  ),
+  isLoading: PropTypes.bool,
+  isError: PropTypes.bool,
+  error: PropTypes.object,
 };
 
 export default React.memo(CoopContributionChart);

@@ -1,23 +1,22 @@
-import {useState, useMemo, useTransition} from 'react'
-import { useNavigate } from 'react-router';
-import SubdirectoryArrowLeftIcon from '@mui/icons-material/SubdirectoryArrowLeft';
+import { useState, useMemo, useTransition } from "react";
+import { useNavigate } from "react-router";
+import SubdirectoryArrowLeftIcon from "@mui/icons-material/SubdirectoryArrowLeft";
 
 // react redux stuff
-import { useDispatch } from 'react-redux';
-import { openLoanPaymentModal } from '../../features/redux/paymentModalSlice';
+import { useDispatch } from "react-redux";
+import { openLoanPaymentModal } from "../../features/redux/paymentModalSlice";
 
 // fetch hooks
-import { useMemberRole } from '../../backend/context/useMemberRole';
-import { useFetchPaySchedView } from '../../backend/hooks/shared/useFetchPaySchedView'
+import { useMemberRole } from "../../backend/context/useMemberRole";
+import { useFetchPaySchedView } from "../../backend/hooks/shared/useFetchPaySchedView";
 
 // component
-import FilterToolbar from '../shared/components/FilterToolbar';
-import DataTableV2 from '../shared/components/DataTableV2';
+import FilterToolbar from "../shared/components/FilterToolbar";
+import DataTableV2 from "../shared/components/DataTableV2";
 
 // utils
-import { display } from '../../constants/numericFormat';
-import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
-
+import { display } from "../../constants/numericFormat";
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 
 function CoopLoanPaymentSchedules() {
   const { memberRole } = useMemberRole(); // to hide the go to payments in board view
@@ -25,7 +24,7 @@ function CoopLoanPaymentSchedules() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { data, isLoading, isError, error } = useFetchPaySchedView({}) // temporarily disabled pagination
+  const { data, isLoading, isError, error } = useFetchPaySchedView({}); // temporarily disabled pagination
   // const paySchedules = data?.data || [];
 
   // Search and filter states
@@ -34,10 +33,10 @@ function CoopLoanPaymentSchedules() {
   const [yearFilter, setYearFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
 
-    /**
+  /**
    * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
    * it needs to be paired with useMemo on the filtered data (clubFunds)
-   * 
+   *
    */
   // Add useTransition
   const [isPending, startTransition] = useTransition();
@@ -66,46 +65,60 @@ function CoopLoanPaymentSchedules() {
 
   // Reduces the amount of filtering per change so its good delay
   const debouncedSearch = useDebounce(searchTerm, 250);
-  
+
   const TABLE_PREFIX = "LPS_";
   const filteredPaySchedules = useMemo(() => {
     const paySchedules = data?.data || [];
-      return paySchedules.filter((row) => {
+    return paySchedules.filter((row) => {
       const scheduleId = `${TABLE_PREFIX}${row?.schedule_id}`;
 
       const matchesSearch =
         debouncedSearch === "" ||
-          (row.full_name && row.full_name
+        (row.full_name &&
+          row.full_name
             .toLowerCase()
-            .includes(debouncedSearch
-              .toLowerCase())) ||
-        row.payment_status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        row.loan_ref_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            .includes(debouncedSearch.toLowerCase())) ||
+        row.payment_status
+          ?.toLowerCase()
+          .includes(debouncedSearch.toLowerCase()) ||
+        row.loan_ref_number
+          ?.toLowerCase()
+          .includes(debouncedSearch.toLowerCase()) ||
         scheduleId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
       const matchesStatus =
         statusFilter === "" || row.payment_status === statusFilter;
       const date = row.due_date ? new Date(row.due_date) : null;
       const matchesYear =
-        yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+        yearFilter === "" ||
+        (date && date.getFullYear().toString() === yearFilter);
 
       // To avoid subtext displaying numbers instead of month names
       // I had to convert the values from the monthFilter to numbers for comparison
       const monthNameToNumber = {
-        January: 1, February: 2,
-        March: 3, April: 4,
-        May: 5, June: 6,
-        July: 7, August: 8,
-        September: 9, October: 10,
-        November: 11, December: 12,
+        January: 1,
+        February: 2,
+        March: 3,
+        April: 4,
+        May: 5,
+        June: 6,
+        July: 7,
+        August: 8,
+        September: 9,
+        October: 10,
+        November: 11,
+        December: 12,
       };
-      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const filterMonthNumber = monthFilter
+        ? monthNameToNumber[monthFilter]
+        : null;
       const matchesMonth =
-        monthFilter === "" || (date && (date.getMonth() + 1)=== filterMonthNumber);
+        monthFilter === "" ||
+        (date && date.getMonth() + 1 === filterMonthNumber);
 
-      return matchesSearch && matchesStatus  && matchesYear && matchesMonth;
-  });
-}, [debouncedSearch, statusFilter, yearFilter, monthFilter, data]);
+      return matchesSearch && matchesStatus && matchesYear && matchesMonth;
+    });
+  }, [debouncedSearch, statusFilter, yearFilter, monthFilter, data]);
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
@@ -117,14 +130,15 @@ function CoopLoanPaymentSchedules() {
 
   // for the subtext of data table
   // just for fancy subtext in line with active filters
-  const activeFiltersText = [
-    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
-    statusFilter ? `${statusFilter}` : null,
-    yearFilter ? `${yearFilter}` : null,
-    monthFilter ? `${monthFilter}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ") || "Showing all payment schedules";
+  const activeFiltersText =
+    [
+      debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+      statusFilter ? `${statusFilter}` : null,
+      yearFilter ? `${yearFilter}` : null,
+      monthFilter ? `${monthFilter}` : null,
+    ]
+      .filter(Boolean)
+      .join(" - ") || "Showing all payment schedules";
 
   // clear filters button
   const handleClearFilters = () => {
@@ -139,14 +153,14 @@ function CoopLoanPaymentSchedules() {
     navigate(`/${memberRole}/coop-loans/payments`);
 
     // For treasurer role, also open the modal after navigating
-    if (memberRole === 'treasurer') {
-      dispatch(openLoanPaymentModal({ type: 'add', data: "Redux is GOATED" }));       // Dispatch the modal action
+    if (memberRole === "treasurer") {
+      dispatch(openLoanPaymentModal({ type: "add", data: "Redux is GOATED" })); // Dispatch the modal action
     }
   };
 
   const handleContextMenu = (row) => (e) => {
     e.preventDefault();
-    
+
     // Remove any existing menu
     const EXISTING_ID = "row-context-menu";
     const existing = document.getElementById(EXISTING_ID);
@@ -191,7 +205,7 @@ function CoopLoanPaymentSchedules() {
       if (memberRole === "treasurer") {
         // Navigate to payments page first
         navigate(`/${memberRole}/coop-loans/payments`);
-        
+
         // Prepare data to prefill the modal
         const prefillData = {
           schedule_id: row?.schedule_id,
@@ -206,7 +220,7 @@ function CoopLoanPaymentSchedules() {
           amount_paid: row?.amount_paid,
           due_date: row?.due_date,
         };
-        
+
         // Dispatch modal with prefilled data
         dispatch(openLoanPaymentModal({ type: "add", data: prefillData }));
       } else {
@@ -317,7 +331,7 @@ function CoopLoanPaymentSchedules() {
             ]}
           />
           <button
-          className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
+            className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
                       fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
                       lg:static lg:ml-auto lg:self-center lg:opacity-100"
             onClick={handleGoToPayments}
@@ -326,7 +340,7 @@ function CoopLoanPaymentSchedules() {
             Go to Payments
           </button>
         </div>
-      
+
         <DataTableV2
           title={"Member Loan Payment Schedules"}
           filterActive={activeFiltersText !== "Showing all payment schedules"}
@@ -345,20 +359,26 @@ function CoopLoanPaymentSchedules() {
             "Amount Paid",
             "Status",
             "Paid At",
-            "Months Overdue"
-          ]}          
+            "Months Overdue",
+          ]}
           data={filteredPaySchedules}
           isLoading={isLoading}
           isError={isError}
           error={error}
           renderRow={(row, index) => {
             const fullName = row?.full_name || "System";
-            const rowNumber = (typeof index === 'number' 
-              ? index : filteredPaySchedules.findIndex(item => item.schedule_id === row.schedule_id)) + 1;
+            const rowNumber =
+              (typeof index === "number"
+                ? index
+                : filteredPaySchedules.findIndex(
+                    (item) => item.schedule_id === row.schedule_id
+                  )) + 1;
             const isOverdue = row?.payment_status === "OVERDUE";
             const isPartiallyPaid = row?.payment_status === "PARTIALLY PAID";
-            const isPaid = row?.payment_status === "PAID" || row?.payment_status === "FULLY PAID";
-            
+            const isPaid =
+              row?.payment_status === "PAID" ||
+              row?.payment_status === "FULLY PAID";
+
             const getRowStyling = () => {
               if (isOverdue) {
                 return "bg-warning/20 hover:bg-warning/30 border-l-4 border-warning";
@@ -373,14 +393,18 @@ function CoopLoanPaymentSchedules() {
 
             const scheduleId = `${TABLE_PREFIX}${row?.schedule_id}`;
             const loanRefNo = row?.loan_ref_number || "Not Found";
-            const dueDate = row?.due_date ? new Date(row.due_date).toLocaleDateString() : "Not Found";
+            const dueDate = row?.due_date
+              ? new Date(row.due_date).toLocaleDateString()
+              : "Not Found";
             const principalDue = row?.principal_due || 0;
             const interestDue = row?.interest_due || 0;
             const feeDue = row?.fee_due || 0;
             const totalDue = row?.total_due || 0;
             const amountPaid = row?.amount_paid || 0;
             const paymentStatus = row?.payment_status || "UNPAID";
-            const paidAt = row?.paid_at ? new Date(row.paid_at).toLocaleDateString() : "Not Paid";
+            const paidAt = row?.paid_at
+              ? new Date(row.paid_at).toLocaleDateString()
+              : "Not Paid";
             const monthsOverdue = row?.mos_overdue || 0;
 
             return (
@@ -390,25 +414,18 @@ function CoopLoanPaymentSchedules() {
                 className={`transition-colors cursor-pointer ${getRowStyling()} text-center`}
               >
                 {/* Row Number */}
-                <td className=" font-medium text-sm">
-                  {rowNumber}
-                </td>
+                <td className=" font-medium text-sm">{rowNumber}</td>
 
                 {/* Schedule ID */}
-                <td className=" font-medium text-xs">
-                  {scheduleId}
-                </td>
+                <td className=" font-medium text-xs">{scheduleId}</td>
 
                 {/* Loan Ref No. */}
-                <td className="font-medium text-xs">
-                  {loanRefNo}
-                </td>
+                <td className="font-medium text-xs">{loanRefNo}</td>
 
                 {/* Member Name */}
                 <td className="px-4 py-4 text-center">
                   <span className="flex items-center gap-3">
-                    <div className="avatar">
-                    </div>
+                    <div className="avatar"></div>
                     <div className="truncate">
                       {fullName || (
                         <span className="text-gray-400 italic">Not Found</span>
@@ -418,24 +435,16 @@ function CoopLoanPaymentSchedules() {
                 </td>
 
                 {/* Due Date */}
-                <td className="">
-                  {dueDate}
-                </td>
+                <td className="">{dueDate}</td>
 
                 {/* Principal Due */}
-                <td className="">
-                  ₱ {display(principalDue)}
-                </td>
+                <td className="">₱ {display(principalDue)}</td>
 
                 {/* Interest Due */}
-                <td className="">
-                  ₱ {display(interestDue)}
-                </td>
+                <td className="">₱ {display(interestDue)}</td>
 
                 {/* Fee Due */}
-                <td className="">
-                  ₱ {display(feeDue)}
-                </td>
+                <td className="">₱ {display(feeDue)}</td>
 
                 {/* Total Due */}
                 <td className="font-semibold text-success">
@@ -443,31 +452,23 @@ function CoopLoanPaymentSchedules() {
                 </td>
 
                 {/* Amount Paid */}
-                <td className="font-semibold">
-                  ₱ {display(amountPaid)}
-                </td>
+                <td className="font-semibold">₱ {display(amountPaid)}</td>
 
                 {/* Payment Status */}
-                <td className="font-semibold text-info">
-                  {paymentStatus}
-                </td>
+                <td className="font-semibold text-info">{paymentStatus}</td>
 
                 {/* Paid At */}
-                <td>
-                  {paidAt}
-                </td>
+                <td>{paidAt}</td>
 
                 {/* Months Overdue */}
-                <td>
-                  {monthsOverdue}
-                </td>
+                <td>{monthsOverdue}</td>
               </tr>
-            )
+            );
           }}
         />
       </div>
     </div>
-  )
+  );
 }
 
-export default CoopLoanPaymentSchedules
+export default CoopLoanPaymentSchedules;

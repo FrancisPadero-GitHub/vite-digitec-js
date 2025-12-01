@@ -58,6 +58,6 @@ export function useMembers({
     queryFn: () => fetchMembers({ page, limit, login_id }),
     keepPreviousData: true,
     enabled: !!user,
-    staleTime: 1000 * 60 * 1, 
+    staleTime: 1000 * 60 * 1,
   });
 }

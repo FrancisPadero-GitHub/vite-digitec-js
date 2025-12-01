@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../supabase";
+import Proptypes from "prop-types";
 
 // Create the AuthContext with default values
 const AuthContext = createContext({
@@ -24,11 +25,13 @@ export const AuthProvider = ({ children }) => {
       const { hash, pathname } = window.location;
       const isRecoveryLink = hash.includes("type=recovery");
       const isResetPasswordPage = pathname === "/reset-password";
-      const storedRecoveryMode = sessionStorage.getItem("recovery_mode") === "true";
+      const storedRecoveryMode =
+        sessionStorage.getItem("recovery_mode") === "true";
 
       // Handle recovery link or persisted recovery mode
       if (isRecoveryLink || storedRecoveryMode) {
-        if (!storedRecoveryMode) sessionStorage.setItem("recovery_mode", "true");
+        if (!storedRecoveryMode)
+          sessionStorage.setItem("recovery_mode", "true");
         setRecoveryMode(true);
 
         // Redirect if not on reset-password page
@@ -39,7 +42,9 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Fetch initial session
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (sessionStorage.getItem("recovery_mode") === "true") {
         setSession(null);
         setUser(null);
@@ -54,7 +59,9 @@ export const AuthProvider = ({ children }) => {
     initAuth();
 
     // Subscribe to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((evt, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((evt, session) => {
       setEvent(evt);
 
       const recoveryActive = sessionStorage.getItem("recovery_mode") === "true";
@@ -103,22 +110,26 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      setUser,
-      session,
-      setSession,
-      loading,
-      event,
-      setEvent,
-      recoveryMode,
-      setRecoveryMode
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        session,
+        setSession,
+        loading,
+        event,
+        setEvent,
+        recoveryMode,
+        setRecoveryMode,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+AuthProvider.propTypes = {
+  children: Proptypes.node.isRequired,
+};
 
 // Hook to use AuthContext
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

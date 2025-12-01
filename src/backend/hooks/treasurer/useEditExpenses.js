@@ -41,14 +41,23 @@ const updateExpenses = async (formData) => {
 export const useEditExpenses = () => {
   const queryClient = useQueryClient();
   const { mutateAsync: logActivity } = useAddActivityLog(); // log activity after expense is edited successfully
-  
+
   return useMutation({
     mutationFn: updateExpenses,
     onSuccess: async (data) => {
       console.log("Expenses Updated!: ", data);
-      queryClient.invalidateQueries({queryKey: ["club_funds_expenses"], exact: false});
-      queryClient.invalidateQueries({queryKey: ["get_funds_summary"], exact: false,});
-      queryClient.invalidateQueries({queryKey: ["activity_logs"], exact: false});
+      queryClient.invalidateQueries({
+        queryKey: ["club_funds_expenses"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get_funds_summary"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
 
       // log activity
       try {

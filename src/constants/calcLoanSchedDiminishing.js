@@ -73,7 +73,8 @@ export default function calcLoanSchedDiminishing({
   const D_onePlusRate = D_one.plus(D_monthlyRate);
   const D_powOnePlusRate = D_onePlusRate.pow(monthsNum);
 
-  const D_numerator = D_netPrincipal.times(D_monthlyRate).times(D_powOnePlusRate);
+  const D_numerator =
+    D_netPrincipal.times(D_monthlyRate).times(D_powOnePlusRate);
   const D_denominator = D_powOnePlusRate.minus(D_one);
 
   // The monthly payment is a final currency value, so round it.

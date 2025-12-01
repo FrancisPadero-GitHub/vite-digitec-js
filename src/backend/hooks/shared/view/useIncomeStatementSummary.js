@@ -7,7 +7,10 @@ import { supabase } from "../../../supabase.js";
  * useFetchTotal.js on shared/hooks if needed
  */
 
-export function useIncomeStatementSummary({ year = "all", month = "all" } = {}) {
+export function useIncomeStatementSummary({
+  year = "all",
+  month = "all",
+} = {}) {
   return useQuery({
     queryKey: ["income_statement_summary", year, month],
     queryFn: async () => {
@@ -18,12 +21,12 @@ export function useIncomeStatementSummary({ year = "all", month = "all" } = {}) 
         "get_income_statement_summary",
         {
           p_year,
-          p_month
+          p_month,
         }
       );
 
       if (error) throw error;
       return data;
-    }
+    },
   });
 }

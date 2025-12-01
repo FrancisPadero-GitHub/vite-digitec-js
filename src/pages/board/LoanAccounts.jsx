@@ -1,24 +1,27 @@
-import { useState, useMemo, useTransition } from 'react'
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 // fetch hooks
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
-import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView"
+import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
-import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
+import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 
 // components
-import FilterToolbar from '../shared/components/FilterToolbar';
-import DataTableV2 from '../shared/components/DataTableV2';
+import FilterToolbar from "../shared/components/FilterToolbar";
+import DataTableV2 from "../shared/components/DataTableV2";
 
 // constants
-import { LOAN_PRODUCT_COLORS, LOAN_ACCOUNT_STATUS_COLORS } from "../../constants/Color";
-import placeHolderAvatar from '../../assets/placeholder-avatar.png';
+import {
+  LOAN_PRODUCT_COLORS,
+  LOAN_ACCOUNT_STATUS_COLORS,
+} from "../../constants/Color";
+import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
-import { display } from '../../constants/numericFormat';
-import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
+import { display } from "../../constants/numericFormat";
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 
 function LoanAccounts() {
   const navigate = useNavigate();
@@ -34,8 +37,8 @@ function LoanAccounts() {
   const loanAccRaw = loanAcc?.data || [];
 
   // Merge view and base table by loan_id
-  const mergedLoanAccounts = loanAccRaw.map(baseRow => {
-    const viewRow = loanAccViewRaw.find(v => v.loan_id === baseRow.loan_id);
+  const mergedLoanAccounts = loanAccRaw.map((baseRow) => {
+    const viewRow = loanAccViewRaw.find((v) => v.loan_id === baseRow.loan_id);
 
     return {
       ...baseRow, // all base table fields
@@ -50,7 +53,7 @@ function LoanAccounts() {
   /**
    * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
    * it needs to be paired with useMemo on the filtered data (clubFunds)
-   * 
+   *
    */
   // Add useTransition
   const [isFilterPending, startTransition] = useTransition();
@@ -76,7 +79,9 @@ function LoanAccounts() {
     return mergedLoanAccounts.filter((row) => {
       const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
 
-      const member = members?.find((m) => m.account_number === row.account_number);
+      const member = members?.find(
+        (m) => m.account_number === row.account_number
+      );
       const fullName = member
         ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
         : "";
@@ -84,7 +89,9 @@ function LoanAccounts() {
       const matchesSearch =
         debouncedSearch === "" ||
         (fullName && fullName.includes(debouncedSearch)) ||
-        row.loan_ref_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.loan_ref_number
+          ?.toLowerCase()
+          .includes(debouncedSearch.toLowerCase()) ||
         row.status?.toLowerCase().includes(debouncedSearch.toLowerCase());
       generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
@@ -95,12 +102,13 @@ function LoanAccounts() {
 
   // for the subtext of data table
   // just for fancy subtext in line with active filters
-  const activeFiltersText = [
-    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
-    statusFilter ? `${statusFilter}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ") || "Showing all loan accounts";
+  const activeFiltersText =
+    [
+      debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+      statusFilter ? `${statusFilter}` : null,
+    ]
+      .filter(Boolean)
+      .join(" - ") || "Showing all loan accounts";
 
   // clear filters button
   const handleClearFilters = () => {
@@ -109,9 +117,7 @@ function LoanAccounts() {
   };
 
   // React Hook Form setup for Loan Accounts
-  const {
-    reset: resetLoanAcc,
-  } = useForm({
+  const { reset: resetLoanAcc } = useForm({
     defaultValues: {
       application_id: null,
       account_number: null,
@@ -127,7 +133,6 @@ function LoanAccounts() {
   });
 
   const openModal = (row) => {
-
     // console.log("Opened modal data name check", row )
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
@@ -147,8 +152,7 @@ function LoanAccounts() {
     });
 
     navigate(`../loan-account/details/${row.loan_id}`);
-  }
-
+  };
 
   return (
     <div className="m-3">
@@ -179,7 +183,16 @@ function LoanAccounts() {
           filterActive={activeFiltersText !== "Showing all loan accounts"}
           subtext={activeFiltersText}
           showLinkPath={false}
-          headers={["Loan Ref No.", "Account No.", "Name", "Total Amount Due", "Outstanding Balance", "Total Paid", "Loan Type", "Status",]}
+          headers={[
+            "Loan Ref No.",
+            "Account No.",
+            "Name",
+            "Total Amount Due",
+            "Outstanding Balance",
+            "Total Paid",
+            "Loan Type",
+            "Status",
+          ]}
           data={memberLoanAccounts}
           isLoading={isLoading}
           isError={isError}
@@ -189,7 +202,9 @@ function LoanAccounts() {
               (member) => member.account_number === row.account_number
             );
 
-            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
+            const fullName = matchedMember
+              ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+              : "Not Found";
 
             const matchedLoanProduct = loanProducts?.find(
               (product) => product.product_id === row.product_id
@@ -210,33 +225,26 @@ function LoanAccounts() {
                 className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openModal(row)}
               >
-
                 {/* Loan Ref No. */}
-                <td className="font-medium text-xs">
-                  {loanRefNo}
-                </td>
+                <td className="font-medium text-xs">{loanRefNo}</td>
 
                 {/* Account No. */}
-                <td className="font-medium text-xs">
-                  {accountNo}
-                </td>
+                <td className="font-medium text-xs">{accountNo}</td>
 
                 {/* Full Name */}
                 <td>
                   <span className="flex items-center gap-3">
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
-                        <img
-                          src={avatarUrl}
-                          alt={fullName}
-                        />
+                        <img src={avatarUrl} alt={fullName} />
                       </div>
                     </div>
                     <div className="truncate">
-                      {fullName ||
+                      {fullName || (
                         <span className="text-gray-400 italic">
                           Not Provided
-                        </span>}
+                        </span>
+                      )}
                     </div>
                   </span>
                 </td>
@@ -259,33 +267,39 @@ function LoanAccounts() {
                 {/* Loan Product */}
                 <td>
                   {loanProductName ? (
-                    <span className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}>
+                    <span
+                      className={`font-semibold ${LOAN_PRODUCT_COLORS[loanProductName]}`}
+                    >
                       {loanProductName}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">
+                      Not Provided
+                    </span>
                   )}
                 </td>
 
                 {/* Status */}
                 <td>
                   {status ? (
-                    <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                    <span
+                      className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}
+                    >
                       {row.status || "Not Provided"}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">
+                      Not Provided
+                    </span>
                   )}
                 </td>
               </tr>
-            )
+            );
           }}
         />
       </div>
-
-
     </div>
-  )
+  );
 }
 
-export default LoanAccounts
+export default LoanAccounts;

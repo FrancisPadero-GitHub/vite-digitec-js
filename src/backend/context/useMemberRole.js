@@ -4,7 +4,7 @@ import { useMembers } from "../hooks/shared/useFetchMembers";
 
 /**
  * Returns the member role of the currently logged-in user.
- * 
+ *
  * @returns { { memberRole: string|null, loading: boolean } }
  */
 
@@ -19,7 +19,7 @@ export const useMemberRole = () => {
 };
 
 /**
- * 
+ *
  *  This is unused code that was part of the previous implementation. It has been retained for reference.
- * 
-  */
+ *
+ */

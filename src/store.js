@@ -5,9 +5,9 @@ import notificationModalReducer from "./features/redux/notificationModalSlice"; 
 
 export const store = configureStore({
   reducer: {
-    modal: modalReducer,  // experimental
-    modalState: modalStateReducer,  // general use
-    notificationModal: notificationModalReducer,  // notification modal
+    modal: modalReducer, // experimental
+    modalState: modalStateReducer, // general use
+    notificationModal: notificationModalReducer, // notification modal
   },
 });
 

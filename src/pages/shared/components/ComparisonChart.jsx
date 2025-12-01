@@ -9,13 +9,14 @@ import {
   CartesianGrid,
 } from "recharts";
 import React, { useMemo } from "react";
+import Proptypes from "prop-types";
 
 const ComparisonChart = ({
   clubFundsData = [],
   expensesData = [],
   isLoading = false,
   isError = false,
-  error = null
+  error = null,
 }) => {
   // Memoize data processing to prevent recalculation on every render
   const data = useMemo(() => {
@@ -86,7 +87,10 @@ const ComparisonChart = ({
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data} margin={{ top: 40, right: 10, bottom: 10, left: -20 }}>
+      <LineChart
+        data={data}
+        margin={{ top: 40, right: 10, bottom: 10, left: -20 }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" fontSize={11} />
         <YAxis fontSize={11} />
@@ -114,6 +118,23 @@ const ComparisonChart = ({
       </LineChart>
     </ResponsiveContainer>
   );
-}
+};
+ComparisonChart.propTypes = {
+  clubFundsData: Proptypes.arrayOf(
+    Proptypes.shape({
+      payment_date: Proptypes.string,
+      amount: Proptypes.number,
+    })
+  ),
+  expensesData: Proptypes.arrayOf(
+    Proptypes.shape({
+      transaction_date: Proptypes.string,
+      amount: Proptypes.number,
+    })
+  ),
+  isLoading: Proptypes.bool,
+  isError: Proptypes.bool,
+  error: Proptypes.oneOfType([Proptypes.object, Proptypes.string]),
+};
 
 export default React.memo(ComparisonChart);

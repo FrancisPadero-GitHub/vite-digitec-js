@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 const StatCardV2 = ({
   icon,
   iconBgColor,
@@ -73,5 +74,19 @@ const StatCardV2 = ({
     </div>
   );
 }
+
+StatCardV2.propTypes = {
+  icon: PropTypes.node,
+  iconBgColor: PropTypes.string,
+  statName: PropTypes.string,
+  amount: PropTypes.number,
+  type: PropTypes.string,
+  subtitle: PropTypes.string,
+  growthPercent: PropTypes.number,
+  growthType: PropTypes.string,
+  loading: PropTypes.bool,
+  error: PropTypes.bool,
+  errorMessage: PropTypes.string,
+};
 
 export default React.memo(StatCardV2);

@@ -10,7 +10,7 @@ const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev);
+    setIsSidebarOpen((prev) => !prev);
   };
 
   const closeSidebar = () => {
@@ -20,11 +20,15 @@ const Layout = () => {
   return (
     <div className="relative min-h-screen bg-base-200">
       {/* SIDEBAR */}
-      <Sidebar role={memberRole} isOpen={isSidebarOpen} onClose={closeSidebar} />
+      <Sidebar
+        role={memberRole}
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
+      />
 
       {/* OVERLAY for mobile */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={closeSidebar}
           aria-hidden="true"
@@ -35,12 +39,12 @@ const Layout = () => {
       <div className="flex flex-col min-h-screen lg:ml-64">
         {/* TOPBAR */}
         <Topbar role={memberRole} onToggleSidebar={toggleSidebar} />
-        
+
         {/* MAIN CONTENT with top padding to account for fixed header */}
         <main className="flex-grow mt-17 pt-5 lg:pt-5">
           <Outlet />
         </main>
-        
+
         {/* FOOTER */}
         <Footer />
       </div>

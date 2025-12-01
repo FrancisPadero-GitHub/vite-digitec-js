@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase.js";
 import { useFetchAccountNumber } from "./useFetchAccountNumber.js";
 
-
 /**
  * Fetches loan payments with optional filters and pagination.
  */

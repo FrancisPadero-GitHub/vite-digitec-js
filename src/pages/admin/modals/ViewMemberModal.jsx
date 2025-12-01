@@ -27,7 +27,10 @@ function ViewMemberModal({ open, close, member, children, onSave, isSaving }) {
                 </span>
               )}
             </h2>
-            <p className="text-gray-500 text-sm truncate" title={member?.email || "No email"}>
+            <p
+              className="text-gray-500 text-sm truncate"
+              title={member?.email || "No email"}
+            >
               {member?.email || "No email"}
             </p>
           </div>

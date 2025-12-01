@@ -1,7 +1,7 @@
 import { useState, useMemo, useTransition } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 // fetch hooks
 import { useMembers } from "../../backend/hooks/shared/useFetchMembers.js";
@@ -17,11 +17,10 @@ import ViewMemberModal from "./modals/ViewMemberModal.jsx";
 // constants
 import { ROLE_COLORS } from "../../constants/Color.js";
 import getYearsMonthsDaysDifference from "../../constants/DateCalculation.js";
-import defaultAvatar from '../../assets/placeholder-avatar.png';
+import defaultAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
-
 
 // JSX
 function UserManagement() {
@@ -77,7 +76,7 @@ function UserManagement() {
           searchKey: `${displayName} ${row.email ?? ""}`.toLowerCase(),
           role: row.account_role,
           status: row.account_status,
-          avatar: row.avatar_url
+          avatar: row.avatar_url,
         };
       })
       .filter((row) => {
@@ -87,21 +86,25 @@ function UserManagement() {
         const matchesSearch =
           debouncedSearch === "" ||
           row.searchKey.includes(debouncedSearch.toLowerCase()) ||
-          row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase());
+          row.account_number
+            ?.toLowerCase()
+            .includes(debouncedSearch.toLowerCase());
         const matchesRole = roleFilter === "" || row.role === roleFilter;
-        const matchesStatus = statusFilter === "" || row.status === statusFilter;
+        const matchesStatus =
+          statusFilter === "" || row.status === statusFilter;
         return matchesSearch && matchesRole && matchesStatus;
       });
   }, [membersRaw, debouncedSearch, roleFilter, statusFilter]);
 
   // for the subtext of data table
-  const activeFiltersText = [
-    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
-    roleFilter ? `Role: ${roleFilter}` : null,
-    statusFilter ? `Status: ${statusFilter}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ") || "Showing all members";
+  const activeFiltersText =
+    [
+      debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+      roleFilter ? `Role: ${roleFilter}` : null,
+      statusFilter ? `Status: ${statusFilter}` : null,
+    ]
+      .filter(Boolean)
+      .join(" - ") || "Showing all members";
 
   // clear filters button
   const handleClearFilters = () => {
@@ -109,7 +112,6 @@ function UserManagement() {
     setRoleFilter("");
     setStatusFilter("");
   };
-
 
   // modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -129,23 +131,26 @@ function UserManagement() {
   };
 
   const save = () => {
-    updateMemberRole({
-      member_id: selectedMember.member_id,
-      account_role: newRole,
-      account_status: accStatus,
-    },{
-      onSuccess: () => {
-        toast.success("Member updated successfully");
+    updateMemberRole(
+      {
+        member_id: selectedMember.member_id,
+        account_role: newRole,
+        account_status: accStatus,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Member updated successfully");
+        },
       }
-    });
+    );
     setEditModalOpen(false);
   };
 
   const closeModal = () => {
-    setEditModalOpen(false)
-    setNewRole("")
-    setAccStatus("")
-  }
+    setEditModalOpen(false);
+    setNewRole("");
+    setAccStatus("");
+  };
 
   const memberGroups = [
     {
@@ -153,12 +158,20 @@ function UserManagement() {
       fields: [
         {
           label: "Full Name",
-          value: selectedMember ? `${selectedMember.f_name} ${selectedMember.m_name} ${selectedMember.l_name}` : "N/A",
+          value: selectedMember
+            ? `${selectedMember.f_name} ${selectedMember.m_name} ${selectedMember.l_name}`
+            : "N/A",
         },
         { label: "Civil Status", value: selectedMember?.civil_status || "N/A" },
         { label: "Birthday", value: selectedMember?.birthday || "N/A" },
-        { label: "Place of Birth", value: selectedMember?.place_of_birth || "N/A" },
-        { label: "Contact Number", value: selectedMember?.contact_number || "N/A" },
+        {
+          label: "Place of Birth",
+          value: selectedMember?.place_of_birth || "N/A",
+        },
+        {
+          label: "Contact Number",
+          value: selectedMember?.contact_number || "N/A",
+        },
         { label: "Email", value: selectedMember?.email || "N/A" },
       ],
     },
@@ -167,15 +180,16 @@ function UserManagement() {
       fields: [
         {
           label: "Complete Address",
-          value: [
-            selectedMember?.block_no,
-            selectedMember?.barangay,
-            selectedMember?.city_municipality,
-            selectedMember?.province,
-            selectedMember?.zip_code,
-          ]
-            .filter(Boolean)
-            .join(", ") || "N/A",
+          value:
+            [
+              selectedMember?.block_no,
+              selectedMember?.barangay,
+              selectedMember?.city_municipality,
+              selectedMember?.province,
+              selectedMember?.zip_code,
+            ]
+              .filter(Boolean)
+              .join(", ") || "N/A",
         },
       ],
     },
@@ -183,33 +197,57 @@ function UserManagement() {
       title: "Dependents",
       fields: [
         { label: "Spouse Name", value: selectedMember?.spouse_name || "N/A" },
-        { label: "Number of Children", value: selectedMember?.number_of_children || "N/A" },
+        {
+          label: "Number of Children",
+          value: selectedMember?.number_of_children || "N/A",
+        },
       ],
     },
     {
       title: "Employment",
       fields: [
         { label: "Office Name", value: selectedMember?.office_name || "N/A" },
-        { label: "Title & Position", value: selectedMember?.title_and_position || "N/A" },
-        { label: "Office Address", value: selectedMember?.office_address || "N/A" },
-        { label: "Office Contact Number", value: selectedMember?.office_contact_number || "N/A" },
+        {
+          label: "Title & Position",
+          value: selectedMember?.title_and_position || "N/A",
+        },
+        {
+          label: "Office Address",
+          value: selectedMember?.office_address || "N/A",
+        },
+        {
+          label: "Office Contact Number",
+          value: selectedMember?.office_contact_number || "N/A",
+        },
       ],
     },
     {
       title: "Membership Details",
       fields: [
-        { label: "Account Role / Type", value: selectedMember?.account_role || "N/A" },
-        { label: "Account Status", value: selectedMember?.account_status || "N/A" },
-        { label: "Application Date", value: selectedMember?.application_date || "N/A" },
+        {
+          label: "Account Role / Type",
+          value: selectedMember?.account_role || "N/A",
+        },
+        {
+          label: "Account Status",
+          value: selectedMember?.account_status || "N/A",
+        },
+        {
+          label: "Application Date",
+          value: selectedMember?.application_date || "N/A",
+        },
         { label: "Joined Date", value: selectedMember?.joined_date || "N/A" },
-        { label: "Login Credentials", value: selectedMember?.login_id ? "Yes" : "No" },
+        {
+          label: "Login Credentials",
+          value: selectedMember?.login_id ? "Yes" : "No",
+        },
       ],
     },
   ];
 
   return (
     <div className="m-3">
-      <Toaster position="bottom-left"/>
+      <Toaster position="bottom-left" />
       <div className="space-y-2">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <FilterToolbar
@@ -241,13 +279,14 @@ function UserManagement() {
               },
             ]}
           />
-          <Link 
+          <Link
             to="add-member"
             className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
             fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
             lg:static lg:ml-auto lg:self-center lg:opacity-100"
           >
-            <AddCircleIcon />Create User
+            <AddCircleIcon />
+            Create User
           </Link>
         </div>
 
@@ -256,13 +295,20 @@ function UserManagement() {
           filterActive={activeFiltersText !== "Showing all members"}
           subtext={activeFiltersText}
           showLinkPath={false}
-          headers={["Account No.", "User", "Role", "Joined date", "Tenure", "Account status", "Login Credentials"]}
+          headers={[
+            "Account No.",
+            "User",
+            "Role",
+            "Joined date",
+            "Tenure",
+            "Account status",
+            "Login Credentials",
+          ]}
           data={members}
           isLoading={isLoading}
           isError={isError}
           error={error}
           renderRow={(row) => {
-            
             // Calculate the years months and days since joined
             const { years, months, days } = row.joined_date
               ? getYearsMonthsDaysDifference(row.joined_date)
@@ -273,7 +319,6 @@ function UserManagement() {
                 key={`${TABLE_PREFIX}${row.member_id}`}
                 className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openModal(row)}
-                
               >
                 {/* Account No. */}
                 <td className="px-4 py-2 text-center text-info font-medium">
@@ -294,12 +339,18 @@ function UserManagement() {
 
                     <div className="text-left min-w-0">
                       {/* Display name with tooltip */}
-                      <div className="font-bold truncate max-w-[150px]" title={row.displayName}>
+                      <div
+                        className="font-bold truncate max-w-[150px]"
+                        title={row.displayName}
+                      >
                         {row.displayName}
                       </div>
 
                       {/* Email with tooltip */}
-                      <div className="text-sm text-gray-500 truncate max-w-[150px]" title={row.email || "No email"}>
+                      <div
+                        className="text-sm text-gray-500 truncate max-w-[150px]"
+                        title={row.email || "No email"}
+                      >
                         {row.email || "No email"}
                       </div>
                     </div>
@@ -322,33 +373,42 @@ function UserManagement() {
                 {/* To sort out later on */}
                 {/* Joined date */}
                 <td className="px-4 py-2 text-center">
-                  {row.joined_date ? row.joined_date : <span className="text-gray-400 italic">No date</span>}
+                  {row.joined_date ? (
+                    row.joined_date
+                  ) : (
+                    <span className="text-gray-400 italic">No date</span>
+                  )}
                 </td>
 
                 {/* Membership years */}
                 <td className="px-4 py-2 text-center">
-                  {(years || months || days)
-                    ? `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
-                    : <span className="text-gray-400 italic">Just joined</span>}
+                  {years || months || days ? (
+                    `${years ? `${years}y ` : ""}${months ? `${months}m ` : ""}${days ? `${days}d` : ""}`
+                  ) : (
+                    <span className="text-gray-400 italic">Just joined</span>
+                  )}
                 </td>
 
                 {/* Account Status */}
                 <td className="px-4 py-2 text-center">
                   {row.status ? (
                     <span
-                      className={`badge font-semibold ${row.status === "Active"
-                        ? "badge-success"
-                        : row.status === "Inactive"
-                          ? "badge-ghost text-gray-500"
-                          : row.status === "Revoked"
-                            ? "badge-error"
-                            : "badge-soft"
-                        }`}
+                      className={`badge font-semibold ${
+                        row.status === "Active"
+                          ? "badge-success"
+                          : row.status === "Inactive"
+                            ? "badge-ghost text-gray-500"
+                            : row.status === "Revoked"
+                              ? "badge-error"
+                              : "badge-soft"
+                      }`}
                     >
                       {row.status}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">
+                      Not Provided
+                    </span>
                   )}
                 </td>
                 {/* Login Credentials */}
@@ -360,7 +420,7 @@ function UserManagement() {
                   )}
                 </td>
               </tr>
-            )
+            );
           }}
         />
 
@@ -373,7 +433,9 @@ function UserManagement() {
         >
           {memberGroups.map((group) => (
             <div key={group.title} className="mb-6">
-              <h3 className="font-semibold text-lg mb-2 text-base-content">{group.title}</h3>
+              <h3 className="font-semibold text-lg mb-2 text-base-content">
+                {group.title}
+              </h3>
               <hr className="border-base-300 mb-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {group.fields.map((field) => {
@@ -381,14 +443,23 @@ function UserManagement() {
 
                   if (field.label === "Account Role / Type") {
                     return (
-                      <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
+                      <div
+                        key={field.label}
+                        className={isFullWidth ? "col-span-2" : ""}
+                      >
                         <p className="text-base-content/70">{field.label}</p>
                         <select
                           className="select select-bordered w-full mt-1 bg-base-100 text-base-content"
                           value={newRole}
                           onChange={(e) => setNewRole(e.target.value)}
                         >
-                          {["admin", "treasurer", "board", "regular-member", "associate-member"].map((acc_type) => (
+                          {[
+                            "admin",
+                            "treasurer",
+                            "board",
+                            "regular-member",
+                            "associate-member",
+                          ].map((acc_type) => (
                             <option key={acc_type} value={acc_type}>
                               {acc_type}
                             </option>
@@ -400,7 +471,10 @@ function UserManagement() {
 
                   if (field.label === "Account Status") {
                     return (
-                      <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
+                      <div
+                        key={field.label}
+                        className={isFullWidth ? "col-span-2" : ""}
+                      >
                         <p className="text-base-content/70">{field.label}</p>
                         <select
                           className="select select-bordered w-full mt-1 bg-base-100 text-base-content"
@@ -418,9 +492,14 @@ function UserManagement() {
                   }
 
                   return (
-                    <div key={field.label} className={isFullWidth ? "col-span-2" : ""}>
+                    <div
+                      key={field.label}
+                      className={isFullWidth ? "col-span-2" : ""}
+                    >
                       <p className="text-base-content/70">{field.label}</p>
-                      <p className="font-medium text-base-content">{field.value || "N/A"}</p>
+                      <p className="font-medium text-base-content">
+                        {field.value || "N/A"}
+                      </p>
                     </div>
                   );
                 })}

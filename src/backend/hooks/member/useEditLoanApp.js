@@ -13,9 +13,9 @@ const updateLoanApp = async (formData) => {
     application_date = null,
   } = formData;
 
-    if (!application_id) {
-      throw new Error("Missing application_id in loan_applications for update.");
-    }
+  if (!application_id) {
+    throw new Error("Missing application_id in loan_applications for update.");
+  }
 
   const payload = {
     product_id,
@@ -30,10 +30,12 @@ const updateLoanApp = async (formData) => {
     .from("loan_applications")
     .update(payload)
     .eq("application_id", application_id)
-    .select(`
+    .select(
+      `
       *,
       members!loan_applications_account_number_fkey (f_name, l_name, account_number)
-    `)
+    `
+    )
     .single();
 
   if (error) {
@@ -44,7 +46,9 @@ const updateLoanApp = async (formData) => {
   const memberData = data.members;
   return {
     ...data,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : accountNumber,
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : (data.account_number ?? null),
   };
 };
 
@@ -56,8 +60,14 @@ export const useEditLoanApp = () => {
     mutationFn: updateLoanApp,
     onSuccess: async (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries({ queryKey: ["loan_applications"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["loan_applications"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
       // log activity
       try {
         await logActivity({

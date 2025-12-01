@@ -38,7 +38,7 @@ export default function ReceiptModal({ open, onClose, payment }) {
       principal: receipt_meta?.breakdown?.principal ?? principal ?? 0,
       interest: receipt_meta?.breakdown?.interest ?? interest ?? 0,
       fees: receipt_meta?.breakdown?.fees ?? fees ?? 0,
-    }
+    },
   };
 
   const handlePdf = () => createPdfReceipt(payment);
@@ -48,13 +48,13 @@ export default function ReceiptModal({ open, onClose, payment }) {
   const handleModalClick = (e) => e.stopPropagation();
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white w-full max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-        onClick={handleModalClick} 
+        onClick={handleModalClick}
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
@@ -64,10 +64,12 @@ export default function ReceiptModal({ open, onClose, payment }) {
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">Payment Receipt</h3>
-              <p className="text-blue-100 text-xs">Official Transaction Record</p>
+              <p className="text-blue-100 text-xs">
+                Official Transaction Record
+              </p>
             </div>
           </div>
-          <button 
+          <button
             className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
             onClick={onClose}
             aria-label="Close"
@@ -81,27 +83,41 @@ export default function ReceiptModal({ open, onClose, payment }) {
           {/* Receipt Number Badge */}
           <div className="flex justify-center mb-6">
             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg px-4 py-2">
-              <p className="text-xs text-blue-600 font-semibold uppercase">Receipt No.</p>
-              <p className="text-lg font-bold text-blue-900 font-mono tracking-wide">{displayData.receiptNo || "N/A"}</p>
+              <p className="text-xs text-blue-600 font-semibold uppercase">
+                Receipt No.
+              </p>
+              <p className="text-lg font-bold text-blue-900 font-mono tracking-wide">
+                {displayData.receiptNo || "N/A"}
+              </p>
             </div>
           </div>
 
           {/* Payment Information */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <h4 className="text-xs font-bold text-gray-600 uppercase mb-3">Payment Details</h4>
+            <h4 className="text-xs font-bold text-gray-600 uppercase mb-3">
+              Payment Details
+            </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Date:</span>
-                <span className="font-semibold text-gray-900">{dayjs(displayData.paymentDate).format("MMMM DD, YYYY")}</span>
+                <span className="font-semibold text-gray-900">
+                  {dayjs(displayData.paymentDate).format("MMMM DD, YYYY")}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Payment Method:</span>
-                <span className="font-semibold text-gray-900">{displayData.paymentMethod}</span>
+                <span className="font-semibold text-gray-900">
+                  {displayData.paymentMethod}
+                </span>
               </div>
               {displayData.generatedAt && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Generated:</span>
-                  <span className="text-gray-700 text-xs">{dayjs(displayData.generatedAt).format("MMM DD, YYYY h:mm A")}</span>
+                  <span className="text-gray-700 text-xs">
+                    {dayjs(displayData.generatedAt).format(
+                      "MMM DD, YYYY h:mm A"
+                    )}
+                  </span>
                 </div>
               )}
             </div>
@@ -109,65 +125,100 @@ export default function ReceiptModal({ open, onClose, payment }) {
 
           {/* Member & Loan Information */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <h4 className="text-xs font-bold text-gray-600 uppercase mb-3">Account Information</h4>
+            <h4 className="text-xs font-bold text-gray-600 uppercase mb-3">
+              Account Information
+            </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Member:</span>
-                <span className="font-semibold text-gray-900">{displayData.memberName}</span>
+                <span className="font-semibold text-gray-900">
+                  {displayData.memberName}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Account No:</span>
-                <span className="font-mono font-semibold text-gray-900">{displayData.accountNumber}</span>
+                <span className="font-mono font-semibold text-gray-900">
+                  {displayData.accountNumber}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Loan Reference:</span>
-                <span className="font-mono font-semibold text-gray-900">{displayData.loanRefNumber}</span>
+                <span className="font-mono font-semibold text-gray-900">
+                  {displayData.loanRefNumber}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Payment Breakdown */}
           <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-            <h4 className="text-xs font-bold text-green-800 uppercase mb-3">Payment Breakdown</h4>
+            <h4 className="text-xs font-bold text-green-800 uppercase mb-3">
+              Payment Breakdown
+            </h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-700">Principal</span>
-                <span className="font-semibold text-gray-900">₱{displayData.breakdown.principal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-semibold text-gray-900">
+                  ₱
+                  {displayData.breakdown.principal.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-700">Interest</span>
-                <span className="font-semibold text-gray-900">₱{displayData.breakdown.interest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-semibold text-gray-900">
+                  ₱
+                  {displayData.breakdown.interest.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-700">Fees</span>
-                <span className="font-semibold text-gray-900">₱{displayData.breakdown.fees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-semibold text-gray-900">
+                  ₱
+                  {displayData.breakdown.fees.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </div>
               <div className="border-t-2 border-green-300 mt-2 pt-2 flex justify-between">
-                <span className="font-bold text-green-900 uppercase">Total Amount Paid</span>
-                <span className="text-xl font-bold text-green-900">₱{displayData.breakdown.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-bold text-green-900 uppercase">
+                  Total Amount Paid
+                </span>
+                <span className="text-xl font-bold text-green-900">
+                  ₱
+                  {displayData.breakdown.totalAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Footer Note */}
           <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500 italic">This is an official payment receipt. Please keep for your records.</p>
+            <p className="text-xs text-gray-500 italic">
+              This is an official payment receipt. Please keep for your records.
+            </p>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end border-t">
-          <button 
+          <button
             className="btn btn-sm btn-outline gap-2"
             onClick={handlePrint}
           >
             <PrintIcon fontSize="small" />
             Print
           </button>
-          <button 
-            className="btn btn-sm btn-primary gap-2"
-            onClick={handlePdf}
-          >
+          <button className="btn btn-sm btn-primary gap-2" onClick={handlePdf}>
             <PictureAsPdfIcon fontSize="small" />
             Export PDF
           </button>
@@ -187,7 +238,10 @@ ReceiptModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   payment: PropTypes.shape({
     receipt_no: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    payment_date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    payment_date: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date),
+    ]),
     payment_method: PropTypes.string,
     loan_ref_number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     account_number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -200,7 +254,10 @@ ReceiptModal.propTypes = {
       generated_at: PropTypes.string,
       member_name: PropTypes.string,
       account_number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      loan_ref_number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      loan_ref_number: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+      ]),
       payment_method: PropTypes.string,
       payment_date: PropTypes.string,
       breakdown: PropTypes.shape({

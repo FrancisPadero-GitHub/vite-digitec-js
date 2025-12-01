@@ -1,4 +1,3 @@
-
 /**
  * Custom React Query hook for fetching loan payment schedule view data
  * Queries a database view that joins member, loan accounts, and loan payment schedules tables
@@ -42,7 +41,11 @@ async function fetchPaySchedView({ page, limit, loanId }) {
   return { data, count };
 }
 
-export function useFetchPaySchedView({ page = null, limit = null, loanId = null } = {}) {
+export function useFetchPaySchedView({
+  page = null,
+  limit = null,
+  loanId = null,
+} = {}) {
   return useQuery({
     queryFn: () => fetchPaySchedView({ page, limit, loanId }),
     // Query key includes loanId to cache separately for different loans
@@ -53,6 +56,3 @@ export function useFetchPaySchedView({ page = null, limit = null, loanId = null 
     staleTime: 1000 * 60 * 1,
   });
 }
-
-
-

@@ -47,7 +47,7 @@ const updateLoanProducts = async (formData) => {
     .single();
 
   if (error) {
-    throw new Error(error.message); 
+    throw new Error(error.message);
   }
 
   return data;
@@ -62,9 +62,15 @@ export const useEditLoanProducts = () => {
     mutationFn: updateLoanProducts,
     onSuccess: async (data) => {
       console.log("Loan Product Updated!", data);
-      queryClient.invalidateQueries({ queryKey: ["loan_products"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["loan_products"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
+
       // log activity
       try {
         await logActivity({

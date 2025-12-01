@@ -1,18 +1,20 @@
-
 import { useLocation } from "react-router-dom";
 
-const roleTitles = {
-  treasurer: "Treasurer Help",
-  board: "Board Help",
-  "regular-member": "Member Help",
-  "associate-member": "Associate Member Help",
-  admin: "Admin Help",
-};
+// const roleTitles = {
+//   treasurer: "Treasurer Help",
+//   board: "Board Help",
+//   "regular-member": "Member Help",
+//   "associate-member": "Associate Member Help",
+//   admin: "Admin Help",
+// };
 
 const roleSections = {
   treasurer: [
     { title: "Releases", desc: "Manage loan releases and validations." },
-    { title: "Club Funds", desc: "Track funds, expenses, and reconciliations." },
+    {
+      title: "Club Funds",
+      desc: "Track funds, expenses, and reconciliations.",
+    },
     { title: "Payment Schedules", desc: "View and export payment schedules." },
     { title: "Payments", desc: "Record and verify payments." },
   ],
@@ -35,13 +37,25 @@ const roleSections = {
   admin: [
     { title: "Users", desc: "Manage user accounts and roles." },
     { title: "Login Credentials", desc: "Create credentials for users." },
-    { title: "System Settings", desc: "Configure products and system options." },
+    {
+      title: "System Settings",
+      desc: "Configure products and system options.",
+    },
   ],
 };
 
 function getRoleFromPathname(pathname) {
   const seg = pathname.split("/").filter(Boolean)[0];
-  if (["treasurer","board","regular-member","associate-member","admin"].includes(seg)) return seg;
+  if (
+    [
+      "treasurer",
+      "board",
+      "regular-member",
+      "associate-member",
+      "admin",
+    ].includes(seg)
+  )
+    return seg;
   return "regular-member"; // default
 }
 
@@ -52,17 +66,22 @@ function AdminHelp() {
   const sections = roleSections[role] || [];
 
   return (
-    <div className="space-y-6">
+    <div className="m-3 space-y-3">
       <header className="flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-semibold tracking-wide">
           Help
         </h1>
-        <span className="badge badge-primary capitalize">{role.replace("-"," ")}</span>
+        <span className="badge badge-primary capitalize">
+          {role.replace("-", " ")}
+        </span>
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sections.map((s, i) => (
-          <div key={i} className="card bg-base-100 border border-base-300 shadow-sm">
+          <div
+            key={i}
+            className="card bg-base-100 border border-base-300 shadow-sm"
+          >
             <div className="card-body">
               <h2 className="card-title text-base-content">{s.title}</h2>
               <p className="text-sm text-base-content/70">{s.desc}</p>

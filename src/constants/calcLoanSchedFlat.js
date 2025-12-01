@@ -86,7 +86,6 @@ export default function calcLoanSchedFlat({
   const D_finalInterest = D_monthlyInterest.plus(D_interestRemainder);
   const D_finalTotalDue = D_finalPrincipal.plus(D_finalInterest);
 
-
   // Optional schedule generation
   let schedule = [];
   if (generateSchedule) {
@@ -101,9 +100,18 @@ export default function calcLoanSchedFlat({
         installment_no: i,
         due_date: dueDate,
         // Use adjusted final payment values if this is the last installment
-        principal_due: (isLastPayment ? D_finalPrincipal : D_monthlyPrincipal).toNumber(),
-        interest_due: (isLastPayment ? D_finalInterest : D_monthlyInterest).toNumber(),
-        total_due: (isLastPayment ? D_finalTotalDue : D_monthlyPayment).toNumber(),
+        principal_due: (isLastPayment
+          ? D_finalPrincipal
+          : D_monthlyPrincipal
+        ).toNumber(),
+        interest_due: (isLastPayment
+          ? D_finalInterest
+          : D_monthlyInterest
+        ).toNumber(),
+        total_due: (isLastPayment
+          ? D_finalTotalDue
+          : D_monthlyPayment
+        ).toNumber(),
         paid: false,
       });
     }

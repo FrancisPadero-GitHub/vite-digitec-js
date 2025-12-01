@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isOpen: false,
@@ -24,5 +24,9 @@ const notificationModalSlice = createSlice({
 });
 
 export const notificationModalState = (state) => state.notificationModal;
-export const { openNotificationModal, closeNotificationModal, setSelectedNotification } = notificationModalSlice.actions;
+export const {
+  openNotificationModal,
+  closeNotificationModal,
+  setSelectedNotification,
+} = notificationModalSlice.actions;
 export default notificationModalSlice.reducer;

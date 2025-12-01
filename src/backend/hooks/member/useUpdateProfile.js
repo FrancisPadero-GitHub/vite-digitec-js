@@ -3,7 +3,6 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 import { useAddActivityLog } from "../shared/useAddActivityLog.js";
 
-
 const updateProfile = async (formData) => {
   const {
     // Personal
@@ -36,9 +35,9 @@ const updateProfile = async (formData) => {
   } = formData;
 
   if (!account_number) {
-   throw new Error( "Missing account_number for update.");
+    throw new Error("Missing account_number for update.");
   }
-  
+
   const payload = {
     f_name,
     m_name,
@@ -46,7 +45,7 @@ const updateProfile = async (formData) => {
     civil_status,
     birthday,
     place_of_birth,
-    
+
     block_no,
     barangay,
     city_municipality,
@@ -112,8 +111,8 @@ const updateProfile = async (formData) => {
 };
 
 export function useUpdateProfile() {
-
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber(); // fetches logged in account number
   const { mutateAsync: logActivity } = useAddActivityLog();
 
   const queryClient = useQueryClient();
@@ -128,7 +127,10 @@ export function useUpdateProfile() {
         updatedMember
       );
       queryClient.invalidateQueries(["members"]);
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
       console.log("Profile updated successfully:", updatedMember);
 
       // log activity

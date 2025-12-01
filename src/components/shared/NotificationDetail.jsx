@@ -39,10 +39,14 @@ function NotificationDetail({
   const dispatch = useDispatch();
 
   // Loan-related notification type check (derived, no state updates)
-  const loanTypes = ["loan_application", "loan_application_status", "loan_approval", "loan_release"];
+  const loanTypes = [
+    "loan_application",
+    "loan_application_status",
+    "loan_approval",
+    "loan_release",
+  ];
   const normalizedType = type?.toLowerCase();
   const isLoan = normalizedType ? loanTypes.includes(normalizedType) : false;
-
 
   const [path, setPath] = useState(null);
 
@@ -64,36 +68,36 @@ function NotificationDetail({
   };
 
   // Friendly label for the link based on the notification/loan type
-  const loanLabel = normalizedType === "loan_application"
-    ? "Applications"
-    : normalizedType === "loan_release"
-    ? "Releases"
-    : "Accounts";
+  const loanLabel =
+    normalizedType === "loan_application"
+      ? "Applications"
+      : normalizedType === "loan_release"
+        ? "Releases"
+        : "Accounts";
 
   return (
     <div className="flex flex-col space-y-6">
       {/* 1. Back Button (Placed at the top for immediate navigation) */}
-      <div className="flex justify-between" >
-      <button
-        onClick={onBack}
-        className="btn btn-ghost btn-sm self-start gap-2 text-primary hover:bg-base-200"
-        aria-label="back-to-notifications"
-      >
-        <ArrowBackIcon fontSize="small" />
-        Back to all notifications
-      </button>
-      <button
-        onClick={onNext}
-        disabled={!hasNext}
-        className="btn btn-ghost btn-sm self-start gap-2 text-primary hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
-        aria-label="forward-to-next-notification"
-        title={hasNext ? "Go to next notification" : "No more notifications"}
-      >
-        <ArrowForwardIcon fontSize="small" />
-        Next notification
-      </button>
+      <div className="flex justify-between">
+        <button
+          onClick={onBack}
+          className="btn btn-ghost btn-sm self-start gap-2 text-primary hover:bg-base-200"
+          aria-label="back-to-notifications"
+        >
+          <ArrowBackIcon fontSize="small" />
+          Back to all notifications
+        </button>
+        <button
+          onClick={onNext}
+          disabled={!hasNext}
+          className="btn btn-ghost btn-sm self-start gap-2 text-primary hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="forward-to-next-notification"
+          title={hasNext ? "Go to next notification" : "No more notifications"}
+        >
+          Next notification
+          <ArrowForwardIcon fontSize="small" />
+        </button>
       </div>
-
 
       {/* 2. Main Notification Card */}
       <div className="card w-full bg-base-200 border border-base-200">
@@ -112,7 +116,8 @@ function NotificationDetail({
 
           {/*Message Content */}
           <div className="text-base text-base-content leading-relaxed">
-            {message || "No message content was provided for this notification."}
+            {message ||
+              "No message content was provided for this notification."}
           </div>
           {isLoan && (
             <div className="mt-1">
@@ -122,7 +127,8 @@ function NotificationDetail({
                 tabIndex={0}
                 onClick={handleViewLoanAccounts}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") handleViewLoanAccounts();
+                  if (e.key === "Enter" || e.key === " ")
+                    handleViewLoanAccounts();
                 }}
                 className="text-primary underline underline-offset-2 text-sm inline-flex items-center gap-2 cursor-pointer hover:text-primary/80"
                 aria-label="View loan accounts"
@@ -131,7 +137,6 @@ function NotificationDetail({
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>
@@ -142,7 +147,10 @@ NotificationDetail.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
   type: PropTypes.string,
-  createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+  createdAt: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.instanceOf(Date),
+  ]),
   senderId: PropTypes.string,
   recipientId: PropTypes.string,
   isGlobal: PropTypes.bool,

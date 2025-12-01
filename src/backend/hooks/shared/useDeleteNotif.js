@@ -7,14 +7,18 @@ import { supabase } from "../../supabase";
  * - Delete all for a user: pass { account_no }
  */
 const deleteNotifications = async ({ notif_id, account_no }) => {
-  const query = supabase.from("notifications").update({ deleted_at: new Date().toISOString() });
+  const query = supabase
+    .from("notifications")
+    .update({ deleted_at: new Date().toISOString() });
 
   if (notif_id) {
     query.eq("id", notif_id);
   } else if (account_no) {
     query.eq("recipient_id", account_no);
   } else {
-    throw new Error("Either notif_id or account_no must be provided to delete notifications.");
+    throw new Error(
+      "Either notif_id or account_no must be provided to delete notifications."
+    );
   }
 
   const { error } = await query;
@@ -30,11 +34,17 @@ export const useDeleteNotif = () => {
       console.log("Notification delete succeeded", { notif_id, account_no });
 
       // Invalidate notifications queries so UI re-fetches (view filters deleted_at)
-      queryClient.invalidateQueries({ queryKey: ["notifications"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["notifications"],
+        exact: false,
+      });
 
       // if we deleted all for a user, ensure other notification pockets refresh
       if (account_no) {
-        queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: false });
+        queryClient.invalidateQueries({
+          queryKey: ["pendingLoanReleases"],
+          exact: false,
+        });
       }
     },
     onError: (error) => {

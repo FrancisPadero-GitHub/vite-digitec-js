@@ -1,20 +1,33 @@
-import CloseIcon from '@mui/icons-material/Close';
-import proptypes from 'prop-types';
-function MembersFormModal({title, open, close, action, children, onSubmit, status, cancelAction, type, isPending, isAnyChanges }) { 
-
+import CloseIcon from "@mui/icons-material/Close";
+import proptypes from "prop-types";
+function MembersFormModal({
+  title,
+  open,
+  close,
+  action,
+  children,
+  onSubmit,
+  status,
+  cancelAction,
+  type,
+  isPending,
+  isAnyChanges,
+}) {
   // if open is false, don't render anything
-  if (!open) return null
+  if (!open) return null;
   return (
-    <dialog open className='modal' onClose={close}>
+    <dialog open className="modal" onClose={close}>
       <div className="modal-box overflow-hidden min-h-[20rem] max-h-[90vh] max-w-sm md:max-w-2xl lg:max-w-2xl w-full">
-        <div className="flex gap-2 justify-between" >
-          <h2 className="text-lg lg:text-2xl font-semibold">{action ? `Edit ${title}` : `Submit ${title}`}</h2>
+        <div className="flex gap-2 justify-between">
+          <h2 className="text-lg lg:text-2xl font-semibold">
+            {action ? `Edit ${title}` : `Submit ${title}`}
+          </h2>
           <button type="button" className="btn btn-ghost" onClick={close}>
             <CloseIcon />
           </button>
         </div>
-        
-        <form 
+
+        <form
           onSubmit={(e) => {
             e.preventDefault();
             // Prevent double submit if already processing
@@ -41,16 +54,21 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
               </button>
             )}
             <div className="flex gap-2 ml-auto">
-
               {onSubmit && (
-                <button type="submit" className="btn btn-primary" disabled={status || isPending || isAnyChanges}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={status || isPending || isAnyChanges}
+                >
                   {isPending ? (
                     <>
                       <span className="loading loading-spinner loading-sm"></span>
                       Loading...
                     </>
+                  ) : type ? (
+                    "Next"
                   ) : (
-                    type ? "Next" : "Submit"
+                    "Submit"
                   )}
                 </button>
               )}
@@ -59,7 +77,7 @@ function MembersFormModal({title, open, close, action, children, onSubmit, statu
         </form>
       </div>
     </dialog>
-  )
+  );
 }
 MembersFormModal.propTypes = {
   title: proptypes.string.isRequired,
@@ -75,4 +93,4 @@ MembersFormModal.propTypes = {
   isAnyChanges: proptypes.bool,
 };
 
-export default MembersFormModal
+export default MembersFormModal;

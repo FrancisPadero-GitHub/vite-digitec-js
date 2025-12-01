@@ -1,7 +1,8 @@
 import Decimal from "decimal.js";
 import { updateLoanStatusFromView } from "./updateLoanStatusFromView";
 
-const round = (num) => new Decimal(num).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+const round = (num) =>
+  new Decimal(num).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
 // Unified status helper
 function getScheduleStatus(amountPaid, totalDue) {
@@ -13,7 +14,11 @@ function getScheduleStatus(amountPaid, totalDue) {
   return "PARTIALLY PAID";
 }
 // This is for the old edit reverse allocation logic if there is a difference on the amount paid
-async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse) {
+async function reversePaymentAllocation(
+  supabase,
+  targetLoanId,
+  amountToReverse
+) {
   let remaining = round(amountToReverse);
 
   const { data: schedules, error: schedErr } = await supabase
@@ -42,7 +47,7 @@ async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse)
         amount_paid: newTotalPaid.toNumber(),
         paid: newStatus === "PAID",
         status: newStatus,
-        paid_at: newTotalPaid.gt(0) ? sched.paid_at : null
+        paid_at: newTotalPaid.gt(0) ? sched.paid_at : null,
       })
       .eq("schedule_id", sched.schedule_id);
 
@@ -52,7 +57,6 @@ async function reversePaymentAllocation(supabase, targetLoanId, amountToReverse)
   updateLoanStatusFromView(supabase, targetLoanId);
   return [];
 }
-
 
 export async function allocateLoanPayment(
   supabase,
@@ -108,8 +112,12 @@ export async function allocateLoanPayment(
 
     remaining = round(remaining.minus(allocation));
 
-    const fees = round(allocation.times(new Decimal(sched.fee_due).div(sched.total_due)));
-    const interest = round(allocation.times(new Decimal(sched.interest_due).div(sched.total_due)));
+    const fees = round(
+      allocation.times(new Decimal(sched.fee_due).div(sched.total_due))
+    );
+    const interest = round(
+      allocation.times(new Decimal(sched.interest_due).div(sched.total_due))
+    );
     const principal = round(allocation.minus(fees).minus(interest));
 
     allocations.push({
@@ -124,7 +132,7 @@ export async function allocateLoanPayment(
       fees: fees.toNumber(),
       interest: interest.toNumber(),
       principal: principal.toNumber(),
-      status: newStatus
+      status: newStatus,
     });
 
     const { error: updateErr } = await supabase
@@ -133,7 +141,7 @@ export async function allocateLoanPayment(
         amount_paid: newTotalPaid.toNumber(),
         paid: newStatus === "PAID",
         status: newStatus,
-        paid_at: new Date().toISOString()
+        paid_at: new Date().toISOString(),
       })
       .eq("schedule_id", sched.schedule_id);
 
@@ -153,7 +161,7 @@ export async function allocateLoanPayment(
       fees: 0,
       interest: 0,
       principal: remaining.toNumber(),
-      status: "OVERPAYMENT"
+      status: "OVERPAYMENT",
     });
 
     remaining = new Decimal(0);

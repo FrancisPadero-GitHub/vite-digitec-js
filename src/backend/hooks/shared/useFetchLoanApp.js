@@ -5,7 +5,7 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 /**
  * Fetches coop loan applications.
- * 
+ *
  * If accountNumber is provided (or fetched from auth), returns loans for that member only.
  * If no accountNumber, returns all loan applications.
  */
@@ -33,34 +33,50 @@ async function fetchCoopLoansApp({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchLoanApp({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
+export function useFetchLoanApp({
+  page = null,
+  limit = null,
+  accountNumber = null,
+  useLoggedInMember = false,
+} = {}) {
   const queryClient = useQueryClient();
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();     // fetches logged in account number
-  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;       // if the useLoggedInMember = true
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber(); // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber; // if the useLoggedInMember = true
 
   useEffect(() => {
     if (useLoggedInMember && !effectiveAccountNumber) return;
 
     const channel = supabase
-      .channel(
-        `realtime-loan-applications-${effectiveAccountNumber ?? "all"}`
-      )
+      .channel(`realtime-loan-applications-${effectiveAccountNumber ?? "all"}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "loan_applications",
-          filter: effectiveAccountNumber ? `account_number=eq.${effectiveAccountNumber}` : undefined,
+          filter: effectiveAccountNumber
+            ? `account_number=eq.${effectiveAccountNumber}`
+            : undefined,
         },
         (payload) => {
-          const key = ["loan_applications", effectiveAccountNumber, page, limit];
+          const key = [
+            "loan_applications",
+            effectiveAccountNumber,
+            page,
+            limit,
+          ];
 
           // simple approach for paginated queries: re-fetch to ensure accurate pagination
           if (page && limit) {
             queryClient.invalidateQueries(key);
             // also invalidate view results (pagination may change)
-            queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
+            queryClient.invalidateQueries({
+              queryKey: ["view_loan_applications"],
+              exact: false,
+            });
             return;
           }
 
@@ -68,19 +84,30 @@ export function useFetchLoanApp({ page = null, limit = null, accountNumber = nul
             const { eventType, new: newRow, old: oldRow } = payload;
             switch (eventType) {
               case "INSERT":
-                if (old.data.some((r) => r.application_id === newRow.application_id)) return old;
+                if (
+                  old.data.some(
+                    (r) => r.application_id === newRow.application_id
+                  )
+                )
+                  return old;
                 return {
-                  data: [newRow, ...old.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+                  data: [newRow, ...old.data].sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                  ),
                   count: (old.count || 0) + 1,
                 };
               case "UPDATE":
                 return {
-                  data: old.data.map((r) => (r.application_id === newRow.application_id ? newRow : r)),
+                  data: old.data.map((r) =>
+                    r.application_id === newRow.application_id ? newRow : r
+                  ),
                   count: old.count,
                 };
               case "DELETE":
                 return {
-                  data: old.data.filter((r) => r.application_id !== (oldRow?.application_id)),
+                  data: old.data.filter(
+                    (r) => r.application_id !== oldRow?.application_id
+                  ),
                   count: Math.max(0, (old.count || 1) - 1),
                 };
               default:
@@ -89,7 +116,10 @@ export function useFetchLoanApp({ page = null, limit = null, accountNumber = nul
           });
 
           // Keep the view in sync
-          queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
+          queryClient.invalidateQueries({
+            queryKey: ["view_loan_applications"],
+            exact: false,
+          });
         }
       )
       .subscribe();
@@ -116,13 +146,13 @@ export function useFetchLoanApp({ page = null, limit = null, accountNumber = nul
 /**
  * Fetch everything (no pagination)
  * const { data, count } = useFetchLoanApp({});
- * 
+ *
  * fetch with filter
  * const { data, count } = useFetchLoanApp({ page: 1, limit: 20 });
- * 
- * fetch specific member 
+ *
+ * fetch specific member
  * const { data, count } = useFetchLoanApp({ page: 1, limit: 20, accountNumber: ID_HERE });
- * 
- * fetch with the current logged in user 
+ *
+ * fetch with the current logged in user
  * const { data, count } = useFetchLoanApp({ page: 1, limit: 20, useLoggedInMember: true });
  */

@@ -52,7 +52,8 @@ const ForgotPassword = () => {
         let uiMessage = "Failed to send reset email.";
 
         if (err.message?.includes("Email not confirmed")) {
-          uiMessage = "Email address not verified. Please verify your email first.";
+          uiMessage =
+            "Email address not verified. Please verify your email first.";
         } else if (err.message?.includes("Invalid email")) {
           uiMessage = "Invalid email address.";
         } else if (err.message) {
@@ -118,7 +119,8 @@ const ForgotPassword = () => {
                   Forgot Password
                 </h2>
                 <p className="text-center text-gray-500 text-sm mb-6">
-                  Enter your email address and we'll send you a link to reset your password.
+                  Enter your email address and we&apos;ll send you a link to
+                  reset your password.
                 </p>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -138,7 +140,8 @@ const ForgotPassword = () => {
                       {...register("email", {
                         required: "Email is required",
                         pattern: {
-                          value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                          value:
+                            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                           message: "Email must be a valid email address",
                         },
                         onChange: () => clearErrors("root"),
@@ -146,12 +149,16 @@ const ForgotPassword = () => {
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-red-500 text-sm">{errors.email.message}</p>
+                    <p className="text-red-500 text-sm">
+                      {errors.email.message}
+                    </p>
                   )}
 
                   {/* Server error */}
                   {errors.root && (
-                    <p className="text-red-600 text-center text-sm">{errors.root.message}</p>
+                    <p className="text-red-600 text-center text-sm">
+                      {errors.root.message}
+                    </p>
                   )}
 
                   <button
@@ -193,12 +200,13 @@ const ForgotPassword = () => {
                   Check Your Email
                 </h2>
                 <p className="text-gray-600">
-                  We've sent a password reset link to:
+                  We&apos;ve sent a password reset link to:
                 </p>
                 <p className="font-semibold text-primary">{submittedEmail}</p>
                 <p className="text-gray-500 text-sm">
-                  Please check your inbox and click the link to reset your password.
-                  If you don't see the email, check your spam folder.
+                  Please check your inbox and click the link to reset your
+                  password. If you don&apos;t see the email, check your spam
+                  folder.
                 </p>
                 <div className="space-y-2">
                   <button
@@ -208,7 +216,9 @@ const ForgotPassword = () => {
                     disabled={cooldown > 0}
                     className="btn btn-outline w-full"
                   >
-                    {cooldown > 0 ? `Resend available in ${cooldown}s` : "Resend Email"}
+                    {cooldown > 0
+                      ? `Resend available in ${cooldown}s`
+                      : "Resend Email"}
                   </button>
                   <p className="text-xs text-gray-400">
                     You can resend after a short cooldown to prevent abuse.

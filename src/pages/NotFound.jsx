@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useMemberRole } from "../backend/context/useMemberRole";
+import { Home, ArrowLeft, Search } from "lucide-react";
 
 const NotFound = () => {
-  const {memberRole} = useMemberRole();
-  
+  const { memberRole } = useMemberRole();
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-base-200 to-base-300 px-4">
       <div className="max-w-2xl w-full text-center space-y-8">
@@ -13,7 +14,7 @@ const NotFound = () => {
             404
           </h1>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-6xl">🔍</div>
+            <Search className="w-16 h-16 text-base-content/70" />
           </div>
         </div>
 
@@ -23,28 +24,25 @@ const NotFound = () => {
             Whoopsie! Page Not Found!
           </h2>
           <p className="text-lg md:text-xl text-base-content/70 max-w-md mx-auto">
-            The page you are looking for doesn't exist or has been moved to another location.
+            The page you are looking for doesn&apos;t exist or has been moved to
+            another location.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
-          <Link 
-            to={`/${memberRole}`} 
+          <Link
+            to={`/${memberRole}`}
             className="btn btn-primary btn-lg gap-2 min-w-[200px]"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-            </svg>
+            <Home className="h-5 w-5" />
             Back to Home
           </Link>
-          <button 
-            onClick={() => window.history.back()} 
+          <button
+            onClick={() => window.history.back()}
             className="btn btn-ghost btn-lg gap-2 min-w-[200px]"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
+            <ArrowLeft className="h-5 w-5" />
             Go Back
           </button>
         </div>

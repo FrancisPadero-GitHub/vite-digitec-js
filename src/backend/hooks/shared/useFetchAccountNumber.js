@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 import { useAuth } from "../../context/AuthProvider";
 
-// Searches for a specific column based on the current logged in user 
+// Searches for a specific column based on the current logged in user
 // Returns account_number
 
 async function fetchAccountNumber(loginId) {

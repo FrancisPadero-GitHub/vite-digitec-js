@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
 /**
- * 
+ *
  * ISSUE: Cannot pick spedific page due to shared pagination
- * 
+ *
  */
 
 // Fetch member info by memberId
@@ -80,11 +80,7 @@ async function fetchCoopContributions({
   return { data, count };
 }
 
-async function fetchLoanAcc({
-  accountNumber,
-  page = null,
-  limit = null,
-}) {
+async function fetchLoanAcc({ accountNumber, page = null, limit = null }) {
   let query = supabase
     .from("loan_accounts")
     .select("*", { count: "exact" })
@@ -133,10 +129,10 @@ export function useFetchMemberDetails({
       const [clubFunds, coopContributions, loanAcc] = await Promise.all([
         fetchClubFunds({ accountNumber, page, limit }),
         fetchCoopContributions({ accountNumber, page, limit }),
-        fetchLoanAcc({accountNumber, page, limit})
+        fetchLoanAcc({ accountNumber, page, limit }),
       ]);
 
-      return { memberInfo, clubFunds, coopContributions, loanAcc};
+      return { memberInfo, clubFunds, coopContributions, loanAcc };
     },
     staleTime: 1000 * 60 * 5,
     onError: (err) => {

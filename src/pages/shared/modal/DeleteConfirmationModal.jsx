@@ -1,14 +1,13 @@
-
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 const DeleteConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
-  title = 'Confirm Deletion',
-  message = 'Are you sure you want to delete this item? This action cannot be undone.',
-  confirmText = 'Delete',
-  cancelText = 'Cancel',
+  title = "Confirm Deletion",
+  message = "Are you sure you want to delete this item? This action cannot be undone.",
+  confirmText = "Delete",
+  cancelText = "Cancel",
   isLoading = false,
 }) => {
   if (!isOpen) return null;

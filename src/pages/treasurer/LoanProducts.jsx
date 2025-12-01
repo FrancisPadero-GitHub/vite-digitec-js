@@ -1,21 +1,27 @@
-import  { useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import {Toaster, toast} from 'react-hot-toast';
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { Toaster, toast } from "react-hot-toast";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 // redux stuff
-import { useSelector, useDispatch } from 'react-redux';
-import { openModal, editModal, closeModal, modalData } from '../../features/redux/modalStateSlice';
+import { useSelector, useDispatch } from "react-redux";
+import {
+  openModal,
+  editModal,
+  closeModal,
+  modalData,
+} from "../../features/redux/modalStateSlice";
 
 // fetch hook
-import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
+import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
 
 // mutation hook
-import { useAddLoanProduct } from '../../backend/hooks/treasurer/useAddLoanProduct';
-import { useEditLoanProducts } from '../../backend/hooks/treasurer/useEditLoanProducts';
+import { useAddLoanProduct } from "../../backend/hooks/treasurer/useAddLoanProduct";
+import { useEditLoanProducts } from "../../backend/hooks/treasurer/useEditLoanProducts";
 
 // components
-import Products from './components/Products';
-import FormModal from './modals/FormModal';
+import Products from "./components/Products";
+import FormModal from "./modals/FormModal";
 
 // Default form values - defined outside component so it's created only once
 const defaultValues = {
@@ -35,18 +41,19 @@ const defaultValues = {
 function LoanProducts() {
   // redux stuff
   const dispatch = useDispatch();
-  const modalState = useSelector(modalData)
+  const modalState = useSelector(modalData);
   const state = modalState.isOpen;
   const action = modalState.type;
   //const redux_data = modalState.data; // unused
-  
+
   // hooks stuff
   const { data: loanProducts, isLoading, error } = useFetchLoanProducts();
   const data = loanProducts || [];
 
   // mutation hook
   const { mutate: addLoanProduct, isPending: isAdding } = useAddLoanProduct();
-  const { mutate: editLoanProduct, isPending: isEditing } = useEditLoanProducts();
+  const { mutate: editLoanProduct, isPending: isEditing } =
+    useEditLoanProducts();
 
   const {
     register,
@@ -56,22 +63,24 @@ function LoanProducts() {
   } = useForm({
     defaultValues,
   });
-  
 
   // Form handlers
   const loanProductOpenModal = () => {
     reset(defaultValues);
-    dispatch(openModal({ type: 'add', data: null }));
+    dispatch(openModal({ type: "add", data: null }));
   };
 
   // Store the product in the redux state and reset the form with product data
-  const loanProductEditModal = useCallback((product) => {
-    dispatch(editModal({ type: 'edit', data: product }));     // for now the data is stored in redux
-    reset(product);
-  }, [dispatch, reset]);
+  const loanProductEditModal = useCallback(
+    (product) => {
+      dispatch(editModal({ type: "edit", data: product })); // for now the data is stored in redux
+      reset(product);
+    },
+    [dispatch, reset]
+  );
 
   const loanProductCloseModal = () => {
-    reset(defaultValues)
+    reset(defaultValues);
     dispatch(closeModal());
   };
 
@@ -89,10 +98,11 @@ function LoanProducts() {
       "max_term_months",
     ];
     numericFields.forEach((f) => {
-        if (payload[f] !== undefined && payload[f] !== "") payload[f] = Number(payload[f]);
-      });
+      if (payload[f] !== undefined && payload[f] !== "")
+        payload[f] = Number(payload[f]);
+    });
 
-    if (action === 'add') {
+    if (action === "add") {
       addLoanProduct(payload, {
         onSuccess: () => {
           toast.success("Loan product added successfully!");
@@ -118,7 +128,8 @@ function LoanProducts() {
   };
 
   // Form button control - disable submit if adding/editing or no changes made
-  const submitDisabled = isAdding || isEditing || (action === "edit" && !isDirty);
+  const submitDisabled =
+    isAdding || isEditing || (action === "edit" && !isDirty);
 
   const fields = [
     { label: "Loan Name", name: "name", type: "text" },
@@ -128,7 +139,7 @@ function LoanProducts() {
       type: "select",
       options: [
         { label: "Flat Rate", value: "flat" },
-        { label: "Diminishing Rate", value: "diminishing" }
+        { label: "Diminishing Rate", value: "diminishing" },
       ],
     },
     { label: "Interest Rate (%)", name: "interest_rate", type: "number" },
@@ -152,19 +163,19 @@ function LoanProducts() {
 
   return (
     <div className="m-3">
-      <Toaster position='bottom-left' />
+      <Toaster position="bottom-left" />
       <div className="space-y-2">
-
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-lg lg:text-2xl font-bold text-gray-900">Loan Products</h1>
-        <button 
+          <h1 className="text-lg lg:text-2xl font-bold">Loan Products</h1>
+          <button
             className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
                       fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
                       lg:static lg:ml-auto lg:self-center lg:opacity-100"
             onClick={loanProductOpenModal}
           >
-            + Add Loan Product
+            <AddCircleIcon />
+            Loan Product
           </button>
         </div>
 
@@ -186,12 +197,15 @@ function LoanProducts() {
           onSubmit={handleSubmit(loanProductSubmitForm)}
           isPending={isAdding || isEditing}
           status={submitDisabled}
-          deleteAction={() => (toast.error("Temporary disabled"))}
+          deleteAction={() => toast.error("Temporary disabled")}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] pl-1 pr-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 max-h-[70vh] sm:max-h-[60vh] pl-1 pr-2 pb-2">
             {fields.map(({ label, name, type, options, autoComplete }) => (
               <div key={name} className="form-control w-full">
-                <label htmlFor={name} className="label font-semibold mb-1 sm:mb-2">
+                <label
+                  htmlFor={name}
+                  className="label font-semibold mb-1 sm:mb-2"
+                >
                   {label}
                 </label>
 
@@ -218,8 +232,7 @@ function LoanProducts() {
                       inputMode="decimal"
                       onWheel={(e) => e.target.blur()}
                       autoComplete={autoComplete}
-                      
-                      {...register(name, { 
+                      {...register(name, {
                         required: `${label} is required`,
                       })}
                       className={`input input-bordered w-full text-sm sm:text-base ${
@@ -238,7 +251,6 @@ function LoanProducts() {
                       id={name}
                       type={type}
                       autoComplete={autoComplete}
-                      
                       {...register(name, { required: `${label} is required` })}
                       className="input input-bordered w-full text-sm sm:text-base"
                     />

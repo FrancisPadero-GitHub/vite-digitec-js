@@ -4,7 +4,7 @@ const Footer = () => {
       <p>© Copyright DigiTEC. All Rights Reserved</p>
       {/* <p>Designed by DigiTEC {new Date().getFullYear()}</p> */}
     </footer>
-  )
-}
+  );
+};
 
-export default Footer; 
+export default Footer;

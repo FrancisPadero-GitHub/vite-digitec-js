@@ -7,19 +7,16 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
  * since cancelling a loan application only requires updating the status field.
  * and if I use the useEditLoanApp hook, it would require passing all fields again.
  * If I not pass value to it while not using the onSubmit form, it will overwrite existing values with null.
- * 
+ *
  * Im still gonna find a way to optimize the passing of formData in payloads in the future.
  */
 
 const cancelLoanApp = async (formData) => {
-  const {
-    application_id,
-    status = null,
-  } = formData;
+  const { application_id, status = null } = formData;
 
-    if (!application_id) {
-      throw new Error("Missing application_id in loan_applications for update.");
-    }
+  if (!application_id) {
+    throw new Error("Missing application_id in loan_applications for update.");
+  }
 
   const payload = {
     status,
@@ -46,8 +43,14 @@ export const useCancelLoanApp = () => {
     mutationFn: cancelLoanApp,
     onSuccess: async (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries({ queryKey: ["loan_applications"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["loan_applications"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
       // log activity
       try {
         await logActivity({

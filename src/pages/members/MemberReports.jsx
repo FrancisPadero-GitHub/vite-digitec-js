@@ -11,7 +11,9 @@ function MemberReports() {
   // Navigate when memberId is available
   useEffect(() => {
     if (memberId) {
-      navigate(`/regular-member/reports/member-statement-details/${memberId}`, { replace: true });
+      navigate(`/regular-member/reports/member-statement-details/${memberId}`, {
+        replace: true,
+      });
     }
   }, [memberId, navigate]);
 
@@ -26,7 +28,11 @@ function MemberReports() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="flex items-center space-x-3" role="status" aria-live="polite">
+        <div
+          className="flex items-center space-x-3"
+          role="status"
+          aria-live="polite"
+        >
           <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
           <div className="text-xl">Loading member report...</div>
         </div>
@@ -63,4 +69,4 @@ function MemberReports() {
   );
 }
 
-export default MemberReports
+export default MemberReports;

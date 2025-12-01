@@ -18,19 +18,22 @@ import { useFetchNextLoanPayment } from "../../backend/hooks/member/useFetchNext
 import { useFetchMonthlyDues } from "../../backend/hooks/member/useFetchMemberMonthlyDues";
 
 // fetch hooks
-import { useFetchClubFundsView } from '../../backend/hooks/shared/view/useFetchClubFundsView';
-import { useFetchCoopView } from '../../backend/hooks/shared/view/useFetchCoopView';
+import { useFetchClubFundsView } from "../../backend/hooks/shared/view/useFetchClubFundsView";
+import { useFetchCoopView } from "../../backend/hooks/shared/view/useFetchCoopView";
 import { useFetchLoanPayments } from "../../backend/hooks/shared/useFetchPayments";
 
 // helpers
-import { useMemberRole } from "../../backend/context/useMemberRole"; 
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // components
 import StatCardV2 from "../shared/components/StatCardV2";
 import DataTableV2 from "../shared/components/DataTableV2";
 
 // constants
-import {CLUB_CATEGORY_COLORS, CAPITAL_CATEGORY_COLORS,} from "../../constants/Color";
+import {
+  CLUB_CATEGORY_COLORS,
+  CAPITAL_CATEGORY_COLORS,
+} from "../../constants/Color";
 import { display } from "../../constants/numericFormat";
 
 function MemberDashboardV2() {
@@ -40,7 +43,7 @@ function MemberDashboardV2() {
 
   // The pagination and data fetching of these 2 tables is handled inside each DataTableV2 component instance using .slice(0,5)
   // to limit to 5 recent entries.
-  const { data: coopData, isLoading: coopLoading, } = useFetchCoopView({
+  const { data: coopData, isLoading: coopLoading } = useFetchCoopView({
     useLoggedInMember: true,
   });
   const coopFunds = coopData?.data || [];
@@ -54,7 +57,6 @@ function MemberDashboardV2() {
   const { data: loanPayments, isLoading: loanPaymentsLoading } =
     useFetchLoanPayments({ page: 1, limit: 20, useLoggedInMember: true });
   const payments = loanPayments?.data || [];
-
 
   // Filter state (universal)
   const [filters, setFilters] = useState({
@@ -82,11 +84,11 @@ function MemberDashboardV2() {
   };
 
   // RPC Totals (Personal + Club)
-  const { 
+  const {
     data: currentSummary,
     isLoading: currentLoading,
     isError: currentError,
-    error: currentErrorMsg, 
+    error: currentErrorMsg,
   } = useFetchTotal({
     rpcFn: "get_funds_summary",
     year: filters.overAll.year,
@@ -94,7 +96,7 @@ function MemberDashboardV2() {
     key: "member-funds-summary-current",
   });
 
-  const { 
+  const {
     data: prevSummary,
     isLoading: prevLoading,
     isError: prevError,
@@ -123,9 +125,13 @@ function MemberDashboardV2() {
   const { data: nextPayment, isLoading: nextPaymentLoading } =
     useFetchNextLoanPayment();
 
-  const loading = currentLoading || prevLoading || monthlyDuesLoading || nextPaymentLoading;
+  const loading =
+    currentLoading || prevLoading || monthlyDuesLoading || nextPaymentLoading;
   const error = currentError || prevError;
-  const errorMessage = currentErrorMsg?.message || prevErrorMsg?.message || "Failed to load totals";
+  const errorMessage =
+    currentErrorMsg?.message ||
+    prevErrorMsg?.message ||
+    "Failed to load totals";
 
   // Memoized Stats
   const stats = useMemo(() => {
@@ -174,23 +180,34 @@ function MemberDashboardV2() {
         errorMessage: errorMessage,
       },
     ];
-  }, [currentSummary, prevSummary, personalClubFunds, personalCoopFunds, loading, error, errorMessage]);
+  }, [
+    currentSummary,
+    prevSummary,
+    personalClubFunds,
+    personalCoopFunds,
+    loading,
+    error,
+    errorMessage,
+  ]);
 
   const monthlyDuesAmount = monthlyDues?.total_amount ?? 0;
   const monthlyDuesDate = monthlyDues?.latest_period
     ? new Date(monthlyDues.latest_period).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    })
-    : new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        month: "long",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
 
   const nextPaymentAmount = nextPayment?.total_due ?? 0;
   const nextPaymentDate = nextPayment?.due_date
     ? new Date(nextPayment.due_date).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
     : "No upcoming payments";
 
   return (
@@ -203,7 +220,7 @@ function MemberDashboardV2() {
           {/* Universal Filter */}
           <div className="dropdown dropdown-right">
             <label tabIndex={0} className="btn btn-sm">
-              <MoreHorizOutlined/>
+              <MoreHorizOutlined />
             </label>
             <ul
               tabIndex={0}
@@ -216,8 +233,14 @@ function MemberDashboardV2() {
                       setFilters({
                         overAll: {
                           subtitle: label,
-                          month: label === "This Month" ? new Date().getMonth() + 1 : null,
-                          year: label !== "All Time" ? new Date().getFullYear() : null,
+                          month:
+                            label === "This Month"
+                              ? new Date().getMonth() + 1
+                              : null,
+                          year:
+                            label !== "All Time"
+                              ? new Date().getFullYear()
+                              : null,
                         },
                       })
                     }
@@ -228,7 +251,6 @@ function MemberDashboardV2() {
               ))}
             </ul>
           </div>
-
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6 xl:items-stretch">
@@ -238,7 +260,11 @@ function MemberDashboardV2() {
               {/* Stats grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {stats.map((item, index) => (
-                  <StatCardV2 key={index} {...item} subtitle={filters.overAll.subtitle} />
+                  <StatCardV2
+                    key={index}
+                    {...item}
+                    subtitle={filters.overAll.subtitle}
+                  />
                 ))}
               </div>
             </div>
@@ -252,9 +278,14 @@ function MemberDashboardV2() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <EventAvailableOutlined fontSize="small" />
-                    <h3 className="text-lg font-medium">Monthly Dues (This Year)</h3>
+                    <h3 className="text-lg font-medium">
+                      Monthly Dues (This Year)
+                    </h3>
                   </div>
-                  <button onClick={() => navigate('/regular-member/club-funds')} className="btn btn-circle btn-sm btn-ghost text-white">
+                  <button
+                    onClick={() => navigate("/regular-member/club-funds")}
+                    className="btn btn-circle btn-sm btn-ghost text-white"
+                  >
                     <ArrowForward fontSize="small" />
                   </button>
                 </div>
@@ -267,9 +298,9 @@ function MemberDashboardV2() {
                     )}
                   </div>
                 </div>
-                
+
                 <p className="text-xs">
-                  {loading ? ("Loading...") : (`As of ${monthlyDuesDate}`)}
+                  {loading ? "Loading..." : `As of ${monthlyDuesDate}`}
                 </p>
               </div>
 
@@ -280,7 +311,12 @@ function MemberDashboardV2() {
                     <AccountBalanceWalletOutlined fontSize="small" />
                     <h3 className="text-lg font-semibold">Next Loan Payment</h3>
                   </div>
-                  <button onClick={() => navigate('/regular-member/coop-loans/loan-payments')} className="btn btn-circle btn-sm btn-ghost text-base-content/70">
+                  <button
+                    onClick={() =>
+                      navigate("/regular-member/coop-loans/loan-payments")
+                    }
+                    className="btn btn-circle btn-sm btn-ghost text-base-content/70"
+                  >
                     <ArrowForward fontSize="small" />
                   </button>
                 </div>
@@ -289,22 +325,31 @@ function MemberDashboardV2() {
                   <p className="text-sm text-base-content/50">Loading...</p>
                 ) : nextPaymentAmount > 0 ? (
                   <>
-                    <div className="text-3xl font-bold text-red-500">₱{nextPaymentAmount.toLocaleString()}</div>
+                    <div className="text-3xl font-bold text-red-500">
+                      ₱{nextPaymentAmount.toLocaleString()}
+                    </div>
                     <div className="flex items-center gap-2">
-                      <span className="inline-block px-2 py-0.5 badge badge-soft badge-error text-xs font-medium">Due Soon:</span>
-                      <p className="text-xs text-base-content/70">{nextPaymentDate}</p>
+                      <span className="inline-block px-2 py-0.5 badge badge-soft badge-error text-xs font-medium">
+                        Due Soon:
+                      </span>
+                      <p className="text-xs text-base-content/70">
+                        {nextPaymentDate}
+                      </p>
                     </div>
                   </>
                 ) : (
                   <div className="text-center">
-                    <div className="text-lg font-medium text-base-content/60">No Active Loans</div>
-                    <p className="text-xs text-base-content/50">You have no upcoming loan payments</p>
+                    <div className="text-lg font-medium text-base-content/60">
+                      No Active Loans
+                    </div>
+                    <p className="text-xs text-base-content/50">
+                      You have no upcoming loan payments
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Recent Transactions */}
@@ -322,15 +367,16 @@ function MemberDashboardV2() {
               const id = row?.coop_contri_id || "Not Found";
               const amount = row?.amount || 0;
               const paymentCategory = row?.category;
-              const contributionDate = row?.contribution_date 
-                ? new Date(row.contribution_date).toLocaleDateString() 
+              const contributionDate = row?.contribution_date
+                ? new Date(row.contribution_date).toLocaleDateString()
                 : "Not Found";
 
               return (
                 <tr key={id} className="text-center hover:bg-base-200/50">
                   {/* Ref no. */}
                   <td className=" text-center font-medium text-xs">
-                    {TABLE_PREFIX}{id}
+                    {TABLE_PREFIX}
+                    {id}
                   </td>
 
                   {/* Amount */}
@@ -341,20 +387,22 @@ function MemberDashboardV2() {
                   {/* Payment Category */}
                   <td>
                     {paymentCategory ? (
-                      <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
+                      <span
+                        className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}
+                      >
                         {paymentCategory}
                       </span>
                     ) : (
-                      <span className="badge font-semibold badge-error">Not Found</span>
+                      <span className="badge font-semibold badge-error">
+                        Not Found
+                      </span>
                     )}
                   </td>
 
                   {/* Contribution Date */}
-                  <td>
-                    {contributionDate}
-                  </td>
+                  <td>{contributionDate}</td>
                 </tr>
-              )
+              );
             }}
           />
 
@@ -379,7 +427,8 @@ function MemberDashboardV2() {
                 <tr key={id} className="text-center hover:bg-base-200/50">
                   {/* Ref no. */}
                   <td className=" text-center font-medium text-xs">
-                    {TABLE_PREFIX}{id}
+                    {TABLE_PREFIX}
+                    {id}
                   </td>
 
                   {/* Amount */}
@@ -390,7 +439,9 @@ function MemberDashboardV2() {
                   {/* Payment Category */}
                   <td>
                     {category ? (
-                      <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
+                      <span
+                        className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}
+                      >
                         {category}
                       </span>
                     ) : (
@@ -399,11 +450,9 @@ function MemberDashboardV2() {
                   </td>
 
                   {/* Contribution Date */}
-                  <td>
-                    {paymentDate}
-                  </td>
+                  <td>{paymentDate}</td>
                 </tr>
-              )
+              );
             }}
           />
 
@@ -412,7 +461,13 @@ function MemberDashboardV2() {
             type={"compact"}
             showLinkPath={true}
             linkPath={`/${memberRole}/coop-loans/payments`}
-            headers={["Payment Ref.", "Loan Ref No.", "Amount", "Status", "Date"]}
+            headers={[
+              "Payment Ref.",
+              "Loan Ref No.",
+              "Amount",
+              "Status",
+              "Date",
+            ]}
             data={payments}
             isLoading={loanPaymentsLoading}
             renderRow={(row) => {
@@ -429,13 +484,12 @@ function MemberDashboardV2() {
                 <tr key={id} className="text-center hover:bg-base-200/50">
                   {/* Payment Ref. */}
                   <td className="text-center font-medium text-xs">
-                    {TABLE_PREFIX}{id}
+                    {TABLE_PREFIX}
+                    {id}
                   </td>
 
                   {/* Loan Ref No. */}
-                  <td>
-                    {loanRefNumber}
-                  </td>
+                  <td>{loanRefNumber}</td>
 
                   {/* Amount */}
                   <td className="font-semibold text-success">
@@ -443,16 +497,12 @@ function MemberDashboardV2() {
                   </td>
 
                   {/* Status */}
-                  <td className="font-semibold text-info">
-                    {status}
-                  </td>
+                  <td className="font-semibold text-info">{status}</td>
 
                   {/* Payment Date */}
-                  <td className="">
-                    {paymentDate}
-                  </td>
+                  <td className="">{paymentDate}</td>
                 </tr>
-              )
+              );
             }}
           />
         </section>

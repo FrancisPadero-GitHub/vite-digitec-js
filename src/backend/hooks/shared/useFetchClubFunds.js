@@ -4,7 +4,7 @@ import { useFetchAccountNumber } from "./useFetchAccountNumber.js";
 
 /**
  * Fetches club fund contributions.
- * 
+ *
  * If memberId is provided, filters by that member.
  * If useLoggedInMember is true, uses logged-in member ID.
  * If neither, fetches all club fund contributions.
@@ -33,10 +33,17 @@ async function fetchClubFunds({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchClubFunds({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
-
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();     // fetches logged in account number
-  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;       // if the useLoggedInMember = true
+export function useFetchClubFunds({
+  page = null,
+  limit = null,
+  accountNumber = null,
+  useLoggedInMember = false,
+} = {}) {
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber(); // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber; // if the useLoggedInMember = true
 
   return useQuery({
     queryKey: ["club_funds_contributions", effectiveAccountNumber, page, limit],
@@ -53,13 +60,13 @@ export function useFetchClubFunds({ page = null, limit = null, accountNumber = n
 /**
  * Fetch everything (no pagination)
  * const { data, count } = useFetchClubFunds({});
- * 
+ *
  * fetch with filter
  * const { data, count } = useFetchClubFunds({ page: 1, limit: 20 });
- * 
- * fetch specific member 
+ *
+ * fetch specific member
  * const { data, count } = useFetchClubFunds({ page: 1, limit: 20, memberId: ID_HERE });
- * 
- * fetch with the current logged in user 
+ *
+ * fetch with the current logged in user
  * const { data, count } = useFetchClubFunds({ page: 1, limit: 20, useLoggedInMember: true });
  */

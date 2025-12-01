@@ -1,8 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 
 // Vercel Stuff
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 // TanStack Query + Auth Provider for universal user ID retrieval
 import { AuthProvider } from "./backend/context/AuthProvider";
@@ -17,7 +17,7 @@ import NotFound from "./pages/NotFound";
 import Terms from "./pages/agreements/Terms";
 import Privacy from "./pages/agreements/Privacy";
 
-// SHARED PAGES 
+// SHARED PAGES
 import DashboardV2 from "./pages/shared/DashboardV2";
 import MemberRecords from "./pages/shared/MemberRecords";
 import Reports from "./pages/shared/Reports";
@@ -76,7 +76,6 @@ import MemberClubFunds from "./pages/members/MemberClubFunds";
 import Profile from "./pages/members/Profile";
 import MemberLoanAcc from "./pages/members/MemberLoanAcc";
 
-
 const queryClient = new QueryClient();
 
 function AppRoutes() {
@@ -91,7 +90,10 @@ function AppRoutes() {
     { path: "reports/balance-sheet", element: <BalanceSheet /> },
 
     { path: "reports/member-statements", element: <MemberStatements /> },
-    { path: "reports/member-statement-details/:memberId", element: <MemStatementDetails /> },
+    {
+      path: "reports/member-statement-details/:memberId",
+      element: <MemStatementDetails />,
+    },
 
     { path: "reports/loan-reports", element: <LoanReports /> },
     { path: "reports/club-coop-funds", element: <ClubCoopFunds /> },
@@ -105,7 +107,10 @@ function AppRoutes() {
     { path: "club-funds", element: <ClubFunds /> },
     { path: "monthly-dues", element: <MonthlyDues /> },
     { path: "club-expenses", element: <ClubExpenses /> },
-    { path: "coop-loans/payment-schedules", element: <CoopLoanPaymentSchedules /> },
+    {
+      path: "coop-loans/payment-schedules",
+      element: <CoopLoanPaymentSchedules />,
+    },
     { path: "coop-loans/payments", element: <CoopLoansPayments /> },
   ];
 
@@ -150,7 +155,10 @@ function AppRoutes() {
     { path: "help", element: <MemberHelp /> },
 
     { path: "reports", element: <MemberReports /> },
-    { path: "reports/member-statement-details/:memberId", element: <MemStatementDetails /> },
+    {
+      path: "reports/member-statement-details/:memberId",
+      element: <MemStatementDetails />,
+    },
 
     { path: "settings", element: <MemberSettings /> },
     { path: "profile", element: <Profile /> },

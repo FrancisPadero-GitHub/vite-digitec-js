@@ -3,7 +3,7 @@ import { supabase } from "../../supabase";
 
 /**
  * Update an existing member by ID
- * 
+ *
  */
 const updateMember = async ({ id, updates }) => {
   if (!id) throw new Error("Member ID is required for update.");

@@ -2,34 +2,44 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 // MUI Icons
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import HandshakeIcon from '@mui/icons-material/Handshake';
-import SavingsIcon from '@mui/icons-material/Savings';
-import HistoryIcon from '@mui/icons-material/History';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import PeopleIcon from "@mui/icons-material/People";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import HandshakeIcon from "@mui/icons-material/Handshake";
+import SavingsIcon from "@mui/icons-material/Savings";
+import HistoryIcon from "@mui/icons-material/History";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import InventoryIcon from '@mui/icons-material/Inventory';
-import LoginIcon from '@mui/icons-material/Login';
-import CampaignIcon from '@mui/icons-material/Campaign';
+import InventoryIcon from "@mui/icons-material/Inventory";
+import LoginIcon from "@mui/icons-material/Login";
+import CampaignIcon from "@mui/icons-material/Campaign";
 import PropTypes from "prop-types";
 
 // fetch hooks
-import { useFetchPendingLoanApplications, useFetchPendingLoanReleases } from "../backend/hooks/shared/useFetchPendingLoans";
+import {
+  useFetchPendingLoanApplications,
+  useFetchPendingLoanReleases,
+} from "../backend/hooks/shared/useFetchPendingLoans";
 
 // 🧩 Dynamic Pathings Items to be shared by other roles
 
 // board and treasurer
 const financeBase = (role) => [
-  { label: "Coop Share Capital", icon: AccountBalanceIcon, path: `/${role}/coop-share-capital` },
+  {
+    label: "Coop Share Capital",
+    icon: AccountBalanceIcon,
+    path: `/${role}/coop-share-capital`,
+  },
   { label: "Club Funds", icon: SavingsIcon, path: `/${role}/club-funds` },
-  { label: "Club Expenses", icon: ReceiptLongIcon, path: `/${role}/club-expenses` },
-
+  {
+    label: "Club Expenses",
+    icon: ReceiptLongIcon,
+    path: `/${role}/club-expenses`,
+  },
 ];
 
 // board and members
@@ -42,15 +52,24 @@ const loansBase = (role) => {
     {
       label: "Applications",
       path: `/${role}/coop-loans/loan-applications`,
-      badgeKey: role === "board" ? "applications" : null //only board gets notif badge
+      badgeKey: role === "board" ? "applications" : null, //only board gets notif badge
     },
     { label: "Loan Accounts", path: `/${role}/coop-loans/loan-accounts` },
-    { label: "Payments", path: role === "board" ? "/board/coop-loans/payments" : `/${role}/coop-loans/payments` },
+    {
+      label: "Payments",
+      path:
+        role === "board"
+          ? "/board/coop-loans/payments"
+          : `/${role}/coop-loans/payments`,
+    },
   ];
 
   // Add shared "Schedules" to Board only (Treasurer has its own config; members don't show schedules)
   if (role === "board") {
-    baseChildren.splice(2, 0, { label: "Schedules", path: `/${role}/coop-loans/payment-schedules` });
+    baseChildren.splice(2, 0, {
+      label: "Schedules",
+      path: `/${role}/coop-loans/payment-schedules`,
+    });
   }
 
   return [
@@ -60,7 +79,7 @@ const loansBase = (role) => {
       children: baseChildren,
     },
   ];
-}
+};
 
 // 📌 Sidebar Config Based on Role
 const sidebarConfig = {
@@ -69,9 +88,17 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/treasurer" },
-        { label: "Member Records", icon: PeopleIcon, path: "/treasurer/member-records" },
+        {
+          label: "Member Records",
+          icon: PeopleIcon,
+          path: "/treasurer/member-records",
+        },
         { label: "Reports", icon: AssessmentIcon, path: "/treasurer/reports" },
-        { label: "Activity Logs", icon: HistoryIcon, path: "/treasurer/activity-logs" },
+        {
+          label: "Activity Logs",
+          icon: HistoryIcon,
+          path: "/treasurer/activity-logs",
+        },
       ],
     },
     {
@@ -82,11 +109,20 @@ const sidebarConfig = {
           label: "Coop Loans",
           icon: HandshakeIcon,
           children: [
-            { label: "Releases", path: "/treasurer/coop-loans/releases", badgeKey: "releases" }, // treasurer gets notif badge
-            { label: "Loan Accounts", path: "/treasurer/coop-loans/loan-accounts" },
-            { label: "Schedules", path: "/treasurer/coop-loans/payment-schedules" },
+            {
+              label: "Releases",
+              path: "/treasurer/coop-loans/releases",
+              badgeKey: "releases",
+            }, // treasurer gets notif badge
+            {
+              label: "Loan Accounts",
+              path: "/treasurer/coop-loans/loan-accounts",
+            },
+            {
+              label: "Schedules",
+              path: "/treasurer/coop-loans/payment-schedules",
+            },
             { label: "Payments", path: "/treasurer/coop-loans/payments" },
-
           ],
         },
       ],
@@ -94,7 +130,11 @@ const sidebarConfig = {
     {
       section: "Settings",
       items: [
-        { label: "Loan Products", icon: InventoryIcon, path: "/treasurer/settings/loan-products" },
+        {
+          label: "Loan Products",
+          icon: InventoryIcon,
+          path: "/treasurer/settings/loan-products",
+        },
       ],
     },
   ],
@@ -104,18 +144,27 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/board" },
-        { label: "Member Records", icon: PeopleIcon, path: "/board/member-records" },
-        { label: "Announcements", icon: CampaignIcon, path: "/board/announcements" },
+        {
+          label: "Member Records",
+          icon: PeopleIcon,
+          path: "/board/member-records",
+        },
+        {
+          label: "Announcements",
+          icon: CampaignIcon,
+          path: "/board/announcements",
+        },
         { label: "Reports", icon: AssessmentIcon, path: "/board/reports" },
-        { label: "Activity Logs", icon: HistoryIcon, path: "/board/activity-logs" },
+        {
+          label: "Activity Logs",
+          icon: HistoryIcon,
+          path: "/board/activity-logs",
+        },
       ],
     },
     {
       section: "Finance",
-      items: [
-        ...financeBase("board"),
-        ...loansBase("board")
-      ]
+      items: [...financeBase("board"), ...loansBase("board")],
     },
   ],
 
@@ -124,15 +173,26 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/regular-member" },
-        { label: "Reports", icon: AssessmentIcon, path: "/regular-member/reports" },
+        {
+          label: "Reports",
+          icon: AssessmentIcon,
+          path: "/regular-member/reports",
+        },
       ],
     },
     {
       section: "Finance",
       items: [
-
-        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/regular-member/share-capital" },
-        { label: "Club Funds", icon: SavingsIcon, path: "/regular-member/club-funds" },
+        {
+          label: "Coop Share Capital",
+          icon: AccountBalanceIcon,
+          path: "/regular-member/share-capital",
+        },
+        {
+          label: "Club Funds",
+          icon: SavingsIcon,
+          path: "/regular-member/club-funds",
+        },
         ...loansBase("regular-member"),
       ],
     },
@@ -143,14 +203,26 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Dashboard", icon: DashboardIcon, path: "/associate-member" },
-        { label: "Reports", icon: AssessmentIcon, path: "/associate-member/reports" },
+        {
+          label: "Reports",
+          icon: AssessmentIcon,
+          path: "/associate-member/reports",
+        },
       ],
     },
     {
       section: "Finance",
       items: [
-        { label: "Coop Share Capital", icon: AccountBalanceIcon, path: "/associate-member/share-capital" },
-        { label: "Coop Loans", icon: HandshakeIcon, path: "/associate-member/coop-loans" },
+        {
+          label: "Coop Share Capital",
+          icon: AccountBalanceIcon,
+          path: "/associate-member/share-capital",
+        },
+        {
+          label: "Coop Loans",
+          icon: HandshakeIcon,
+          path: "/associate-member/coop-loans",
+        },
       ],
     },
   ],
@@ -160,9 +232,16 @@ const sidebarConfig = {
       section: "Overview",
       items: [
         { label: "Users", icon: ManageAccountsIcon, path: "/admin" },
-        { label: "Login Credentials", icon: LoginIcon, path: "/admin/create-user-login" },
-        { label: "Activity Logs", icon: HistoryIcon, path: "/admin/activity-logs" },
-
+        {
+          label: "Login Credentials",
+          icon: LoginIcon,
+          path: "/admin/create-user-login",
+        },
+        {
+          label: "Activity Logs",
+          icon: HistoryIcon,
+          path: "/admin/activity-logs",
+        },
       ],
     },
     {
@@ -207,13 +286,15 @@ const Sidebar = ({ role, isOpen, onClose }) => {
   };
 
   return (
-    <aside className={`fixed top-0 left-0 h-full w-64 bg-neutral text-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
-      isOpen ? 'translate-x-0' : '-translate-x-full'
-    } lg:translate-x-0`}>
+    <aside
+      className={`fixed top-0 left-0 h-full w-64 bg-neutral text-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      } lg:translate-x-0`}
+    >
       <div className="h-full overflow-hidden flex flex-col">
         {/* Top spacing for alignment with fixed topbar */}
         <div className="h-16 flex-shrink-0" />
-        
+
         <div className="flex-1 overflow-y-auto px-2 pb-4">
           <ul className="menu flex-grow">
             {sections.map((section) => (
@@ -227,7 +308,8 @@ const Sidebar = ({ role, isOpen, onClose }) => {
 
                     if (item.children) {
                       const isOpen = openMenus[item.label] || false;
-                      const showParentBadge = item.label === "Coop Loans" && totalPendingCount > 0;
+                      const showParentBadge =
+                        item.label === "Coop Loans" && totalPendingCount > 0;
 
                       return (
                         <li key={i}>
@@ -245,7 +327,6 @@ const Sidebar = ({ role, isOpen, onClose }) => {
                                   {totalPendingCount}
                                 </span>
                               )}
-
                             </div>
                             {isOpen ? (
                               <ExpandLessIcon fontSize="small" />
@@ -256,16 +337,22 @@ const Sidebar = ({ role, isOpen, onClose }) => {
                           {isOpen && (
                             <ul className="ml-8 mt-1 space-y-1">
                               {item.children.map((child, idx) => {
-                                const isChildActive = location.pathname === child.path;
-                                const badgeCount = child.badgeKey ? badgeCounts[child.badgeKey] : 0;
+                                const isChildActive =
+                                  location.pathname === child.path;
+                                const badgeCount = child.badgeKey
+                                  ? badgeCounts[child.badgeKey]
+                                  : 0;
 
                                 return (
                                   <li key={idx}>
                                     <Link
                                       to={child.path}
                                       onClick={onClose}
-                                      className={`flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors ${isChildActive ? "bg-green-950/50 text-white" : "hover:bg-green-950/20"
-                                        }`}
+                                      className={`flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors ${
+                                        isChildActive
+                                          ? "bg-green-950/50 text-white"
+                                          : "hover:bg-green-950/20"
+                                      }`}
                                     >
                                       <div className="flex items-center gap-2">
                                         <span className="text-xs">•</span>
@@ -278,7 +365,6 @@ const Sidebar = ({ role, isOpen, onClose }) => {
                                           {badgeCount}
                                         </span>
                                       )}
-
                                     </Link>
                                   </li>
                                 );
@@ -294,8 +380,9 @@ const Sidebar = ({ role, isOpen, onClose }) => {
                         <Link
                           to={item.path}
                           onClick={onClose}
-                          className={`flex items-center gap-3 py-2 px-4 rounded-md text-base mb-2 ${isActive ? "bg-green-950 text-white" : ""
-                            }`}
+                          className={`flex items-center gap-3 py-2 px-4 rounded-md text-base mb-2 ${
+                            isActive ? "bg-green-950 text-white" : ""
+                          }`}
                         >
                           <item.icon fontSize="small" />
                           <span>{item.label}</span>
@@ -308,7 +395,6 @@ const Sidebar = ({ role, isOpen, onClose }) => {
             ))}
           </ul>
         </div>
-
       </div>
     </aside>
   );

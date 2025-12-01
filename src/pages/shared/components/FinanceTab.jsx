@@ -1,6 +1,6 @@
 // USED IN MEMBER PROFILE; WHEN THE TREASURER/BOARD WANTS TO VIEW THE FINANCIAL RECORDS OF A MEMBER
 // 3 TABS; CONTAINS SHARE CAPITAL, CLUB FUND, AND LOANS (ONGOING/PAST AND THEIR PAYMENT SCHEDS)
-
+import Proptypes from "prop-types";
 const FinanceTab = ({
   headers = [],
   data = [],
@@ -12,7 +12,6 @@ const FinanceTab = ({
   isError,
   error,
 }) => {
-
   return (
     <>
       <label className="tab">
@@ -27,14 +26,20 @@ const FinanceTab = ({
           <div className="flex justify-center items-center py-16">
             <div className="flex flex-col items-center gap-3">
               <span className="loading loading-spinner loading-lg text-primary"></span>
-              <p className="text-sm text-gray-600">Loading {label.toLowerCase()}...</p>
+              <p className="text-sm text-gray-600">
+                Loading {label.toLowerCase()}...
+              </p>
             </div>
           </div>
         ) : isError ? (
           <div className="flex justify-center items-center py-16">
             <div className="text-center text-error">
-              <p className="font-medium">Failed to load {label.toLowerCase()}</p>
-              <p className="text-sm text-gray-600">{error?.message || "Something went wrong"}</p>
+              <p className="font-medium">
+                Failed to load {label.toLowerCase()}
+              </p>
+              <p className="text-sm text-gray-600">
+                {error?.message || "Something went wrong"}
+              </p>
             </div>
           </div>
         ) : data.length > 0 ? (
@@ -50,20 +55,32 @@ const FinanceTab = ({
                     ))}
                   </tr>
                 </thead>
-                <tbody>
-                  {data.map((item) => renderRow(item))}
-                </tbody>
+                <tbody>{data.map((item) => renderRow(item))}</tbody>
               </table>
             </div>
           </div>
         ) : (
           <div className="flex justify-center items-center py-16">
-            <p className="text-gray-500">No {label.toLowerCase()} records available.</p>
+            <p className="text-gray-500">
+              No {label.toLowerCase()} records available.
+            </p>
           </div>
         )}
       </div>
     </>
   );
+};
+
+FinanceTab.propTypes = {
+  headers: Proptypes.array,
+  data: Proptypes.array,
+  label: Proptypes.string,
+  icon: Proptypes.node,
+  renderRow: Proptypes.func,
+  isDefault: Proptypes.bool,
+  isLoading: Proptypes.bool,
+  isError: Proptypes.bool,
+  error: Proptypes.object,
 };
 
 export default FinanceTab;

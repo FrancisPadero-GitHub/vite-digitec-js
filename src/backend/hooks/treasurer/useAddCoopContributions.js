@@ -13,15 +13,25 @@ const insertCoopContributions = async (formData) => {
     remarks = null,
   } = formData;
 
-  const payload = { account_number, source, amount, category, contribution_date, payment_method, remarks };
+  const payload = {
+    account_number,
+    source,
+    amount,
+    category,
+    contribution_date,
+    payment_method,
+    remarks,
+  };
 
   const { data, error } = await supabase
     .from("coop_cbu_contributions")
     .insert(payload)
-    .select(`
+    .select(
+      `
       *,
       members!coop_cbu_contributions_account_number_fkey (f_name, l_name)
-    `)
+    `
+    )
     .single();
 
   if (error) {
@@ -31,7 +41,9 @@ const insertCoopContributions = async (formData) => {
   const memberData = data.members;
   return {
     ...data,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : "N/A",
   };
 };
 
@@ -43,7 +55,10 @@ export const useAddCoopContributions = () => {
     mutationFn: insertCoopContributions,
     onSuccess: async (data) => {
       console.log("Successfully insert data: ", data);
-      queryClient.invalidateQueries({queryKey:["view_coop_share_capital_contributions"], exact: false});
+      queryClient.invalidateQueries({
+        queryKey: ["view_coop_share_capital_contributions"],
+        exact: false,
+      });
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

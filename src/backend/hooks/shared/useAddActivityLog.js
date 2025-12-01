@@ -2,8 +2,11 @@ import { supabase } from "../../supabase";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const insertActivityLog = async ({ action, type }) => {
-  //get current authenticated user 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(); 
+  //get current authenticated user
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) throw new Error("User not authenticated");
 
   // map auth uuid to member_id
@@ -12,8 +15,9 @@ const insertActivityLog = async ({ action, type }) => {
     .select("member_id")
     .eq("login_id", user.id)
     .single();
-  
-  if (memberError || !memberData) throw new Error("Failed to fetch member info");
+
+  if (memberError || !memberData)
+    throw new Error("Failed to fetch member info");
 
   const { member_id: memberID } = memberData;
 
@@ -24,7 +28,7 @@ const insertActivityLog = async ({ action, type }) => {
       {
         action_member_id: memberID,
         action,
-        type
+        type,
       },
     ])
     .select()
@@ -41,8 +45,9 @@ export const useAddActivityLog = () => {
     mutationFn: insertActivityLog,
     onSuccess: (data) => {
       console.log("Activity logged:", data);
-      queryClient.invalidateQueries({queryKey: ["activity_logs"],
-        exact: false
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
       });
     },
     onError: (error) => {

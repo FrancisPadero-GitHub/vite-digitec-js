@@ -2,15 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
 /**
- * 
+ *
  * fetchActivityLogs fetches activity logs from the view `view_activity_logs`.
  * Includes activity log details + member info from member table
- * 
+ *
  */
 
 // Modify fetch function to support pagination
 const fetchActivityLogs = async ({ page, limit }) => {
-    let query = supabase
+  let query = supabase
     .from("view_activity_logs")
     .select("*")
     .order("timestamp", { ascending: false });
@@ -24,7 +24,7 @@ const fetchActivityLogs = async ({ page, limit }) => {
 
   const { data, error, count } = await query;
   if (error) throw new Error(error.message);
-  return {data, count};
+  return { data, count };
 };
 
 // Hook to fetch activity logs with pagination

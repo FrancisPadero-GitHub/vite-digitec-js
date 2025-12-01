@@ -17,7 +17,8 @@ export async function updateLoanStatusFromView(supabase, loanId) {
     .eq("loan_id", loanId)
     .single();
 
-  if (fetchErr) throw new Error(`Failed to fetch from view: ${fetchErr.message}`);
+  if (fetchErr)
+    throw new Error(`Failed to fetch from view: ${fetchErr.message}`);
   if (!viewData) throw new Error("Loan not found in view");
 
   const outstandingBalance = round(viewData.outstanding_balance);
@@ -29,7 +30,8 @@ export async function updateLoanStatusFromView(supabase, loanId) {
       .update({ status: "Closed" })
       .eq("loan_id", loanId);
 
-    if (updateErr) throw new Error(`Failed to update loan status: ${updateErr.message}`);
+    if (updateErr)
+      throw new Error(`Failed to update loan status: ${updateErr.message}`);
 
     return { outstandingBalance, status: "Closed" };
   }
@@ -40,19 +42,18 @@ export async function updateLoanStatusFromView(supabase, loanId) {
 
 /**
  * The difference between the two is how they handle the status if the outstanding_balance is zero
- * Version 1 
+ * Version 1
  * Updates the loan_accounts table only if the outstanding balance is zero:
- * 
+ *
  * Version 2
  * Always updates the status, no matter what the outstanding balance is:
- * 
+ *
  */
-
 
 /**
  * VERSION 2
  * Always updates the status, no matter what the outstanding balance is:
- * 
+ *
  * Updates the loan_accounts status based on the outstanding_balance
  * fetched from the view_loan_accounts.
  */

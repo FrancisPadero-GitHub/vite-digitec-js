@@ -4,7 +4,7 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 /**
  * Fetches share coop capital contributions.
- * 
+ *
  * If accountNumber is provided, filters by that account.
  * If useLoggedInMember is true, uses logged-in user's account_number.
  * If neither, fetches all contributions.
@@ -33,10 +33,17 @@ async function fetchCoopContributions({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchCoop({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
-
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
-  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;     // if the useLoggedInMember = true
+export function useFetchCoop({
+  page = null,
+  limit = null,
+  accountNumber = null,
+  useLoggedInMember = false,
+} = {}) {
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber(); // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber; // if the useLoggedInMember = true
 
   return useQuery({
     queryKey: ["coop_cbu_contributions", effectiveAccountNumber, page, limit],

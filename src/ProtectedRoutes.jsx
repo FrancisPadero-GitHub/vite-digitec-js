@@ -3,6 +3,7 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { useAuth } from "./backend/context/AuthProvider"; // Assuming you are importing useAuth from your AuthProvider
 import { useMemberRole } from "./backend/context/useMemberRole"; // Adjust the path accordingly
+import Proptypes from "prop-types";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -25,9 +26,13 @@ const LoadingContainer = ({ children }) => (
   </Box>
 );
 
+LoadingContainer.propTypes = {
+  children: Proptypes.node.isRequired,
+};
+
 const ProtectedRoutes = ({ children, roleAllowed }) => {
   const { session, loading: authLoading, recoveryMode } = useAuth();
-  
+
   // Use the custom hook to get member role and loading state
   const { memberRole, loading: roleLoading } = useMemberRole();
 
@@ -53,9 +58,7 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
   if (!memberRole) return <Navigate to="/not-found" replace />;
 
   // Normalize allowed roles into array
-  const allowedRoles = Array.isArray(roleAllowed)
-    ? roleAllowed
-    : [roleAllowed];
+  const allowedRoles = Array.isArray(roleAllowed) ? roleAllowed : [roleAllowed];
 
   // If role isn’t allowed, redirect to that user’s base route
   if (!allowedRoles.includes(memberRole)) {
@@ -63,6 +66,13 @@ const ProtectedRoutes = ({ children, roleAllowed }) => {
   }
 
   return children;
+};
+ProtectedRoutes.propTypes = {
+  children: Proptypes.node.isRequired,
+  roleAllowed: Proptypes.oneOfType([
+    Proptypes.string,
+    Proptypes.arrayOf(Proptypes.string),
+  ]).isRequired,
 };
 
 export default ProtectedRoutes;

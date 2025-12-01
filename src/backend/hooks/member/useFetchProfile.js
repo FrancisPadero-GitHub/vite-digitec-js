@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useFetchMemberId } from "../shared/useFetchMemberId";
 import { supabase } from "../../supabase.js";
 
-// get the profile of the logged in user 
+// get the profile of the logged in user
 // returns only a single data
 
 async function fetchProfile(memberId) {
@@ -23,6 +23,6 @@ export function useFetchProfile() {
     queryKey: ["member_profile", memberId],
     queryFn: () => fetchProfile(memberId),
     enabled: !!memberId && !memberLoading,
-    staleTime: 1000 * 60 * 1
+    staleTime: 1000 * 60 * 1,
   });
 }

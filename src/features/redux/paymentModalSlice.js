@@ -40,7 +40,7 @@ const modalSlice = createSlice({
       state.loanPaymentModal.type = action.payload.type || "add";
       state.loanPaymentModal.data = action.payload.data || null;
     },
-    
+
     /**
      * Closes the loan payment modal and resets its state
      * Clears all modal data to prevent stale data on next open

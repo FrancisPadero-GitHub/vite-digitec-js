@@ -1,33 +1,33 @@
-import { useState, useMemo, useTransition, useEffect } from 'react'
-import { useForm } from 'react-hook-form';
+import { useState, useMemo, useTransition, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
-import dayjs from 'dayjs';
-import { createPortal } from 'react-dom'; // lets confirmation modal escape parent container (fixes z-index & overlay issues)
-import WarningIcon from '@mui/icons-material/Warning';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import dayjs from "dayjs";
+import { createPortal } from "react-dom"; // lets confirmation modal escape parent container (fixes z-index & overlay issues)
+import WarningIcon from "@mui/icons-material/Warning";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 
 // fetch hooks
-import { useFetchLoanAcc } from '../../backend/hooks/shared/useFetchLoanAcc';
-import { useFetchLoanAccView } from '../../backend/hooks/shared/useFetchLoanAccView';
-import { useMembers } from '../../backend/hooks/shared/useFetchMembers';
-import { useFetchLoanProducts } from '../../backend/hooks/shared/useFetchLoanProduct';
-import { useMemberRole } from '../../backend/context/useMemberRole';
+import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
+import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
+import { useMembers } from "../../backend/hooks/shared/useFetchMembers";
+import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
+import { useMemberRole } from "../../backend/context/useMemberRole";
 
 // mutation hooks
-import { useEditLoanAcc } from '../../backend/hooks/treasurer/useEditLoanAcc';
+import { useEditLoanAcc } from "../../backend/hooks/treasurer/useEditLoanAcc";
 
 // components
-import DataTableV2 from '../shared/components/DataTableV2';
-import FilterToolbar from '../shared/components/FilterToolbar';
-import BoardFormModal from '../board/modal/BoardFormModal';
+import DataTableV2 from "../shared/components/DataTableV2";
+import FilterToolbar from "../shared/components/FilterToolbar";
+import BoardFormModal from "../board/modal/BoardFormModal";
 
 // colors
-import { LOAN_ACCOUNT_STATUS_COLORS } from '../../constants/Color';
-import placeHolderAvatar from '../../assets/placeholder-avatar.png';
+import { LOAN_ACCOUNT_STATUS_COLORS } from "../../constants/Color";
+import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
-import { display } from '../../constants/numericFormat';
-import { useDebounce } from '../../backend/hooks/treasurer/utils/useDebounce';
+import { display } from "../../constants/numericFormat";
+import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 
 function CoopLoansReleases() {
   const { mutate: releaseLoan, isPending } = useEditLoanAcc();
@@ -39,7 +39,7 @@ function CoopLoansReleases() {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // get the outstanding balance on this view table instead of the base table 
+  // get the outstanding balance on this view table instead of the base table
   const { data: loanAccView } = useFetchLoanAccView();
   const loanAccViewRaw = loanAccView?.data || [];
 
@@ -47,10 +47,9 @@ function CoopLoansReleases() {
   const loanAccRaw = loanAcc?.data || [];
   const members = members_data?.data || [];
 
-
   // Merge view and base table by loan_id
-  const mergedLoanAccounts = loanAccRaw.map(baseRow => {
-    const viewRow = loanAccViewRaw.find(v => v.loan_id === baseRow.loan_id);
+  const mergedLoanAccounts = loanAccRaw.map((baseRow) => {
+    const viewRow = loanAccViewRaw.find((v) => v.loan_id === baseRow.loan_id);
 
     return {
       ...baseRow, // all base table fields
@@ -67,7 +66,7 @@ function CoopLoansReleases() {
   /**
    * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
    * it needs to be paired with useMemo on the filtered data (clubFunds)
-   * 
+   *
    */
   // Add useTransition
   const [isFilterPending, startTransition] = useTransition();
@@ -103,7 +102,9 @@ function CoopLoansReleases() {
     return mergedLoanAccounts.filter((row) => {
       const generatedId = `${TABLE_PREFIX}${row?.loan_id || ""}`;
 
-      const member = members?.find((m) => m.account_number === row.account_number);
+      const member = members?.find(
+        (m) => m.account_number === row.account_number
+      );
       const fullName = member
         ? `${member.f_name} ${member.m_name} ${member.l_name} ${member.email}`.toLowerCase()
         : "";
@@ -111,31 +112,51 @@ function CoopLoansReleases() {
       const matchesSearch =
         debouncedSearch === "" ||
         (fullName && fullName.includes(debouncedSearch)) ||
-        row.account_number?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        row.account_number
+          ?.toLowerCase()
+          .includes(debouncedSearch.toLowerCase()) ||
         row.status?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
 
       const matchesStatus = statusFilter === "" || row.status === statusFilter;
       const date = row.release_date ? new Date(row.release_date) : null;
-      const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+      const matchesYear =
+        yearFilter === "" ||
+        (date && date.getFullYear().toString() === yearFilter);
 
       // To avoid subtext displaying numbers instead of month names
       // I had to convert the values from the monthFilter to numbers for comparison
       const monthNameToNumber = {
-        January: 1, February: 2,
-        March: 3, April: 4,
-        May: 5, June: 6,
-        July: 7, August: 8,
-        September: 9, October: 10,
-        November: 11, December: 12,
+        January: 1,
+        February: 2,
+        March: 3,
+        April: 4,
+        May: 5,
+        June: 6,
+        July: 7,
+        August: 8,
+        September: 9,
+        October: 10,
+        November: 11,
+        December: 12,
       };
-      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const filterMonthNumber = monthFilter
+        ? monthNameToNumber[monthFilter]
+        : null;
       const matchesMonth =
-        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
+        monthFilter === "" ||
+        (date && date.getMonth() + 1 === filterMonthNumber);
 
       return matchesSearch && matchesStatus && matchesYear && matchesMonth;
     });
-  }, [mergedLoanAccounts, debouncedSearch, statusFilter, yearFilter, monthFilter, members_data]);
+  }, [
+    mergedLoanAccounts,
+    debouncedSearch,
+    statusFilter,
+    yearFilter,
+    monthFilter,
+    members_data,
+  ]);
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
@@ -147,14 +168,15 @@ function CoopLoansReleases() {
 
   // for the subtext of data table
   // just for fancy subtext in line with active filters
-  const activeFiltersText = [
-    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
-    statusFilter ? `${statusFilter}` : null,
-    yearFilter ? `${yearFilter}` : null,
-    monthFilter ? `${monthFilter}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ") || "Showing all loan releases";
+  const activeFiltersText =
+    [
+      debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+      statusFilter ? `${statusFilter}` : null,
+      yearFilter ? `${yearFilter}` : null,
+      monthFilter ? `${monthFilter}` : null,
+    ]
+      .filter(Boolean)
+      .join(" - ") || "Showing all loan releases";
 
   // clear filters button
   const handleClearFilters = () => {
@@ -196,7 +218,7 @@ function CoopLoansReleases() {
     getValues,
     formState: { errors },
   } = useForm({
-    defaultValues
+    defaultValues,
   });
 
   // watch schedule-related fields
@@ -207,7 +229,9 @@ function CoopLoansReleases() {
   useEffect(() => {
     if (!firstDue) return;
     const months = Math.max(Number(loanTerm) - 1, 0); // subtract 1 month, clamp at 0
-    const newMaturity = dayjs(firstDue).add(months, 'month').format('YYYY-MM-DD');
+    const newMaturity = dayjs(firstDue)
+      .add(months, "month")
+      .format("YYYY-MM-DD");
     const current = watch("maturity_date");
     if (current !== newMaturity) {
       setValue("maturity_date", newMaturity);
@@ -220,7 +244,9 @@ function CoopLoansReleases() {
     const matchedMember = members?.find(
       (member) => member.account_number === row.account_number
     );
-    const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
+    const fullName = matchedMember
+      ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+      : "Not Found";
 
     const matchedLoanProduct = loanProducts?.find(
       (product) => product.product_id === row.product_id
@@ -254,7 +280,7 @@ function CoopLoansReleases() {
       onError: () => {
         toast.error("Something went wrong!");
         setShowConfirmModal(false);
-      }
+      },
     });
   };
 
@@ -263,9 +289,8 @@ function CoopLoansReleases() {
   };
 
   const closeModal = () => {
-    setModalType(null)
-  }
-
+    setModalType(null);
+  };
 
   return (
     <div className="m-3">
@@ -291,7 +316,7 @@ function CoopLoansReleases() {
                 label: "All Year",
                 value: yearFilter,
                 onChange: handleYearChange,
-                options: yearOptions
+                options: yearOptions,
               },
               {
                 label: "All Month",
@@ -321,7 +346,14 @@ function CoopLoansReleases() {
           filterActive={activeFiltersText !== "Showing all loan releases"}
           subtext={activeFiltersText}
           showLinkPath={false}
-          headers={["Loan Ref No.", "Account No.", "Name", "Amount Requested", "Status", "Release"]}
+          headers={[
+            "Loan Ref No.",
+            "Account No.",
+            "Name",
+            "Amount Requested",
+            "Status",
+            "Release",
+          ]}
           data={memberLoanAccounts}
           isLoading={isLoading}
           isError={isError}
@@ -331,7 +363,9 @@ function CoopLoansReleases() {
               (member) => member.account_number === row.account_number
             );
 
-            const fullName = matchedMember ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim() : "Not Found";
+            const fullName = matchedMember
+              ? `${matchedMember.f_name ?? ""} ${matchedMember.l_name ?? ""}`.trim()
+              : "Not Found";
 
             const id = row?.loan_id || "Not found";
             const loanRefNo = row?.loan_ref_number || "Not found";
@@ -349,33 +383,26 @@ function CoopLoansReleases() {
                 className="cursor-pointer hover:bg-base-200/50 text-center"
                 onClick={() => openModal(row)}
               >
-
                 {/* Loan Ref No. */}
-                <td className="font-medium text-xs">
-                  {loanRefNo}
-                </td>
+                <td className="font-medium text-xs">{loanRefNo}</td>
 
                 {/* Account No. */}
-                <td className="font-medium text-xs">
-                  {accountNo}
-                </td>
+                <td className="font-medium text-xs">{accountNo}</td>
 
                 {/* Full Name */}
                 <td>
                   <span className="flex items-center gap-3">
                     <div className="avatar">
                       <div className="mask mask-circle w-10 h-10">
-                        <img
-                          src={avatarUrl}
-                          alt={fullName}
-                        />
+                        <img src={avatarUrl} alt={fullName} />
                       </div>
                     </div>
                     <div className="truncate">
-                      {fullName ||
+                      {fullName || (
                         <span className="text-gray-400 italic">
                           Not Provided
-                        </span>}
+                        </span>
+                      )}
                     </div>
                   </span>
                 </td>
@@ -388,23 +415,24 @@ function CoopLoansReleases() {
                 {/* Status */}
                 <td>
                   {status ? (
-                    <span className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}>
+                    <span
+                      className={`badge font-semibold ${LOAN_ACCOUNT_STATUS_COLORS[row.status] || "badge-error"}`}
+                    >
                       {row.status || "Not Provided"}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Provided</span>
+                    <span className="badge font-semibold badge-error">
+                      Not Provided
+                    </span>
                   )}
                 </td>
 
                 {/* Application Date */}
-                <td>
-                  {releaseDate}
-                </td>
+                <td>{releaseDate}</td>
               </tr>
-            )
+            );
           }}
         />
-
 
         <BoardFormModal
           title={"Loan Account"}
@@ -423,29 +451,46 @@ function CoopLoansReleases() {
                 <h3 className="font-bold mb-2">Loan Release</h3>
 
                 <div className="mb-3">
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
-                    ${watch("status") === "Active"
-                      ? "bg-green-50 border-green-300 text-green-800"
-                      : "bg-yellow-50 border-yellow-300 text-yellow-700"
-                    }`}>
-                    <span className={watch("status") === "Active" ? "text-green-600" : "text-yellow-500"}>●</span>
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold
+                    ${
+                      watch("status") === "Active"
+                        ? "bg-green-50 border-green-300 text-green-800"
+                        : "bg-yellow-50 border-yellow-300 text-yellow-700"
+                    }`}
+                  >
+                    <span
+                      className={
+                        watch("status") === "Active"
+                          ? "text-green-600"
+                          : "text-yellow-500"
+                      }
+                    >
+                      ●
+                    </span>
                     {watch("status")}
                   </div>
                   <input type="hidden" value={watch("status")} />
                 </div>
-
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">
-                    {watch("status") === "Active" ? "Released On" : "Release Date"}
+                    {watch("status") === "Active"
+                      ? "Released On"
+                      : "Release Date"}
                   </label>
                   {watch("status") === "Active" ? (
                     <div className="px-3 py-2 bg-green-50 rounded border border-green-200 flex items-center gap-2">
-                      <CheckCircleOutlinedIcon fontSize="small" className="text-green-600" />
+                      <CheckCircleOutlinedIcon
+                        fontSize="small"
+                        className="text-green-600"
+                      />
                       <div className="text-sm font-semibold text-green-900">
-                        {watch("release_date") ? dayjs(watch("release_date")).format('MMM DD, YYYY') : "N/A"}
+                        {watch("release_date")
+                          ? dayjs(watch("release_date")).format("MMM DD, YYYY")
+                          : "N/A"}
                       </div>
                     </div>
                   ) : (
@@ -455,18 +500,27 @@ function CoopLoansReleases() {
                       className="input input-bordered w-full border-green-400 focus:border-green-600"
                     />
                   )}
-                  {errors.release_date && (<p className="text-error text-xs mt-1">Release date is required</p>)}
+                  {errors.release_date && (
+                    <p className="text-error text-xs mt-1">
+                      Release date is required
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-end">
                   <button
                     type="button"
-                    onClick={() => setValue("release_date", dayjs().format('YYYY-MM-DD'))}
-                    disabled={!!watch("release_date") || watch("status") === "Active"}
+                    onClick={() =>
+                      setValue("release_date", dayjs().format("YYYY-MM-DD"))
+                    }
+                    disabled={
+                      !!watch("release_date") || watch("status") === "Active"
+                    }
                     className={`w-full px-3 py-2 rounded-lg font-semibold text-sm transition-all
-                      ${watch("release_date") || watch("status") === "Active"
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+                      ${
+                        watch("release_date") || watch("status") === "Active"
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
                       }`}
                   >
                     {watch("release_date") ? "✓ Date Set" : "Set to Today"}
@@ -477,9 +531,14 @@ function CoopLoansReleases() {
               {/* if release date is present and it's not yet active */}
               {watch("release_date") && watch("status") !== "Active" && (
                 <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded flex items-center gap-2">
-                  <CheckCircleOutlinedIcon fontSize="inherit" className="text-green-700 text-[14px]" />
+                  <CheckCircleOutlinedIcon
+                    fontSize="inherit"
+                    className="text-green-700 text-[14px]"
+                  />
                   <span className="text-xs text-green-800 leading-tight">
-                    <strong>Ready to release:</strong> Click &ldquo;Release&rdquo; to activate this loan and generate the payment schedule.
+                    <strong>Ready to release:</strong> Click
+                    &ldquo;Release&rdquo; to activate this loan and generate the
+                    payment schedule.
                   </span>
                 </div>
               )}
@@ -488,7 +547,8 @@ function CoopLoansReleases() {
               {!watch("release_date") && watch("status") !== "Active" && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-300 rounded flex items-start gap-2">
                   <span className="text-xs text-amber-800">
-                    <strong>Pending:</strong> Set a release date to proceed with loan activation.
+                    <strong>Pending:</strong> Set a release date to proceed with
+                    loan activation.
                   </span>
                 </div>
               )}
@@ -496,23 +556,37 @@ function CoopLoansReleases() {
 
             {/* Account info */}
             <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
-              <h4 className="text-xs font-bold text-gray-600 mb-2">Account Information</h4>
+              <h4 className="text-xs font-bold text-gray-600 mb-2">
+                Account Information
+              </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Loan Ref No.</label>
-                  <div className="text-sm font-mono font-bold">{watch("loan_ref_number")}</div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Loan Ref No.
+                  </label>
+                  <div className="text-sm font-mono font-bold">
+                    {watch("loan_ref_number")}
+                  </div>
                   <input type="hidden" value={watch("loan_ref_number")} />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Account No.</label>
-                  <div className="text-sm font-semibold">{watch("account_number")}</div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Account No.
+                  </label>
+                  <div className="text-sm font-semibold">
+                    {watch("account_number")}
+                  </div>
                   <input type="hidden" {...register("account_number")} />
                 </div>
 
                 <div className="md:col-span-1 col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Account Holder</label>
-                  <div className="text-sm font-bold">{watch("applicant_name")}</div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Account Holder
+                  </label>
+                  <div className="text-sm font-bold">
+                    {watch("applicant_name")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -520,61 +594,119 @@ function CoopLoansReleases() {
             {/* Loan details */}
             <div className="bg-white p-3 rounded-lg border border-gray-200 mb-3">
               <div className="mb-4 flex items-center justify-between">
-                <h4 className="text-xs font-bold text-gray-600 mb-2">Loan Details</h4>
+                <h4 className="text-xs font-bold text-gray-600 mb-2">
+                  Loan Details
+                </h4>
 
                 {/* Loan Type */}
-                <span className="text-xs font-semibold text-gray-700 badge badge-ghost">{watch("loanProductName") || "N/A"}</span>
+                <span className="text-xs font-semibold text-gray-700 badge badge-ghost">
+                  {watch("loanProductName") || "N/A"}
+                </span>
               </div>
 
               {/* Principal */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Principal</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Principal
+                  </label>
                   <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
                     <div className="text-sm font-semibold">
-                      ₱{watch("net_principal") ? parseFloat(watch("net_principal")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                      ₱
+                      {watch("net_principal")
+                        ? parseFloat(watch("net_principal")).toLocaleString(
+                            "en-US",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )
+                        : "0.00"}
                     </div>
                   </div>
-                  <input type="hidden" {...register("net_principal", { required: true })} />
-                  {errors.net_principal && (<p className="text-error text-xs mt-1">Required</p>)}
+                  <input
+                    type="hidden"
+                    {...register("net_principal", { required: true })}
+                  />
+                  {errors.net_principal && (
+                    <p className="text-error text-xs mt-1">Required</p>
+                  )}
                 </div>
 
                 {/* Total interest */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Total Interest</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Total Interest
+                  </label>
                   <div className="px-3 py-2 bg-blue-50 rounded border border-blue-200">
                     <div className="text-sm font-semibold">
-                      ₱{watch("total_interest") ? parseFloat(watch("total_interest")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                      ₱
+                      {watch("total_interest")
+                        ? parseFloat(watch("total_interest")).toLocaleString(
+                            "en-US",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )
+                        : "0.00"}
                     </div>
                   </div>
-                  <input type="hidden" {...register("total_interest", { required: true })} />
-                  {errors.total_interest && (<p className="text-error text-xs mt-1">Required</p>)}
+                  <input
+                    type="hidden"
+                    {...register("total_interest", { required: true })}
+                  />
+                  {errors.total_interest && (
+                    <p className="text-error text-xs mt-1">Required</p>
+                  )}
                 </div>
 
                 {/* Total amount due */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Total Amount Due</label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    Total Amount Due
+                  </label>
                   <div className="px-3 py-2 bg-blue-100 rounded border border-blue-300">
                     <div className="text-sm font-bold">
-                      ₱{watch("total_amount_due") ? parseFloat(watch("total_amount_due")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                      ₱
+                      {watch("total_amount_due")
+                        ? parseFloat(watch("total_amount_due")).toLocaleString(
+                            "en-US",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )
+                        : "0.00"}
                     </div>
                   </div>
-                  <input type="hidden" {...register("total_amount_due", { required: true })} />
-                  {errors.total_amount_due && (<p className="text-error text-xs mt-1">Required</p>)}
+                  <input
+                    type="hidden"
+                    {...register("total_amount_due", { required: true })}
+                  />
+                  {errors.total_amount_due && (
+                    <p className="text-error text-xs mt-1">Required</p>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Payment Schedule */}
             <div className="bg-white p-3 rounded-lg border border-gray-200">
-              <h4 className="text-xs font-bold text-gray-600 mb-2">Payment Schedule</h4>
+              <h4 className="text-xs font-bold text-gray-600 mb-2">
+                Payment Schedule
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">First Due Date</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    First Due Date
+                  </label>
                   {watch("status") === "Active" ? (
                     <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
                       <div className="text-sm font-semibold">
-                        {watch("first_due") ? dayjs(watch("first_due")).format('MM/DD/YYYY') : "N/A"}
+                        {watch("first_due")
+                          ? dayjs(watch("first_due")).format("MM/DD/YYYY")
+                          : "N/A"}
                       </div>
                     </div>
                   ) : (
@@ -584,19 +716,34 @@ function CoopLoansReleases() {
                       className="input input-bordered w-full border-gray-400 focus:border-blue-600 font-semibold"
                     />
                   )}
-                  {errors.first_due && (<p className="text-error text-xs mt-1">First due date is required</p>)}
+                  {errors.first_due && (
+                    <p className="text-error text-xs mt-1">
+                      First due date is required
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Maturity Date</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Maturity Date
+                  </label>
                   <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
                     <div className="text-sm font-semibold text-gray-900">
-                      {watch("maturity_date") ? dayjs(watch("maturity_date")).format('MM/DD/YYYY') : "N/A"}
+                      {watch("maturity_date")
+                        ? dayjs(watch("maturity_date")).format("MM/DD/YYYY")
+                        : "N/A"}
                     </div>
                   </div>
                   {/* hidden registered field to submit value */}
-                  <input type="hidden" {...register("maturity_date", { required: true })} />
-                  {errors.maturity_date && (<p className="text-error text-xs mt-1">Maturity date required</p>)}
+                  <input
+                    type="hidden"
+                    {...register("maturity_date", { required: true })}
+                  />
+                  {errors.maturity_date && (
+                    <p className="text-error text-xs mt-1">
+                      Maturity date required
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -613,9 +760,12 @@ function CoopLoansReleases() {
                     <WarningIcon className="text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Release</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      Confirm Release
+                    </h3>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      Releasing this loan will generate the payment schedule and activate the loan. Do you want to proceed?
+                      Releasing this loan will generate the payment schedule and
+                      activate the loan. Do you want to proceed?
                     </p>
                   </div>
                 </div>
@@ -629,13 +779,17 @@ function CoopLoansReleases() {
                   <button
                     onClick={handleConfirmRelease}
                     disabled={isPending}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${isPending
-                      ? "bg-gray-400 text-gray-100 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 text-white"
-                      }`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${
+                      isPending
+                        ? "bg-gray-400 text-gray-100 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 text-white"
+                    }`}
                   >
                     {isPending ? (
-                      <><span className="loading loading-spinner loading-sm mr-2"></span>Releasing...</>
+                      <>
+                        <span className="loading loading-spinner loading-sm mr-2"></span>
+                        Releasing...
+                      </>
                     ) : (
                       "Confirm Release"
                     )}
@@ -644,11 +798,10 @@ function CoopLoansReleases() {
               </div>
             </div>,
             document.body // renders outside boardformmodal
-          )
-        }
+          )}
       </div>
     </div>
-  )
+  );
 }
 
-export default CoopLoansReleases
+export default CoopLoansReleases;

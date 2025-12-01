@@ -25,42 +25,32 @@ import project3 from "../assets/project3.jpg";
 import project4 from "../assets/project4.jpg";
 import project5 from "../assets/project5.jpg";
 
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
-import PhoneAndroidOutlinedIcon from '@mui/icons-material/PhoneAndroidOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import MenuIcon from '@mui/icons-material/Menu'; // Added for mobile menu
+import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
+import PhoneAndroidOutlinedIcon from "@mui/icons-material/PhoneAndroidOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import MenuIcon from "@mui/icons-material/Menu"; // Added for mobile menu
 
 /**
- * 
+ *
  * Provide a navigation router here that if a session is detected from a logged in user redirect
  * them to their specific role page
- * 
+ *
  */
 
-// Images for carousel; will add more/change later on 
-const gallery = [
-  gallery1,
-  gallery2,
-  gallery3,
-  gallery4,
-  gallery5,
-  gallery6,
-];
-
+// Images for carousel; will add more/change later on
+const gallery = [gallery1, gallery2, gallery3, gallery4, gallery5, gallery6];
 
 // Projects of ECTEC
 const project = {
   2023: [
-  {
-    img: project4,
-    title: "Outreach Program",
-    date: "August 27, 2025",
-  },
+    {
+      img: project4,
+      title: "Outreach Program",
+      date: "August 27, 2025",
+    },
   ],
 
-  2024: [
-
-  ],
+  2024: [],
 
   2025: [
     {
@@ -107,28 +97,28 @@ const Landing = () => {
 
   // Smooth scrolling for header links
   const scrollToAbout = () => {
-    const element = document.getElementById('about-section');
+    const element = document.getElementById("about-section");
     if (element) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - 80, behavior: 'smooth' });
+      window.scrollTo({ top: offsetTop - 80, behavior: "smooth" });
     }
     setIsMobileMenuOpen(false); // Close mobile menu after click
   };
 
   const scrollToProject = () => {
-    const element = document.getElementById('about-project');
+    const element = document.getElementById("about-project");
     if (element) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - 80, behavior: 'smooth' });
+      window.scrollTo({ top: offsetTop - 80, behavior: "smooth" });
     }
     setIsMobileMenuOpen(false); // Close mobile menu after click
   };
 
   const scrollToContact = () => {
-    const element = document.getElementById('contact-section');
+    const element = document.getElementById("contact-section");
     if (element) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({top: offsetTop, behavior: 'smooth'});
+      window.scrollTo({ top: offsetTop, behavior: "smooth" });
     }
     setIsMobileMenuOpen(false); // Close mobile menu after click
   };
@@ -141,8 +131,12 @@ const Landing = () => {
     }, 10000);
     return () => clearInterval(timer);
   }, []);
-  const prevSlide = () => { setIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1)); };
-  const nextSlide = () => { setIndex((prev) => (prev + 1) % gallery.length); };
+  const prevSlide = () => {
+    setIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
+  };
+  const nextSlide = () => {
+    setIndex((prev) => (prev + 1) % gallery.length);
+  };
 
   return (
     <div className="min-h-screen text-base-content">
@@ -151,13 +145,17 @@ const Landing = () => {
       <header className="w-full sticky top-0 z-50 bg-base-100 shadow-lg">
         <div className="container mx-auto px-4 py-4 md:py-5 navbar">
           <div className="flex-1">
-            <Link 
-              to={role ? `/${role}` : "/"} 
-              onClick={handleNavigation} 
+            <Link
+              to={role ? `/${role}` : "/"}
+              onClick={handleNavigation}
               className="flex items-center normal-case text-lg md:text-xl"
             >
               <div className="w-10 h-10 md:w-12 md:h-12 md:mr-3">
-                <img src={logo} alt="Digitec Logo" className="w-full h-full object-contain" />
+                <img
+                  src={logo}
+                  alt="Digitec Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-primary font-bold text-sm sm:text-base md:text-lg ml-2">
                 DigiTEC – ECTEC Multi-Purpose Cooperative Portal
@@ -169,14 +167,43 @@ const Landing = () => {
             <ul className="menu menu-horizontal px-1 gap-1 md:gap-2">
               <li>
                 {role && !recoveryMode ? (
-                  <Link to={`/${role}`} className="text-sm md:text-base">Dashboard</Link>
+                  <Link to={`/${role}`} className="text-sm md:text-base">
+                    Dashboard
+                  </Link>
                 ) : (
-                  <Link to="/" onClick={handleNavigation} className="text-sm md:text-base">Home</Link>
+                  <Link
+                    to="/"
+                    onClick={handleNavigation}
+                    className="text-sm md:text-base"
+                  >
+                    Home
+                  </Link>
                 )}
               </li>
-              <li><button onClick={scrollToAbout} className="text-sm md:text-base">About ECTEC</button></li>
-              <li><button onClick={scrollToProject} className="text-sm md:text-base">Projects</button></li>
-              <li><button onClick={scrollToContact} className="text-sm md:text-base">Contact Info</button></li>
+              <li>
+                <button
+                  onClick={scrollToAbout}
+                  className="text-sm md:text-base"
+                >
+                  About ECTEC
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={scrollToProject}
+                  className="text-sm md:text-base"
+                >
+                  Projects
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={scrollToContact}
+                  className="text-sm md:text-base"
+                >
+                  Contact Info
+                </button>
+              </li>
               <li>
                 <Link
                   to="/login"
@@ -203,14 +230,27 @@ const Landing = () => {
             <ul className="menu menu-vertical px-4 py-2">
               <li>
                 {role && !recoveryMode ? (
-                  <Link to={`/${role}`} onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
+                  <Link
+                    to={`/${role}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
                 ) : (
-                  <Link to="/" onClick={handleNavigation}>Home</Link>
+                  <Link to="/" onClick={handleNavigation}>
+                    Home
+                  </Link>
                 )}
               </li>
-              <li><button onClick={scrollToAbout}>About ECTEC</button></li>
-              <li><button onClick={scrollToProject}>Projects</button></li>
-              <li><button onClick={scrollToContact}>Contact Info</button></li>
+              <li>
+                <button onClick={scrollToAbout}>About ECTEC</button>
+              </li>
+              <li>
+                <button onClick={scrollToProject}>Projects</button>
+              </li>
+              <li>
+                <button onClick={scrollToContact}>Contact Info</button>
+              </li>
               <li>
                 <Link
                   to="/login"
@@ -229,8 +269,12 @@ const Landing = () => {
         <section className="hero py-8 lg:py-12">
           <div className="hero-content flex-col lg:flex-row gap-8 lg:gap-12">
             <div className="lg:w-1/2 text-center lg:text-left">
-              <p className="text-md mb-2 uppercase tracking-wide">Empowering Members Online</p>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-4"> {/* Fixed sizing */}
+              <p className="text-md mb-2 uppercase tracking-wide">
+                Empowering Members Online
+              </p>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-4">
+                {" "}
+                {/* Fixed sizing */}
                 <span>Service Through Strong </span>
                 <span className="text-green-800">Brotherhood</span>
               </h1>
@@ -238,11 +282,11 @@ const Landing = () => {
                 Unifying membership and finances in one digital platform.
               </p>
               <div className="flex justify-center lg:justify-start">
-                <Link 
-                  to={role && !recoveryMode ? `/${role}` : "/login"} 
+                <Link
+                  to={role && !recoveryMode ? `/${role}` : "/login"}
                   className="bg-green-800 btn btn-primary px-6 py-4 md:px-8 md:py-6 text-base md:text-lg"
                 >
-                  {role && !recoveryMode ? 'Go to Dashboard' : 'Get Started'}
+                  {role && !recoveryMode ? "Go to Dashboard" : "Get Started"}
                   <LoginOutlinedIcon className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
               </div>
@@ -250,7 +294,8 @@ const Landing = () => {
             <div className="lg:w-1/2 relative grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0">
               {/* Images in Hero Section */}
               <div className="col-span-1 row-span-1 overflow-hidden rounded-box">
-                <img src={hero1}
+                <img
+                  src={hero1}
                   className="w-full h-full object-cover rounded-[40px_4px_40px_4px] md:rounded-[60px_4px_60px_4px]"
                 />
               </div>
@@ -277,28 +322,41 @@ const Landing = () => {
         </section>
 
         {/* About Us Section */}
-        <section id="about-section" className="py-12 md:py-16 lg:px-12 max-w-7xl mx-auto">
+        <section
+          id="about-section"
+          className="py-12 md:py-16 lg:px-12 max-w-7xl mx-auto"
+        >
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             {/* Text Column */}
             <div className="flex-1 order-2 lg:order-1 mt-8 lg:mt-20 max-w-lg">
-              <h2 className="text-green-800 text-4xl md:text-5xl font-bold mb-6 relative pb-4
-                          before:absolute before:bottom-0 before:left-0 before:w-12 before:h-1 before:bg-green-700">
+              <h2
+                className="text-green-800 text-4xl md:text-5xl font-bold mb-6 relative pb-4
+                          before:absolute before:bottom-0 before:left-0 before:w-12 before:h-1 before:bg-green-700"
+              >
                 About ECTEC
               </h2>
               <p className="text-base md:text-lg leading-relaxed mb-6">
-                The East CDO Timbalo Eagles Club (ECTEC) is a chapter of the Philippine Eagles
-                dedicated to unity, leadership, and service. Guided by strong brotherhood, the
-                club fosters networking opportunities, supports personal and professional growth,
-                and leads social initiatives that uplift the community.
+                The East CDO Timbalo Eagles Club (ECTEC) is a chapter of the
+                Philippine Eagles dedicated to unity, leadership, and service.
+                Guided by strong brotherhood, the club fosters networking
+                opportunities, supports personal and professional growth, and
+                leads social initiatives that uplift the community.
               </p>
             </div>
             {/* Carousel */}
             <div className="flex-1 order-1 lg:order-2">
               <div className="relative w-full overflow-hidden rounded-2xl shadow-lg">
-                <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${index * 100}%)` }}>
+                <div
+                  className="flex transition-transform duration-700 ease-in-out"
+                  style={{ transform: `translateX(-${index * 100}%)` }}
+                >
                   {gallery.map((src, i) => (
                     <div key={i} className="w-full flex-shrink-0">
-                      <img src={src} alt={`Slide ${i}`} className="w-full aspect-video object-cover" />
+                      <img
+                        src={src}
+                        alt={`Slide ${i}`}
+                        className="w-full aspect-video object-cover"
+                      />
                     </div>
                   ))}
                 </div>
@@ -321,11 +379,15 @@ const Landing = () => {
         </section>
 
         {/*Projects of ECTEC*/}
-        <section id="about-project" className="py-12 md:py-16 max-w-7xl mx-auto"> {/* Removed extra 'section' */}
+        <section
+          id="about-project"
+          className="py-12 md:py-16 max-w-7xl mx-auto"
+        >
+          {" "}
+          {/* Removed extra 'section' */}
           <h2 className="font-bold text-center text-lg md:text-2xl mb-6 md:mb-10 text-green-800">
             Projects of ECTEC
           </h2>
-
           {/* Tabs */}
           <div className="tabs justify-center mb-8 overflow-x-auto no-scrollbar">
             {Object.keys(project).map((city) => (
@@ -343,7 +405,6 @@ const Landing = () => {
               </a>
             ))}
           </div>
-
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {project[activeCity]?.map(({ img, title, date }) => (
@@ -374,12 +435,17 @@ const Landing = () => {
         </section>
 
         {/* Contact Us Section */}
-        <section id="contact-section" className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-base-100">
+        <section
+          id="contact-section"
+          className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-base-100"
+        >
           <div className="max-w-2xl mx-auto">
             <div className="flex justify-center">
               <div className="bg-base-100 p-6 md:p-8 rounded-box shadow-lg border border-base-200 w-full">
                 <div className="mb-6 md:mb-8 text-center">
-                  <div className="inline-block mb-3 md:mb-4"><EmailOutlinedIcon fontSize="large" color="text-primary" /></div>
+                  <div className="inline-block mb-3 md:mb-4">
+                    <EmailOutlinedIcon fontSize="large" color="text-primary" />
+                  </div>
                   <p className="text-neutral text-sm md:text-base">
                     Have questions? Reach out through any channel below. Our
                     team is ready to assist you!
@@ -388,7 +454,9 @@ const Landing = () => {
                 {/* Contact Details */}
                 <div className="space-y-6 md:space-y-8">
                   <div>
-                    <h3 className="text-2xl font-bold text-primary mb-6 pb-2 border-b border-base-200">Contact Information</h3>
+                    <h3 className="text-2xl font-bold text-primary mb-6 pb-2 border-b border-base-200">
+                      Contact Information
+                    </h3>
                     <div className="space-y-4 md:space-y-6">
                       {/* Phone */}
                       <div className="flex items-start gap-3 md:gap-4 p-3 md:p-4 hover:bg-base-200 rounded-box duration-200">
@@ -396,8 +464,12 @@ const Landing = () => {
                           <PhoneAndroidOutlinedIcon className="h-5 md:h-6 w-5 md:w-6 text-primary" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-base-content mb-1 text-base">Phone</h4>
-                          <p className="text-neutral hover:text-primary text-base">09123456789</p>
+                          <h4 className="font-bold text-base-content mb-1 text-base">
+                            Phone
+                          </h4>
+                          <p className="text-neutral hover:text-primary text-base">
+                            09123456789
+                          </p>
                         </div>
                       </div>
                       {/* Email */}
@@ -406,8 +478,13 @@ const Landing = () => {
                           <EmailOutlinedIcon className="h-5 md:h-6 w-5 md:w-6 text-primary" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-base-content mb-1 text-base">Email</h4>
-                          <a href="mailto:eaglesclubectec@gmail.com" className="text-neutral hover:text-primary text-base">
+                          <h4 className="font-bold text-base-content mb-1 text-base">
+                            Email
+                          </h4>
+                          <a
+                            href="mailto:eaglesclubectec@gmail.com"
+                            className="text-neutral hover:text-primary text-base"
+                          >
                             eaglesclubectec@gmail.com
                           </a>
                         </div>

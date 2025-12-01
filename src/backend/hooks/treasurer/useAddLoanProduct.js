@@ -49,8 +49,14 @@ export const useAddLoanProduct = () => {
     mutationFn: addLoanProduct,
     onSuccess: async (data) => {
       console.log("Loan Product Added!: ", data);
-      queryClient.invalidateQueries({ queryKey: ["loan_products"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["loan_products"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
       try {
         await logActivity({
           action: `Added loan product ${data?.name}`,

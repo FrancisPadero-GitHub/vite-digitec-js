@@ -6,7 +6,7 @@ export const CAPITAL_CATEGORY = ["Initial", "Monthly", "System"];
 export const CAPITAL_CATEGORY_COLORS = {
   Initial: "badge-info",
   Monthly: "badge-secondary",
-  System: "badge-warning"
+  System: "badge-warning",
 };
 
 export const INCOME_SOURCE = [
@@ -22,7 +22,6 @@ export const INCOME_SOURCE_COLORS = {
   Penalties: "badge-accent",
   Interest: "badge-info",
 };
-
 
 // CLUB FUNDS PAYMENT CATEGORIES
 export const CLUB_CATEGORY = [
@@ -43,7 +42,6 @@ export const CLUB_CATEGORY_COLORS = {
   Others: "text-[#14B8A6]", // Teal
 };
 
-
 // PAYMENT METHODS FROM MEMBERS
 export const PAYMENT_METHODS = ["GCash", "Cash", "Bank"];
 
@@ -62,7 +60,12 @@ export const MEMBER_TYPE_COLORS = {
 };
 
 // LOAN APPLICATION STATUSES
-export const LOAN_APPLICATION_STATUSES = ["Pending", "On Review", "Approved", "Denied"];
+export const LOAN_APPLICATION_STATUSES = [
+  "Pending",
+  "On Review",
+  "Approved",
+  "Denied",
+];
 
 export const LOAN_APPLICATION_STATUS_COLORS = {
   Pending: "badge-warning",
@@ -71,7 +74,7 @@ export const LOAN_APPLICATION_STATUS_COLORS = {
   Denied: "badge-error",
 };
 
-export const LOAN_PRODUCTS = ["Regular Loan", "Short Term Loan"]
+export const LOAN_PRODUCTS = ["Regular Loan", "Short Term Loan"];
 
 export const LOAN_PRODUCT_COLORS = {
   "Regular Loan": "text-info",
@@ -120,9 +123,9 @@ export const SORT_DIRECTION_OPTIONS = [
 
 // ROLE COLORS
 export const ROLE_COLORS = {
-  "treasurer": "badge-info",
-  "board": "badge-accent",
+  treasurer: "badge-info",
+  board: "badge-accent",
   "regular-member": "badge-primary",
   "associate-member": "badge-secondary",
-  "admin": "badge-neutral",
+  admin: "badge-neutral",
 };

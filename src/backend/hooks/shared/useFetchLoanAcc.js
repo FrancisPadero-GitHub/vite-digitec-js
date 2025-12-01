@@ -5,7 +5,7 @@ import { useFetchAccountNumber } from "../shared/useFetchAccountNumber.js";
 
 /**
  * Fetches coop loan accounts.
- * 
+ *
  * If accountNumber is provided, filters by that accountNumber.
  * If useLoggedInMember is true, uses logged-in accountNumber ID.
  * If neither, fetches all loan accounts.
@@ -34,11 +34,18 @@ async function fetchLoanAccounts({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchLoanAcc({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
-
+export function useFetchLoanAcc({
+  page = null,
+  limit = null,
+  accountNumber = null,
+  useLoggedInMember = false,
+} = {}) {
   const queryClient = useQueryClient();
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   // fetches logged in account number
-  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;     // if the useLoggedInMember = true
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber(); // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber; // if the useLoggedInMember = true
 
   useEffect(() => {
     if (useLoggedInMember && !effectiveAccountNumber) return;
@@ -51,14 +58,19 @@ export function useFetchLoanAcc({ page = null, limit = null, accountNumber = nul
           event: "*",
           schema: "public",
           table: "loan_accounts",
-          filter: effectiveAccountNumber ? `account_number=eq.${effectiveAccountNumber}` : undefined,
+          filter: effectiveAccountNumber
+            ? `account_number=eq.${effectiveAccountNumber}`
+            : undefined,
         },
         (payload) => {
           const key = ["loan_accounts", effectiveAccountNumber, page, limit];
 
           if (page && limit) {
             queryClient.invalidateQueries(key);
-            queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
+            queryClient.invalidateQueries({
+              queryKey: ["view_loan_accounts"],
+              exact: false,
+            });
             return;
           }
 
@@ -66,19 +78,24 @@ export function useFetchLoanAcc({ page = null, limit = null, accountNumber = nul
             const { eventType, new: newRow, old: oldRow } = payload;
             switch (eventType) {
               case "INSERT":
-                if (old.data.some((r) => r.loan_id === newRow.loan_id)) return old;
+                if (old.data.some((r) => r.loan_id === newRow.loan_id))
+                  return old;
                 return {
-                  data: [newRow, ...old.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+                  data: [newRow, ...old.data].sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                  ),
                   count: (old.count || 0) + 1,
                 };
               case "UPDATE":
                 return {
-                  data: old.data.map((r) => (r.loan_id === newRow.loan_id ? newRow : r)),
+                  data: old.data.map((r) =>
+                    r.loan_id === newRow.loan_id ? newRow : r
+                  ),
                   count: old.count,
                 };
               case "DELETE":
                 return {
-                  data: old.data.filter((r) => r.loan_id !== (oldRow?.loan_id)),
+                  data: old.data.filter((r) => r.loan_id !== oldRow?.loan_id),
                   count: Math.max(0, (old.count || 1) - 1),
                 };
               default:
@@ -87,8 +104,10 @@ export function useFetchLoanAcc({ page = null, limit = null, accountNumber = nul
           });
 
           // Keep the view in sync — invalidate view cache after updating base
-          queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
-
+          queryClient.invalidateQueries({
+            queryKey: ["view_loan_accounts"],
+            exact: false,
+          });
         }
       )
       .subscribe();
@@ -115,13 +134,13 @@ export function useFetchLoanAcc({ page = null, limit = null, accountNumber = nul
 /**
  * Fetch everything (no pagination)
  * const { data, count } = useFetchLoanAcc({});
- * 
+ *
  * fetch with filter
  * const { data, count } = useFetchLoanAcc({ page: 1, limit: 20 });
- * 
- * fetch specific accountNumber 
+ *
+ * fetch specific accountNumber
  * const { data, count } = useFetchLoanAcc({ page: 1, limit: 20, accountNumberId: ID_HERE });
- * 
- * fetch with the current logged in user 
+ *
+ * fetch with the current logged in user
  * const { data, count } = useFetchLoanAcc({ page: 1, limit: 20, useLoggedInaccountNumber: true });
  */

@@ -1,7 +1,7 @@
 import { useState, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 // fetch hooks
 import { useMemberRole } from "../../backend/context/useMemberRole";
@@ -21,7 +21,6 @@ import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
 // constants
 import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
 
-
 // utils
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
@@ -32,7 +31,7 @@ function getLocalDateString(date) {
   const d = new Date(date);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().split("T")[0];
-};
+}
 
 function ClubExpenses() {
   // date helper
@@ -40,7 +39,12 @@ function ClubExpenses() {
 
   // data fetch
   const { memberRole } = useMemberRole();
-  const { data: fund_expenses_data, isLoading, isError, error } = useFetchExpenses({});
+  const {
+    data: fund_expenses_data,
+    isLoading,
+    isError,
+    error,
+  } = useFetchExpenses({});
 
   // mutation hooks
   const { mutate: mutateAdd, isPending: isAddPending } = useAddExpenses();
@@ -85,7 +89,7 @@ function ClubExpenses() {
     });
   };
   // Reduces the amount of filtering per change so its good delay
-  const debouncedSearch = useDebounce(searchTerm, 250); 
+  const debouncedSearch = useDebounce(searchTerm, 250);
 
   const TABLE_PREFIX = "EXP";
   const fundExpenses = useMemo(() => {
@@ -102,34 +106,49 @@ function ClubExpenses() {
       const matchesSearch =
         debouncedSearch === "" ||
         row.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        row.description?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const matchesCategory = categoryFilter === "" || row.category === categoryFilter;
+        row.description
+          ?.toLowerCase()
+          .includes(debouncedSearch.toLowerCase()) ||
+        generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCategory =
+        categoryFilter === "" || row.category === categoryFilter;
       const date = row.transaction_date ? new Date(row.transaction_date) : null;
-      const matchesYear = yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
-      
+      const matchesYear =
+        yearFilter === "" ||
+        (date && date.getFullYear().toString() === yearFilter);
+
       // To avoid subtext displaying numbers instead of month names
       // I had to convert the values from the monthFilter to numbers for comparison
       const monthNameToNumber = {
-        January: 1, February: 2,
-        March: 3, April: 4,
-        May: 5, June: 6,
-        July: 7, August: 8,
-        September: 9, October: 10,
-        November: 11, December: 12,
+        January: 1,
+        February: 2,
+        March: 3,
+        April: 4,
+        May: 5,
+        June: 6,
+        July: 7,
+        August: 8,
+        September: 9,
+        October: 10,
+        November: 11,
+        December: 12,
       };
-      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const filterMonthNumber = monthFilter
+        ? monthNameToNumber[monthFilter]
+        : null;
       const matchesMonth =
-        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
-    // just a nested return dont be confused
-    return (
-      matchesSearch &&
-      matchesCategory && 
-      matchesYear && 
-      matchesMonth
-    );
-    })
-  }, [fund_expenses_data, debouncedSearch, categoryFilter, yearFilter, monthFilter]);
+        monthFilter === "" ||
+        (date && date.getMonth() + 1 === filterMonthNumber);
+      // just a nested return dont be confused
+      return matchesSearch && matchesCategory && matchesYear && matchesMonth;
+    });
+  }, [
+    fund_expenses_data,
+    debouncedSearch,
+    categoryFilter,
+    yearFilter,
+    monthFilter,
+  ]);
 
   // Dynamically generate year options for the past 5 years and current year
   // to get rid of the hard coded years
@@ -140,14 +159,15 @@ function ClubExpenses() {
   });
 
   // for the subtext of data table
-  const activeFiltersText = [
-    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
-    categoryFilter ? `${categoryFilter}` : null,
-    yearFilter ? `${yearFilter}` : null,
-    monthFilter ? `${monthFilter}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ") || "Showing all expenses";
+  const activeFiltersText =
+    [
+      debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+      categoryFilter ? `${categoryFilter}` : null,
+      yearFilter ? `${yearFilter}` : null,
+      monthFilter ? `${monthFilter}` : null,
+    ]
+      .filter(Boolean)
+      .join(" - ") || "Showing all expenses";
 
   // clear fitlters handler
   const handleClearFilters = () => {
@@ -155,7 +175,7 @@ function ClubExpenses() {
     setCategoryFilter("");
     setYearFilter("");
     setMonthFilter("");
-  }
+  };
 
   // extract default form values to reuse in modal resets and in rhf initialization
   const defaultFormValues = {
@@ -214,15 +234,18 @@ function ClubExpenses() {
 
   const confirmDelete = () => {
     if (deleteTargetId) {
-      mutateDelete({
-        table: "club_funds_expenses",
-        column_name: "transaction_id",
-        id: deleteTargetId,
-      }, {
-        onSuccess: () => {
-          toast.success("Transaction deleted successfully");
+      mutateDelete(
+        {
+          table: "club_funds_expenses",
+          column_name: "transaction_id",
+          id: deleteTargetId,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Transaction deleted successfully");
+          },
         }
-      });
+      );
       closeDeleteModal();
       closeModal();
     }
@@ -238,28 +261,25 @@ function ClubExpenses() {
     const parsedData = { ...data, amount: Number(data.amount) };
 
     if (modalType === "add") {
-      mutateAdd(parsedData, 
-        {
-          onSuccess: () => {
-            toast.success("Expense transaction added")
-            closeModal();
-          },
-          onError: () => {
-            toast.error("Something went wrong")
-          }
-        });
+      mutateAdd(parsedData, {
+        onSuccess: () => {
+          toast.success("Expense transaction added");
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong");
+        },
+      });
     } else if (modalType === "edit") {
-      mutateEdit(parsedData,
-        {
-          onSuccess: () => {
-            toast.success("Successfully updated")
-            closeModal();
-          },
-          onError: () => {
-            toast.error("Something went wrong")
-          }
-        }
-      );
+      mutateEdit(parsedData, {
+        onSuccess: () => {
+          toast.success("Successfully updated");
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong");
+        },
+      });
     }
   };
 
@@ -276,7 +296,7 @@ function ClubExpenses() {
         { label: "Community Service", value: "Community Service" },
         { label: "Alalayang Agila", value: "Alalayang Agila" },
         { label: "Others", value: "Others" },
-      ]
+      ],
     },
     { label: "Date", name: "transaction_date", type: "date" },
     { label: "Description", name: "description", type: "text", optional: true },
@@ -285,7 +305,7 @@ function ClubExpenses() {
   return (
     <div className="m-3">
       <Toaster position="bottom-left" />
-      <div className="space-y-2"> 
+      <div className="space-y-2">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <FilterToolbar
             searchTerm={searchTerm}
@@ -336,13 +356,13 @@ function ClubExpenses() {
             <button
               className="btn btn-neutral whitespace-nowrap shadow-lg flex items-center gap-2 px-4 py-2 
                          fixed bottom-10 right-4 z-20 opacity-80 hover:opacity-100
-                         lg:static lg:ml-auto lg:self-center lg:opacity-100"              
+                         lg:static lg:ml-auto lg:self-center lg:opacity-100"
               title="Add Expenses"
               aria-label="Add Expenses"
               type="button"
               onClick={openAddModal}
             >
-              <AddCircleIcon/>
+              <AddCircleIcon />
               Expenses
             </button>
           )}
@@ -363,12 +383,15 @@ function ClubExpenses() {
             const title = row?.title || "Not Found";
             const amount = row?.amount || 0;
             const category = row?.category || "Not Found";
-            const transactionDate = row?.transaction_date 
-              ? new Date(row.transaction_date).toLocaleDateString() 
+            const transactionDate = row?.transaction_date
+              ? new Date(row.transaction_date).toLocaleDateString()
               : "Not Found";
             return (
-              <tr key={id}
-                onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
+              <tr
+                key={id}
+                onClick={
+                  memberRole !== "board" ? () => openEditModal(row) : undefined
+                }
                 className="text-center cursor-pointer hover:bg-base-200/50"
               >
                 {/* Ref no. */}
@@ -376,26 +399,23 @@ function ClubExpenses() {
                   {TABLE_PREFIX}_{id}
                 </td>
                 {/* Title */}
-                <td className=" text-center font-medium"
-                >
-                  {title}
-                </td>
+                <td className=" text-center font-medium">{title}</td>
                 {/* Amount */}
                 <td className=" font-semibold text-error">
                   ₱ {display(amount)}
                 </td>
                 {/* Category */}
                 <td>
-                  <span className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}>
+                  <span
+                    className={`font-semibold ${CLUB_CATEGORY_COLORS[category]}`}
+                  >
                     {category}
                   </span>
                 </td>
                 {/* Transaction Date */}
-                <td>
-                  {transactionDate}
-                </td>
+                <td>{transactionDate}</td>
               </tr>
-            )
+            );
           }}
         />
       </div>
@@ -411,88 +431,101 @@ function ClubExpenses() {
         deleteAction={() => openDeleteModal(getValues("transaction_id"))}
       >
         <div className="pl-1 pr-2">
-          {fields.map(({ label, name, type, options, autoComplete, optional }) => (
-            <div key={name} className="form-control w-full mt-2">
-              <label htmlFor={name} className="label mb-1">
-                <span className="label-text font-medium text-gray-700">{label}</span>
-                {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
-              </label>
-
-              {name === "amount" ? (
-                <Controller
-                  name="amount"
-                  control={control}
-                  rules={{
-                    required: true,
-                    min: {
-                      value: 1,
-                      message: "Amount must be greater than 0",
-                    },
-                    validate: (value) => value > 0 || "Amount cannot be zero or negative",
-                  }}
-                  render={({ field, fieldState: { error } }) => (
-                    <>
-                      <input
-                        id="amount"
-                        type="number"
-                        autoComplete={autoComplete}
-                        value={field.value}
-                        placeholder="Enter Amount"
-                        onWheel={(e) => e.target.blur()}
-                        onChange={(e) => {
-                          const raw = e.target.value;
-                          if (raw === "") {
-                            field.onChange(""); // allow clearing
-                            return;
-                          }
-
-                          const value = Number(raw);
-                          field.onChange(value < 0 ? 0 : value);
-                        }}
-                        className={`input input-bordered w-full ${error ? "input-error" : ""
-                          }`}
-                      />
-                      {error && (
-                        <span className="text-sm text-error mt-1 block">
-                          {error.message}
-                        </span>
-                      )}
-                    </>
+          {fields.map(
+            ({ label, name, type, options, autoComplete, optional }) => (
+              <div key={name} className="form-control w-full mt-2">
+                <label htmlFor={name} className="label mb-1">
+                  <span className="label-text font-medium text-gray-700">
+                    {label}
+                  </span>
+                  {optional && (
+                    <span className="text-base-content/60 text-sm">
+                      (optional)
+                    </span>
                   )}
-                />
-              ) : type === "select" ? (
-                <select
-                  id={name}
-                  {...register(name, { required: true })}
-                  className="select select-bordered w-full"
-                  required
-                >
-                  <option value="" disabled>Select {label}</option>
-                  {options?.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}</option>
-                  ))}
-                </select>
-              ) : name === "description" ? (
-                <textarea
-                  id={name}
-                  rows={4}
-                  {...register(name, { required: false })}
-                  className="textarea textarea-bordered w-full"
-                  placeholder={`Enter ${label}`}
-                ></textarea>
-              ) : (
-                <input
-                  id={name}
-                  type={type}
-                  {...register(name, { required: true })}
-                  className="input input-bordered w-full"
-                  placeholder={`Enter ${label}`}
-                  autoComplete={autoComplete}
-                />
-              )}
-            </div>
-          ))}
+                </label>
+
+                {name === "amount" ? (
+                  <Controller
+                    name="amount"
+                    control={control}
+                    rules={{
+                      required: true,
+                      min: {
+                        value: 1,
+                        message: "Amount must be greater than 0",
+                      },
+                      validate: (value) =>
+                        value > 0 || "Amount cannot be zero or negative",
+                    }}
+                    render={({ field, fieldState: { error } }) => (
+                      <>
+                        <input
+                          id="amount"
+                          type="number"
+                          autoComplete={autoComplete}
+                          value={field.value}
+                          placeholder="Enter Amount"
+                          onWheel={(e) => e.target.blur()}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === "") {
+                              field.onChange(""); // allow clearing
+                              return;
+                            }
+
+                            const value = Number(raw);
+                            field.onChange(value < 0 ? 0 : value);
+                          }}
+                          className={`input input-bordered w-full ${
+                            error ? "input-error" : ""
+                          }`}
+                        />
+                        {error && (
+                          <span className="text-sm text-error mt-1 block">
+                            {error.message}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  />
+                ) : type === "select" ? (
+                  <select
+                    id={name}
+                    {...register(name, { required: true })}
+                    className="select select-bordered w-full"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select {label}
+                    </option>
+                    {options?.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : name === "description" ? (
+                  <textarea
+                    id={name}
+                    rows={4}
+                    {...register(name, { required: false })}
+                    className="textarea textarea-bordered w-full"
+                    placeholder={`Enter ${label}`}
+                  ></textarea>
+                ) : (
+                  <input
+                    id={name}
+                    type={type}
+                    {...register(name, { required: true })}
+                    className="input input-bordered w-full"
+                    placeholder={`Enter ${label}`}
+                    autoComplete={autoComplete}
+                  />
+                )}
+              </div>
+            )
+          )}
         </div>
       </FormModal>
       <DeleteConfirmationModal

@@ -3,7 +3,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 /**
  * Dynamically marks one or all notifications as read.
- * 
+ *
  * @param {Object} params
  * @param {string|number} [params.notif_id] - Specific notification ID to mark as read.
  * @param {string|number} [params.account_no] - If provided (without notif_id), marks all for that account.
@@ -32,17 +32,19 @@ export const useMarkAsRead = () => {
     mutationFn: markNotificationAsRead,
     onSuccess: () => {
       console.log(`Notification marked as read`);
-      queryClient.invalidateQueries({ queryKey: ["notifications"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["notifications"],
+        exact: false,
+      });
     },
   });
 };
 
-
 /**
  * How to use
- * 
+ *
  * markAsReadMutation.mutate({ notif_id: notif.id }); as single
- * 
+ *
  * markAsReadMutation.mutate({ account_no: user.account_no }); // as all
- * 
+ *
  */

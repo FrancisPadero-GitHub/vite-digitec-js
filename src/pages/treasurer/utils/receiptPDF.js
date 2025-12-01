@@ -16,7 +16,7 @@ export function createPdfReceipt(payment, opts = {}) {
     title = "Loan Payment Receipt",
     logoDataUrl,
     includeMeta = true,
-    openInsteadOfSave = false
+    openInsteadOfSave = false,
   } = opts;
 
   if (!payment) throw new Error("Missing payment object for PDF receipt.");
@@ -27,25 +27,31 @@ export function createPdfReceipt(payment, opts = {}) {
   // NOTE: jsPDF default fonts (Helvetica, Times, Courier) do NOT support the Peso sign (₱) reliably.
   // This was causing garbled characters (e.g., ±8&20&...) in rendered PDFs.
   // Using 'PHP' prefix instead; if you need the actual symbol, embed a Unicode font.
-  const currency = (v) => `PHP ${Number(v ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const safe = (v, fallback = "N/A") => (v === null || v === undefined || v === "" ? fallback : String(v));
+  const currency = (v) =>
+    `PHP ${Number(v ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const safe = (v, fallback = "N/A") =>
+    v === null || v === undefined || v === "" ? fallback : String(v);
   const receiptMeta = payment.receipt_meta || {};
 
   // Prioritize receipt_meta values as source of truth
   const displayData = {
     receiptNo: payment.receipt_no,
     memberName: receiptMeta.member_name || payment.full_name || "N/A",
-    accountNumber: receiptMeta.account_number || payment.account_number || "N/A",
-    loanRefNumber: receiptMeta.loan_ref_number || payment.loan_ref_number || "N/A",
-    paymentMethod: receiptMeta.payment_method || payment.payment_method || "N/A",
+    accountNumber:
+      receiptMeta.account_number || payment.account_number || "N/A",
+    loanRefNumber:
+      receiptMeta.loan_ref_number || payment.loan_ref_number || "N/A",
+    paymentMethod:
+      receiptMeta.payment_method || payment.payment_method || "N/A",
     paymentDate: receiptMeta.payment_date || payment.payment_date,
     generatedAt: receiptMeta.generated_at,
     breakdown: {
-      totalAmount: receiptMeta.breakdown?.total_amount ?? payment.total_amount ?? 0,
+      totalAmount:
+        receiptMeta.breakdown?.total_amount ?? payment.total_amount ?? 0,
       principal: receiptMeta.breakdown?.principal ?? payment.principal ?? 0,
       interest: receiptMeta.breakdown?.interest ?? payment.interest ?? 0,
       fees: receiptMeta.breakdown?.fees ?? payment.fees ?? 0,
-    }
+    },
   };
 
   let y = 32; // vertical cursor
@@ -89,7 +95,10 @@ export function createPdfReceipt(payment, opts = {}) {
   blockLine("Payment Method", displayData.paymentMethod);
 
   if (includeMeta && displayData.generatedAt) {
-    blockLine("Generated", dayjs(displayData.generatedAt).format("YYYY-MM-DD HH:mm"));
+    blockLine(
+      "Generated",
+      dayjs(displayData.generatedAt).format("YYYY-MM-DD HH:mm")
+    );
   }
 
   y += 4;
@@ -130,7 +139,10 @@ export function createPdfReceipt(payment, opts = {}) {
     "This receipt is system-generated.",
     "Retain for your records. Contact support for discrepancies.",
   ];
-  footerLines.forEach((l) => { doc.text(l, leftX, y); y += 10; });
+  footerLines.forEach((l) => {
+    doc.text(l, leftX, y);
+    y += 10;
+  });
 
   // Timestamp
   doc.setFontSize(6);

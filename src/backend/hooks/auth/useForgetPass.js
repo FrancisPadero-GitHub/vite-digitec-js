@@ -1,4 +1,3 @@
-
 import { supabase } from "../../supabase";
 import { useMutation } from "@tanstack/react-query";
 
@@ -7,14 +6,14 @@ import { useMutation } from "@tanstack/react-query";
  * @returns {object} mutation object from TanStack Query
  */
 export function useForgetPass() {
-	const mutation = useMutation({
-		mutationFn: async (email) => {
-			const { error } = await supabase.auth.resetPasswordForEmail(email, {
-				redirectTo: window.location.origin + "/reset-password"
-			});
-			if (error) throw error;
-			return true;
-		},
-	});
-	return mutation;
+  const mutation = useMutation({
+    mutationFn: async (email) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/reset-password",
+      });
+      if (error) throw error;
+      return true;
+    },
+  });
+  return mutation;
 }

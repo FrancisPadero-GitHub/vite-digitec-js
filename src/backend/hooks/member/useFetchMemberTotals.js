@@ -11,7 +11,7 @@ import { supabase } from "../../supabase.js";
  */
 
 async function fetchMemberTotal({ queryKey }) {
-  const [_key, { rpcFn, accountNumber, year, month }] = queryKey;
+  const [, { rpcFn, accountNumber, year, month }] = queryKey;
 
   const { data, error } = await supabase.rpc(rpcFn, {
     p_account_number: accountNumber,
@@ -25,9 +25,13 @@ async function fetchMemberTotal({ queryKey }) {
 }
 
 export function useFetchMemberTotal({ rpcFn, year, month }) {
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();   
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber();
   return useQuery({
-    queryKey: ["rpc_member_total", { rpcFn, accountNumber: loggedInAccountNumber, year, month }],
+    queryKey: [
+      "rpc_member_total",
+      { rpcFn, accountNumber: loggedInAccountNumber, year, month },
+    ],
     queryFn: fetchMemberTotal,
     enabled: !!loggedInAccountNumber && !accountLoading,
     staleTime: 1000 * 60, // 1 minute

@@ -28,10 +28,12 @@ const updateLoanApp = async (formData) => {
     .from("loan_applications")
     .update(payload)
     .eq("application_id", application_id)
-    .select(`
+    .select(
+      `
       *,
       members!loan_applications_account_number_fkey (f_name,l_name,account_number)
-    `)
+    `
+    )
     .single();
 
   if (error) {
@@ -42,7 +44,9 @@ const updateLoanApp = async (formData) => {
   const memberData = data.members;
   return {
     ...data,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : data.account_number
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : data.account_number,
   };
 };
 
@@ -54,9 +58,18 @@ export const useEditLoanApp = () => {
     mutationFn: updateLoanApp,
     onSuccess: async (data) => {
       console.log("Loan Application Updated!: ", data);
-      queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["pendingLoanApplications"], exact: false }); // for the badge notification
-      queryClient.invalidateQueries({ queryKey: ["activity_logs"], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: ["view_loan_applications"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingLoanApplications"],
+        exact: false,
+      }); // for the badge notification
+      queryClient.invalidateQueries({
+        queryKey: ["activity_logs"],
+        exact: false,
+      });
 
       // log activity
       try {

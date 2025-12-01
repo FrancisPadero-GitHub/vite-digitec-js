@@ -33,10 +33,12 @@ const updateCoopContributions = async (formData) => {
     .from("coop_cbu_contributions")
     .update(payload)
     .eq("coop_contri_id", coop_contri_id)
-    .select(`
+    .select(
+      `
       *,
       members!coop_cbu_contributions_account_number_fkey (f_name,l_name) 
-    `) 
+    `
+    )
     .single();
 
   if (error) {
@@ -47,7 +49,9 @@ const updateCoopContributions = async (formData) => {
   const memberData = data.members;
   return {
     ...data,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : account_number
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : account_number,
   };
 };
 
@@ -60,7 +64,10 @@ export const useEditCoopContributions = () => {
     mutationFn: updateCoopContributions,
     onSuccess: async (data) => {
       console.log(" Coop contribution Updated!", data);
-      queryClient.invalidateQueries({queryKey:["view_coop_share_capital_contributions"], exact: false}); // to reflect the change instantly
+      queryClient.invalidateQueries({
+        queryKey: ["view_coop_share_capital_contributions"],
+        exact: false,
+      }); // to reflect the change instantly
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

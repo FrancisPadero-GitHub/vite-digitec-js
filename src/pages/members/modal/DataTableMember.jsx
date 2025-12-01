@@ -1,11 +1,19 @@
 import { Link } from "react-router-dom";
-/**
- * 
- * @param {*} param0 
- * @returns 
- */
-function DataTable({ title, linkPath, headers = [], data = [], isLoading, renderRow  }) {
+import PropTypes from "prop-types";
 
+/**
+ *
+ * @param {*} param0
+ * @returns
+ */
+function DataTable({
+  title,
+  linkPath,
+  headers = [],
+  data = [],
+  isLoading,
+  renderRow,
+}) {
   return (
     <section className="overflow-x-auto border border-base-content/5 bg-base-100 rounded-2xl shadow-md mb-4">
       <div className="flex flex-row justify-between items-center">
@@ -13,26 +21,28 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
           <span className="text-lg font-semibold">{title}</span>
           {/* <span className="text-gray-400"> | Recent</span> */}
         </h2>
-        <Link to={linkPath} className="btn btn-link no-underline text-primary hover:underline p-4">
+        <Link
+          to={linkPath}
+          className="btn btn-link no-underline text-primary hover:underline p-4"
+        >
           See More ➜
         </Link>
       </div>
 
-
-
       <div className="border border-base-content/5 bg-base-100/90 rounded-1xl shadow-md">
-          {/* Table header */}
+        {/* Table header */}
         <table className="table table-fixed w-full">
           <thead>
             <tr className="bg-base-200/30 text-center">
               {headers.map((header, key) => (
-                <th key={key} className="text-center">{header}</th>
+                <th key={key} className="text-center">
+                  {header}
+                </th>
               ))}
             </tr>
           </thead>
-         </table>
-          
-          
+        </table>
+
         <div className="max-h-80 min-h-[200px] overflow-y-auto overflow-x-auto">
           <table className="table table-fixed w-full">
             {/* Scrollable body */}
@@ -47,20 +57,30 @@ function DataTable({ title, linkPath, headers = [], data = [], isLoading, render
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={headers.length} className="py-10 text-center text-gray-400">
+                  <td
+                    colSpan={headers.length}
+                    className="py-10 text-center text-gray-400"
+                  >
                     No records found
                   </td>
                 </tr>
               ) : (
-                data.slice(0,5).map((item) => renderRow(item))
+                data.slice(0, 5).map((item) => renderRow(item))
               )}
             </tbody>
-
-            </table>
+          </table>
         </div>
-        </div>
+      </div>
     </section>
   );
 }
+DataTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  linkPath: PropTypes.string.isRequired,
+  headers: PropTypes.arrayOf(PropTypes.string).isRequired,
+  data: PropTypes.array.isRequired,
+  isLoading: PropTypes.bool,
+  renderRow: PropTypes.func.isRequired,
+};
 
 export default DataTable;

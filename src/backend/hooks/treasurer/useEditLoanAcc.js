@@ -8,7 +8,7 @@ import { useAddActivityLog } from "../shared/useAddActivityLog";
 /**
  * This is used to update loan account for release and generate payment schedules
  * This is called when releasing a loan in treasurer
- * 
+ *
  */
 
 const updateLoanAcc = async (formData) => {
@@ -38,10 +38,12 @@ const updateLoanAcc = async (formData) => {
     .from("loan_accounts")
     .update(payload)
     .eq("loan_id", loan_id)
-    .select(`
+    .select(
+      `
       *,
       members!loan_accounts_account_number_fkey (f_name,l_name,account_number)
-    `)
+    `
+    )
     .single();
 
   if (error) {
@@ -94,17 +96,19 @@ const updateLoanAcc = async (formData) => {
     };
   }
 
-  const memberData = data.members
+  const memberData = data.members;
   return {
     loanAccount: data,
     scheduleResult: scheduleInsertResult,
-    member_name: memberData ? `${memberData.f_name} ${memberData.l_name}` : "N/A",
+    member_name: memberData
+      ? `${memberData.f_name} ${memberData.l_name}`
+      : "N/A",
     account_number: data.account_number,
   };
 };
 
 const sendNotification = async (loanAccData, senderAccountNumber) => {
-  const message = `Your loan has been released! Amount: ₱${loanAccData.principal?.toLocaleString() || '0'} | Loan Ref: ${loanAccData.loan_ref_number || 'N/A'}. Check your loan account for details.`;
+  const message = `Your loan has been released! Amount: ₱${loanAccData.principal?.toLocaleString() || "0"} | Loan Ref: ${loanAccData.loan_ref_number || "N/A"}. Check your loan account for details.`;
 
   const { error } = await supabase.rpc("send_notification", {
     p_title: "Loan Released",
@@ -130,14 +134,29 @@ export const useEditLoanAcc = () => {
     onSuccess: async (result) => {
       console.log("Loan Released!: ", result.loanAccount);
       if (result.scheduleResult?.success) {
-        console.log("Payment schedules inserted:", result.scheduleResult.rows.length);
+        console.log(
+          "Payment schedules inserted:",
+          result.scheduleResult.rows.length
+        );
       } else if (result.scheduleResult?.error) {
         console.warn("Schedule insertion error:", result.scheduleResult.error);
       }
-      queryClient.invalidateQueries({ queryKey: ["loan_accounts"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["loan_payment_schedules"], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: false }); // for the badge notification
+      queryClient.invalidateQueries({
+        queryKey: ["loan_accounts"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["view_loan_accounts"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["loan_payment_schedules"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingLoanReleases"],
+        exact: false,
+      }); // for the badge notification
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,
@@ -157,7 +176,10 @@ export const useEditLoanAcc = () => {
       // send notification to the specific member
       try {
         await sendNotification(result.loanAccount, loggedInAccountNumber);
-        console.log("✅ Notification sent to member:", result.loanAccount.account_number);
+        console.log(
+          "✅ Notification sent to member:",
+          result.loanAccount.account_number
+        );
       } catch (err) {
         console.warn("Failed to send notification:", err.message);
       }

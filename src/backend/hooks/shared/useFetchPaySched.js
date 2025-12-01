@@ -36,7 +36,11 @@ async function fetchPaySched({ page, limit, loanId }) {
   if (error) throw new Error(error.message);
   return { data, count };
 }
-export function useFetchPaySched({ page = null, limit = null, loanId = null } = {}) {
+export function useFetchPaySched({
+  page = null,
+  limit = null,
+  loanId = null,
+} = {}) {
   return useQuery({
     queryFn: () => fetchPaySched({ page, limit, loanId }),
     queryKey: ["loan_payment_schedules", loanId],
@@ -44,6 +48,3 @@ export function useFetchPaySched({ page = null, limit = null, loanId = null } = 
     staleTime: 1000 * 60 * 1,
   });
 }
-
-
-

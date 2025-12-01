@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 /**
  * Performance monitoring component for development
@@ -10,15 +10,19 @@ export default function PerformanceMonitor({ children }) {
       // Monitor long tasks
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.duration > 50) { // Tasks longer than 50ms
-            console.warn(`Long task detected: ${entry.duration.toFixed(2)}ms`, entry);
+          if (entry.duration > 50) {
+            // Tasks longer than 50ms
+            console.warn(
+              `Long task detected: ${entry.duration.toFixed(2)}ms`,
+              entry
+            );
           }
         }
       });
-      
+
       // Only observe if browser supports it
-      if ('PerformanceObserver' in window) {
-        observer.observe({ entryTypes: ['longtask'] });
+      if ("PerformanceObserver" in window) {
+        observer.observe({ entryTypes: ["longtask"] });
       }
 
       return () => {

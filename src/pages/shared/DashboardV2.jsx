@@ -1,49 +1,83 @@
-import {useState, Fragment, useMemo} from 'react'
-import { AccountBalance, ReceiptLong, TrendingUp, LocalAtm, AccountBalanceWallet, MonetizationOn, AccountBox, CreditCard, Receipt } from '@mui/icons-material';
-import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { useNavigate } from 'react-router-dom';
-import { Toaster, toast } from 'react-hot-toast';
-import dayjs from 'dayjs';
+import { useState, Fragment, useMemo } from "react";
+import {
+  AccountBalance,
+  ReceiptLong,
+  TrendingUp,
+  LocalAtm,
+  AccountBalanceWallet,
+  MonetizationOn,
+  AccountBox,
+  CreditCard,
+  Receipt,
+} from "@mui/icons-material";
+import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
+import { useNavigate } from "react-router-dom";
+import { Toaster, toast } from "react-hot-toast";
+import dayjs from "dayjs";
 
 // fetch hooks
-import { useFetchClubFundsView } from '../../backend/hooks/shared/view/useFetchClubFundsView';
-import { useFetchCoopView } from '../../backend/hooks/shared/view/useFetchCoopView';
-import { useFetchExpenses } from '../../backend/hooks/shared/useFetchExpenses';
-import { useFetchActivityLogs } from '../../backend/hooks/shared/useFetchActivityLogs';
+import { useFetchClubFundsView } from "../../backend/hooks/shared/view/useFetchClubFundsView";
+import { useFetchCoopView } from "../../backend/hooks/shared/view/useFetchCoopView";
+import { useFetchExpenses } from "../../backend/hooks/shared/useFetchExpenses";
+import { useFetchActivityLogs } from "../../backend/hooks/shared/useFetchActivityLogs";
 
 // rpc fetch
-import { useFetchTotal } from '../../backend/hooks/shared/useFetchTotal';
+import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
 
-// helper 
-import { useMemberRole } from '../../backend/context/useMemberRole';
-import { display } from '../../constants/numericFormat';
+// helper
+import { useMemberRole } from "../../backend/context/useMemberRole";
+import { display } from "../../constants/numericFormat";
 
 // components
-import DataTableV2 from './components/DataTableV2';
-import CoopContributionChart from './components/CoopContributionChart';
-import ExpensesChart from './components/ExpensesChart';
-import ComparisonChart from './components/ComparisonChart';
-import StatCardV2 from './components/StatCardV2';
+import DataTableV2 from "./components/DataTableV2";
+import CoopContributionChart from "./components/CoopContributionChart";
+import ExpensesChart from "./components/ExpensesChart";
+import ComparisonChart from "./components/ComparisonChart";
+import StatCardV2 from "./components/StatCardV2";
 
 // constants
-import { CLUB_CATEGORY_COLORS, CAPITAL_CATEGORY_COLORS, ACTIVITY_LOGS_TYPE_COLORS} from '../../constants/Color';
-import placeHolderAvatar from '../../assets/placeholder-avatar.png';
+import {
+  CLUB_CATEGORY_COLORS,
+  CAPITAL_CATEGORY_COLORS,
+  ACTIVITY_LOGS_TYPE_COLORS,
+} from "../../constants/Color";
+import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
 function DashboardV2() {
   const { memberRole } = useMemberRole();
 
   // The pagination and data fetching of these 3 tables is handled inside each DataTableV2 component instance using .slice(0,5)
   // to limit to 5 recent entries.
-  const { data: coop_data, isLoading: coopIsloading, isError: coopIsError, error: coopError } = useFetchCoopView({});
+  const {
+    data: coop_data,
+    isLoading: coopIsloading,
+    isError: coopIsError,
+    error: coopError,
+  } = useFetchCoopView({});
   const coopFunds = coop_data?.data || [];
 
-  const { data: club_funds_data, isLoading: clubFundsIsLoading, isError: clubFundsIsError, error: clubFundsError } = useFetchClubFundsView({});
+  const {
+    data: club_funds_data,
+    isLoading: clubFundsIsLoading,
+    isError: clubFundsIsError,
+    error: clubFundsError,
+  } = useFetchClubFundsView({});
   const clubFunds = club_funds_data?.data || [];
 
-  const { data: expenses_data, isLoading: expensesIsLoading, isError: expensesIsError, error: expensesError } = useFetchExpenses({});
+  const {
+    data: expenses_data,
+    isLoading: expensesIsLoading,
+    isError: expensesIsError,
+    error: expensesError,
+  } = useFetchExpenses({});
   const expenses = expenses_data?.data || [];
 
-  const { data: activity_logs_data, isLoading: activityLogsIsLoading, isError: activityLogsIsError, error: activityLogsError } = useFetchActivityLogs({});
+  const {
+    data: activity_logs_data,
+    isLoading: activityLogsIsLoading,
+    isError: activityLogsIsError,
+    error: activityLogsError,
+  } = useFetchActivityLogs({});
   const activityLogs = activity_logs_data?.data || [];
 
   // Navigation
@@ -58,7 +92,7 @@ function DashboardV2() {
 
   // Filters state for the start cards and totals
   const [filters, setFilters] = useState({
-    overAll: { month: null, year: null, subtitle: "All Time"},
+    overAll: { month: null, year: null, subtitle: "All Time" },
   });
 
   // Helper to get previous period based on subtitle
@@ -89,8 +123,7 @@ function DashboardV2() {
     return asString ? `${rounded}%` : rounded;
   };
 
-
-  // RPC totals 
+  // RPC totals
   const {
     data: currentSummary,
     isLoading: currentLoading,
@@ -114,10 +147,12 @@ function DashboardV2() {
     key: "funds-summary-prev",
   });
 
-
   const loading = currentLoading || prevLoading;
   const error = currentError || prevError;
-  const errorMessage = currentErrorMsg?.message || prevErrorMsg?.message || "Failed to load totals";
+  const errorMessage =
+    currentErrorMsg?.message ||
+    prevErrorMsg?.message ||
+    "Failed to load totals";
 
   // --- Compute Stats ---
   const stats = useMemo(() => {
@@ -159,7 +194,10 @@ function DashboardV2() {
       {
         statName: " Loan Released",
         amount: Number(c.coop_total_principal_released ?? 0),
-        growthPercent: calcGrowth(c.coop_total_principal_released, p.coop_total_principal_released),
+        growthPercent: calcGrowth(
+          c.coop_total_principal_released,
+          p.coop_total_principal_released
+        ),
         iconBgColor: "bg-amber-500",
         icon: <MonetizationOn />,
         loading: loading,
@@ -169,7 +207,10 @@ function DashboardV2() {
       {
         statName: " Service Fee",
         amount: Number(c.club_total_service_fee_income ?? 0),
-        growthPercent: calcGrowth(c.club_total_service_fee_income, p.club_total_service_fee_income),
+        growthPercent: calcGrowth(
+          c.club_total_service_fee_income,
+          p.club_total_service_fee_income
+        ),
         iconBgColor: "bg-cyan-500",
         icon: <Receipt />,
         loading: loading,
@@ -179,7 +220,10 @@ function DashboardV2() {
       {
         statName: " Interest Income",
         amount: Number(c.club_total_interest_income ?? 0),
-        growthPercent: calcGrowth(c.club_total_interest_income, p.club_total_interest_income),
+        growthPercent: calcGrowth(
+          c.club_total_interest_income,
+          p.club_total_interest_income
+        ),
         iconBgColor: "bg-violet-500",
         icon: <TrendingUp />,
         loading: loading,
@@ -189,7 +233,10 @@ function DashboardV2() {
       {
         statName: " Fee Income",
         amount: Number(c.club_total_fees_income ?? 0),
-        growthPercent: calcGrowth(c.club_total_fees_income, p.club_total_fees_income),
+        growthPercent: calcGrowth(
+          c.club_total_fees_income,
+          p.club_total_fees_income
+        ),
         iconBgColor: "bg-teal-500",
         icon: <LocalAtm />,
         loading: loading,
@@ -221,9 +268,11 @@ function DashboardV2() {
 
   return (
     <div className="m-3">
-      <Toaster position="bottom-left"/>
+      <Toaster position="bottom-left" />
       <div className="space-y-3">
-        <h1 className="text-lg lg:text-2xl font-bold px-2 sm:px-0">Dashboard</h1>
+        <h1 className="text-lg lg:text-2xl font-bold px-2 sm:px-0">
+          Dashboard
+        </h1>
         <div className="flex flex-col xl:flex-row gap-3">
           {/* LEFT SIDE - Main Content */}
           <div className="flex-1 flex flex-col gap-3">
@@ -240,41 +289,51 @@ function DashboardV2() {
                     tabIndex={0}
                     className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-sm border border-base-300"
                   >
-                    {["All Time", "This Month", "This Year"].map((date_label) => (
-                      <li key={date_label}>
-                        <button
-                          className={`text-sm ${filters.overAll.subtitle === date_label
-                              ? "text-primary font-semibold"
-                              : "text-gray-500"
+                    {["All Time", "This Month", "This Year"].map(
+                      (date_label) => (
+                        <li key={date_label}>
+                          <button
+                            className={`text-sm ${
+                              filters.overAll.subtitle === date_label
+                                ? "text-primary font-semibold"
+                                : "text-gray-500"
                             }`}
-                          onClick={() =>
-                            setFilters({
-                              overAll: {
-                                ...filters.overAll,
-                                subtitle: date_label,
-                                ...(date_label === "All Time"
-                                  ? { month: null, year: null }
-                                  : date_label === "This Month"
-                                    ? {
-                                      month: new Date().getMonth() + 1,
-                                      year: new Date().getFullYear(),
-                                    }
-                                    : { month: null, year: new Date().getFullYear() }),
-                              },
-                            })
-                          }
-                        >
-                          {date_label}
-                        </button>
-                      </li>
-                    ))}
+                            onClick={() =>
+                              setFilters({
+                                overAll: {
+                                  ...filters.overAll,
+                                  subtitle: date_label,
+                                  ...(date_label === "All Time"
+                                    ? { month: null, year: null }
+                                    : date_label === "This Month"
+                                      ? {
+                                          month: new Date().getMonth() + 1,
+                                          year: new Date().getFullYear(),
+                                        }
+                                      : {
+                                          month: null,
+                                          year: new Date().getFullYear(),
+                                        }),
+                                },
+                              })
+                            }
+                          >
+                            {date_label}
+                          </button>
+                        </li>
+                      )
+                    )}
                   </ul>
                 </div>
               </div>
               {/* Cards Grid - Responsive */}
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-3">
                 {stats.map((s, i) => (
-                  <StatCardV2 key={i} {...s} subtitle={filters.overAll.subtitle} />
+                  <StatCardV2
+                    key={i}
+                    {...s}
+                    subtitle={filters.overAll.subtitle}
+                  />
                 ))}
               </div>
             </section>
@@ -283,9 +342,16 @@ function DashboardV2() {
             <section className="border border-base-content/5 bg-base-100 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-6">
               <div className="p-2 sm:p-0 flex flex-col h-full">
                 <div className="mb-4">
-                  <span className="text-lg sm:text-xl lg:text-2xl font-semibold">Share Capital Activity</span>
-                  <span className="text-gray-400 text-sm sm:text-base"> | This Year</span>
-                  <p className="text-base-content/60 text-sm sm:text-base mt-1">Overview of total share capital contributions by month.</p>
+                  <span className="text-lg sm:text-xl lg:text-2xl font-semibold">
+                    Share Capital Activity
+                  </span>
+                  <span className="text-gray-400 text-sm sm:text-base">
+                    {" "}
+                    | This Year
+                  </span>
+                  <p className="text-base-content/60 text-sm sm:text-base mt-1">
+                    Overview of total share capital contributions by month.
+                  </p>
                 </div>
                 <div className="w-full min-w-0 flex-1">
                   <CoopContributionChart
@@ -305,7 +371,14 @@ function DashboardV2() {
                 type={"compact"}
                 showLinkPath={true}
                 linkPath={`/${memberRole}/coop-share-capital`}
-                headers={["Ref No.", "Account No", "Name", "Amount", "Payment Category", "Date"]}
+                headers={[
+                  "Ref No.",
+                  "Account No",
+                  "Name",
+                  "Amount",
+                  "Payment Category",
+                  "Date",
+                ]}
                 data={coopFunds}
                 isLoading={coopIsloading}
                 renderRow={(row) => {
@@ -317,17 +390,24 @@ function DashboardV2() {
                   const fullName = row?.full_name || "Not Found";
                   const amount = row?.amount || 0;
                   const paymentCategory = row?.category || "Not Found";
-                  const contributionDate = row?.contribution_date || "Not Found";
+                  const contributionDate =
+                    row?.contribution_date || "Not Found";
                   const isDisabled = !row?.full_name;
                   return (
-                    <tr key={id}
-                        className={`text-center ${isDisabled ?
-                        "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
+                    <tr
+                      key={id}
+                      className={`text-center ${
+                        isDisabled
+                          ? "opacity-90"
+                          : "cursor-pointer hover:bg-base-200/50"
+                      }`}
                     >
                       <td className="text-xs sm:text-sm font-medium px-2 py-3">
-                        {TABLE_PREFIX}{id}
+                        {TABLE_PREFIX}
+                        {id}
                       </td>
-                      <td className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
+                      <td
+                        className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
                         onClick={() => openProfile(memberId)}
                       >
                         {accountNo}
@@ -345,11 +425,20 @@ function DashboardV2() {
                               </div>
                             </div>
                             <span className="flex items-center gap-1 sm:gap-2">
-                              <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">{fullName}</span>
-                              <span className="xs:hidden text-xs truncate max-w-[60px]">{fullName.split(' ')[0]}</span>
+                              <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">
+                                {fullName}
+                              </span>
+                              <span className="xs:hidden text-xs truncate max-w-[60px]">
+                                {fullName.split(" ")[0]}
+                              </span>
                               {isDisabled && (
-                                <div className="tooltip tooltip-top" data-tip="System Generated">
-                                  <span className="badge badge-xs sm:badge-sm badge-ghost">?</span>
+                                <div
+                                  className="tooltip tooltip-top"
+                                  data-tip="System Generated"
+                                >
+                                  <span className="badge badge-xs sm:badge-sm badge-ghost">
+                                    ?
+                                  </span>
                                 </div>
                               )}
                             </span>
@@ -361,32 +450,49 @@ function DashboardV2() {
                       </td>
                       <td className="px-2 py-3">
                         {paymentCategory ? (
-                          <span className={`badge badge-soft font-semibold text-xs ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
-                            <span className="hidden sm:inline">{paymentCategory}</span>
-                            <span className="sm:hidden">{paymentCategory.split(' ')[0]}</span>
+                          <span
+                            className={`badge badge-soft font-semibold text-xs ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}
+                          >
+                            <span className="hidden sm:inline">
+                              {paymentCategory}
+                            </span>
+                            <span className="sm:hidden">
+                              {paymentCategory.split(" ")[0]}
+                            </span>
                           </span>
                         ) : (
-                          <span className="badge font-semibold badge-error text-xs">N/A</span>
+                          <span className="badge font-semibold badge-error text-xs">
+                            N/A
+                          </span>
                         )}
                       </td>
                       <td className="text-xs sm:text-sm px-2 py-3">
-                        {contributionDate ? new Date(contributionDate).toLocaleDateString() : "N/A"}
+                        {contributionDate
+                          ? new Date(contributionDate).toLocaleDateString()
+                          : "N/A"}
                       </td>
                     </tr>
-                  )
+                  );
                 }}
               />
-              
+
               <DataTableV2
                 title={"Club Funds"}
                 type={"compact"}
                 showLinkPath={true}
                 linkPath={`/${memberRole}/club-funds`}
-                headers={["Ref No.", "Account No.", "Name", "Amount", "Category", "Date"]}
+                headers={[
+                  "Ref No.",
+                  "Account No.",
+                  "Name",
+                  "Amount",
+                  "Category",
+                  "Date",
+                ]}
                 data={clubFunds}
                 isLoading={clubFundsIsLoading}
                 renderRow={(row) => {
-                  const TABLE_PREFIX = "CFC_"
+                  const TABLE_PREFIX = "CFC_";
                   const id = row?.contribution_id || "Not Found";
                   const memberId = row?.member_id || null;
                   const accountNo = row?.account_number || "Not Found";
@@ -396,13 +502,16 @@ function DashboardV2() {
                   const clubCategory = row?.category || "Not Found";
                   const paymentDate = row?.payment_date || "Not Found";
                   return (
-                    <tr key={id}
+                    <tr
+                      key={id}
                       className="text-center cursor-pointer hover:bg-base-200/50"
                     >
                       <td className="text-xs sm:text-sm font-medium px-2 py-3">
-                        {TABLE_PREFIX}{id}
+                        {TABLE_PREFIX}
+                        {id}
                       </td>
-                      <td className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
+                      <td
+                        className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
                         onClick={() => openProfile(memberId)}
                       >
                         {accountNo || "N/A"}
@@ -419,8 +528,12 @@ function DashboardV2() {
                                 />
                               </div>
                             </div>
-                            <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">{fullName}</span>
-                            <span className="xs:hidden text-xs truncate max-w-[60px]">{fullName.split(' ')[0]}</span>
+                            <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">
+                              {fullName}
+                            </span>
+                            <span className="xs:hidden text-xs truncate max-w-[60px]">
+                              {fullName.split(" ")[0]}
+                            </span>
                           </Fragment>
                         </span>
                       </td>
@@ -431,18 +544,22 @@ function DashboardV2() {
                         <span
                           className={`font-semibold text-xs sm:text-sm ${CLUB_CATEGORY_COLORS[clubCategory]}`}
                         >
-                          <span className="hidden sm:inline">{clubCategory}</span>
-                          <span className="sm:hidden">{clubCategory.split(' ')[0]}</span>
+                          <span className="hidden sm:inline">
+                            {clubCategory}
+                          </span>
+                          <span className="sm:hidden">
+                            {clubCategory.split(" ")[0]}
+                          </span>
                         </span>
                       </td>
                       <td className="text-xs sm:text-sm px-2 py-3">
                         {new Date(paymentDate).toLocaleDateString()}
                       </td>
                     </tr>
-                  )
+                  );
                 }}
               />
-              
+
               <DataTableV2
                 title={"Club Expenses"}
                 type={"compact"}
@@ -459,11 +576,13 @@ function DashboardV2() {
                   const category = row?.category || "Not Found";
                   const transactionDate = row?.transaction_date || "Not Found";
                   return (
-                    <tr key={id}
+                    <tr
+                      key={id}
                       className="text-center cursor-pointer hover:bg-base-200/50"
                     >
                       <td className="text-xs sm:text-sm font-medium px-2 py-3">
-                        {TABLE_PREFIX}{id}
+                        {TABLE_PREFIX}
+                        {id}
                       </td>
                       <td className="text-xs sm:text-sm font-medium px-2 py-3 truncate max-w-[120px] sm:max-w-none">
                         {title}
@@ -472,16 +591,20 @@ function DashboardV2() {
                         ₱ {display(amount)}
                       </td>
                       <td className="px-2 py-3">
-                        <span className={`font-semibold text-xs sm:text-sm ${CLUB_CATEGORY_COLORS[category]}`}>
+                        <span
+                          className={`font-semibold text-xs sm:text-sm ${CLUB_CATEGORY_COLORS[category]}`}
+                        >
                           <span className="hidden sm:inline">{category}</span>
-                          <span className="sm:hidden">{category.split(' ')[0]}</span>
+                          <span className="sm:hidden">
+                            {category.split(" ")[0]}
+                          </span>
                         </span>
                       </td>
                       <td className="text-xs sm:text-sm px-2 py-3">
                         {new Date(transactionDate).toLocaleDateString()}
                       </td>
                     </tr>
-                  )
+                  );
                 }}
               />
             </div>
@@ -492,15 +615,17 @@ function DashboardV2() {
             {/* RECENT ACTIVITIES */}
             <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-row justify-between items-center mb-4">
-                <h2 className="text-lg sm:text-xl font-semibold">Recent Activity</h2>
-                <button 
-                  onClick={() => navigate(`/${memberRole}/activity-logs`)} 
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Recent Activity
+                </h2>
+                <button
+                  onClick={() => navigate(`/${memberRole}/activity-logs`)}
                   className="btn btn-link no-underline text-primary hover:underline p-0 min-h-0 h-auto text-sm sm:text-base"
                 >
                   See More ➜
                 </button>
               </div>
-              
+
               {activityLogsIsLoading ? (
                 <div className="flex justify-center items-center h-40 sm:h-64">
                   <span className="loading loading-spinner loading-sm sm:loading-md"></span>
@@ -510,19 +635,29 @@ function DashboardV2() {
                   {activityLogsError?.message || "Unknown error"}
                 </div>
               ) : (
-                <ul className="space-y-3 sm:space-y-4 relative before:absolute before:top-0 before:bottom-0 before:left-2.5 before:w-px before:bg-base-300">      
+                <ul className="space-y-3 sm:space-y-4 relative before:absolute before:top-0 before:bottom-0 before:left-2.5 before:w-px before:bg-base-300">
                   {activityLogs?.slice(0, 6).map((log, index) => {
-                    const dotColor = ACTIVITY_LOGS_TYPE_COLORS[log.type] || 'bg-primary';
+                    const dotColor =
+                      ACTIVITY_LOGS_TYPE_COLORS[log.type] || "bg-primary";
                     return (
-                      <li key={log.activity_log_id || index} className="relative pl-6 sm:pl-8">
-                        <span className={`badge ${dotColor} w-2 h-2 sm:w-3 sm:h-3 p-0 rounded-full absolute left-1 sm:left-1 top-1.5`}></span>
+                      <li
+                        key={log.activity_log_id || index}
+                        className="relative pl-6 sm:pl-8"
+                      >
+                        <span
+                          className={`badge ${dotColor} w-2 h-2 sm:w-3 sm:h-3 p-0 rounded-full absolute left-1 sm:left-1 top-1.5`}
+                        ></span>
                         <div className="text-xs sm:text-sm leading-tight">
-                          <p className="font-medium line-clamp-2">{log.action}</p>
+                          <p className="font-medium line-clamp-2">
+                            {log.action}
+                          </p>
                           <p className="text-xs text-base-content/50 mt-1">
-                            {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
+                            {dayjs(log.timestamp).format("MMM D, YYYY h:mm A")}
                           </p>
                         </div>
-                        {index !== activityLogs.length - 1 && (<div className="mt-2 sm:mt-3 border-b border-base-200" />)}
+                        {index !== activityLogs.length - 1 && (
+                          <div className="mt-2 sm:mt-3 border-b border-base-200" />
+                        )}
                       </li>
                     );
                   })}
@@ -534,8 +669,13 @@ function DashboardV2() {
             <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-col h-full">
                 <div className="mb-3">
-                  <span className="text-lg sm:text-xl font-semibold">Club Expenses Breakdown</span>
-                  <span className="text-gray-400 text-sm sm:text-base"> | All Time</span>
+                  <span className="text-lg sm:text-xl font-semibold">
+                    Club Expenses Breakdown
+                  </span>
+                  <span className="text-gray-400 text-sm sm:text-base">
+                    {" "}
+                    | All Time
+                  </span>
                   <p className="ext-xs sm:text-sm text-base-content/100">
                     Distribution of club expenses by category
                   </p>
@@ -555,8 +695,13 @@ function DashboardV2() {
             <section className="card bg-base-100 shadow-sm sm:shadow-md min-h-[300px] sm:min-h-[400px] p-4 sm:p-5 rounded-xl sm:rounded-2xl">
               <div className="flex flex-col h-full">
                 <div className="mb-4">
-                  <span className="text-lg sm:text-xl font-semibold">Club Funds vs. Expenses</span>
-                  <span className="text-gray-400 text-sm sm:text-base"> | This Year</span>
+                  <span className="text-lg sm:text-xl font-semibold">
+                    Club Funds vs. Expenses
+                  </span>
+                  <span className="text-gray-400 text-sm sm:text-base">
+                    {" "}
+                    | This Year
+                  </span>
                   <p className="mt-1 text-xs sm:text-sm text-base-content/70">
                     Track yearly trends between club funds and expenses.
                   </p>
@@ -574,9 +719,9 @@ function DashboardV2() {
             </section>
           </div>
         </div>
-      </div>  
+      </div>
     </div>
-  )
+  );
 }
 
-export default DashboardV2
+export default DashboardV2;

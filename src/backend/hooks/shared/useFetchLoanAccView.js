@@ -63,10 +63,15 @@ export function useFetchLoanAccView({
           event: "*",
           schema: "public",
           table: "loan_accounts",
-          filter: effectiveAccountNumber ? `account_number=eq.${effectiveAccountNumber}` : undefined,
+          filter: effectiveAccountNumber
+            ? `account_number=eq.${effectiveAccountNumber}`
+            : undefined,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["view_loan_accounts"], exact: false });
+          queryClient.invalidateQueries({
+            queryKey: ["view_loan_accounts"],
+            exact: false,
+          });
         }
       )
       .subscribe();

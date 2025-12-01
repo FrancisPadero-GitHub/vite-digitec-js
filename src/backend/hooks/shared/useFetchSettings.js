@@ -2,13 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 
 const fetchSettings = async () => {
-  const { data, error } = await supabase
-    .from("settings")
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("settings").select("*").single();
   if (error) throw new Error(error.message);
   return data;
-}
+};
 
 export function useFetchSettings() {
   return useQuery({

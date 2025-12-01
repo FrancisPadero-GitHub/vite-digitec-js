@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
+import Proptypes from "prop-types";
 /**
  * DEPRECATED - Use DataTableV2 from shared/components instead
- * 
- * 
+ *
+ *
  * MainDataTable Component
-  *
+ *
  * Renders a dynamic table with a header, body, and a built -in pagination footer.
  * @param { string[] } headers - Array of column headers to display at the top of the table.
  * @param { Array < Object >} data - Array of row objects containing the table data for the current page.
@@ -14,15 +14,15 @@ import { Link } from "react-router-dom";
  * @param { number } limit - Maximum number of rows to display per page.
  * @param { number } total - Total number of records across all pages(used for pagination calculations).
  * @param { function} setPage - Setter function to update the current page.Accepts either a number or a callback`(prevPage) => newPage`.
- * 
+ *
  * */
 
 function MainDataTable({
   headers = [],
   data = [],
   isLoading,
-  isError,       // new prop
-  error,         // optional error object or message
+  isError, // new prop
+  error, // optional error object or message
   page,
   limit,
   total,
@@ -63,13 +63,17 @@ function MainDataTable({
                 <tr>
                   <td colSpan={headers.length} className="py-10 text-center">
                     <div className="text-red-500 font-semibold">
-                      {error?.message || "Something went wrong while loading data."}
+                      {error?.message ||
+                        "Something went wrong while loading data."}
                     </div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={headers.length} className="py-10 text-center text-gray-500 italic">
+                  <td
+                    colSpan={headers.length}
+                    className="py-10 text-center text-gray-500 italic"
+                  >
                     No data available.
                   </td>
                 </tr>
@@ -83,7 +87,8 @@ function MainDataTable({
         {/* Footer pagination */}
         <div className="flex justify-between items-center p-4 border-t border-base-content/5">
           <div className="text-sm text-base-content/70">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries
+            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)}{" "}
+            of {total} entries
           </div>
           <div className="join">
             <button
@@ -109,6 +114,17 @@ function MainDataTable({
     </section>
   );
 }
-
+MainDataTable.propTypes = {
+  headers: Proptypes.arrayOf(Proptypes.string).isRequired,
+  data: Proptypes.arrayOf(Proptypes.object).isRequired,
+  isLoading: Proptypes.bool.isRequired,
+  isError: Proptypes.bool,
+  error: Proptypes.oneOfType([Proptypes.object, Proptypes.string]),
+  page: Proptypes.number.isRequired,
+  limit: Proptypes.number.isRequired,
+  total: Proptypes.number.isRequired,
+  setPage: Proptypes.func.isRequired,
+  renderRow: Proptypes.func.isRequired,
+};
 
 export default MainDataTable;

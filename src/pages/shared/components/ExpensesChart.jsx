@@ -7,6 +7,7 @@ import {
   Legend,
   Label,
 } from "recharts";
+import Proptypes from "prop-types";
 
 const COLORS = [
   "#6366F1",
@@ -21,9 +22,8 @@ function ExpensesChart({
   data = [],
   isLoading = false,
   isError = false,
-  error = null
+  error = null,
 }) {
-
   // Group and sum by category
   const grouped =
     data?.reduce((acc, exp) => {
@@ -141,5 +141,12 @@ function ExpensesChart({
     </div>
   );
 }
+
+ExpensesChart.propTypes = {
+  data: Proptypes.array,
+  isLoading: Proptypes.bool,
+  isError: Proptypes.bool,
+  error: Proptypes.object,
+};
 
 export default ExpensesChart;

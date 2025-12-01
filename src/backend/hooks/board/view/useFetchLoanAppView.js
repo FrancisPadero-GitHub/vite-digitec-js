@@ -5,7 +5,7 @@ import { useFetchAccountNumber } from "../../shared/useFetchAccountNumber.js";
 
 /**
  * Fetches coop loan applications. VIEW TABLE ONLY NOT BASE TABLE
- * 
+ *
  * If accountNumber is provided (or fetched from auth), returns loans for that member only.
  * If no accountNumber, returns all loan applications.
  */
@@ -32,30 +32,44 @@ async function fetchLoanAppView({ accountNumber, page, limit }) {
   return { data, count };
 }
 
-export function useFetchLoanAppView({ page = null, limit = null, accountNumber = null, useLoggedInMember = false } = {}) {
-
+export function useFetchLoanAppView({
+  page = null,
+  limit = null,
+  accountNumber = null,
+  useLoggedInMember = false,
+} = {}) {
   const queryClient = useQueryClient();
 
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();     // fetches logged in account number
-  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;       // if the useLoggedInMember = true
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber(); // fetches logged in account number
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber; // if the useLoggedInMember = true
 
   // Realtime subscription to base table `loan_applications` so the view can be refreshed
   useEffect(() => {
     if (useLoggedInMember && !effectiveAccountNumber) return;
 
     const channel = supabase
-      .channel(`realtime-view-loan-applications-${effectiveAccountNumber ?? "all"}`)
+      .channel(
+        `realtime-view-loan-applications-${effectiveAccountNumber ?? "all"}`
+      )
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "loan_applications",
-          filter: effectiveAccountNumber ? `account_number=eq.${effectiveAccountNumber}` : undefined,
+          filter: effectiveAccountNumber
+            ? `account_number=eq.${effectiveAccountNumber}`
+            : undefined,
         },
         () => {
           // Invalidate the view query so it refetches the derived data from the DB view
-          queryClient.invalidateQueries({ queryKey: ["view_loan_applications"], exact: false });
+          queryClient.invalidateQueries({
+            queryKey: ["view_loan_applications"],
+            exact: false,
+          });
         }
       )
       .subscribe();
@@ -80,13 +94,13 @@ export function useFetchLoanAppView({ page = null, limit = null, accountNumber =
 /**
  * Fetch everything (no pagination)
  * const { data, count } = useFetchLoanApp({});
- * 
+ *
  * fetch with filter
  * const { data, count } = useFetchLoanApp({ page: 1, limit: 20 });
- * 
- * fetch specific member 
+ *
+ * fetch specific member
  * const { data, count } = useFetchLoanApp({ page: 1, limit: 20, accountNumber: ID_HERE });
- * 
- * fetch with the current logged in user 
+ *
+ * fetch with the current logged in user
  * const { data, count } = useFetchLoanApp({ page: 1, limit: 20, useLoggedInMember: true });
  */

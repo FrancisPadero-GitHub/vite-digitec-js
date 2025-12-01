@@ -39,7 +39,10 @@ export const useAddExpenses = () => {
     mutationFn: insertExpenses,
     onSuccess: async (data) => {
       console.log("Expenses Added!: ", data);
-      queryClient.invalidateQueries({queryKey:["club_funds_expenses"], exact: false});
+      queryClient.invalidateQueries({
+        queryKey: ["club_funds_expenses"],
+        exact: false,
+      });
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

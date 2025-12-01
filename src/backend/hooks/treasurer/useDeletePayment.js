@@ -17,7 +17,9 @@ const markAsDelete = async ({ table, column_name, id }) => {
   // Fetch the existing payment record to get the amount and loan details
   const { data: existingPayment, error: fetchError } = await supabase
     .from(table)
-    .select("total_amount, loan_ref_number, account_number, payment_method, payment_date, receipt_no")
+    .select(
+      "total_amount, loan_ref_number, account_number, payment_method, payment_date, receipt_no"
+    )
     .eq(column_name, id)
     .single();
 
@@ -39,7 +41,7 @@ const markAsDelete = async ({ table, column_name, id }) => {
       receipt_no: existingPayment.receipt_no,
     });
   }
-  
+
   // Mark the payment record as deleted
   const { data, error } = await supabase
     .from(table)
@@ -60,9 +62,15 @@ export const useDeletePayment = (table) => {
     mutationFn: markAsDelete,
     onSuccess: async () => {
       console.log("Record marked as deleted, table:", table);
-      queryClient.invalidateQueries({queryKey: [table], exact: false});
-      queryClient.invalidateQueries({queryKey: [`view_${table}`], exact: false});
-      queryClient.invalidateQueries({queryKey: ["loan_payment_schedules"], exact: false});
+      queryClient.invalidateQueries({ queryKey: [table], exact: false });
+      queryClient.invalidateQueries({
+        queryKey: [`view_${table}`],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["loan_payment_schedules"],
+        exact: false,
+      });
       queryClient.invalidateQueries({
         queryKey: ["get_funds_summary"],
         exact: false,

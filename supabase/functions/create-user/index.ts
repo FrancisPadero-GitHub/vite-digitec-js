@@ -18,7 +18,9 @@ serve(async (req) => {
 
   // Dynamically set CORS headers based on allowed origins
   const corsHeaders = {
-    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin)
+      ? origin
+      : "",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "authorization, content-type",
   };

@@ -37,7 +37,10 @@ export function useFetchPendingLoanApplications() {
         "postgres_changes",
         { event: "*", schema: "public", table: "loan_applications" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["pendingLoanApplications"], exact: true });
+          queryClient.invalidateQueries({
+            queryKey: ["pendingLoanApplications"],
+            exact: true,
+          });
         }
       )
       .subscribe();
@@ -61,7 +64,10 @@ export function useFetchPendingLoanReleases() {
         "postgres_changes",
         { event: "*", schema: "public", table: "loan_accounts" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["pendingLoanReleases"], exact: true });
+          queryClient.invalidateQueries({
+            queryKey: ["pendingLoanReleases"],
+            exact: true,
+          });
         }
       )
       .subscribe();

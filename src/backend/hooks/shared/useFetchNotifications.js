@@ -17,10 +17,16 @@ async function fetchNotifications(accountNumber) {
   return data;
 }
 
-export function useFetchNotifications({ accountNumber = null, useLoggedInMember = false } = {}) {
+export function useFetchNotifications({
+  accountNumber = null,
+  useLoggedInMember = false,
+} = {}) {
   const queryClient = useQueryClient();
-  const { data: loggedInAccountNumber, isLoading: accountLoading } = useFetchAccountNumber();
-  const effectiveAccountNumber = useLoggedInMember ? loggedInAccountNumber : accountNumber;
+  const { data: loggedInAccountNumber, isLoading: accountLoading } =
+    useFetchAccountNumber();
+  const effectiveAccountNumber = useLoggedInMember
+    ? loggedInAccountNumber
+    : accountNumber;
 
   const queryResult = useQuery({
     queryKey: ["notifications", effectiveAccountNumber],
@@ -39,33 +45,38 @@ export function useFetchNotifications({ accountNumber = null, useLoggedInMember 
     const channel = supabase
       .channel(`realtime-notifications-${effectiveAccountNumber}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
+          event: "*",
+          schema: "public",
+          table: "notifications",
           filter: `recipient_id=eq.${effectiveAccountNumber}`,
         },
         (payload) => {
-          queryClient.setQueryData(["notifications", effectiveAccountNumber], (old = []) => {
-            const { eventType, new: newRow, old: oldRow } = payload;
-            switch (eventType) {
-              case 'INSERT':
-                // Avoid duplicate if already present
-                if (old.some(r => r.id === newRow.id)) return old;
-                return [newRow, ...old].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-              case 'UPDATE':
-                // If the notification was soft-deleted (deleted_at set), remove it from cache
-                if (newRow?.deleted_at) {
-                  return old.filter(r => r.id !== newRow.id);
-                }
-                return old.map(r => r.id === newRow.id ? newRow : r);
-              case 'DELETE':
-                return old.filter(r => r.id !== (oldRow?.id));
-              default:
-                return old;
+          queryClient.setQueryData(
+            ["notifications", effectiveAccountNumber],
+            (old = []) => {
+              const { eventType, new: newRow, old: oldRow } = payload;
+              switch (eventType) {
+                case "INSERT":
+                  // Avoid duplicate if already present
+                  if (old.some((r) => r.id === newRow.id)) return old;
+                  return [newRow, ...old].sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                  );
+                case "UPDATE":
+                  // If the notification was soft-deleted (deleted_at set), remove it from cache
+                  if (newRow?.deleted_at) {
+                    return old.filter((r) => r.id !== newRow.id);
+                  }
+                  return old.map((r) => (r.id === newRow.id ? newRow : r));
+                case "DELETE":
+                  return old.filter((r) => r.id !== oldRow?.id);
+                default:
+                  return old;
+              }
             }
-          });
+          );
         }
       )
       .subscribe();

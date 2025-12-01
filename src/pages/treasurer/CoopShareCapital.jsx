@@ -1,10 +1,14 @@
 import { useState, useTransition, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
-
 
 // Fetch Hooks
 import { useMemberRole } from "../../backend/context/useMemberRole";
@@ -23,9 +27,11 @@ import FilterToolbar from "../shared/components/FilterToolbar";
 import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
 
 // Constants
-import { CAPITAL_CATEGORY_COLORS, PAYMENT_METHOD_COLORS } from "../../constants/Color";
+import {
+  CAPITAL_CATEGORY_COLORS,
+  PAYMENT_METHOD_COLORS,
+} from "../../constants/Color";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png";
-
 
 // utils
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
@@ -37,7 +43,7 @@ function getLocalDateString(date) {
   const d = new Date(date);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().split("T")[0];
-};
+}
 
 function CoopShareCapital() {
   // helper
@@ -51,9 +57,13 @@ function CoopShareCapital() {
   const { data: coop_data, isLoading, isError, error } = useFetchCoopView({});
 
   // mutation hooks
-  const { mutate: mutateAdd, isPending: isAddPending } = useAddCoopContributions();
-  const { mutate: mutateEdit, isPending: isEditPending } = useEditCoopContributions();
-  const { mutate: mutateDelete } = useDelete("coop_share_capital_contributions");
+  const { mutate: mutateAdd, isPending: isAddPending } =
+    useAddCoopContributions();
+  const { mutate: mutateEdit, isPending: isEditPending } =
+    useEditCoopContributions();
+  const { mutate: mutateDelete } = useDelete(
+    "coop_share_capital_contributions"
+  );
 
   /**
    *  Search and filter for the filterbar
@@ -68,7 +78,7 @@ function CoopShareCapital() {
   /**
    * Use Transitions handler for the filtertable to be smooth and stable if the datasets grow larger
    * it needs to be paired with useMemo on the filtered data (clubFunds)
-   * 
+   *
    */
   // Add useTransition
   const [isPending, startTransition] = useTransition();
@@ -110,36 +120,50 @@ function CoopShareCapital() {
       const generatedId = `${TABLE_PREFIX}_${row?.coop_contri_id || ""}`;
       const matchesSearch =
         debouncedSearch === "" ||
-        (row.full_name && row.full_name
+        (row.full_name &&
+          row.full_name
+            .toLowerCase()
+            .includes(debouncedSearch.toLowerCase())) ||
+        row.account_number
           .toLowerCase()
-          .includes(debouncedSearch
-            .toLowerCase())) ||
-        row.account_number.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          .includes(debouncedSearch.toLowerCase()) ||
         row.category?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         generatedId.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const matchesSource =
-        sourceFilter === "" || row.source === sourceFilter;
+      const matchesSource = sourceFilter === "" || row.source === sourceFilter;
       const matchesCategory =
         categoryFilter === "" || row.category === categoryFilter;
       const matchesMethod =
-        paymentMethodFilter === "" || row.payment_method === paymentMethodFilter;
-      const date = row.contribution_date ? new Date(row.contribution_date) : null;
+        paymentMethodFilter === "" ||
+        row.payment_method === paymentMethodFilter;
+      const date = row.contribution_date
+        ? new Date(row.contribution_date)
+        : null;
       const matchesYear =
-        yearFilter === "" || (date && date.getFullYear().toString() === yearFilter);
+        yearFilter === "" ||
+        (date && date.getFullYear().toString() === yearFilter);
 
       // To avoid subtext displaying numbers instead of month names
       // I had to convert the values from the monthFilter to numbers for comparison
       const monthNameToNumber = {
-        January: 1, February: 2,
-        March: 3, April: 4,
-        May: 5, June: 6,
-        July: 7, August: 8,
-        September: 9, October: 10,
-        November: 11, December: 12,
+        January: 1,
+        February: 2,
+        March: 3,
+        April: 4,
+        May: 5,
+        June: 6,
+        July: 7,
+        August: 8,
+        September: 9,
+        October: 10,
+        November: 11,
+        December: 12,
       };
-      const filterMonthNumber = monthFilter ? monthNameToNumber[monthFilter] : null;
+      const filterMonthNumber = monthFilter
+        ? monthNameToNumber[monthFilter]
+        : null;
       const matchesMonth =
-        monthFilter === "" || (date && (date.getMonth() + 1) === filterMonthNumber);
+        monthFilter === "" ||
+        (date && date.getMonth() + 1 === filterMonthNumber);
 
       return (
         matchesSearch &&
@@ -149,8 +173,16 @@ function CoopShareCapital() {
         matchesMethod &&
         matchesSource
       );
-    })
-  }, [coop_data, debouncedSearch, categoryFilter, yearFilter, monthFilter, paymentMethodFilter, sourceFilter]);
+    });
+  }, [
+    coop_data,
+    debouncedSearch,
+    categoryFilter,
+    yearFilter,
+    monthFilter,
+    paymentMethodFilter,
+    sourceFilter,
+  ]);
 
   // This is used for the combobox selection of members upon searching for account_number
   const [query, setQuery] = useState("");
@@ -160,12 +192,13 @@ function CoopShareCapital() {
   const filteredMembers =
     debouncedQuery === ""
       ? (members || []).filter((m) => m.account_role === "regular-member")
-      : members.filter((m) =>
-        m.account_role === "regular-member" &&
-        `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
-          .toLowerCase()
-          .includes(debouncedQuery.toLowerCase())
-      );
+      : members.filter(
+          (m) =>
+            m.account_role === "regular-member" &&
+            `${m.account_number} ${m.f_name} ${m.l_name} ${m.account_role}`
+              .toLowerCase()
+              .includes(debouncedQuery.toLowerCase())
+        );
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
@@ -177,17 +210,17 @@ function CoopShareCapital() {
 
   // for the subtext of data table
   // just for fancy subtext in line with active filters
-  const activeFiltersText = [
-    debouncedSearch ? `Search: "${debouncedSearch}"` : null,
-    sourceFilter ? `${sourceFilter}` : null,
-    categoryFilter ? `${categoryFilter}` : null,
-    paymentMethodFilter ? `${paymentMethodFilter}` : null,
-    yearFilter ? `${yearFilter}` : null,
-    monthFilter ? `${monthFilter}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ") || "Showing all contributions";
-
+  const activeFiltersText =
+    [
+      debouncedSearch ? `Search: "${debouncedSearch}"` : null,
+      sourceFilter ? `${sourceFilter}` : null,
+      categoryFilter ? `${categoryFilter}` : null,
+      paymentMethodFilter ? `${paymentMethodFilter}` : null,
+      yearFilter ? `${yearFilter}` : null,
+      monthFilter ? `${monthFilter}` : null,
+    ]
+      .filter(Boolean)
+      .join(" - ") || "Showing all contributions";
 
   // clear filters button
   const handleClearFilters = () => {
@@ -197,8 +230,7 @@ function CoopShareCapital() {
     setCategoryFilter("");
     setYearFilter("");
     setMonthFilter("");
-
-  }
+  };
 
   // extract default form values to reuse in modal resets and in rhf initialization
   const defaultFormValues = {
@@ -218,9 +250,9 @@ function CoopShareCapital() {
     handleSubmit,
     reset,
     register,
-    formState: { isDirty }
+    formState: { isDirty },
   } = useForm({
-    defaultValues: defaultFormValues
+    defaultValues: defaultFormValues,
   });
 
   /**
@@ -265,15 +297,18 @@ function CoopShareCapital() {
 
   const confirmDelete = () => {
     if (deleteTargetId) {
-      mutateDelete({
-        table: "coop_cbu_contributions",
-        column_name: "coop_contri_id",
-        id: deleteTargetId,
-      }, {
-        onSuccess: () => {
-          toast.success("Transaction deleted successfully");
+      mutateDelete(
+        {
+          table: "coop_cbu_contributions",
+          column_name: "coop_contri_id",
+          id: deleteTargetId,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Transaction deleted successfully");
+          },
         }
-      });
+      );
       closeDeleteModal();
       closeModal();
     }
@@ -285,51 +320,57 @@ function CoopShareCapital() {
       return;
     }
 
-    console.log(`coop test`, data )
+    console.log(`coop test`, data);
     if (modalType === "add") {
-      mutateAdd(data,
-        {
-          onSuccess: () => {
-            toast.success("Coop contribution added")
-            closeModal();
-          },
-          onError: () => {
-            toast.error("Something went wrong")
-          }
-        }
-      );
+      mutateAdd(data, {
+        onSuccess: () => {
+          toast.success("Coop contribution added");
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong");
+        },
+      });
     } else if (modalType === "edit") {
-      mutateEdit(data,
-        {
-          onSuccess: () => {
-            toast.success("Successfully updated")
-            closeModal();
-          },
-          onError: () => {
-            toast.error("Something went wrong");
-          }
-        }
-      );
+      mutateEdit(data, {
+        onSuccess: () => {
+          toast.success("Successfully updated");
+          closeModal();
+        },
+        onError: () => {
+          toast.error("Something went wrong");
+        },
+      });
     }
   };
 
   const fields = [
     { label: "Amount", name: "amount", type: "number", autoComplete: "off" },
     {
-      label: "Payment Category", name: "category", type: "select",
+      label: "Payment Category",
+      name: "category",
+      type: "select",
       options: [
         { label: "Monthly", value: "Monthly" },
-        { label: "Initial", value: "Initial" }
-      ]
+        { label: "Initial", value: "Initial" },
+      ],
     },
-    { label: "Date", name: "contribution_date", type: "date", autoComplete: "date" },
     {
-      label: "Payment Method", name: "payment_method", type: "select", autoComplete: "off",
+      label: "Date",
+      name: "contribution_date",
+      type: "date",
+      autoComplete: "date",
+    },
+    {
+      label: "Payment Method",
+      name: "payment_method",
+      type: "select",
+      autoComplete: "off",
       options: [
         { label: "Cash", value: "Cash" },
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
-      ]
+      ],
     },
     { label: "Remarks", name: "remarks", type: "text", optional: true },
   ];
@@ -353,7 +394,7 @@ function CoopShareCapital() {
                   { label: "Initial", value: "Initial" },
                   { label: "Monthly", value: "Monthly" },
                   { label: "System", value: "System" },
-                ]
+                ],
               },
               {
                 label: "All Method",
@@ -362,8 +403,8 @@ function CoopShareCapital() {
                 options: [
                   { label: "Cash", value: "Cash" },
                   { label: "GCash", value: "GCash" },
-                  { label: "Bank", value: "Bank" }
-                ]
+                  { label: "Bank", value: "Bank" },
+                ],
               },
               {
                 label: "All Year",
@@ -407,8 +448,6 @@ function CoopShareCapital() {
             </button>
           )}
         </div>
-          
-
 
         <DataTableV2
           title="Coop Share Capital Contributions"
@@ -421,7 +460,7 @@ function CoopShareCapital() {
             "Amount",
             "Category",
             "Date",
-            "Method"
+            "Method",
           ]}
           filterActive={activeFiltersText !== "Showing all contributions"}
           data={coop}
@@ -442,17 +481,24 @@ function CoopShareCapital() {
             const paymentMethod = row?.payment_method || "Not Found";
             const isDisabled = !row?.full_name; // condition (you can adjust logic)
             return (
-              <tr key={id}
-                onClick={memberRole !== "board" ? () => openEditModal(row) : undefined}
-                className={`text-center ${isDisabled ?
-                  "opacity-90" : "cursor-pointer hover:bg-base-200/50"}`}
+              <tr
+                key={id}
+                onClick={
+                  memberRole !== "board" ? () => openEditModal(row) : undefined
+                }
+                className={`text-center ${
+                  isDisabled
+                    ? "opacity-90"
+                    : "cursor-pointer hover:bg-base-200/50"
+                }`}
               >
                 {/* Ref no. */}
                 <td className=" text-center font-medium text-xs">
                   {TABLE_PREFIX}_{id}
                 </td>
                 {/* Account No */}
-                <td className=" text-center font-medium text-xs hover:underline"
+                <td
+                  className=" text-center font-medium text-xs hover:underline"
                   onClick={() => openProfile(memberId)}
                 >
                   {accountNo}
@@ -464,18 +510,20 @@ function CoopShareCapital() {
                       {/* Avatar */}
                       <div className="avatar">
                         <div className="mask mask-circle w-10 h-10">
-                          <img
-                            src={avatarUrl}
-                            alt={fullName}
-                          />
+                          <img src={avatarUrl} alt={fullName} />
                         </div>
                       </div>
                       {/* Full name */}
                       <span className="flex items-center gap-2">
                         <span className="truncate">{fullName}</span>
                         {isDisabled && (
-                          <div className="tooltip tooltip-top" data-tip="System Generated">
-                            <span className="badge badge-sm badge-ghost">?</span>
+                          <div
+                            className="tooltip tooltip-top"
+                            data-tip="System Generated"
+                          >
+                            <span className="badge badge-sm badge-ghost">
+                              ?
+                            </span>
                           </div>
                         )}
                       </span>
@@ -489,17 +537,19 @@ function CoopShareCapital() {
                 {/* Payment Category */}
                 <td>
                   {paymentCategory ? (
-                    <span className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}>
+                    <span
+                      className={`badge badge-soft font-semibold ${CAPITAL_CATEGORY_COLORS[paymentCategory]}`}
+                    >
                       {paymentCategory}
                     </span>
                   ) : (
-                    <span className="badge font-semibold badge-error">Not Found</span>
+                    <span className="badge font-semibold badge-error">
+                      Not Found
+                    </span>
                   )}
                 </td>
                 {/* Contribution Date */}
-                <td>
-                  {contributionDate}
-                </td>
+                <td>{contributionDate}</td>
                 {/* Payment Method */}
                 <td>
                   <span
@@ -509,7 +559,7 @@ function CoopShareCapital() {
                   </span>
                 </td>
               </tr>
-            )
+            );
           }}
         />
       </div>
@@ -526,141 +576,164 @@ function CoopShareCapital() {
       >
         <div className="pl-1 pr-2">
           <div className="form-control">
-          <label className="label text-sm font-semibold mb-2">Member Account</label>
-          <Controller
-            name="account_number"
-            control={control}
-            render={({ field }) => (
-              <div className="relative">
-                <Combobox
-                  value={members.find((m) => m.account_number === field.value) || null}
-                  onChange={(member) => field.onChange(member?.account_number)}
-                >
-                  <ComboboxInput
-                    required
-                    className="input input-bordered w-full"
-                    placeholder="Search by Account Number or Name..."
-                    displayValue={(member) => (member ? member.account_number : "")}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                  <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
-                    {filteredMembers.length === 0 ? (
-                      <div className="px-4 py-2 text-base-content/60">No members found.</div>
-                    ) : (
-                      filteredMembers.map((member) => (
-                        <ComboboxOption
-                          key={member.account_number}
-                          value={member}
-                          className={({ focus }) =>
-                            `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
-                          }
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="avatar">
-                              <div className="mask mask-circle w-10 h-10">
-                                <img
-                                  src={member.avatar_url || placeHolderAvatar}
-                                  alt={`${member.f_name} ${member.l_name}`}
-                                />
-                              </div>
-                            </div>
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <span className="font-mono text-sm font-semibold">{member.account_number}</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-sm truncate">{member.f_name} {member.l_name}</span>
-                                <span className="text-xs italic">({member.account_role})</span>
-                              </div>
-                            </div>
-                          </div>
-                        </ComboboxOption>
-                      ))
-                    )}
-                  </ComboboxOptions>
-                </Combobox>
-              </div>
-            )}
-          />
-        </div>
-
-        {fields.map(({ label, name, type, options, autoComplete, optional }) => (
-          <div key={name} className="form-control w-full mt-2">
-            <label htmlFor={name}>
-              <span className="label text-sm font-semibold mb-2">
-                {label}
-                {optional && <span className="text-base-content/60 text-sm">(optional)</span>}
-              </span>
+            <label className="label text-sm font-semibold mb-2">
+              Member Account
             </label>
-
-            {name === "amount" ? (
-              <Controller
-                name="amount"
-                control={control}
-                rules={{
-                  required: true,
-                  min: {
-                    value: 1,
-                    message: "Amount must be greater than 0",
-                  },
-                  validate: (value) => value > 0 || "Amount cannot be zero or negative",
-                }}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <input
-                      id="amount"
-                      type="number"
-                      autoComplete={autoComplete}
-                      value={field.value}
-                      placeholder="Enter Amount"
-                      onWheel={(e) => e.target.blur()}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        if (raw === "") {
-                          field.onChange(""); // allow clearing
-                          return;
-                        }
-
-                        const value = Number(raw);
-                        field.onChange(value < 0 ? 0 : value);
-                      }}
-                      className={`input input-bordered w-full ${error ? "input-error" : ""}`}
+            <Controller
+              name="account_number"
+              control={control}
+              render={({ field }) => (
+                <div className="relative">
+                  <Combobox
+                    value={
+                      members.find((m) => m.account_number === field.value) ||
+                      null
+                    }
+                    onChange={(member) =>
+                      field.onChange(member?.account_number)
+                    }
+                  >
+                    <ComboboxInput
+                      required
+                      className="input input-bordered w-full"
+                      placeholder="Search by Account Number or Name..."
+                      displayValue={(member) =>
+                        member ? member.account_number : ""
+                      }
+                      onChange={(e) => setQuery(e.target.value)}
                     />
-                    {error && (
-                      <span className="text-sm text-error mt-1 block">
-                        {error.message}
+                    <ComboboxOptions className="absolute z-[800] w-full mt-1 rounded-lg bg-base-100 shadow-lg max-h-60 overflow-auto border border-base-200">
+                      {filteredMembers.length === 0 ? (
+                        <div className="px-4 py-2 text-base-content/60">
+                          No members found.
+                        </div>
+                      ) : (
+                        filteredMembers.map((member) => (
+                          <ComboboxOption
+                            key={member.account_number}
+                            value={member}
+                            className={({ focus }) =>
+                              `px-4 py-2 cursor-pointer transition-colors duration-150 ${focus ? "bg-primary/90 text-primary-content" : ""}`
+                            }
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="avatar">
+                                <div className="mask mask-circle w-10 h-10">
+                                  <img
+                                    src={member.avatar_url || placeHolderAvatar}
+                                    alt={`${member.f_name} ${member.l_name}`}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex flex-col flex-1 min-w-0">
+                                <span className="font-mono text-sm font-semibold">
+                                  {member.account_number}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-sm truncate">
+                                    {member.f_name} {member.l_name}
+                                  </span>
+                                  <span className="text-xs italic">
+                                    ({member.account_role})
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </ComboboxOption>
+                        ))
+                      )}
+                    </ComboboxOptions>
+                  </Combobox>
+                </div>
+              )}
+            />
+          </div>
+
+          {fields.map(
+            ({ label, name, type, options, autoComplete, optional }) => (
+              <div key={name} className="form-control w-full mt-2">
+                <label htmlFor={name}>
+                  <span className="label text-sm font-semibold mb-2">
+                    {label}
+                    {optional && (
+                      <span className="text-base-content/60 text-sm">
+                        (optional)
                       </span>
                     )}
-                  </>
-                )}
-              />
-            ) : type === "select" ? (
-              <select
-                id={name}
-                autoComplete={autoComplete}
-                {...register(name, { required: name !== "remarks" })}
-                className="select select-bordered w-full"
-              >
-                <option value="" disabled>
-                  Select {label}
-                </option>
-                {options?.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                id={name}
-                autoComplete={autoComplete}
-                type={type}
-                {...register(name, { required: name !== "remarks" })}
-                className="input input-bordered w-full"
-              />
-            )}
-          </div>
-        ))}
-        </div>
+                  </span>
+                </label>
 
+                {name === "amount" ? (
+                  <Controller
+                    name="amount"
+                    control={control}
+                    rules={{
+                      required: true,
+                      min: {
+                        value: 1,
+                        message: "Amount must be greater than 0",
+                      },
+                      validate: (value) =>
+                        value > 0 || "Amount cannot be zero or negative",
+                    }}
+                    render={({ field, fieldState: { error } }) => (
+                      <>
+                        <input
+                          id="amount"
+                          type="number"
+                          autoComplete={autoComplete}
+                          value={field.value}
+                          placeholder="Enter Amount"
+                          onWheel={(e) => e.target.blur()}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === "") {
+                              field.onChange(""); // allow clearing
+                              return;
+                            }
+
+                            const value = Number(raw);
+                            field.onChange(value < 0 ? 0 : value);
+                          }}
+                          className={`input input-bordered w-full ${error ? "input-error" : ""}`}
+                        />
+                        {error && (
+                          <span className="text-sm text-error mt-1 block">
+                            {error.message}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  />
+                ) : type === "select" ? (
+                  <select
+                    id={name}
+                    autoComplete={autoComplete}
+                    {...register(name, { required: name !== "remarks" })}
+                    className="select select-bordered w-full"
+                  >
+                    <option value="" disabled>
+                      Select {label}
+                    </option>
+                    {options?.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id={name}
+                    autoComplete={autoComplete}
+                    type={type}
+                    {...register(name, { required: name !== "remarks" })}
+                    className="input input-bordered w-full"
+                  />
+                )}
+              </div>
+            )
+          )}
+        </div>
       </FormModal>
 
       <DeleteConfirmationModal

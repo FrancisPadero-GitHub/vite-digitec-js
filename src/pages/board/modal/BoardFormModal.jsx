@@ -15,7 +15,6 @@ function BoardFormModal({
   delDisabled,
   memberRole,
 }) {
-
   if (!open) return null;
 
   const handleFormSubmit = (e) => {
@@ -33,7 +32,6 @@ function BoardFormModal({
         </>
       );
     }
-
 
     if (type) return "Next"; // When board picks "Approved" in decision, show "Next"
     if (memberRole === "board") return "Update"; //When board picks "Pending", "On Review", "Denied" in application decision
@@ -104,6 +102,5 @@ BoardFormModal.propTypes = {
   delDisabled: PropTypes.bool,
   memberRole: PropTypes.string,
 };
-
 
 export default BoardFormModal;
