@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 // Personal Settings Page for Treasurer
 
 function Settings() {
   // TODO: Replace with actual user data from auth context
   const [userSettings, setUserSettings] = useState({
-    email: 'treasurer@digitec.com',
-    fullName: 'John Treasurer',
-    phoneNumber: '+63 912 345 6789',
+    email: "treasurer@digitec.com",
+    fullName: "John Treasurer",
+    phoneNumber: "+63 912 345 6789",
     emailNotifications: true,
     smsNotifications: false,
     paymentReminders: true,
@@ -15,104 +15,106 @@ function Settings() {
     monthlyReports: true,
     autoBackup: false,
     twoFactorAuth: false,
-    sessionTimeout: '30',
-    theme: 'light',
-    dateFormat: 'MM/DD/YYYY',
-    currency: 'PHP',
-    language: 'English'
-  })
+    sessionTimeout: "30",
+    theme: "light",
+    dateFormat: "MM/DD/YYYY",
+    currency: "PHP",
+    language: "English",
+  });
 
-  const [activeTab, setActiveTab] = useState('profile') // profile, notifications, security, preferences
-  const [isEditing, setIsEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState("profile"); // profile, notifications, security, preferences
+  const [isEditing, setIsEditing] = useState(false);
 
   // TODO: Implement actual save functionality with backend API
   const handleSaveProfile = () => {
     // await updateUserProfile(userSettings)
-    console.log('Saving profile...', userSettings)
-    setIsEditing(false)
+    console.log("Saving profile...", userSettings);
+    setIsEditing(false);
     // Show success toast
-  }
+  };
 
   // TODO: Implement notification settings update
   const handleToggleNotification = (key) => {
-    setUserSettings(prev => ({
+    setUserSettings((prev) => ({
       ...prev,
-      [key]: !prev[key]
-    }))
+      [key]: !prev[key],
+    }));
     // await updateNotificationSettings({ [key]: !userSettings[key] })
-    console.log(`Toggle ${key}:`, !userSettings[key])
-  }
+    console.log(`Toggle ${key}:`, !userSettings[key]);
+  };
 
   // TODO: Implement security settings update
   const handleSecurityChange = (key, value) => {
-    setUserSettings(prev => ({
+    setUserSettings((prev) => ({
       ...prev,
-      [key]: value
-    }))
+      [key]: value,
+    }));
     // await updateSecuritySettings({ [key]: value })
-    console.log(`Security change ${key}:`, value)
-  }
+    console.log(`Security change ${key}:`, value);
+  };
 
   // TODO: Implement preference settings update
   const handlePreferenceChange = (key, value) => {
-    setUserSettings(prev => ({
+    setUserSettings((prev) => ({
       ...prev,
-      [key]: value
-    }))
+      [key]: value,
+    }));
     // await updateUserPreferences({ [key]: value })
-    console.log(`Preference change ${key}:`, value)
-  }
+    console.log(`Preference change ${key}:`, value);
+  };
 
   // TODO: Implement password change functionality
   const handleChangePassword = () => {
     // Open password change modal
-    console.log('Opening password change modal...')
-  }
+    console.log("Opening password change modal...");
+  };
 
   // TODO: Implement export data functionality
   const handleExportData = () => {
     // Generate and download user data export
-    console.log('Exporting user data...')
-  }
+    console.log("Exporting user data...");
+  };
 
   // TODO: Implement account deactivation
   const handleDeactivateAccount = () => {
     // Show confirmation modal
-    console.log('Deactivate account confirmation...')
-  }
+    console.log("Deactivate account confirmation...");
+  };
 
   return (
     <div className="px-2 sm:px-4 lg:px-6 min-h-screen py-4">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-lg lg:text-2xl font-bold">Treasurer Settings</h1>
-        <p className="text-sm text-gray-600 mt-1">Manage your account preferences and settings</p>
+        <p className="text-sm text-gray-600 mt-1">
+          Manage your account preferences and settings
+        </p>
       </div>
 
       {/* Tabs */}
       <div className="tabs tabs-boxed bg-base-100 shadow-sm mb-6 overflow-x-auto">
         <div className="flex min-w-max">
-          <a 
-            className={`tab text-xs sm:text-sm ${activeTab === 'profile' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('profile')}
+          <a
+            className={`tab text-xs sm:text-sm ${activeTab === "profile" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("profile")}
           >
             Profile
           </a>
-          <a 
-            className={`tab text-xs sm:text-sm ${activeTab === 'notifications' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('notifications')}
+          <a
+            className={`tab text-xs sm:text-sm ${activeTab === "notifications" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("notifications")}
           >
             Notifications
           </a>
-          <a 
-            className={`tab text-xs sm:text-sm ${activeTab === 'security' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('security')}
+          <a
+            className={`tab text-xs sm:text-sm ${activeTab === "security" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("security")}
           >
             Security
           </a>
-          <a 
-            className={`tab text-xs sm:text-sm ${activeTab === 'preferences' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('preferences')}
+          <a
+            className={`tab text-xs sm:text-sm ${activeTab === "preferences" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("preferences")}
           >
             Preferences
           </a>
@@ -120,7 +122,7 @@ function Settings() {
       </div>
 
       {/* Profile Tab */}
-      {activeTab === 'profile' && (
+      {activeTab === "profile" && (
         <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Profile Information</h2>
@@ -143,7 +145,12 @@ function Settings() {
               <input
                 type="text"
                 value={userSettings.fullName}
-                onChange={(e) => setUserSettings(prev => ({ ...prev, fullName: e.target.value }))}
+                onChange={(e) =>
+                  setUserSettings((prev) => ({
+                    ...prev,
+                    fullName: e.target.value,
+                  }))
+                }
                 disabled={!isEditing}
                 className="input input-bordered w-full"
               />
@@ -157,7 +164,12 @@ function Settings() {
               <input
                 type="email"
                 value={userSettings.email}
-                onChange={(e) => setUserSettings(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setUserSettings((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }))
+                }
                 disabled={!isEditing}
                 className="input input-bordered w-full"
               />
@@ -171,7 +183,12 @@ function Settings() {
               <input
                 type="tel"
                 value={userSettings.phoneNumber}
-                onChange={(e) => setUserSettings(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                onChange={(e) =>
+                  setUserSettings((prev) => ({
+                    ...prev,
+                    phoneNumber: e.target.value,
+                  }))
+                }
                 disabled={!isEditing}
                 className="input input-bordered w-full"
               />
@@ -186,10 +203,7 @@ function Settings() {
               >
                 Cancel
               </button>
-              <button
-                onClick={handleSaveProfile}
-                className="btn btn-primary"
-              >
+              <button onClick={handleSaveProfile} className="btn btn-primary">
                 Save Changes
               </button>
             </div>
@@ -198,7 +212,7 @@ function Settings() {
       )}
 
       {/* Notifications Tab */}
-      {activeTab === 'notifications' && (
+      {activeTab === "notifications" && (
         <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-6 space-y-6">
           <h2 className="text-lg font-semibold">Notification Preferences</h2>
 
@@ -207,12 +221,14 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">Email Notifications</h3>
-                <p className="text-sm text-gray-600">Receive updates via email</p>
+                <p className="text-sm text-gray-600">
+                  Receive updates via email
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.emailNotifications}
-                onChange={() => handleToggleNotification('emailNotifications')}
+                onChange={() => handleToggleNotification("emailNotifications")}
                 className="toggle toggle-primary"
               />
             </div>
@@ -221,12 +237,14 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">SMS Notifications</h3>
-                <p className="text-sm text-gray-600">Receive text message alerts</p>
+                <p className="text-sm text-gray-600">
+                  Receive text message alerts
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.smsNotifications}
-                onChange={() => handleToggleNotification('smsNotifications')}
+                onChange={() => handleToggleNotification("smsNotifications")}
                 className="toggle toggle-primary"
               />
             </div>
@@ -235,12 +253,14 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">Payment Reminders</h3>
-                <p className="text-sm text-gray-600">Get notified about upcoming payments</p>
+                <p className="text-sm text-gray-600">
+                  Get notified about upcoming payments
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.paymentReminders}
-                onChange={() => handleToggleNotification('paymentReminders')}
+                onChange={() => handleToggleNotification("paymentReminders")}
                 className="toggle toggle-primary"
               />
             </div>
@@ -249,12 +269,14 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">Overdue Alerts</h3>
-                <p className="text-sm text-gray-600">Alerts for overdue loan payments</p>
+                <p className="text-sm text-gray-600">
+                  Alerts for overdue loan payments
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.overdueAlerts}
-                onChange={() => handleToggleNotification('overdueAlerts')}
+                onChange={() => handleToggleNotification("overdueAlerts")}
                 className="toggle toggle-primary"
               />
             </div>
@@ -263,12 +285,14 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">Monthly Reports</h3>
-                <p className="text-sm text-gray-600">Receive monthly financial summaries</p>
+                <p className="text-sm text-gray-600">
+                  Receive monthly financial summaries
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.monthlyReports}
-                onChange={() => handleToggleNotification('monthlyReports')}
+                onChange={() => handleToggleNotification("monthlyReports")}
                 className="toggle toggle-primary"
               />
             </div>
@@ -277,7 +301,7 @@ function Settings() {
       )}
 
       {/* Security Tab */}
-      {activeTab === 'security' && (
+      {activeTab === "security" && (
         <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-6 space-y-6">
           <h2 className="text-lg font-semibold">Security Settings</h2>
 
@@ -287,7 +311,9 @@ function Settings() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">Password</h3>
-                  <p className="text-sm text-gray-600">Last changed 30 days ago</p>
+                  <p className="text-sm text-gray-600">
+                    Last changed 30 days ago
+                  </p>
                 </div>
                 <button
                   onClick={handleChangePassword}
@@ -302,12 +328,19 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">Two-Factor Authentication</h3>
-                <p className="text-sm text-gray-600">Add an extra layer of security</p>
+                <p className="text-sm text-gray-600">
+                  Add an extra layer of security
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.twoFactorAuth}
-                onChange={() => handleSecurityChange('twoFactorAuth', !userSettings.twoFactorAuth)}
+                onChange={() =>
+                  handleSecurityChange(
+                    "twoFactorAuth",
+                    !userSettings.twoFactorAuth
+                  )
+                }
                 className="toggle toggle-primary"
               />
             </div>
@@ -315,10 +348,14 @@ function Settings() {
             {/* Session Timeout */}
             <div className="p-4 border border-gray-200 rounded-lg">
               <h3 className="font-medium mb-2">Session Timeout</h3>
-              <p className="text-sm text-gray-600 mb-3">Auto logout after inactivity</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Auto logout after inactivity
+              </p>
               <select
                 value={userSettings.sessionTimeout}
-                onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
+                onChange={(e) =>
+                  handleSecurityChange("sessionTimeout", e.target.value)
+                }
                 className="select select-bordered w-full max-w-xs"
               >
                 <option value="15">15 minutes</option>
@@ -332,12 +369,16 @@ function Settings() {
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="font-medium">Automatic Data Backup</h3>
-                <p className="text-sm text-gray-600">Regularly backup your data</p>
+                <p className="text-sm text-gray-600">
+                  Regularly backup your data
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={userSettings.autoBackup}
-                onChange={() => handleSecurityChange('autoBackup', !userSettings.autoBackup)}
+                onChange={() =>
+                  handleSecurityChange("autoBackup", !userSettings.autoBackup)
+                }
                 className="toggle toggle-primary"
               />
             </div>
@@ -346,7 +387,7 @@ function Settings() {
       )}
 
       {/* Preferences Tab */}
-      {activeTab === 'preferences' && (
+      {activeTab === "preferences" && (
         <div className="bg-base-100 rounded-lg shadow-md p-4 sm:p-6 space-y-6">
           <h2 className="text-lg font-semibold">Application Preferences</h2>
 
@@ -354,10 +395,14 @@ function Settings() {
             {/* Theme */}
             <div className="p-4 border border-gray-200 rounded-lg">
               <h3 className="font-medium mb-2">Theme</h3>
-              <p className="text-sm text-gray-600 mb-3">Choose your display theme</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Choose your display theme
+              </p>
               <select
                 value={userSettings.theme}
-                onChange={(e) => handlePreferenceChange('theme', e.target.value)}
+                onChange={(e) =>
+                  handlePreferenceChange("theme", e.target.value)
+                }
                 className="select select-bordered w-full max-w-xs"
               >
                 <option value="light">Light</option>
@@ -369,10 +414,14 @@ function Settings() {
             {/* Date Format */}
             <div className="p-4 border border-gray-200 rounded-lg">
               <h3 className="font-medium mb-2">Date Format</h3>
-              <p className="text-sm text-gray-600 mb-3">Select date display format</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Select date display format
+              </p>
               <select
                 value={userSettings.dateFormat}
-                onChange={(e) => handlePreferenceChange('dateFormat', e.target.value)}
+                onChange={(e) =>
+                  handlePreferenceChange("dateFormat", e.target.value)
+                }
                 className="select select-bordered w-full max-w-xs"
               >
                 <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -384,10 +433,14 @@ function Settings() {
             {/* Currency */}
             <div className="p-4 border border-gray-200 rounded-lg">
               <h3 className="font-medium mb-2">Currency</h3>
-              <p className="text-sm text-gray-600 mb-3">Default currency for display</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Default currency for display
+              </p>
               <select
                 value={userSettings.currency}
-                onChange={(e) => handlePreferenceChange('currency', e.target.value)}
+                onChange={(e) =>
+                  handlePreferenceChange("currency", e.target.value)
+                }
                 className="select select-bordered w-full max-w-xs"
               >
                 <option value="PHP">PHP (Philippine Peso)</option>
@@ -399,10 +452,14 @@ function Settings() {
             {/* Language */}
             <div className="p-4 border border-gray-200 rounded-lg">
               <h3 className="font-medium mb-2">Language</h3>
-              <p className="text-sm text-gray-600 mb-3">Choose your preferred language</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Choose your preferred language
+              </p>
               <select
                 value={userSettings.language}
-                onChange={(e) => handlePreferenceChange('language', e.target.value)}
+                onChange={(e) =>
+                  handlePreferenceChange("language", e.target.value)
+                }
                 className="select select-bordered w-full max-w-xs"
               >
                 <option value="English">English</option>
@@ -432,7 +489,7 @@ function Settings() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default Settings
+export default Settings;
