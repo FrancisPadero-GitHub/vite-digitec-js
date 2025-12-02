@@ -15,6 +15,8 @@ import placeholderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
 import { display } from "../../constants/numericFormat";
+// Add this import to match MemberProfile’s tenure computation
+import getYearsMonthsDaysDifference from "../../constants/DateCalculation";
 
 const tips = [
   "Use a strong, unique password",
@@ -53,16 +55,6 @@ const formFields = [
   { name: "office_address", label: "Office Address", colSpan: "sm:col-span-2" },
 ];
 
-// function to get membership duration in months based on joined_date
-function calculateMembershipMonths(joined_date) {
-  if (!joined_date) return 0;
-  const joined = new Date(joined_date);
-  const now = new Date();
-  const years = now.getFullYear() - joined.getFullYear();
-  const months = now.getMonth() - joined.getMonth();
-  return years * 12 + months;
-}
-
 function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -83,9 +75,9 @@ function Profile() {
   const { mutate: updateProfile } = useUpdateProfile();
   const [saving, setSaving] = useState(false);
 
-  // for displaying membership months and age
-  const membershipMonths = calculateMembershipMonths(
-    myProfile?.application_date
+  // for displaying membership tenure (use joined_date and show years)
+  const { years: membershipYears } = getYearsMonthsDaysDifference(
+    myProfile?.joined_date
   );
 
   // form data state
@@ -210,13 +202,13 @@ function Profile() {
               </h2>
 
               <span className="badge badge-neutral">
-                {myProfile?.account_type} Member
+                {myProfile?.account_role || "N/A"}
               </span>
               <p className="text-sm mt-2">
                 Member Since:{" "}
-                {myProfile?.application_date
-                  ? new Date(myProfile.application_date).toLocaleDateString()
-                  : ""}
+                {myProfile?.joined_date
+                  ? new Date(myProfile.joined_date).toLocaleDateString()
+                  : "N/A"}
               </p>
             </div>
             <div className="card-body p-4 grid grid-cols-3 text-center">
@@ -233,7 +225,10 @@ function Profile() {
                 <p className="text-sm text-gray-500">Share Capital</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold">{membershipMonths} mos</h3>
+                {/* Change months to years and use joined_date */}
+                <h3 className="text-lg font-bold">
+                  {membershipYears} {membershipYears === 1 ? "yr" : "yrs"}
+                </h3>
                 <p className="text-sm text-gray-500">Membership</p>
               </div>
             </div>
