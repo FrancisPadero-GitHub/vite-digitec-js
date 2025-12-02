@@ -208,15 +208,31 @@ function MonthlyDues() {
 
     // Convert map to array and mark missed payments for past months
     const result = Array.from(memberMap.values()).map((memberData) => {
+      // Fetch joined_date from one of the records for this member
+      const sampleRecord = monthlyDuesRecords.find(
+        (r) => r.full_name === memberData.member
+      );
+
+      const joined = sampleRecord ? new Date(sampleRecord.joined_date) : null;
+      const joinedYear = joined ? joined.getFullYear() : null;
+      const joinedMonth = joined ? joined.getMonth() : null;
+
       MONTHS.forEach((monthName, index) => {
-        // Only mark as missed if:
-        // 1. The month is in the selected year and has passed
-        // 2. The month is within the selected range
-        // 3. No payment was made
         const isCurrentYear = selectedYear === currentYear;
         const hasMonthPassed = isCurrentYear ? index < currentMonth : true;
         const isInRange = index >= startMonth && index <= endMonth;
 
+        // If the member joined AFTER this month in the SAME YEAR, do not display missed
+        const joinedAfterThisMonth =
+          joined && selectedYear === joinedYear && index < joinedMonth;
+
+        if (joinedAfterThisMonth) {
+          // No display for any months before joined date
+          memberData[monthName] = "";
+          return;
+        }
+
+        // Standard missed payment logic
         if (hasMonthPassed && isInRange && memberData[monthName] === "") {
           memberData[monthName] = "Missed";
         }
@@ -509,7 +525,7 @@ function MonthlyDues() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-300 border border-gray-400 rounded"></div>
-                <span className="text-base-content/80">Pending</span>
+                <span className="text-base-content/80">Not yet a member</span>
               </div>
             </div>
           </div>
