@@ -23,7 +23,7 @@ const loginUser = async ({ email, password }) => {
   // Role Base Access query for the UI
   const { data: members, error: mem_error } = await supabase
     .from("members")
-    .select("account_role")
+    .select("account_role, account_status")
     .eq("login_id", auth.user.id)
     .single();
 
@@ -39,7 +39,18 @@ const loginUser = async ({ email, password }) => {
   if (!members?.account_role) {
     throw {
       code: "NO_ACCOUNT_TYPE",
-      message: "User has no assigned account type.",
+      message: "User has no assigned account role.",
+    };
+  }
+
+  // Check if account is revoked or inactive
+  if (
+    members?.account_status === "Revoked" ||
+    members?.account_status === "Inactive"
+  ) {
+    throw {
+      code: "ACCOUNT_DISABLED",
+      message: `Your account is ${members.account_status.toLowerCase()}. Please contact an administrator.`,
     };
   }
 
