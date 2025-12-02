@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useFetchLoanAcc } from "../../backend/hooks/shared/useFetchLoanAcc";
 import { useFetchLoanAccView } from "../../backend/hooks/shared/useFetchLoanAccView";
 import { useFetchLoanProducts } from "../../backend/hooks/shared/useFetchLoanProduct";
+import { useFetchProfile } from "../../backend/hooks/member/useFetchProfile";
+import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 
 // components
 
@@ -20,6 +22,7 @@ import {
 // utils
 import { display } from "../../constants/numericFormat";
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
+import getYearsMonthsDaysDifference from "../../constants/DateCalculation";
 
 // Restriction
 import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
@@ -34,7 +37,23 @@ import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction"
 
 function MemberLoanAcc() {
   const navigate = useNavigate();
-  const { hasRestriction } = useLoanRestriction();
+  const { hasRestriction, requirements } = useLoanRestriction();
+
+  const { data: myProfile } = useFetchProfile();
+  const memberInfo = myProfile || {};
+
+  const { data: coopData } = useFetchCoop({ useLoggedInMember: true });
+  const coopContributions = coopData?.data || [];
+
+  // Calculate total share capital
+  const totalShareCapital = useMemo(
+    () =>
+      coopContributions.reduce(
+        (sum, contrib) => sum + (contrib.amount || 0),
+        0
+      ),
+    [coopContributions]
+  );
 
   const { data: loanProducts } = useFetchLoanProducts();
 
@@ -187,14 +206,91 @@ function MemberLoanAcc() {
   };
 
   if (hasRestriction) {
+    // Membership duration
+    const { years: tenure } = getYearsMonthsDaysDifference(
+      memberInfo?.joined_date
+    );
+    // Age
+    const { years: memberAge } = getYearsMonthsDaysDifference(
+      memberInfo?.birthday
+    );
+
+    const eligibilityInfo = [
+      {
+        label: "Tenure",
+        value: `${tenure} ${tenure > 1 ? "years" : "year"}`,
+        passed: tenure >= requirements.minTenure,
+        rule: `${requirements.minTenure} ${requirements.minTenure > 1 ? "years" : "year"} required`,
+      },
+      {
+        label: "Age",
+        value: `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
+        passed: memberAge >= requirements.minAge,
+        rule: `${requirements.minAge} years minimum`,
+      },
+      {
+        label: "Share Capital",
+        value: `₱${totalShareCapital.toLocaleString()}`,
+        passed: totalShareCapital >= requirements.minShareCapital,
+        rule: `₱${requirements.minShareCapital.toLocaleString()} minimum`,
+      },
+    ];
     return (
-      <div className="p-6 text-center bg-red-50 rounded-xl border border-red-200">
-        <h2 className="text-xl font-semibold text-red-600">
-          You are not eligible for loan applications
-        </h2>
-        <p className="text-gray-700 mt-2">
-          Please contact the administrator or board members for assistance.
-        </p>
+      <div className="flex items-start justify-center py-8 min-h-screen px-4">
+        <div className="w-full mx-0 sm:mx-6 max-w-3xl p-3 sm:p-4 md:p-6 text-center bg-red-50 rounded-xl border border-red-200 shadow-sm">
+          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-red-600">
+            You are not eligible for loan applications
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-700 mt-2">
+            Please contact the administrator or board members for assistance.
+          </p>
+          {/* Loan Eligibility display here */}
+          <div className="mt-4 sm:mt-6 w-full max-w-2xl mx-auto text-left">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-4">
+              <h3 className="text-sm sm:text-base font-semibold text-primary mb-2 sm:mb-3">
+                Eligibility Requirements
+              </h3>
+              <ul className="text-xs sm:text-sm space-y-2 sm:space-y-3">
+                {eligibilityInfo.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 pb-2 border-b border-gray-100 last:border-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          item.passed ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {item.passed ? "✔️" : "❌"}
+                      </span>
+                      <span className="font-medium">{item.label}:</span>
+                      <span
+                        className={`font-semibold ${item.passed ? "text-green-700" : "text-red-700"}`}
+                      >
+                        {item.value}
+                      </span>
+                    </div>
+                    <span className="text-[10px] sm:text-xs text-gray-500 sm:ml-auto">
+                      ({item.rule})
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 sm:mt-4 text-center">
+                {eligibilityInfo.every((item) => item.passed) ? (
+                  <span className="badge badge-success text-xs sm:text-sm">
+                    Eligible
+                  </span>
+                ) : (
+                  <span className="badge badge-error text-xs sm:text-sm">
+                    Not Eligible
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
