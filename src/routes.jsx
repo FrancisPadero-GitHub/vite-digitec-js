@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // Vercel Stuff
 import { SpeedInsights } from "@vercel/speed-insights/react";

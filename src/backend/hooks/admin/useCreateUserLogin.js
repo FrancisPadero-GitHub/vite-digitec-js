@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase";
 import { useAuth } from "../../context/AuthProvider";
 
 export function useCreateUser() {
   const { session } = useAuth();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ email, password, account_number }) => {
@@ -56,6 +57,10 @@ export function useCreateUser() {
 
       // Return the created user data for the hook consumer
       return { ...json.data, updated_member_account_number: account_number };
+    },
+    onSuccess: (data) => {
+      console.log("User created and member updated successfully:", data);
+      queryClient.invalidateQueries({ queryKey: ["members"], exact: false });
     },
   });
 }

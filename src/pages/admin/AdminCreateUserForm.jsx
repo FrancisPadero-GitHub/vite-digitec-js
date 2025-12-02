@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
@@ -31,6 +32,7 @@ import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 // This page allows admin to create a new user login for a member
 
 export default function AdminCreateUserForm() {
+  const navigate = useNavigate();
   const { data: members_data } = useMembers({});
   const members = members_data?.data || [];
 
@@ -82,6 +84,10 @@ export default function AdminCreateUserForm() {
         onSuccess: () => {
           reset();
           toast.success("User created successfully.");
+          // Wait 1 second before navigating so the toast is visible
+          setTimeout(() => {
+            navigate("/admin", { replace: true });
+          }, 1000);
         },
         onError: (err) => {
           console.error(err);
