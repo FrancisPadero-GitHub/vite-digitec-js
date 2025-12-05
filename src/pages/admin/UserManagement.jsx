@@ -232,10 +232,6 @@ function UserManagement() {
           label: "Account Status",
           value: selectedMember?.account_status || "N/A",
         },
-        {
-          label: "Application Date",
-          value: selectedMember?.application_date || "N/A",
-        },
         { label: "Joined Date", value: selectedMember?.joined_date || "N/A" },
         {
           label: "Login Credentials",

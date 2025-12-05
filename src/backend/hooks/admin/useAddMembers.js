@@ -80,16 +80,14 @@ const insertMember = async (formData) => {
     "office_contact_number",
     "account_role",
     "account_status",
-    "application_date",
     "joined_date",
   ];
 
   const paymentFields = [
-    "membership_fee",
-    "membership_fee_status",
-    "membership_payment_method",
-    "membership_payment_date",
-    "membership_remarks",
+    "initial_club_funds",
+    "club_fund_payment_method",
+    "club_fund_payment_date",
+    "club_fund_remarks",
     "initial_share_capital",
     "share_capital_payment_method",
     "share_capital_payment_date",
@@ -109,15 +107,18 @@ const insertMember = async (formData) => {
 
   // --- 4. Insert club funds contribution (only if amount > 0) ---
   let newClubFunds = null;
-  if (payment.membership_fee && parseFloat(payment.membership_fee) > 0) {
+  if (
+    payment.initial_club_funds &&
+    parseFloat(payment.initial_club_funds) > 0
+  ) {
     const clubFunds = {
-      amount: payment.membership_fee,
+      amount: payment.initial_club_funds,
       category: "Monthly Dues",
-      payment_date: payment.membership_payment_date,
-      period_start: payment.membership_payment_date,
-      period_end: payment.membership_payment_date,
-      payment_method: payment.membership_payment_method,
-      remarks: payment.membership_remarks || "Membership Initial",
+      payment_date: payment.club_fund_payment_date,
+      period_start: payment.club_fund_payment_date,
+      period_end: payment.club_fund_payment_date,
+      payment_method: payment.club_fund_payment_method,
+      remarks: payment.club_fund_remarks || "Membership Initial",
     };
     newClubFunds = await insertTable("club_funds_contributions", {
       ...clubFunds,

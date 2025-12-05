@@ -63,13 +63,11 @@ function AddMember() {
       office_contact_number: "",
       account_role: "",
       account_status: "",
-      application_date: today,
       joined_date: today,
-      membership_fee: "",
-      membership_fee_status: "",
-      membership_payment_method: "",
-      membership_payment_date: today,
-      membership_remarks: "Membership Initial",
+      club_fund_fee: "",
+      club_fund_payment_method: "",
+      club_fund_payment_date: today,
+      club_fund_remarks: "Membership Initial",
       initial_share_capital: "",
       share_capital_payment_method: "",
       share_capital_payment_date: today,
@@ -116,8 +114,8 @@ function AddMember() {
       application_date: data.application_date
         ? new Date(data.application_date).toISOString()
         : null,
-      membership_payment_date: data.membership_payment_date
-        ? new Date(data.membership_payment_date).toISOString()
+      club_fund_payment_date: data.club_fund_payment_date
+        ? new Date(data.club_fund_payment_date).toISOString()
         : null,
       share_capital_payment_date: data.share_capital_payment_date
         ? new Date(data.share_capital_payment_date).toISOString()
@@ -186,7 +184,8 @@ function AddMember() {
       name: "contact_number",
       type: "text",
       required: true,
-      pattern: /^[0-9+()\-.\s]+$/,
+      pattern: /^[0-9]{0,11}$/,
+      maxLength: 11,
       autoComplete: "tel",
     },
     {
@@ -237,8 +236,8 @@ function AddMember() {
       type: "text",
       inputMode: "numeric",
       required: true,
-      pattern: /^[0-9]{4}$/,
-      maxLength: 4,
+      pattern: /^[0-9]{0,11}$/,
+      maxLength: 11,
       autoComplete: "postal-code",
     },
 
@@ -288,7 +287,8 @@ function AddMember() {
       name: "office_contact_number",
       type: "text",
       required: false,
-      pattern: /^[0-9+()\-.\s]+$/,
+      pattern: /^[0-9]{0,11}$/,
+      maxLength: 11,
       autoComplete: "tel",
     },
   ];
@@ -323,47 +323,25 @@ function AddMember() {
       required: true,
       group: "Account Info",
     },
-
     {
-      label: "Application Date",
-      name: "application_date",
-      type: "date",
-      required: true,
-      group: "Account Info",
-    },
-    {
-      label: "Joined Date",
+      label: "Join Date",
       name: "joined_date",
       type: "date",
       required: false,
       group: "Account Info",
     },
 
-    // Membership Fee
+    // Club Funds
     {
-      label: "Membership Fee",
-      name: "membership_fee",
+      label: "Initial Club Funds",
+      name: "initial_club_funds",
       type: "number",
-      group: "Membership Fee",
-      required: false,
+      group: "Club Funds",
+      required: true,
     },
-    {
-      label: "Fee Status",
-      name: "membership_fee_status",
-      type: "select",
-      autoComplete: "off",
-      options: [
-        { label: "Paid", value: "Paid" },
-        { label: "Unpaid", value: "Unpaid" },
-        { label: "Partial", value: "Partial" },
-      ],
-      group: "Membership Fee",
-      required: false,
-    },
-
     {
       label: "Payment Method",
-      name: "membership_payment_method",
+      name: "club_fund_payment_method",
       type: "select",
       autoComplete: "off",
       options: [
@@ -371,22 +349,22 @@ function AddMember() {
         { label: "GCash", value: "GCash" },
         { label: "Bank", value: "Bank" },
       ],
-      group: "Membership Fee",
-      required: false,
+      group: "Club Funds",
+      required: true,
     },
 
     {
       label: "Payment Date",
-      name: "membership_payment_date",
+      name: "club_fund_payment_date",
       type: "date",
-      group: "Membership Fee",
-      required: false,
+      group: "Club Funds",
+      required: true,
     },
     {
       label: "Remarks",
-      name: "membership_remarks",
+      name: "club_fund_remarks",
       type: "text",
-      group: "Membership Fee",
+      group: "Club Funds",
       required: false,
     },
 
@@ -396,7 +374,7 @@ function AddMember() {
       name: "initial_share_capital",
       type: "number",
       group: "Share Capital",
-      required: false,
+      required: true,
     },
     {
       label: "Payment Method",
@@ -409,7 +387,7 @@ function AddMember() {
         { label: "Bank", value: "Bank" },
       ],
       group: "Share Capital",
-      required: false,
+      required: true,
     },
 
     {
@@ -418,7 +396,7 @@ function AddMember() {
       autoComplete: "off",
       type: "date",
       group: "Share Capital",
-      required: false,
+      required: true,
     },
     {
       label: "Remarks",
@@ -507,7 +485,15 @@ function AddMember() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {personalFields.map(
                     (
-                      { label, name, type, options, group, autoComplete },
+                      {
+                        label,
+                        name,
+                        type,
+                        options,
+                        group,
+                        autoComplete,
+                        maxLength,
+                      },
                       idx
                     ) => {
                       const prevGroup =
@@ -560,22 +546,31 @@ function AddMember() {
                                 id={name}
                                 type={type}
                                 autoComplete={autoComplete || "off"}
+                                maxLength={maxLength}
                                 {...register(name, {
                                   required: `${label} is required`,
                                   pattern:
                                     name === "contact_number"
                                       ? {
-                                          value: /^[0-9+()\-.\s]+$/,
+                                          value: /^[0-9]{0,11}$/,
                                           message:
-                                            "Only numbers and symbols like +, -, (, ) allowed",
+                                            "Contact number must be up to 11 digits",
                                         }
-                                      : undefined,
+                                      : name === "email"
+                                        ? {
+                                            value:
+                                              /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                                            message:
+                                              "Please enter a valid email address",
+                                          }
+                                        : undefined,
                                 })}
                                 onInput={
-                                  name === "contact_number"
+                                  name === "contact_number" ||
+                                  name === "zip_code"
                                     ? (e) => {
                                         e.target.value = e.target.value.replace(
-                                          /[^0-9+()\-.\s]/g,
+                                          /[^0-9]/g,
                                           ""
                                         );
                                       }
@@ -630,7 +625,7 @@ function AddMember() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {employmentFields.map(
-                    ({ label, name, type, autoComplete }) => (
+                    ({ label, name, type, autoComplete, maxLength }) => (
                       <div key={name} className="form-control w-full">
                         <label htmlFor={name} className="label">
                           <span className="label-text text-sm sm:text-base font-medium">
@@ -642,6 +637,7 @@ function AddMember() {
                           id={name}
                           type={type}
                           autoComplete={autoComplete || "off"}
+                          maxLength={maxLength}
                           {...register(name, {
                             required: employmentFields.find(
                               (f) => f.name === name
@@ -651,9 +647,9 @@ function AddMember() {
                             pattern:
                               name === "office_contact_number"
                                 ? {
-                                    value: /^[0-9+()\-.\s]+$/,
+                                    value: /^[0-9]{0,11}$/,
                                     message:
-                                      "Only numbers and symbols like +, -, (, ) allowed",
+                                      "Office contact number must be up to 11 digits",
                                   }
                                 : undefined,
                           })}
@@ -661,7 +657,7 @@ function AddMember() {
                             name === "office_contact_number"
                               ? (e) => {
                                   e.target.value = e.target.value.replace(
-                                    /[^0-9+()\-.\s]/g,
+                                    /[^0-9]/g,
                                     ""
                                   );
                                 }
@@ -719,7 +715,7 @@ function AddMember() {
                       const prevGroup =
                         idx > 0 ? membershipFields[idx - 1].group : null;
 
-                      // Divided into subsections (account info, membership fee, share capital)
+                      // Divided into subsections (account info, club funds contribution, share capital)
                       return (
                         <Fragment key={name}>
                           {group && group !== prevGroup && (
@@ -765,12 +761,52 @@ function AddMember() {
                                 id={name}
                                 type={type}
                                 autoComplete={autoComplete || "off"}
+                                defaultValue={
+                                  name === "club_fund_payment_date" ||
+                                  name === "share_capital_payment_date"
+                                    ? today
+                                    : undefined
+                                }
+                                readOnly={
+                                  name === "club_fund_payment_date" ||
+                                  name === "share_capital_payment_date"
+                                }
+                                onWheel={
+                                  name === "initial_club_funds" ||
+                                  name === "initial_share_capital"
+                                    ? (e) => e.target.blur()
+                                    : undefined
+                                }
                                 {...register(name, {
                                   required: membershipFields.find(
                                     (f) => f.name === name
                                   )?.required
                                     ? `${label} is required`
                                     : false,
+                                  validate: {
+                                    conditionalRequired: (
+                                      value,
+                                      formValues
+                                    ) => {
+                                      if (
+                                        name === "club_fund_payment_method" &&
+                                        formValues.initial_club_funds &&
+                                        (!value || value === "")
+                                      ) {
+                                        return "Payment method is required when club funds amount is provided";
+                                      }
+                                      if (
+                                        name ===
+                                          "share_capital_payment_method" &&
+                                        formValues.initial_share_capital &&
+                                        (!value || value === "")
+                                      ) {
+                                        return "Payment method is required when share capital amount is provided";
+                                      }
+
+                                      return true;
+                                    },
+                                  },
                                 })}
                                 className={`input input-bordered w-full text-sm sm:text-base ${errors[name] ? "input-error" : ""}`}
                               />
