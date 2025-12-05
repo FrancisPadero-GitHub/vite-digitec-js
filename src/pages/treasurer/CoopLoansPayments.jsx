@@ -869,7 +869,7 @@ function CoopLoansPayments() {
           status={isAddPending || isEditPending}
           deleteAction={() => handleDelete(watch("payment_id"))}
         >
-          <div className="pl-1 pr-2">
+          <div className="pl-1 pr-2 pb-2">
             {/* ACCOUNT SELECTION */}
             <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-200 mb-3">
               <h4 className="text-xs font-bold text-gray-600 mb-2">

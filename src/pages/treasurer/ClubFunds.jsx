@@ -604,7 +604,7 @@ function ClubFunds() {
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => openDeleteModal(getValues("contribution_id"))}
       >
-        <div className="pl-1 pr-2">
+        <div className="pl-1 pr-2 pb-2">
           {/* Member Combobox with Controller */}
           <div className="form-control w-full">
             <label className="label text-sm font-semibold mb-2">

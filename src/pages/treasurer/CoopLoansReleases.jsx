@@ -444,7 +444,7 @@ function CoopLoansReleases() {
           isDisabled={watch("status") === "Active"}
           memberRole={memberRole}
         >
-          <div className="pl-1 pr-2">
+          <div className="pl-1 pr-2 pb-2">
             {/* Release dates */}
             <div className="p-3 bg-white rounded-lg border-2 border-gray-200 mb-4">
               <div className="mb-2 flex items-center justify-between">

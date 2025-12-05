@@ -430,7 +430,7 @@ function ClubExpenses() {
         status={isAddPending || isEditPending || !isDirty}
         deleteAction={() => openDeleteModal(getValues("transaction_id"))}
       >
-        <div className="pl-1 pr-2">
+        <div className="pl-1 pr-2 pb-2">
           {fields.map(
             ({ label, name, type, options, autoComplete, optional }) => (
               <div key={name} className="form-control w-full mt-2">
