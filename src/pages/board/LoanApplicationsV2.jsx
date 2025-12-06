@@ -54,7 +54,11 @@ import calcLoanSchedDiminishing from "../../constants/calcLoanSchedDiminishing";
 // utils
 import { display } from "../../constants/numericFormat";
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
-import { genLoanRefNo, getLocalDateString } from "./helpers/utils";
+import {
+  genLoanRefNo,
+  getLocalDateString,
+  getMinAllowedMonthNoBackdate,
+} from "./helpers/utils";
 
 // JSX COMPONENT
 function LoanApplicationsV2() {
@@ -1152,15 +1156,27 @@ function LoanApplicationsV2() {
                   </label>
                   <input
                     type="date"
+                    min={getMinAllowedMonthNoBackdate()}
                     defaultValue={
                       dayjs().add(1, "month").format("YYYY-MM-DD") || ""
                     }
-                    {...registerLoanAcc("first_due", { required: true })}
+                    {...registerLoanAcc("first_due", {
+                      required: "Date required to calculate schedule",
+                      validate: (value) => {
+                        const selectedDate = new Date(value);
+                        const minDate = new Date(
+                          getMinAllowedMonthNoBackdate()
+                        );
+                        return (
+                          selectedDate >= minDate || "Cannot select a past date"
+                        );
+                      },
+                    })}
                     className="input input-bordered w-full border-blue-400 focus:border-blue-600"
                   />
                   {errorsLoanAcc.first_due && (
                     <p className="text-error text-xs mt-1">
-                      Date required to calculate schedule
+                      {errorsLoanAcc.first_due.message || "Invalid date"}
                     </p>
                   )}
                 </div>
@@ -1171,14 +1187,29 @@ function LoanApplicationsV2() {
                   </label>
                   <input
                     type="date"
+                    readOnly
+                    min={getMinAllowedMonthNoBackdate()}
                     title="Precalculated based on first due date"
                     // this is now being auto calculated in the useEffect above
                     // defaultValue={dayjs().add(watchLoanAcc("loan_term_approved"), 'month').format('YYYY-MM-DD')}
-                    {...registerLoanAcc("maturity_date", { required: true })}
+                    {...registerLoanAcc("maturity_date", {
+                      required: "Maturity date is required",
+                      validate: (value) => {
+                        const selectedDate = new Date(value);
+                        const minDate = new Date(
+                          getMinAllowedMonthNoBackdate()
+                        );
+                        return (
+                          selectedDate >= minDate || "Cannot select a past date"
+                        );
+                      },
+                    })}
                     className="input input-bordered w-full border-blue-400 focus:border-blue-600"
                   />
                   {errorsLoanAcc.maturity_date && (
-                    <p className="text-error text-xs mt-1">Required</p>
+                    <p className="text-error text-xs mt-1">
+                      {errorsLoanAcc.maturity_date.message || "Invalid date"}
+                    </p>
                   )}
                 </div>
               </div>

@@ -24,14 +24,7 @@ import { CLUB_CATEGORY_COLORS } from "../../constants/Color";
 // utils
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
-
-// HELPER FUNCTIONS
-// To avoid timezone issues with date inputs, we convert dates to local date strings
-function getLocalDateString(date) {
-  const d = new Date(date);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split("T")[0];
-}
+import { getMinAllowedDate, getLocalDateString } from "../board/helpers/utils";
 
 function ClubExpenses() {
   // date helper
@@ -479,6 +472,43 @@ function ClubExpenses() {
                           }}
                           className={`input input-bordered w-full ${
                             error ? "input-error" : ""
+                          }`}
+                        />
+                        {error && (
+                          <span className="text-sm text-error mt-1 block">
+                            {error.message}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  />
+                ) : name === "transaction_date" ? (
+                  <Controller
+                    name="transaction_date"
+                    control={control}
+                    rules={{
+                      required: "Transaction date is required",
+                      validate: (value) => {
+                        const selectedDate = new Date(value);
+                        const minDate = new Date();
+                        minDate.setDate(minDate.getDate() - 7);
+                        minDate.setHours(0, 0, 0, 0);
+                        if (selectedDate < minDate) {
+                          return "Transaction date cannot be more than 7 days in the past";
+                        }
+                        return true;
+                      },
+                    }}
+                    render={({ field, fieldState: { error } }) => (
+                      <>
+                        <input
+                          id="transaction_date"
+                          type="date"
+                          min={getMinAllowedDate()}
+                          value={field.value}
+                          onChange={field.onChange}
+                          className={`input input-bordered w-full ${
+                            error ? "input-error border-red-400" : ""
                           }`}
                         />
                         {error && (

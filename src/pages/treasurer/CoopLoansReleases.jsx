@@ -28,6 +28,7 @@ import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 // utils
 import { display } from "../../constants/numericFormat";
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
+import { getMinAllowedDate } from "../board/helpers/utils";
 
 function CoopLoansReleases() {
   const { mutate: releaseLoan, isPending } = useEditLoanAcc();
@@ -496,13 +497,26 @@ function CoopLoansReleases() {
                   ) : (
                     <input
                       type="date"
-                      {...register("release_date", { required: true })}
+                      min={getMinAllowedDate()}
+                      {...register("release_date", {
+                        required: "Release date is required",
+                        validate: (value) => {
+                          const selectedDate = new Date(value);
+                          const minDate = new Date();
+                          minDate.setDate(minDate.getDate() - 7);
+                          minDate.setHours(0, 0, 0, 0);
+                          if (selectedDate < minDate) {
+                            return "Release date cannot be more than 7 days in the past";
+                          }
+                          return true;
+                        },
+                      })}
                       className="input input-bordered w-full border-green-400 focus:border-green-600"
                     />
                   )}
                   {errors.release_date && (
                     <p className="text-error text-xs mt-1">
-                      Release date is required
+                      {errors.release_date.message}
                     </p>
                   )}
                 </div>
@@ -701,24 +715,21 @@ function CoopLoansReleases() {
                   <label className="block text-xs font-medium text-gray-500 mb-1">
                     First Due Date
                   </label>
-                  {watch("status") === "Active" ? (
-                    <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
-                      <div className="text-sm font-semibold">
-                        {watch("first_due")
-                          ? dayjs(watch("first_due")).format("MM/DD/YYYY")
-                          : "N/A"}
-                      </div>
+                  <div className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {watch("first_due")
+                        ? dayjs(watch("first_due")).format("MM/DD/YYYY")
+                        : "N/A"}
                     </div>
-                  ) : (
-                    <input
-                      type="date"
-                      {...register("first_due", { required: true })}
-                      className="input input-bordered w-full border-gray-400 focus:border-blue-600 font-semibold"
-                    />
-                  )}
+                  </div>
+                  {/* hidden registered field to submit value */}
+                  <input
+                    type="hidden"
+                    {...register("first_due", { required: true })}
+                  />
                   {errors.first_due && (
                     <p className="text-error text-xs mt-1">
-                      First due date is required
+                      First due date required
                     </p>
                   )}
                 </div>

@@ -36,14 +36,7 @@ import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 // utils
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
-
-// HELPER FUNCTIONS
-// To avoid timezone issues with date inputs, we convert dates to local date strings
-function getLocalDateString(date) {
-  const d = new Date(date);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split("T")[0];
-}
+import { getMinAllowedDate, getLocalDateString } from "../board/helpers/utils";
 
 function CoopShareCapital() {
   // helper
@@ -696,6 +689,44 @@ function CoopShareCapital() {
                             field.onChange(value < 0 ? 0 : value);
                           }}
                           className={`input input-bordered w-full ${error ? "input-error" : ""}`}
+                        />
+                        {error && (
+                          <span className="text-sm text-error mt-1 block">
+                            {error.message}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  />
+                ) : name === "contribution_date" ? (
+                  <Controller
+                    name="contribution_date"
+                    control={control}
+                    rules={{
+                      required: "Contribution date is required",
+                      validate: (value) => {
+                        const selectedDate = new Date(value);
+                        const minDate = new Date();
+                        minDate.setDate(minDate.getDate() - 7);
+                        minDate.setHours(0, 0, 0, 0);
+                        if (selectedDate < minDate) {
+                          return "Contribution date cannot be more than 7 days in the past";
+                        }
+                        return true;
+                      },
+                    }}
+                    render={({ field, fieldState: { error } }) => (
+                      <>
+                        <input
+                          id="contribution_date"
+                          type="date"
+                          autoComplete="date"
+                          min={getMinAllowedDate()}
+                          value={field.value}
+                          onChange={field.onChange}
+                          className={`input input-bordered w-full ${
+                            error ? "input-error border-red-400" : ""
+                          }`}
                         />
                         {error && (
                           <span className="text-sm text-error mt-1 block">

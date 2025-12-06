@@ -53,6 +53,7 @@ import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
 // utils
 import { display } from "../../constants/numericFormat";
+import { getMinAllowedDate } from "../board/helpers/utils";
 
 // HELPER: To avoid timezone issues with date inputs
 function getLocalDateString(date) {
@@ -675,6 +676,7 @@ function CoopLoansPayments() {
       name: "payment_date",
       type: "date",
       autoComplete: "off",
+      min: getMinAllowedDate(), // Prevent backdating more than 7 days
     },
   ];
 
@@ -1332,6 +1334,45 @@ function CoopLoansPayments() {
                               field.onChange(value < 0 ? 0 : value);
                             }}
                             className={`input input-bordered w-full font-bold ${error ? "input-error border-red-400" : "border-green-400 focus:border-green-600"}`}
+                          />
+                          {error && (
+                            <span className="text-xs text-error mt-1 block">
+                              {error.message}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    />
+                  ) : name === "payment_date" ? (
+                    <Controller
+                      name="payment_date"
+                      control={control}
+                      rules={{
+                        required: "Payment date is required",
+                        validate: (value) => {
+                          const selectedDate = new Date(value);
+                          const minDate = new Date();
+                          minDate.setDate(minDate.getDate() - 7); // 7 days grace period
+                          minDate.setHours(0, 0, 0, 0);
+
+                          if (selectedDate < minDate) {
+                            return "Payment date cannot be more than 7 days in the past";
+                          }
+                          return true;
+                        },
+                      }}
+                      render={({ field, fieldState: { error } }) => (
+                        <>
+                          <input
+                            id="payment_date"
+                            type="date"
+                            autoComplete="off"
+                            min={getMinAllowedDate()}
+                            value={field.value}
+                            onChange={field.onChange}
+                            className={`input input-bordered w-full ${
+                              error ? "input-error border-red-400" : ""
+                            }`}
                           />
                           {error && (
                             <span className="text-xs text-error mt-1 block">

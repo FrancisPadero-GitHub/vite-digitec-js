@@ -36,3 +36,29 @@ export async function generateReceiptNo(
   const seq = String((data?.length || 0) + 1).padStart(3, "0");
   return `${loan_ref_number}-P${account_number}-D${datePart}-${seq}`;
 }
+
+// HELPER: Get minimum allowed date (7 days grace period for late entries)
+export function getMinAllowedDate() {
+  const date = new Date();
+  date.setDate(date.getDate() - 7); // Allow 7 days back
+  return getLocalDateString(date);
+}
+
+// HELPER: Get minimum allowed month (1 month grace period for late entries)
+export function getMinAllowedMonth() {
+  const date = new Date();
+  date.setMonth(date.getMonth() - 1); // Allow 1 month back
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
+// HELPER: Get minimum allowed month (no backdating allowed)
+export function getMinAllowedMonthNoBackdate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1); // Set to tomorrow to prevent backdating
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
