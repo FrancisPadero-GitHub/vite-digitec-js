@@ -1044,7 +1044,7 @@ function CoopLoansPayments() {
                                         <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1 rounded">
                                           ₱
                                           {selectedMember &&
-                                            `${selectedMember?.total_amount_due}`}
+                                            `${loan?.total_amount_due}`}
                                         </span>
                                       </span>
                                     </div>
