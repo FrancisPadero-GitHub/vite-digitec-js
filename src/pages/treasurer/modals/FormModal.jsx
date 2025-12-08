@@ -24,7 +24,7 @@ function FormModal({
   action,
   children,
   onSubmit,
-  deleteAction,
+  // deleteAction,
   status,
   isPending,
 }) {
@@ -57,7 +57,7 @@ function FormModal({
           </div>
 
           <div className="flex justify-between items-center gap-2">
-            {action && (
+            {/* {action && (
               <button
                 type="button"
                 className="btn btn-error"
@@ -66,7 +66,7 @@ function FormModal({
               >
                 Delete
               </button>
-            )}
+            )} */}
             <div className="flex gap-2 ml-auto">
               <button
                 type="button"

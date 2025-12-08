@@ -7,12 +7,12 @@ function BoardFormModal({
   children,
   onSubmit,
   status,
-  action,
-  deleteAction,
+  // action,
+  // deleteAction,
   type,
   isPending,
   isDisabled,
-  delDisabled,
+  // delDisabled,
   memberRole,
 }) {
   if (!open) return null;
@@ -51,7 +51,7 @@ function BoardFormModal({
           </div>
 
           <div className="flex justify-between items-center gap-2 mt-2">
-            {action && (
+            {/* {action && (
               <button
                 type="button"
                 className="btn btn-error"
@@ -60,7 +60,7 @@ function BoardFormModal({
               >
                 Delete
               </button>
-            )}
+            )} */}
             <div className="flex gap-2 ml-auto">
               <button type="button" className="btn btn-ghost" onClick={close}>
                 {onSubmit ? "Cancel" : "Close"}
