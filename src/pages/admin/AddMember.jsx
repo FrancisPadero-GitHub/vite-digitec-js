@@ -64,7 +64,7 @@ function AddMember() {
       account_role: "",
       account_status: "",
       joined_date: today,
-      club_fund_fee: "",
+      club_fund_fee: 200,
       club_fund_payment_method: "",
       club_fund_payment_date: today,
       club_fund_remarks: "Membership Initial",
@@ -333,11 +333,12 @@ function AddMember() {
 
     // Club Funds
     {
-      label: "Initial Club Funds",
+      label: "Initial Club Funds (fixed)",
       name: "initial_club_funds",
       type: "number",
       group: "Club Funds",
       required: true,
+      fixedValue: 200,
     },
     {
       label: "Payment Method",
@@ -375,6 +376,7 @@ function AddMember() {
       type: "number",
       group: "Share Capital",
       required: true,
+      minValue: 300,
     },
     {
       label: "Payment Method",
@@ -761,6 +763,13 @@ function AddMember() {
                                 id={name}
                                 type={type}
                                 autoComplete={autoComplete || "off"}
+                                value={
+                                  name === "initial_club_funds"
+                                    ? 200
+                                    : name === "initial_share_capital"
+                                      ? undefined
+                                      : undefined
+                                }
                                 defaultValue={
                                   name === "club_fund_payment_date" ||
                                   name === "share_capital_payment_date"
@@ -769,7 +778,8 @@ function AddMember() {
                                 }
                                 readOnly={
                                   name === "club_fund_payment_date" ||
-                                  name === "share_capital_payment_date"
+                                  name === "share_capital_payment_date" ||
+                                  name === "initial_club_funds"
                                 }
                                 onWheel={
                                   name === "initial_club_funds" ||
@@ -783,6 +793,14 @@ function AddMember() {
                                   )?.required
                                     ? `${label} is required`
                                     : false,
+                                  min:
+                                    name === "initial_share_capital"
+                                      ? {
+                                          value: 300,
+                                          message:
+                                            "Initial share capital must be at least ₱300",
+                                        }
+                                      : undefined,
                                   validate: {
                                     conditionalRequired: (
                                       value,

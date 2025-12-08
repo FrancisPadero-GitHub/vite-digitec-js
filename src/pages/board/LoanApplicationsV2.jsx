@@ -653,7 +653,7 @@ function LoanApplicationsV2() {
             "Loan Term",
             "Application Date",
             "Status",
-            "Last Updated By",
+            "Reviewed By",
             "On",
           ]}
           data={loanApplicationsFiltered}
