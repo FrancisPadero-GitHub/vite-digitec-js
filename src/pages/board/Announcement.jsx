@@ -12,8 +12,8 @@ import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import FilterToolbar from "../shared/components/FilterToolbar";
 
 // MUI Icons
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+// import DeleteIcon from "@mui/icons-material/Delete";
+// import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import CampaignIcon from "@mui/icons-material/Campaign";
 
@@ -21,6 +21,8 @@ function Announcement() {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("view"); // 'view', 'add', 'edit'
+  const [showSendConfirm, setShowSendConfirm] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
 
   // React Hook Form
   const {
@@ -64,10 +66,10 @@ function Announcement() {
     setIsModalOpen(true);
   };
 
-  const handleEdit = () => {
-    setValue("message", selectedAnnouncement.message);
-    setModalMode("edit");
-  };
+  // const handleEdit = () => {
+  //   setValue("message", selectedAnnouncement.message);
+  //   setModalMode("edit");
+  // };
 
   // Update form when switching to edit mode
   useEffect(() => {
@@ -76,27 +78,24 @@ function Announcement() {
     }
   }, [modalMode, selectedAnnouncement, setValue]);
 
-  const handleDelete = () => {
-    // console.log('Delete announcement:', selectedAnnouncement);
-    // Add delete logic here
-    setIsModalOpen(false);
-  };
+  // const handleDelete = () => {
+  //   // console.log('Delete announcement:', selectedAnnouncement);
+  //   // Add delete logic here
+  //   setIsModalOpen(false);
+  // };
 
   const onSubmit = (data) => {
     if (modalMode === "add") {
-      sendAnnouncement(
-        {
-          message: data.message,
-          type: "general",
-          target: "all",
-        },
-        {
-          onSuccess: () => {
-            closeModal();
-          },
-        }
-      );
-    } else if (modalMode === "edit") {
+      setPendingPayload({
+        message: data.message,
+        type: "general",
+        target: "all",
+      });
+      setShowSendConfirm(true);
+      return;
+    }
+
+    if (modalMode === "edit") {
       editAnnouncement(
         {
           id: selectedAnnouncement.id,
@@ -126,6 +125,8 @@ function Announcement() {
     setSelectedAnnouncement(null);
     setModalMode("view");
     reset({ message: "" });
+    setShowSendConfirm(false);
+    setPendingPayload(null);
   };
 
   // Filter toolbar state and handlers
@@ -188,7 +189,19 @@ function Announcement() {
 
   const filteredAnnouncements = useMemo(() => {
     const list = announcements || [];
-    return list.filter((a) => {
+
+    // De-duplicate by sender + message (case-insensitive) to avoid showing the same announcement multiple times
+    const uniqueBySenderAndMessage = Array.from(
+      list.reduce((map, item) => {
+        const key = `${item.sender_id || "unknown"}|${(item.message || "").trim().toLowerCase()}`;
+        if (!map.has(key)) {
+          map.set(key, item);
+        }
+        return map;
+      }, new Map())
+    ).map(([, value]) => value);
+
+    return uniqueBySenderAndMessage.filter((a) => {
       const msg = (a.message || "").toString();
       const created = a.created_at ? new Date(a.created_at) : null;
       const matchesSearch =
@@ -210,6 +223,26 @@ function Announcement() {
       return matchesSearch && matchesYear && matchesMonth;
     });
   }, [announcements, debouncedSearch, yearFilter, monthFilter]);
+
+  const confirmSendAnnouncement = () => {
+    if (!pendingPayload) return;
+    sendAnnouncement(pendingPayload, {
+      onSuccess: () => {
+        setShowSendConfirm(false);
+        setPendingPayload(null);
+        closeModal();
+      },
+      onError: () => {
+        // Keep the modal open so the user can retry
+        setShowSendConfirm(false);
+      },
+    });
+  };
+
+  const cancelSendConfirmation = () => {
+    setShowSendConfirm(false);
+    setPendingPayload(null);
+  };
 
   return (
     <div className="m-3">
@@ -435,7 +468,7 @@ function Announcement() {
 
               {/* Add/Edit Mode */}
               {(modalMode === "add" || modalMode === "edit") && (
-                <div className="space-y-4">
+                <div className="space-y-1">
                   {modalMode === "edit" && selectedAnnouncement && (
                     <div className="alert alert-info">
                       <svg
@@ -501,18 +534,18 @@ function Announcement() {
                         </span>
                       </label>
                     )}
-                    <label className="label">
-                      <span className="label-text-alt text-base-content/60">
-                        Write a clear and concise announcement for all members
-                      </span>
-                    </label>
                   </div>
+                  <label className="label">
+                    <span className="label-text-alt text-base-content/60">
+                      Write a clear and concise announcement for all members
+                    </span>
+                  </label>
                 </div>
               )}
             </div>
 
             {/* Fixed Footer Actions */}
-            <div className="flex justify-between pt-4 border-t border-base-300 mt-4 flex-shrink-0">
+            <div className="flex justify-end pt-4 border-t border-base-300 mt-4 flex-shrink-0">
               {modalMode === "view" && (
                 <Fragment>
                   <button
@@ -523,21 +556,21 @@ function Announcement() {
                     <span className="hidden sm:inline">Close</span>
                   </button>
                   <div className="flex gap-2">
-                    <button
+                    {/* <button
                       className="btn btn-sm sm:btn-md btn-error gap-2"
                       disabled
                       onClick={handleDelete}
                     >
                       <DeleteIcon fontSize="small" />
                       <span className="hidden sm:inline">Delete</span>
-                    </button>
-                    <button
+                    </button> */}
+                    {/* <button
                       className="btn btn-sm sm:btn-md btn-primary gap-2"
                       onClick={handleEdit}
                     >
                       <EditIcon fontSize="small" />
                       <span className="hidden sm:inline">Edit</span>
-                    </button>
+                    </button> */}
                   </div>
                 </Fragment>
               )}
@@ -593,6 +626,66 @@ function Announcement() {
           </div>
           <form method="dialog" className="modal-backdrop">
             <button onClick={closeModal}>close</button>
+          </form>
+        </dialog>
+      )}
+
+      {/* Send confirmation modal */}
+      {showSendConfirm && (
+        <dialog open className="modal modal-open">
+          <div className="modal-box max-w-md">
+            <h3 className="font-bold text-lg mb-2">Send announcement?</h3>
+            <p className="text-sm text-base-content/70">
+              Once sent, this announcement cannot be edited. Are you sure you
+              want to send it now?
+            </p>
+            <div className="alert alert-warning mt-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856C18.403 19 19 18.403 19 17.694V6.306C19 5.597 18.403 5 17.694 5H6.306C5.597 5 5 5.597 5 6.306v11.388C5 18.403 5.597 19 6.306 19z"
+                />
+              </svg>
+              <div>
+                <h4 className="font-semibold">Final send</h4>
+                <p className="text-sm">
+                  You will not be able to edit this announcement after sending.
+                </p>
+              </div>
+            </div>
+            <div className="modal-action">
+              <button
+                className="btn btn-ghost"
+                onClick={cancelSendConfirmation}
+                disabled={isSending}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={confirmSendAnnouncement}
+                disabled={isSending}
+              >
+                {isSending ? (
+                  <Fragment>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Sending...
+                  </Fragment>
+                ) : (
+                  "Yes, send it"
+                )}
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={cancelSendConfirmation}>close</button>
           </form>
         </dialog>
       )}
