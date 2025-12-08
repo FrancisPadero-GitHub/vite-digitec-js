@@ -103,6 +103,12 @@ function MemberProfile() {
     memberInfo?.birthday
   );
 
+  // Check if member meets minimum loan requirements
+  const meetsMinimumRequirements =
+    tenure >= requirements.minTenure &&
+    memberAge >= requirements.minAge &&
+    totalShareCapital >= requirements.minShareCapital;
+
   // Sync toggle state with member data
   useEffect(() => {
     if (memberInfo?.is_eligible_for_other_loans !== undefined) {
@@ -402,7 +408,7 @@ function MemberProfile() {
                     </div>
                   ))}
                 </div>
-                {memberRole === "board" && (
+                {memberRole === "board" && meetsMinimumRequirements && (
                   <Fragment>
                     <div className="divider my-2"></div>
                     {/* Toggle for Other Loan Products */}
