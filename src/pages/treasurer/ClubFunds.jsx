@@ -7,8 +7,14 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import {
+  AccountBalanceWallet,
+  ReceiptLong,
+  CreditCard,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 // fetch hooks
@@ -26,6 +32,7 @@ import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
+import StatCardV2 from "../shared/components/StatCardV2";
 
 // constants
 import {
@@ -33,11 +40,28 @@ import {
   PAYMENT_METHOD_COLORS,
 } from "../../constants/Color";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png";
+import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
+import { calcGrowth } from "../shared/utils/CurrentVSPrevCalculator";
 
 // utils
 import { useDebounce } from "../../backend/hooks/treasurer/utils/useDebounce";
 import { display } from "../../constants/numericFormat";
 import { getMinAllowedDate, getLocalDateString } from "../board/helpers/utils";
+
+const monthNameToNumber = {
+  January: 1,
+  February: 2,
+  March: 3,
+  April: 4,
+  May: 5,
+  June: 6,
+  July: 7,
+  August: 8,
+  September: 9,
+  October: 10,
+  November: 11,
+  December: 12,
+};
 
 // Format date string for month input
 function formatForMonthInput(dateString) {
@@ -144,22 +168,6 @@ function ClubFunds() {
         yearFilter === "" ||
         (date && date.getFullYear().toString() === yearFilter);
 
-      // To avoid subtext displaying numbers instead of month names
-      // I had to convert the values from the monthFilter to numbers for comparison
-      const monthNameToNumber = {
-        January: 1,
-        February: 2,
-        March: 3,
-        April: 4,
-        May: 5,
-        June: 6,
-        July: 7,
-        August: 8,
-        September: 9,
-        October: 10,
-        November: 11,
-        December: 12,
-      };
       const filterMonthNumber = monthFilter
         ? monthNameToNumber[monthFilter]
         : null;
@@ -184,6 +192,108 @@ function ClubFunds() {
     monthFilter,
   ]);
 
+  // Derived filters for totals (driven by toolbar year/month)
+  const monthForTotals = monthFilter ? monthNameToNumber[monthFilter] : null;
+  const yearForTotals = yearFilter ? Number(yearFilter) : null;
+  const currentYear = new Date().getFullYear();
+  const effectiveYearForTotals = yearForTotals ?? currentYear;
+
+  const prevPeriod = (() => {
+    if (monthForTotals) {
+      const base = new Date(effectiveYearForTotals, monthForTotals - 1, 1);
+      const prev = new Date(base);
+      prev.setMonth(base.getMonth() - 1);
+      return { month: prev.getMonth() + 1, year: prev.getFullYear() };
+    }
+    if (yearForTotals) return { month: null, year: yearForTotals - 1 };
+    return { month: null, year: null };
+  })();
+
+  const totalsSubtitle = monthForTotals
+    ? `${monthFilter} ${effectiveYearForTotals}`
+    : yearForTotals
+      ? `${yearForTotals}`
+      : "All Time";
+
+  const {
+    data: totalSummary,
+    isLoading: loadingCurrent,
+    isError: isCurrentError,
+    error: currentErrorMessage,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: yearForTotals,
+    month: monthForTotals,
+    key: `clubfunds-summary-current-${totalsSubtitle}`,
+  });
+
+  const {
+    data: prevSummary,
+    isLoading: loadingPrev,
+    isError: isPrevError,
+    error: prevErrorMessage,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    month: prevPeriod.month,
+    year: prevPeriod.year,
+    key: `clubfunds-summary-prev-${totalsSubtitle}`,
+  });
+
+  const loadingTotals = loadingCurrent || loadingPrev;
+  const errorTotals = isCurrentError || isPrevError;
+  const errorMessageTotals =
+    currentErrorMessage?.message ||
+    prevErrorMessage?.message ||
+    "Failed to load totals";
+
+  const stats = useMemo(() => {
+    const c = totalSummary || {};
+    const p = prevSummary || {};
+    return [
+      {
+        statName: "Club Fund Balance",
+        amount: Number(c.club_balance ?? 0),
+        growthPercent: calcGrowth(c.club_balance, p.club_balance),
+        iconBgColor: "bg-emerald-500",
+        icon: <AccountBalanceWallet />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Club Expenses",
+        amount: Number(c.club_total_expenses ?? 0),
+        type: "expenses",
+        growthPercent: calcGrowth(c.club_total_expenses, p.club_total_expenses),
+        iconBgColor: "bg-rose-500",
+        icon: <ReceiptLong />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Overall Total Cash",
+        amount: Number(c.overall_total_cash ?? 0),
+        growthPercent: calcGrowth(c.overall_total_cash, p.overall_total_cash),
+        iconBgColor: "bg-indigo-500",
+        icon: <CreditCard />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+    ];
+  }, [
+    totalSummary,
+    prevSummary,
+    totalsSubtitle,
+    loadingTotals,
+    errorTotals,
+    errorMessageTotals,
+  ]);
+
   // This is used for the combobox selection of members upon searching for account_number
   const [query, setQuery] = useState("");
   // for smoothing out filtering
@@ -201,7 +311,6 @@ function ClubFunds() {
 
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
-  const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const year = currentYear - i;
     return { label: year.toString(), value: year.toString() };
@@ -307,6 +416,8 @@ function ClubFunds() {
     setDeleteTargetId(contribution_id);
     setIsDeleteModalOpen(true);
   };
+
+  const [isStatsVisible, setIsStatsVisible] = useState(true);
 
   const closeDeleteModal = () => {
     setDeleteTargetId(null);
@@ -490,6 +601,39 @@ function ClubFunds() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Collapsible Stats Card */}
+        <div className="space-y-2">
+          <button
+            onClick={() => setIsStatsVisible(!isStatsVisible)}
+            className="btn btn-sm btn-ghost gap-2"
+            type="button"
+          >
+            {isStatsVisible ? (
+              <>
+                <ChevronUp size={18} />
+                Hide Summary
+              </>
+            ) : (
+              <>
+                <ChevronDown size={18} />
+                Show Summary
+              </>
+            )}
+          </button>
+          {isStatsVisible && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Summary Totals</span>
+              </div>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-3">
+                {stats.map((s, i) => (
+                  <StatCardV2 key={i} {...s} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <DataTableV2

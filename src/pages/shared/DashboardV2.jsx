@@ -27,6 +27,7 @@ import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
 // helper
 import { useMemberRole } from "../../backend/context/useMemberRole";
 import { display } from "../../constants/numericFormat";
+import { calcGrowth, getPrevPeriod } from "./utils/CurrentVSPrevCalculator";
 
 // components
 import DataTableV2 from "./components/DataTableV2";
@@ -94,34 +95,6 @@ function DashboardV2() {
   const [filters, setFilters] = useState({
     overAll: { month: null, year: null, subtitle: "All Time" },
   });
-
-  // Helper to get previous period based on subtitle
-  // Helper to compute previous period filter
-  const getPrevPeriod = (subtitle) => {
-    if (subtitle === "This Month") {
-      const now = new Date();
-      const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      return { month: prev.getMonth() + 1, year: prev.getFullYear() };
-    }
-    if (subtitle === "This Year") {
-      return { month: null, year: new Date().getFullYear() - 1 };
-    }
-    return { month: null, year: null }; // All Time → no comparison
-  };
-
-  // Helper to compute growth percent
-  const calcGrowth = (current, previous, asString = false) => {
-    const c = Number(current);
-    const p = Number(previous);
-
-    // Prevent divide-by-zero or invalid values
-    if (!isFinite(c) || !isFinite(p) || p === 0) return 0;
-
-    const growth = ((c - p) / p) * 100;
-    const rounded = Math.round(growth);
-
-    return asString ? `${rounded}%` : rounded;
-  };
 
   // RPC totals
   const {
