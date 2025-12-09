@@ -4,6 +4,14 @@ import Decimal from "decimal.js";
 import { createPortal } from "react-dom";
 import WarningIcon from "@mui/icons-material/Warning";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ReceiptLong,
+  TrendingUp,
+  LocalAtm,
+  MonetizationOn,
+  AccountBalanceWallet,
+} from "@mui/icons-material";
 
 import { useForm, Controller } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
@@ -39,6 +47,7 @@ import { useEditLoanPayments } from "../../backend/hooks/treasurer/useEditPaymen
 // components
 import FilterToolbar from "../shared/components/FilterToolbar";
 import DataTableV2 from "../shared/components/DataTableV2";
+import StatCardV2 from "../shared/components/StatCardV2";
 
 // modal
 import ReceiptModal from "./modals/ReceiptModal";
@@ -54,6 +63,23 @@ import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 // utils
 import { display } from "../../constants/numericFormat";
 import { getMinAllowedDate } from "../board/helpers/utils";
+
+const monthNameToNumber = {
+  January: 1,
+  February: 2,
+  March: 3,
+  April: 4,
+  May: 5,
+  June: 6,
+  July: 7,
+  August: 8,
+  September: 9,
+  October: 10,
+  November: 11,
+  December: 12,
+};
+import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
+import { calcGrowth } from "../shared/utils/CurrentVSPrevCalculator";
 
 // HELPER: To avoid timezone issues with date inputs
 function getLocalDateString(date) {
@@ -197,20 +223,6 @@ function CoopLoansPayments() {
         (date && date.getFullYear().toString() === yearFilter);
 
       // Month filter uses month names -> convert to number for comparison
-      const monthNameToNumber = {
-        January: 1,
-        February: 2,
-        March: 3,
-        April: 4,
-        May: 5,
-        June: 6,
-        July: 7,
-        August: 8,
-        September: 9,
-        October: 10,
-        November: 11,
-        December: 12,
-      };
       const filterMonthNumber = monthFilter
         ? monthNameToNumber[monthFilter]
         : null;
@@ -233,6 +245,154 @@ function CoopLoansPayments() {
     paymentMethodFilter,
     yearFilter,
     monthFilter,
+  ]);
+
+  // Derived filters for totals (driven by toolbar year/month)
+  const monthForTotals = monthFilter ? monthNameToNumber[monthFilter] : null;
+  const yearForTotals = yearFilter ? Number(yearFilter) : null;
+  const effectiveYearForTotals = yearForTotals ?? currentYear;
+
+  const prevPeriod = (() => {
+    if (monthForTotals) {
+      const base = new Date(effectiveYearForTotals, monthForTotals - 1, 1);
+      const prev = new Date(base);
+      prev.setMonth(base.getMonth() - 1);
+      return { month: prev.getMonth() + 1, year: prev.getFullYear() };
+    }
+    if (yearForTotals) return { month: null, year: yearForTotals - 1 };
+    return { month: null, year: null };
+  })();
+
+  const totalsSubtitle = monthForTotals
+    ? `${monthFilter} ${effectiveYearForTotals}`
+    : yearForTotals
+      ? `${yearForTotals}`
+      : "All Time";
+
+  const {
+    data: totalSummary,
+    isLoading: loadingCurrent,
+    isError: isCurrentError,
+    error: currentErrorMessage,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    year: yearForTotals,
+    month: monthForTotals,
+    key: `loanpayments-summary-current-${totalsSubtitle}`,
+  });
+  console.log(totalSummary);
+  const {
+    data: prevSummary,
+    isLoading: loadingPrev,
+    isError: isPrevError,
+    error: prevErrorMessage,
+  } = useFetchTotal({
+    rpcFn: "get_funds_summary",
+    month: prevPeriod.month,
+    year: prevPeriod.year,
+    key: `loanpayments-summary-prev-${totalsSubtitle}`,
+  });
+
+  const loadingTotals = loadingCurrent || loadingPrev;
+  const errorTotals = isCurrentError || isPrevError;
+  const errorMessageTotals =
+    currentErrorMessage?.message ||
+    prevErrorMessage?.message ||
+    "Failed to load totals";
+
+  const stats = useMemo(() => {
+    const c = totalSummary || {};
+    const p = prevSummary || {};
+    return [
+      {
+        statName: "Penalty Fee Income",
+        amount: Number(c.club_total_fees_income ?? 0),
+        growthPercent: calcGrowth(
+          c.club_total_fees_income,
+          p.club_total_fees_income
+        ),
+        iconBgColor: "bg-amber-500",
+        icon: <ReceiptLong />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Interest Income",
+        amount: Number(c.club_total_interest_income ?? 0),
+        growthPercent: calcGrowth(
+          c.club_total_interest_income,
+          p.club_total_interest_income
+        ),
+        iconBgColor: "bg-indigo-500",
+        icon: <TrendingUp />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Service Fee Income",
+        amount: Number(c.club_total_service_fee_income ?? 0),
+        growthPercent: calcGrowth(
+          c.club_total_service_fee_income,
+          p.club_total_service_fee_income
+        ),
+        iconBgColor: "bg-teal-500",
+        icon: <LocalAtm />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Principal Paid",
+        amount: Number(c.coop_total_principal_paid ?? 0),
+        growthPercent: calcGrowth(
+          c.coop_total_principal_paid,
+          p.coop_total_principal_paid
+        ),
+        iconBgColor: "bg-emerald-600",
+        icon: <MonetizationOn />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Total Loan Payments",
+        amount: Number(c.coop_total_loan_paid_amount ?? 0),
+        growthPercent: calcGrowth(
+          c.coop_total_loan_paid_amount,
+          p.coop_total_loan_paid_amount
+        ),
+        iconBgColor: "bg-orange-600",
+        icon: <LocalAtm />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Club Total Income",
+        amount: Number(c.club_total_income ?? 0),
+        growthPercent: calcGrowth(c.club_total_income, p.club_total_income),
+        iconBgColor: "bg-blue-600",
+        icon: <AccountBalanceWallet />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+    ];
+  }, [
+    totalSummary,
+    prevSummary,
+    totalsSubtitle,
+    loadingTotals,
+    errorTotals,
+    errorMessageTotals,
   ]);
 
   const { mutate: mutateDelete } = useDeletePayment("loan_payments");
@@ -301,6 +461,8 @@ function CoopLoansPayments() {
     reset(defaultFormValues);
     dispatch(openLoanPaymentModal({ type: "add" }));
   };
+
+  const [isStatsVisible, setIsStatsVisible] = useState(true);
 
   const closeModal = () => {
     reset(defaultFormValues);
@@ -750,6 +912,42 @@ function CoopLoansPayments() {
               <AddCircleIcon />
               Payments
             </button>
+          )}
+        </div>
+
+        {/* Collapsible Stats Card */}
+        <div className="space-y-2">
+          <button
+            onClick={() => setIsStatsVisible(!isStatsVisible)}
+            className="btn btn-sm btn-ghost gap-2"
+            type="button"
+          >
+            {isStatsVisible ? (
+              <>
+                <ChevronUp size={18} />
+                Hide Summary
+              </>
+            ) : (
+              <>
+                <ChevronDown size={18} />
+                Show Summary
+              </>
+            )}
+          </button>
+          {isStatsVisible && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Summary Totals</span>
+                <span className="text-xs text-base-content/60">
+                  {totalsSubtitle}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-3">
+                {stats.map((s, i) => (
+                  <StatCardV2 key={i} {...s} />
+                ))}
+              </div>
+            </div>
           )}
         </div>
 

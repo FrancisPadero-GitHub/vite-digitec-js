@@ -204,7 +204,7 @@ function DashboardV2() {
         errorMessage: errorMessage,
       },
       {
-        statName: " Fee Income",
+        statName: " Penalty Fee Income",
         amount: Number(c.club_total_fees_income ?? 0),
         growthPercent: calcGrowth(
           c.club_total_fees_income,
