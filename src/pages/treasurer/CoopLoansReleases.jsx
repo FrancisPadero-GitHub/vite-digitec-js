@@ -503,10 +503,10 @@ function CoopLoansReleases() {
                         validate: (value) => {
                           const selectedDate = new Date(value);
                           const minDate = new Date();
-                          minDate.setDate(minDate.getDate() - 7);
+                          minDate.setDate(minDate.getDate() - 3);
                           minDate.setHours(0, 0, 0, 0);
                           if (selectedDate < minDate) {
-                            return "Release date cannot be more than 7 days in the past";
+                            return "Release date cannot be more than 3 days in the past";
                           }
                           return true;
                         },

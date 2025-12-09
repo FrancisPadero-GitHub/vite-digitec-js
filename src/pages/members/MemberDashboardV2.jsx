@@ -313,7 +313,7 @@ function MemberDashboardV2() {
                   </div>
                   <button
                     onClick={() =>
-                      navigate("/regular-member/coop-loans/loan-payments")
+                      navigate("/regular-member/coop-loans/loan-accounts")
                     }
                     className="btn btn-circle btn-sm btn-ghost text-base-content/70"
                   >

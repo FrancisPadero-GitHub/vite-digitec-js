@@ -37,10 +37,10 @@ export async function generateReceiptNo(
   return `${loan_ref_number}-P${account_number}-D${datePart}-${seq}`;
 }
 
-// HELPER: Get minimum allowed date (7 days grace period for late entries)
+// HELPER: Get minimum allowed date (3 days grace period for late entries)
 export function getMinAllowedDate() {
   const date = new Date();
-  date.setDate(date.getDate() - 7); // Allow 7 days back
+  date.setDate(date.getDate() - 3); // Allow 3 days back
   return getLocalDateString(date);
 }
 
