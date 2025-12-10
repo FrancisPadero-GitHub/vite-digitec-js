@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { AccountBalanceWallet, Receipt } from "@mui/icons-material";
+
 // fetch hooks
 import { useFetchLoanPayments } from "../../backend/hooks/shared/useFetchPayments";
 import { useFetchProfile } from "../../backend/hooks/member/useFetchProfile";
@@ -9,6 +12,7 @@ import { useFetchCoop } from "../../backend/hooks/shared/useFetchCoop";
 import FilterToolbar from "../shared/components/FilterToolbar";
 import DataTableV2 from "../shared/components/DataTableV2";
 import ReceiptModal from "../treasurer/modals/ReceiptModal";
+import StatCardV2 from "../shared/components/StatCardV2";
 
 // constants
 import { PAYMENT_METHOD_COLORS } from "../../constants/Color";
@@ -20,6 +24,21 @@ import getYearsMonthsDaysDifference from "../../constants/DateCalculation";
 
 // Restriction
 import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction";
+
+const monthNameToNumber = {
+  January: 1,
+  February: 2,
+  March: 3,
+  April: 4,
+  May: 5,
+  June: 6,
+  July: 7,
+  August: 8,
+  September: 9,
+  October: 10,
+  November: 11,
+  December: 12,
+};
 
 function MemberPayments() {
   const { hasRestriction, requirements } = useLoanRestriction();
@@ -84,20 +103,6 @@ function MemberPayments() {
 
     // To avoid subtext displaying numbers instead of month names
     // I had to convert the values from the monthFilter to numbers for comparison
-    const monthNameToNumber = {
-      January: 1,
-      February: 2,
-      March: 3,
-      April: 4,
-      May: 5,
-      June: 6,
-      July: 7,
-      August: 8,
-      September: 9,
-      October: 10,
-      November: 11,
-      December: 12,
-    };
     const filterMonthNumber = monthFilter
       ? monthNameToNumber[monthFilter]
       : null;
@@ -113,9 +118,11 @@ function MemberPayments() {
     );
   });
 
+  // Get current year for year options generation
+  const currentYear = new Date().getFullYear();
+
   // Dynamically generate year options for the past 5 years including current year
   // to get rid of the hard coded years
-  const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const year = currentYear - i;
     return { label: year.toString(), value: year.toString() };
@@ -153,6 +160,85 @@ function MemberPayments() {
   };
 
   const [showReceipt, setShowReceipt] = useState(false);
+  const [isStatsVisible, setIsStatsVisible] = useState(true);
+
+  // Derived filters for subtitle
+  const monthForTotals = monthFilter ? monthNameToNumber[monthFilter] : null;
+  const yearForTotals = yearFilter ? Number(yearFilter) : null;
+  const effectiveYearForTotals = yearForTotals ?? currentYear;
+
+  const totalsSubtitle = monthForTotals
+    ? `${monthFilter} ${effectiveYearForTotals}`
+    : yearForTotals
+      ? `${yearForTotals}`
+      : "All Time";
+
+  // Calculate payment statistics (filtered data)
+  const paymentStats = useMemo(() => {
+    const totalPaid = loanPayments.reduce(
+      (sum, payment) => sum + (payment.total_amount || 0),
+      0
+    );
+    const totalPrincipal = loanPayments.reduce(
+      (sum, payment) => sum + (payment.principal || 0),
+      0
+    );
+    const totalInterest = loanPayments.reduce(
+      (sum, payment) => sum + (payment.interest || 0),
+      0
+    );
+    const totalFees = loanPayments.reduce(
+      (sum, payment) => sum + (payment.fees || 0),
+      0
+    );
+
+    return [
+      {
+        statName: "Total Payments Made",
+        amount: totalPaid,
+        growthPercent: 0,
+        iconBgColor: "bg-green-400",
+        icon: <AccountBalanceWallet />,
+        subtitle: totalsSubtitle,
+        loading: isLoading,
+        error: false,
+        errorMessage: "",
+      },
+      {
+        statName: "Principal Paid",
+        amount: totalPrincipal,
+        growthPercent: 0,
+        iconBgColor: "bg-blue-400",
+        icon: <Receipt />,
+        subtitle: totalsSubtitle,
+        loading: isLoading,
+        error: false,
+        errorMessage: "",
+      },
+      {
+        statName: "Interest Paid",
+        amount: totalInterest,
+        growthPercent: 0,
+        iconBgColor: "bg-purple-400",
+        icon: <Receipt />,
+        subtitle: totalsSubtitle,
+        loading: isLoading,
+        error: false,
+        errorMessage: "",
+      },
+      {
+        statName: "Fees & Penalties Paid",
+        amount: totalFees,
+        growthPercent: 0,
+        iconBgColor: "bg-amber-400",
+        icon: <Receipt />,
+        subtitle: totalsSubtitle,
+        loading: isLoading,
+        error: false,
+        errorMessage: "",
+      },
+    ];
+  }, [loanPayments, isLoading, totalsSubtitle]);
 
   if (hasRestriction) {
     // Membership duration
@@ -303,6 +389,39 @@ function MemberPayments() {
               },
             ]}
           />
+        </div>
+
+        {/* Collapsible Stats Card */}
+        <div className="space-y-2">
+          <button
+            onClick={() => setIsStatsVisible(!isStatsVisible)}
+            className="btn btn-sm btn-ghost gap-2"
+            type="button"
+          >
+            {isStatsVisible ? (
+              <>
+                <ChevronUp size={18} />
+                Hide Summary
+              </>
+            ) : (
+              <>
+                <ChevronDown size={18} />
+                Show Summary
+              </>
+            )}
+          </button>
+          {isStatsVisible && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Payment Summary</span>
+              </div>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                {paymentStats.map((s, i) => (
+                  <StatCardV2 key={i} {...s} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <DataTableV2
