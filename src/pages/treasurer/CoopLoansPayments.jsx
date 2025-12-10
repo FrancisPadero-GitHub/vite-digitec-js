@@ -280,7 +280,7 @@ function CoopLoansPayments() {
     month: monthForTotals,
     key: `loanpayments-summary-current-${totalsSubtitle}`,
   });
-  console.log(totalSummary);
+
   const {
     data: prevSummary,
     isLoading: loadingPrev,

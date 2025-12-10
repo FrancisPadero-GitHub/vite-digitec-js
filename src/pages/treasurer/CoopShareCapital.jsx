@@ -34,6 +34,7 @@ import FormModal from "./modals/FormModal";
 import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
+import CoopShareCapitalReceiptModal from "./modals/CoopShareCapitalReceiptModal";
 
 // Constants
 import {
@@ -378,9 +379,21 @@ function CoopShareCapital() {
     setModalType(null);
   };
 
+  const openViewModal = (data) => {
+    setViewContributionData(data);
+  };
+
+  const closeViewModal = () => {
+    setViewContributionData(null);
+  };
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [isStatsVisible, setIsStatsVisible] = useState(true);
+
+  // View modal state
+  const [viewContributionData, setViewContributionData] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const openDeleteModal = (coop_contri_id) => {
     setDeleteTargetId(coop_contri_id);
@@ -591,6 +604,7 @@ function CoopShareCapital() {
             "Category",
             "Date",
             "Method",
+            "Receipt No.",
           ]}
           filterActive={activeFiltersText !== "Showing all contributions"}
           data={coop}
@@ -610,16 +624,14 @@ function CoopShareCapital() {
               : "Not Found";
             const paymentMethod = row?.payment_method || "Not Found";
             const isDisabled = !row?.full_name; // condition (you can adjust logic)
+            const receiptNo = row?.receipt_no || "--";
+
             return (
               <tr
                 key={id}
-                onClick={
-                  memberRole !== "board" ? () => openEditModal(row) : undefined
-                }
-                className={`text-center ${
-                  isDisabled
-                    ? "opacity-90"
-                    : "cursor-pointer hover:bg-base-200/50"
+                onClick={() => openViewModal(row)}
+                className={`text-center cursor-pointer hover:bg-base-200/50 ${
+                  isDisabled ? "opacity-90" : ""
                 }`}
               >
                 {/* Ref no. */}
@@ -687,6 +699,15 @@ function CoopShareCapital() {
                   >
                     {paymentMethod}
                   </span>
+                </td>
+                {/* Receipt No */}
+                <td
+                  className=" text-center font-medium text-xs hover:underline"
+                  onClick={() => {
+                    "";
+                  }}
+                >
+                  {receiptNo}
                 </td>
               </tr>
             );
@@ -914,6 +935,174 @@ function CoopShareCapital() {
         cancelText="Cancel"
         isLoading={false}
       />
+
+      {/* Receipt Modal */}
+      <CoopShareCapitalReceiptModal
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        contribution={viewContributionData}
+      />
+
+      {/* View Contribution Details Modal */}
+      {viewContributionData && (
+        <dialog open className="modal overflow-hidden">
+          <div className="modal-box max-w-sm md:max-w-2xl w-full flex flex-col max-h-2xl">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-xl font-bold">Contribution Details</h3>
+              <div
+                className={`badge badge-lg font-semibold ${
+                  viewContributionData.category === "Initial"
+                    ? "badge-info"
+                    : viewContributionData.category === "Monthly"
+                      ? "badge-success"
+                      : "badge-warning"
+                }`}
+              >
+                {viewContributionData.category}
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto overflow-x-hidden flex-1">
+              {/* Account Info Section */}
+              <div className="bg-base-200 p-3 rounded-lg mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">
+                  Account Information
+                </h4>
+                <div className="flex flex-col lg:flex-row lg:justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Account Number
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {viewContributionData.account_number}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Member Name
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      {viewContributionData.full_name || "System"}
+                    </div>
+                  </div>
+                  <div className="self-center lg:self-end">
+                    <button
+                      onClick={() => setShowReceipt(true)}
+                      className="btn btn-warning max-h-6"
+                    >
+                      View Receipt
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contribution Info Section */}
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">
+                  Contribution Information
+                </h4>
+                <div className="grid grid-cols-2 gap-2.5 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Contribution ID
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      CSC_{viewContributionData.coop_contri_id}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Receipt No.
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      {viewContributionData.receipt_no || "--"}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Date
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {new Date(
+                        viewContributionData.contribution_date
+                      ).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Payment Method
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {viewContributionData.payment_method}
+                    </div>
+                  </div>
+                </div>
+                {viewContributionData.remarks && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Remarks
+                    </label>
+                    <div className="text-sm text-gray-700">
+                      {viewContributionData.remarks}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Amount Details */}
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Amount</h4>
+                <div className="pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-bold">Total Amount</span>
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                      <span className="text-lg font-bold text-green-900">
+                        ₱{display(viewContributionData.amount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Fixed Modal Actions */}
+            <div
+              className={`flex justify-${
+                memberRole === "treasurer" ? "between" : "end"
+              } pt-4 border-t border-gray-200 mt-2 flex-shrink-0`}
+            >
+              <div className="modal-action mt-0">
+                {memberRole === "treasurer" && (
+                  <button
+                    onClick={() => {
+                      closeViewModal();
+                      openEditModal(viewContributionData);
+                    }}
+                    className="btn btn-sm btn-primary"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+              <div className="modal-action mt-0">
+                <button onClick={closeViewModal} className="btn btn-sm">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Backdrop enables outside click to close */}
+          <form
+            method="dialog"
+            className="modal-backdrop"
+            onSubmit={closeViewModal}
+          >
+            <button aria-label="Close"></button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }

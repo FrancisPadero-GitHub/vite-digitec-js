@@ -33,6 +33,7 @@ import DataTableV2 from "../shared/components/DataTableV2";
 import FilterToolbar from "../shared/components/FilterToolbar";
 import DeleteConfirmationModal from "../shared/modal/DeleteConfirmationModal";
 import StatCardV2 from "../shared/components/StatCardV2";
+import ClubFundsReceiptModal from "./modals/ClubFundsReceiptModal";
 
 // constants
 import {
@@ -408,9 +409,21 @@ function ClubFunds() {
     setModalType(null);
   };
 
+  const openViewModal = (data) => {
+    setViewContributionData(data);
+  };
+
+  const closeViewModal = () => {
+    setViewContributionData(null);
+  };
+
   // Delete confirmation modal state & handlers
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  // View modal state
+  const [viewContributionData, setViewContributionData] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const openDeleteModal = (contribution_id) => {
     setDeleteTargetId(contribution_id);
@@ -648,6 +661,7 @@ function ClubFunds() {
             "Category",
             "Date",
             "Method",
+            "Receipt No.",
           ]}
           filterActive={activeFiltersText !== "Showing all contributions"}
           data={clubFunds}
@@ -666,12 +680,11 @@ function ClubFunds() {
               ? new Date(row.payment_date).toLocaleDateString()
               : "Not Found";
             const paymentMethod = row?.payment_method || "Not Found";
+            const receiptNo = row?.receipt_no || "--";
             return (
               <tr
                 key={id}
-                onClick={
-                  memberRole !== "board" ? () => openEditModal(row) : undefined
-                }
+                onClick={() => openViewModal(row)}
                 className="text-center cursor-pointer hover:bg-base-200/50"
               >
                 {/* Ref no. */}
@@ -725,6 +738,8 @@ function ClubFunds() {
                     {paymentMethod}
                   </span>
                 </td>
+                {/* Receipt No */}
+                <td>{receiptNo}</td>
               </tr>
             );
           }}
@@ -886,7 +901,7 @@ function ClubFunds() {
                         const minDate = new Date();
                         minDate.setDate(minDate.getDate() - 3);
                         minDate.setHours(0, 0, 0, 0);
-                        if (selectedDate < minDate) {
+                        if (selectedDate < minDate && modalType === "add") {
                           return "Payment date cannot be more than 3 days in the past";
                         }
                         return true;
@@ -987,6 +1002,194 @@ function ClubFunds() {
         cancelText="Cancel"
         isLoading={false}
       />
+
+      {/* Receipt Modal */}
+      <ClubFundsReceiptModal
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        contribution={viewContributionData}
+      />
+
+      {/* View Contribution Details Modal */}
+      {viewContributionData && (
+        <dialog open className="modal overflow-hidden">
+          <div className="modal-box max-w-sm md:max-w-2xl w-full flex flex-col max-h-2xl">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-xl font-bold">
+                Club Fund Contribution Details
+              </h3>
+              <div
+                className={`badge badge-lg font-semibold ${
+                  viewContributionData.category === "GMM"
+                    ? "badge-info"
+                    : viewContributionData.category === "Monthly Dues"
+                      ? "badge-success"
+                      : viewContributionData.category === "Activities"
+                        ? "badge-warning"
+                        : viewContributionData.category === "Community Service"
+                          ? "badge-primary"
+                          : viewContributionData.category === "Alalayang Agila"
+                            ? "badge-accent"
+                            : "badge-ghost"
+                }`}
+              >
+                {viewContributionData.category}
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto overflow-x-hidden flex-1">
+              {/* Account Info Section */}
+              <div className="bg-base-200 p-3 rounded-lg mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">
+                  Account Information
+                </h4>
+                <div className="flex flex-col lg:flex-row lg:justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Account Number
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {viewContributionData.account_number}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Member Name
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      {viewContributionData.full_name}
+                    </div>
+                  </div>
+                  <div className="self-center lg:self-end">
+                    <button
+                      onClick={() => setShowReceipt(true)}
+                      className="btn btn-warning max-h-6"
+                    >
+                      View Receipt
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contribution Info Section */}
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">
+                  Contribution Information
+                </h4>
+                <div className="grid grid-cols-2 gap-2.5 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Contribution ID
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      CFC_{viewContributionData.contribution_id}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Receipt No.
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      {viewContributionData.receipt_no || "--"}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Payment Date
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {new Date(
+                        viewContributionData.payment_date
+                      ).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Payment Method
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {viewContributionData.payment_method}
+                    </div>
+                  </div>
+                </div>
+                {viewContributionData.remarks && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Remarks
+                    </label>
+                    <div className="text-sm text-gray-700">
+                      {viewContributionData.remarks}
+                    </div>
+                  </div>
+                )}
+                {viewContributionData.period_start &&
+                  viewContributionData.period_end && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Coverage Period
+                      </label>
+                      <div className="text-sm font-semibold">
+                        {viewContributionData.period_start} to{" "}
+                        {viewContributionData.period_end}
+                      </div>
+                    </div>
+                  )}
+              </div>
+
+              {/* Amount Details */}
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Amount</h4>
+                <div className="pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-bold">Total Amount</span>
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                      <span className="text-lg font-bold text-green-900">
+                        ₱{display(viewContributionData.amount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Fixed Modal Actions */}
+            <div
+              className={`flex justify-${
+                memberRole === "treasurer" ? "between" : "end"
+              } pt-4 border-t border-gray-200 mt-2 flex-shrink-0`}
+            >
+              <div className="modal-action mt-0">
+                {memberRole === "treasurer" && (
+                  <button
+                    onClick={() => {
+                      closeViewModal();
+                      openEditModal(viewContributionData);
+                    }}
+                    className="btn btn-sm btn-primary"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+              <div className="modal-action mt-0">
+                <button onClick={closeViewModal} className="btn btn-sm">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Backdrop enables outside click to close */}
+          <form
+            method="dialog"
+            className="modal-backdrop"
+            onSubmit={closeViewModal}
+          >
+            <button aria-label="Close"></button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }
