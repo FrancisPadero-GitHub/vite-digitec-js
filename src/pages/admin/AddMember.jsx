@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 
 // mutation hooks
 import { useAddMember } from "../../backend/hooks/admin/useAddMembers";
+import { useCheckDuplicateMember } from "../../backend/hooks/admin/useCheckDuplicateMember";
 
 // icons
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -25,10 +26,16 @@ function AddMember() {
     isSuccess,
   } = useAddMember();
 
+  const { mutate: checkDuplicate, isPending: isCheckingDuplicate } =
+    useCheckDuplicateMember();
+
   // states
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateData, setDuplicateData] = useState(null);
+  const [pendingFormData, setPendingFormData] = useState(null);
 
   // variables
   const today = new Date().toISOString().split("T")[0];
@@ -99,14 +106,49 @@ function AddMember() {
     if (valid) setActiveTab((prev) => prev + 1); //only move on to next tab if all fields are okey
   };
 
-  // form submission
+  // form submission with duplicate check
   const onSubmit = (data) => {
     // Prevent double submission
-    if (isPending) {
+    if (isPending || isCheckingDuplicate) {
       return;
     }
 
-    // console.log("data", data )
+    // Check for duplicates first
+    checkDuplicate(
+      {
+        f_name: data.f_name,
+        m_name: data.m_name || "",
+        l_name: data.l_name,
+        birthday: data.birthday ? new Date(data.birthday).toISOString() : null,
+        email: data.email,
+        contact_number: data.contact_number,
+      },
+      {
+        onSuccess: (duplicates) => {
+          // If any duplicates found, show modal
+          if (
+            duplicates.hasNameMatch ||
+            duplicates.hasEmailMatch ||
+            duplicates.hasContactMatch
+          ) {
+            setDuplicateData(duplicates);
+            setPendingFormData(data);
+            setShowDuplicateModal(true);
+          } else {
+            // No duplicates, proceed with submission
+            submitMember(data);
+          }
+        },
+        onError: (err) => {
+          toast.error(`Validation failed: ${err.message}`);
+          console.error("Duplicate check failed:", err.message);
+        },
+      }
+    );
+  };
+
+  // Submit member after validation or override
+  const submitMember = (data) => {
     const normalized = {
       //normalize date fields before sending it to backend
       ...data,
@@ -126,10 +168,30 @@ function AddMember() {
     add_member(normalized, {
       onSuccess: () => {
         toast.success("Member registered successfully");
+        setShowDuplicateModal(false);
+        setDuplicateData(null);
+        setPendingFormData(null);
         setTimeout(() => navigate("/admin"), 1500);
       },
-      onError: (err) => console.error("Failed to submit:", err.message),
+      onError: (err) => {
+        toast.error(`Failed to submit: ${err.message}`);
+        console.error("Failed to submit:", err.message);
+      },
     });
+  };
+
+  // Handle confirmed submission despite duplicates
+  const handleConfirmSubmit = () => {
+    if (pendingFormData) {
+      submitMember(pendingFormData);
+    }
+  };
+
+  // Handle cancel from duplicate modal
+  const handleCancelSubmit = () => {
+    setShowDuplicateModal(false);
+    setDuplicateData(null);
+    setPendingFormData(null);
   };
 
   // Personal fields
@@ -853,13 +915,18 @@ function AddMember() {
                   <button
                     title="Submit button"
                     type="submit"
-                    disabled={isPending}
+                    disabled={isPending || isCheckingDuplicate}
                     className="btn btn-success btn-sm sm:btn-md"
                   >
                     {isPending ? (
                       <>
                         <span className="loading loading-spinner loading-sm"></span>
                         Submitting...
+                      </>
+                    ) : isCheckingDuplicate ? (
+                      <>
+                        <span className="loading loading-spinner loading-sm"></span>
+                        Validating...
                       </>
                     ) : (
                       "Submit"
@@ -870,6 +937,234 @@ function AddMember() {
             )}
           </form>
         </div>
+        {/* Duplicate Warning Modal */}
+        {showDuplicateModal && duplicateData && (
+          <dialog open className="modal overflow-hidden">
+            <div className="modal-box min-w-[24rem] max-w-2xl w-full flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4 pb-4 border-b border-warning flex-shrink-0">
+                <div className="flex items-start gap-3">
+                  <div className="text-warning text-4xl">⚠️</div>
+                  <div>
+                    <h3 className="text-xl font-bold text-warning mb-1">
+                      Potential Duplicate Member Detected
+                    </h3>
+                    <p className="text-sm text-base-content/60">
+                      Similar member(s) found in the system
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCancelSubmit}
+                  disabled={isPending}
+                  className="btn btn-sm btn-circle btn-ghost"
+                  aria-label="Close modal"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="overflow-y-auto flex-1 pr-2 space-y-4">
+                {duplicateData.hasNameMatch && (
+                  <div className="card bg-warning/10 border-2 border-warning">
+                    <div className="card-body p-4">
+                      <h4 className="card-title text-base text-warning flex items-center gap-2">
+                        <span className="text-xl">⚠️</span>
+                        Exact Name & Birthday Match Found
+                      </h4>
+                      <div className="space-y-3 mt-2">
+                        {duplicateData.nameMatches.map((match, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-base-100 rounded-lg p-4 shadow-sm border border-base-300"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Full Name
+                                </p>
+                                <p className="font-semibold text-base">
+                                  {match.f_name} {match.m_name} {match.l_name}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Birthday
+                                </p>
+                                <p className="font-medium text-sm">
+                                  {match.birthday
+                                    ? new Date(
+                                        match.birthday
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })
+                                    : "N/A"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Email
+                                </p>
+                                <p className="font-medium text-sm break-all">
+                                  {match.email}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Contact Number
+                                </p>
+                                <p className="font-medium text-sm">
+                                  {match.contact_number}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {duplicateData.hasEmailMatch && (
+                  <div className="card bg-warning/10 border-2 border-warning">
+                    <div className="card-body p-4">
+                      <h4 className="card-title text-base text-warning flex items-center gap-2">
+                        <span className="text-xl">📧</span>
+                        Email Already Registered
+                      </h4>
+                      <div className="space-y-3 mt-2">
+                        {duplicateData.emailMatches.map((match, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-base-100 rounded-lg p-4 shadow-sm border border-base-300"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Full Name
+                                </p>
+                                <p className="font-semibold text-base">
+                                  {match.f_name} {match.m_name} {match.l_name}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Email
+                                </p>
+                                <p className="font-medium text-sm break-all">
+                                  {match.email}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {duplicateData.hasContactMatch && (
+                  <div className="card bg-warning/10 border-2 border-warning">
+                    <div className="card-body p-4">
+                      <h4 className="card-title text-base text-warning flex items-center gap-2">
+                        <span className="text-xl">📱</span>
+                        Similar Contact Number Already Registered
+                      </h4>
+                      <div className="space-y-3 mt-2">
+                        {duplicateData.contactMatches.map((match, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-base-100 rounded-lg p-4 shadow-sm border border-base-300"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Full Name
+                                </p>
+                                <p className="font-semibold text-base">
+                                  {match.f_name} {match.m_name} {match.l_name}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+                                  Contact Number
+                                </p>
+                                <p className="font-medium text-sm">
+                                  {match.contact_number}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="alert alert-info shadow-sm">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    className="stroke-current shrink-0 w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  <div className="text-sm">
+                    <strong>Note:</strong> If you&apos;re certain this is a
+                    different person or the existing record is incorrect, you
+                    can proceed with registration. Otherwise, please verify the
+                    information before continuing.
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-base-300 mt-4 flex-shrink-0">
+                <button
+                  onClick={handleCancelSubmit}
+                  className="btn btn-ghost btn-sm sm:btn-md"
+                  disabled={isPending}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmSubmit}
+                  className="btn btn-warning btn-sm sm:btn-md"
+                  disabled={isPending}
+                >
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Submitting...
+                    </>
+                  ) : (
+                    "Proceed Anyway"
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Backdrop */}
+            <form method="dialog" className="modal-backdrop">
+              <button
+                onClick={handleCancelSubmit}
+                disabled={isPending}
+                aria-label="Close"
+              >
+                close
+              </button>
+            </form>
+          </dialog>
+        )}
       </div>
     </div>
   );
