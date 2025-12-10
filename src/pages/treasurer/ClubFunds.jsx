@@ -739,7 +739,9 @@ function ClubFunds() {
                   </span>
                 </td>
                 {/* Receipt No */}
-                <td>{receiptNo}</td>
+                <td className=" text-center font-medium text-xs hover:underline">
+                  {receiptNo}
+                </td>
               </tr>
             );
           }}

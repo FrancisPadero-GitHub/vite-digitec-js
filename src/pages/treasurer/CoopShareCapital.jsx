@@ -700,12 +700,7 @@ function CoopShareCapital() {
                   </span>
                 </td>
                 {/* Receipt No */}
-                <td
-                  className=" text-center font-medium text-xs hover:underline"
-                  onClick={() => {
-                    "";
-                  }}
-                >
+                <td className=" text-center font-medium text-xs hover:underline">
                   {receiptNo}
                 </td>
               </tr>

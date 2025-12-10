@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import ReceiptIcon from "@mui/icons-material/Receipt";
-import PrintIcon from "@mui/icons-material/Print";
+// import PrintIcon from "@mui/icons-material/Print";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import CloseIcon from "@mui/icons-material/Close";
 import jsPDF from "jspdf";
@@ -141,17 +141,28 @@ export default function CoopShareCapitalReceiptModal({
     doc.save(`CoopShareCapital_Receipt_${displayData.receiptNo}.pdf`);
   };
 
-  const handlePrint = () => window.print();
+  // const handlePrint = () => window.print();
 
   const handleModalClick = (e) => e.stopPropagation();
 
   return createPortal(
     <div
+      id="receipt-print-root"
       className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
+      <style>{`
+        @media print {
+          body { margin: 0; }
+          body * { visibility: hidden; }
+          #receipt-print-root, #receipt-print-root * { visibility: visible; }
+          #receipt-print-root { position: absolute; inset: 0; background: white; }
+          #receipt-print-root .print-card { box-shadow: none; max-height: none; overflow: visible; }
+          .no-print { display: none !important; }
+        }
+      `}</style>
       <div
-        className="bg-white w-full max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+        className="bg-white w-full max-w-sm sm:max-w-[25rem] md:max-w-[30rem] lg:max-w-[40rem] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col print-card"
         onClick={handleModalClick}
       >
         {/* Header */}
@@ -278,13 +289,13 @@ export default function CoopShareCapitalReceiptModal({
 
         {/* Action Buttons */}
         <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end border-t">
-          <button
+          {/* <button
             className="btn btn-sm btn-outline gap-2"
             onClick={handlePrint}
           >
             <PrintIcon fontSize="small" />
             Print
-          </button>
+          </button> */}
           <button className="btn btn-sm btn-primary gap-2" onClick={handlePdf}>
             <PictureAsPdfIcon fontSize="small" />
             Export PDF

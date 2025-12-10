@@ -320,6 +320,14 @@ function ClubExpenses() {
     setModalType(null);
   };
 
+  const openViewModal = (selectedRowData) => {
+    setViewExpenseData(selectedRowData);
+  };
+
+  const closeViewModal = () => {
+    setViewExpenseData(null);
+  };
+
   // Delete confirmation modal state & handlers
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
@@ -330,6 +338,9 @@ function ClubExpenses() {
   };
 
   const [isStatsVisible, setIsStatsVisible] = useState(true);
+
+  // View modal state for inspecting expense details
+  const [viewExpenseData, setViewExpenseData] = useState(null);
 
   const closeDeleteModal = () => {
     setDeleteTargetId(null);
@@ -526,9 +537,7 @@ function ClubExpenses() {
             return (
               <tr
                 key={id}
-                onClick={
-                  memberRole !== "board" ? () => openEditModal(row) : undefined
-                }
+                onClick={() => openViewModal(row)}
                 className="text-center cursor-pointer hover:bg-base-200/50"
               >
                 {/* Ref no. */}
@@ -720,6 +729,117 @@ function ClubExpenses() {
         cancelText="Cancel"
         isLoading={false}
       />
+
+      {viewExpenseData && (
+        <dialog open className="modal overflow-hidden">
+          <div className="modal-box max-w-sm md:max-w-2xl w-full flex flex-col max-h-2xl">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-xl font-bold">Expense Details</h3>
+              <div
+                className={`badge badge-lg font-semibold ${
+                  CLUB_CATEGORY_COLORS[viewExpenseData.category] ||
+                  "badge-neutral"
+                }`}
+              >
+                {viewExpenseData.category || "Uncategorized"}
+              </div>
+            </div>
+
+            <div className="overflow-y-auto overflow-x-hidden flex-1">
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">
+                  Expense Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Transaction ID
+                    </label>
+                    <div className="text-sm font-mono font-bold">
+                      {TABLE_PREFIX}_{viewExpenseData.transaction_id}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Date
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {new Date(
+                        viewExpenseData.transaction_date
+                      ).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Title
+                    </label>
+                    <div className="text-sm font-semibold">
+                      {viewExpenseData.title}
+                    </div>
+                  </div>
+                </div>
+                {viewExpenseData.description && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Description
+                    </label>
+                    <div className="text-sm text-gray-700">
+                      {viewExpenseData.description}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-base-100 p-3 rounded-lg border border-base-300 mb-3">
+                <h4 className="text-xs font-bold text-gray-600 mb-2">Amount</h4>
+                <div className="pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-bold">Total Amount</span>
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-rose-50 to-red-50 rounded-lg border-2 border-rose-300">
+                      <span className="text-lg font-bold text-rose-900">
+                        ₱{display(viewExpenseData.amount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`flex justify-${
+                memberRole === "treasurer" ? "between" : "end"
+              } pt-4 border-t border-gray-200 mt-2 flex-shrink-0`}
+            >
+              <div className="modal-action mt-0">
+                {memberRole === "treasurer" && (
+                  <button
+                    onClick={() => {
+                      closeViewModal();
+                      openEditModal(viewExpenseData);
+                    }}
+                    className="btn btn-sm btn-primary"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+              <div className="modal-action mt-0">
+                <button onClick={closeViewModal} className="btn btn-sm">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <form
+            method="dialog"
+            className="modal-backdrop"
+            onSubmit={closeViewModal}
+          >
+            <button aria-label="Close"></button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }
