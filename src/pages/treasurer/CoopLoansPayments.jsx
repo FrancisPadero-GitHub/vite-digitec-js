@@ -305,48 +305,6 @@ function CoopLoansPayments() {
     const p = prevSummary || {};
     return [
       {
-        statName: "Penalty Fee Income",
-        amount: Number(c.club_total_fees_income ?? 0),
-        growthPercent: calcGrowth(
-          c.club_total_fees_income,
-          p.club_total_fees_income
-        ),
-        iconBgColor: "bg-amber-500",
-        icon: <ReceiptLong />,
-        subtitle: totalsSubtitle,
-        loading: loadingTotals,
-        error: errorTotals,
-        errorMessage: errorMessageTotals,
-      },
-      {
-        statName: "Interest Income",
-        amount: Number(c.club_total_interest_income ?? 0),
-        growthPercent: calcGrowth(
-          c.club_total_interest_income,
-          p.club_total_interest_income
-        ),
-        iconBgColor: "bg-indigo-500",
-        icon: <TrendingUp />,
-        subtitle: totalsSubtitle,
-        loading: loadingTotals,
-        error: errorTotals,
-        errorMessage: errorMessageTotals,
-      },
-      {
-        statName: "Service Fee Income",
-        amount: Number(c.club_total_service_fee_income ?? 0),
-        growthPercent: calcGrowth(
-          c.club_total_service_fee_income,
-          p.club_total_service_fee_income
-        ),
-        iconBgColor: "bg-teal-500",
-        icon: <LocalAtm />,
-        subtitle: totalsSubtitle,
-        loading: loadingTotals,
-        error: errorTotals,
-        errorMessage: errorMessageTotals,
-      },
-      {
         statName: "Principal Paid",
         amount: Number(c.coop_total_principal_paid ?? 0),
         growthPercent: calcGrowth(
@@ -369,6 +327,48 @@ function CoopLoansPayments() {
         ),
         iconBgColor: "bg-orange-600",
         icon: <LocalAtm />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Service Fee Income",
+        amount: Number(c.club_total_service_fee_income ?? 0),
+        growthPercent: calcGrowth(
+          c.club_total_service_fee_income,
+          p.club_total_service_fee_income
+        ),
+        iconBgColor: "bg-teal-500",
+        icon: <LocalAtm />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Interest Income",
+        amount: Number(c.club_total_interest_income ?? 0),
+        growthPercent: calcGrowth(
+          c.club_total_interest_income,
+          p.club_total_interest_income
+        ),
+        iconBgColor: "bg-indigo-500",
+        icon: <TrendingUp />,
+        subtitle: totalsSubtitle,
+        loading: loadingTotals,
+        error: errorTotals,
+        errorMessage: errorMessageTotals,
+      },
+      {
+        statName: "Penalty Fee Income",
+        amount: Number(c.club_total_fees_income ?? 0),
+        growthPercent: calcGrowth(
+          c.club_total_fees_income,
+          p.club_total_fees_income
+        ),
+        iconBgColor: "bg-amber-500",
+        icon: <ReceiptLong />,
         subtitle: totalsSubtitle,
         loading: loadingTotals,
         error: errorTotals,
@@ -1548,13 +1548,16 @@ function CoopLoansPayments() {
                       rules={{
                         required: "Payment date is required",
                         validate: (value) => {
-                          const selectedDate = new Date(value);
-                          const minDate = new Date();
-                          minDate.setDate(minDate.getDate() - 3); // 7 days grace period
-                          minDate.setHours(0, 0, 0, 0);
+                          // Only apply 3-day restriction when adding new records
+                          if (loanPaymentModal.type === "add") {
+                            const selectedDate = new Date(value);
+                            const minDate = new Date();
+                            minDate.setDate(minDate.getDate() - 3);
+                            minDate.setHours(0, 0, 0, 0);
 
-                          if (selectedDate < minDate) {
-                            return "Payment date cannot be more than 3 days in the past";
+                            if (selectedDate < minDate) {
+                              return "Payment date cannot be more than 3 days in the past";
+                            }
                           }
                           return true;
                         },
@@ -1565,7 +1568,12 @@ function CoopLoansPayments() {
                             id="payment_date"
                             type="date"
                             autoComplete="off"
-                            min={getMinAllowedDate()}
+                            readOnly={loanPaymentModal.type === "edit"}
+                            min={
+                              loanPaymentModal.type === "add"
+                                ? getMinAllowedDate()
+                                : undefined
+                            }
                             value={field.value}
                             onChange={field.onChange}
                             className={`input input-bordered w-full ${

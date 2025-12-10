@@ -897,12 +897,14 @@ function ClubFunds() {
                     rules={{
                       required: "Payment date is required",
                       validate: (value) => {
-                        const selectedDate = new Date(value);
-                        const minDate = new Date();
-                        minDate.setDate(minDate.getDate() - 3);
-                        minDate.setHours(0, 0, 0, 0);
-                        if (selectedDate < minDate && modalType === "add") {
-                          return "Payment date cannot be more than 3 days in the past";
+                        if (modalType === "add") {
+                          const selectedDate = new Date(value);
+                          const minDate = new Date();
+                          minDate.setDate(minDate.getDate() - 3);
+                          minDate.setHours(0, 0, 0, 0);
+                          if (selectedDate < minDate) {
+                            return "Payment date cannot be more than 3 days in the past";
+                          }
                         }
                         return true;
                       },
@@ -913,7 +915,12 @@ function ClubFunds() {
                           id="payment_date"
                           type="date"
                           autoComplete="off"
-                          min={getMinAllowedDate()}
+                          readOnly={modalType === "edit"}
+                          min={
+                            modalType === "add"
+                              ? getMinAllowedDate()
+                              : undefined
+                          }
                           value={field.value}
                           onChange={field.onChange}
                           className={`input input-bordered w-full ${

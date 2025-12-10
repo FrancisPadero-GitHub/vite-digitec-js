@@ -633,12 +633,15 @@ function ClubExpenses() {
                     rules={{
                       required: "Transaction date is required",
                       validate: (value) => {
-                        const selectedDate = new Date(value);
-                        const minDate = new Date();
-                        minDate.setDate(minDate.getDate() - 3);
-                        minDate.setHours(0, 0, 0, 0);
-                        if (selectedDate < minDate) {
-                          return "Transaction date cannot be more than 3 days in the past";
+                        // Only apply 3-day restriction when adding new records
+                        if (modalType === "add") {
+                          const selectedDate = new Date(value);
+                          const minDate = new Date();
+                          minDate.setDate(minDate.getDate() - 3);
+                          minDate.setHours(0, 0, 0, 0);
+                          if (selectedDate < minDate) {
+                            return "Transaction date cannot be more than 3 days in the past";
+                          }
                         }
                         return true;
                       },
@@ -648,7 +651,12 @@ function ClubExpenses() {
                         <input
                           id="transaction_date"
                           type="date"
-                          min={getMinAllowedDate()}
+                          readOnly={modalType === "edit"}
+                          min={
+                            modalType === "add"
+                              ? getMinAllowedDate()
+                              : undefined
+                          }
                           value={field.value}
                           onChange={field.onChange}
                           className={`input input-bordered w-full ${

@@ -430,7 +430,6 @@ function CoopShareCapital() {
       return;
     }
 
-    console.log(`coop test`, data);
     if (modalType === "add") {
       mutateAdd(data, {
         onSuccess: () => {
@@ -863,12 +862,15 @@ function CoopShareCapital() {
                     rules={{
                       required: "Contribution date is required",
                       validate: (value) => {
-                        const selectedDate = new Date(value);
-                        const minDate = new Date();
-                        minDate.setDate(minDate.getDate() - 3);
-                        minDate.setHours(0, 0, 0, 0);
-                        if (selectedDate < minDate) {
-                          return "Contribution date cannot be more than 3 days in the past";
+                        // Only apply 3-day restriction when adding new records
+                        if (modalType === "add") {
+                          const selectedDate = new Date(value);
+                          const minDate = new Date();
+                          minDate.setDate(minDate.getDate() - 3);
+                          minDate.setHours(0, 0, 0, 0);
+                          if (selectedDate < minDate) {
+                            return "Contribution date cannot be more than 3 days in the past";
+                          }
                         }
                         return true;
                       },
@@ -878,8 +880,13 @@ function CoopShareCapital() {
                         <input
                           id="contribution_date"
                           type="date"
+                          readOnly={modalType === "edit"}
                           autoComplete="date"
-                          min={getMinAllowedDate()}
+                          min={
+                            modalType === "add"
+                              ? getMinAllowedDate()
+                              : undefined
+                          }
                           value={field.value}
                           onChange={field.onChange}
                           className={`input input-bordered w-full ${
