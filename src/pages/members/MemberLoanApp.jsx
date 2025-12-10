@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { HandCoins } from "lucide-react";
+// import { useNavigate } from "react-router-dom";
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Toaster, toast } from "react-hot-toast";
@@ -21,6 +22,7 @@ import { useCancelLoanApp } from "../../backend/hooks/member/useCancelLoanApp";
 import MembersFormModal from "./modal/MembersFormModal";
 import FilterToolbar from "../shared/components/FilterToolbar";
 import DataTableV2 from "../shared/components/DataTableV2";
+import LoanApplicationInfo from "./components/LoanApplicationInfo";
 
 // component hook
 import { usePrompt } from "../shared/components/usePrompt";
@@ -54,6 +56,8 @@ import useLoanRestriction from "../../backend/hooks/member/utils/useRestriction"
  */
 
 function MemberLoanApp() {
+  // const navigate = useNavigate();
+
   const today = new Date().toISOString().split("T")[0];
   const { showPrompt } = usePrompt(); // custom toaster
   const { hasRestriction, requirements } = useLoanRestriction();
@@ -259,6 +263,8 @@ function MemberLoanApp() {
 
   // Modal Handlers
   const [modalType, setModalType] = useState(null);
+  const [isLoanInfoModalOpen, setIsLoanInfoModalOpen] = useState(false);
+
   const openAddModal = () => {
     // Count restrictions for loan applications and accounts
     const pendingAppsCount = loanAppRaw.filter(
@@ -759,9 +765,19 @@ function MemberLoanApp() {
                   </span>
                 )}
               </div>
+              <label
+                className="label text-xs font-medium text-base-content/90 cursor-pointer underline hover:text-blue-600 transition-colors"
+                onClick={() => setIsLoanInfoModalOpen(true)}
+              >
+                Loan Application Info
+              </label>
             </div>
           </div>
         </div>
+        <LoanApplicationInfo
+          isOpen={isLoanInfoModalOpen}
+          onClose={() => setIsLoanInfoModalOpen(false)}
+        />
       </div>
     );
   }
@@ -937,9 +953,18 @@ function MemberLoanApp() {
                     className="bg-base-100 p-3 rounded-lg border-2 border-gray-200 mb-3"
                   >
                     <div className="form-control w-full">
-                      <label className="label text-xs font-medium text-base-content/70 mb-1">
-                        {field.label}
-                      </label>
+                      <div className="flex justify-between mb-2">
+                        <label className="label text-xs font-medium text-base-content/70 mb-1">
+                          {field.label}
+                        </label>
+                        <label
+                          className="label text-xs font-medium text-base-content/90 cursor-pointer underline hover:text-blue-600 transition-colors"
+                          onClick={() => setIsLoanInfoModalOpen(true)}
+                        >
+                          Loan Application Info
+                        </label>
+                      </div>
+
                       {loanStatus ? (
                         <div className="input input-bordered w-full bg-base-100 flex items-center">
                           {field.dynamicOptions?.find(
@@ -1317,8 +1342,14 @@ function MemberLoanApp() {
           </div>
         </MembersFormModal>
 
+        {/* Place this once inside the component’s return, e.g. near other modals */}
+        <LoanApplicationInfo
+          isOpen={isLoanInfoModalOpen}
+          onClose={() => setIsLoanInfoModalOpen(false)}
+        />
+
         {/* Cancel Confirmation Modal */}
-        {/* Cancel Confirmation Modal */}
+
         {showCancelConfirmation && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all">
