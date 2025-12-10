@@ -12,6 +12,7 @@ const StatCardV2 = ({
   loading,
   error,
   errorMessage,
+  formula,
 }) => {
   let resolvedType;
   if (typeof growthPercent === "number") {
@@ -27,10 +28,31 @@ const StatCardV2 = ({
   else colorClass = resolvedType === "increase" ? "text-primary" : "text-error";
 
   return (
-    <div className="card bg-base-100 shadow-md rounded-2xl px-2 py-2 sm:px-3 sm:py-3 md:px-4 md:py-4 lg:px-5 lg:py-5">
+    <div className="card bg-base-100 shadow-md rounded-2xl px-2 py-2 sm:px-3 sm:py-3 md:px-4 md:py-4 lg:px-5 lg:py-5 relative group">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-semibold">{statName}</h3>
-        <span className="text-xs text-gray-400">{subtitle}</span>
+        <div className="flex items-center gap-2">
+          {formula && (
+            <div className="relative">
+              <div className="tooltip tooltip-left" data-tip="View formula">
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs btn-circle border border-base-300 text-xs"
+                  aria-label={`${statName} formula`}
+                >
+                  ?
+                </button>
+              </div>
+              <div className="hidden group-hover:block absolute right-0 top-9 z-20 w-64 sm:w-72 bg-base-100 border border-base-200 shadow-lg rounded-xl p-3 text-left">
+                <p className="text-xs font-semibold mb-1">Formula</p>
+                <pre className="text-[11px] leading-snug whitespace-pre-wrap font-mono text-base-content/80">
+                  {formula}
+                </pre>
+              </div>
+            </div>
+          )}
+          <span className="text-xs text-gray-400">{subtitle}</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5">
@@ -38,12 +60,10 @@ const StatCardV2 = ({
           className={`rounded-full ${iconBgColor} flex items-center justify-center 
               w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-13 lg:h-13`}
         >
-          <span className="text-white">
-            {icon}
-          </span>
+          <span className="text-white">{icon}</span>
         </div>
 
-        <div className="" >
+        <div className="">
           <div className="text-1xl font-bold flex items-center">
             {loading ? (
               <span className="loading loading-spinner loading-md text-primary"></span>
@@ -73,7 +93,7 @@ const StatCardV2 = ({
       </div>
     </div>
   );
-}
+};
 
 StatCardV2.propTypes = {
   icon: PropTypes.node,
@@ -87,6 +107,7 @@ StatCardV2.propTypes = {
   loading: PropTypes.bool,
   error: PropTypes.bool,
   errorMessage: PropTypes.string,
+  formula: PropTypes.string,
 };
 
 export default React.memo(StatCardV2);

@@ -142,6 +142,8 @@ function DashboardV2() {
         loading: loading,
         error: error,
         errorMessage: errorMessage,
+        formula:
+          "Club Fund Balance = total club contributions - total club expenses",
       },
       {
         statName: "Club Expenses",
@@ -163,6 +165,8 @@ function DashboardV2() {
         loading: loading,
         error: error,
         errorMessage: errorMessage,
+        formula:
+          "Coop Share Capital = principal already paid + share capital contributions - principal released for loans",
       },
       {
         statName: " Loan Released",
@@ -225,6 +229,8 @@ function DashboardV2() {
         loading: loading,
         error: error,
         errorMessage: errorMessage,
+        formula:
+          "Club Income = interest paid + penalty fees paid + service fees collected",
       },
       {
         statName: "Overall Total Cash",
@@ -235,6 +241,8 @@ function DashboardV2() {
         loading: loading,
         error: error,
         errorMessage: errorMessage,
+        formula:
+          "Overall Total Cash =\n  (principal paid + share capital contributions - principal released for loans)\n  + (interest paid + penalty fees paid + service fees collected)\n  + (club contributions - club expenses)",
       },
     ];
   }, [currentSummary, prevSummary, loading, error, errorMessage]);
