@@ -302,7 +302,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
                                   e.stopPropagation();
                                   deleteNotification({ notif_id: notif.id });
                                 }}
-                                title="Delete notification"
+                                title="Clear notification"
                                 className="btn btn-ghost btn-xs btn-circle"
                                 disabled={isDeleteNotifPending}
                                 aria-disabled={isDeleteNotifPending}
@@ -373,15 +373,15 @@ const Topbar = ({ role, onToggleSidebar }) => {
                           deleteNotification({ account_no: accountNo });
                         }}
                         className="link text-red-600 btn-sm font-bold"
-                        aria-label="Delete all notifications"
-                        title="Delete all"
+                        aria-label="Clear all notifications"
+                        title="Clear all"
                         disabled={isDeleteNotifPending}
                         aria-disabled={isDeleteNotifPending}
                       >
                         {isDeleteNotifPending ? (
                           <AiOutlineLoading3Quarters className="inline animate-spin" />
                         ) : (
-                          "Delete all"
+                          "Clear all"
                         )}
                       </button>
                     ) : (
@@ -397,16 +397,16 @@ const Topbar = ({ role, onToggleSidebar }) => {
                             }
                           );
                         }}
-                        className="link text-red-600 btn-sm font-bold"
+                        className="text-red-600 btn-sm font-bold"
                         aria-label="Delete notification"
-                        title="Delete"
+                        title="Delete this notification"
                         disabled={isDeleteNotifPending}
                         aria-disabled={isDeleteNotifPending}
                       >
                         {isDeleteNotifPending ? (
                           <AiOutlineLoading3Quarters className="inline animate-spin" />
                         ) : (
-                          "Delete"
+                          <span>🗑</span>
                         )}
                       </button>
                     )}
@@ -495,7 +495,7 @@ const Topbar = ({ role, onToggleSidebar }) => {
                                   e.stopPropagation();
                                   deleteNotification({ notif_id: notif.id });
                                 }}
-                                title="Delete notification"
+                                title="Clear notification"
                                 className="btn btn-ghost btn-xs btn-circle"
                                 disabled={isDeleteNotifPending}
                                 aria-disabled={isDeleteNotifPending}
