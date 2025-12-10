@@ -21,7 +21,7 @@ import { useEditLoanProducts } from "../../backend/hooks/treasurer/useEditLoanPr
 
 // components
 import Products from "./components/Products";
-import FormModal from "./modals/FormModal";
+import FormModal from "../treasurer/modals/FormModal";
 
 // Default form values - defined outside component so it's created only once
 const defaultValues = {

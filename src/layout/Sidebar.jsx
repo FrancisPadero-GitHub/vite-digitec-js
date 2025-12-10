@@ -127,16 +127,6 @@ const sidebarConfig = {
         },
       ],
     },
-    {
-      section: "Settings",
-      items: [
-        {
-          label: "Loan Products",
-          icon: InventoryIcon,
-          path: "/treasurer/settings/loan-products",
-        },
-      ],
-    },
   ],
 
   board: [
@@ -165,6 +155,16 @@ const sidebarConfig = {
     {
       section: "Finance",
       items: [...financeBase("board"), ...loansBase("board")],
+    },
+    {
+      section: "Settings",
+      items: [
+        {
+          label: "Loan Products",
+          icon: InventoryIcon,
+          path: "/board/settings/loan-products",
+        },
+      ],
     },
   ],
 

@@ -94,14 +94,13 @@ function MemberProfile() {
   );
 
   // Membership duration
-  const { years: tenure } = getYearsMonthsDaysDifference(
+  const { years: tenure, months: tenureMonths } = getYearsMonthsDaysDifference(
     memberInfo?.joined_date
   );
 
   // Age
-  const { years: memberAge } = getYearsMonthsDaysDifference(
-    memberInfo?.birthday
-  );
+  const { years: memberAge, months: memberAgeMonths } =
+    getYearsMonthsDaysDifference(memberInfo?.birthday);
 
   // Check if member meets minimum loan requirements
   const meetsMinimumRequirements =
@@ -145,7 +144,13 @@ function MemberProfile() {
   const topInfo = [
     { label: "Account No.", value: memberInfo?.account_number || "—" },
     { label: "Share Capital", value: `₱${totalShareCapital.toLocaleString()}` },
-    { label: "Membership", value: `${tenure} years` },
+    {
+      label: "Membership",
+      value:
+        tenure < 1
+          ? `${tenureMonths} ${tenureMonths > 1 ? "months" : "month"}`
+          : `${tenure} ${tenure > 1 ? "years" : "year"}`,
+    },
   ];
 
   const personalInfo = [
@@ -172,13 +177,19 @@ function MemberProfile() {
   const eligibilityInfo = [
     {
       label: "Tenure",
-      value: `${tenure} ${tenure > 1 ? "years" : "year"} of membership`,
+      value:
+        tenure < 1
+          ? `${tenureMonths} ${tenureMonths > 1 ? "months" : "month"} of membership`
+          : `${tenure} ${tenure > 1 ? "years" : "year"} of membership`,
       passed: tenure >= requirements.minTenure,
       rule: `${requirements.minTenure} ${requirements.minTenure > 1 ? "years" : "year"} of membership`,
     },
     {
       label: "Age",
-      value: `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
+      value:
+        memberAge < 1
+          ? `${memberAgeMonths} ${memberAgeMonths > 1 ? "months" : "month"} old`
+          : `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
       passed: memberAge >= requirements.minAge,
       rule: `Must be at least ${requirements.minAge} years old`,
     },
@@ -292,7 +303,7 @@ function MemberProfile() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {/* LEFT COLUMN */}
-          <div className="space-y-6">
+          <div className="space-y-3">
             {/* MAIN DETAILS */}
             <section className="card bg-base-100 shadow">
               <div className="bg-primary text-primary-content text-center p-6 rounded-t">

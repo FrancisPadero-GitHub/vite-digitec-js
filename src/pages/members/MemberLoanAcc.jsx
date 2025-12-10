@@ -207,24 +207,28 @@ function MemberLoanAcc() {
 
   if (hasRestriction) {
     // Membership duration
-    const { years: tenure } = getYearsMonthsDaysDifference(
-      memberInfo?.joined_date
-    );
+    const { years: tenure, months: tenureMonths } =
+      getYearsMonthsDaysDifference(memberInfo?.joined_date);
     // Age
-    const { years: memberAge } = getYearsMonthsDaysDifference(
-      memberInfo?.birthday
-    );
+    const { years: memberAge, months: memberAgeMonths } =
+      getYearsMonthsDaysDifference(memberInfo?.birthday);
 
     const eligibilityInfo = [
       {
         label: "Tenure",
-        value: `${tenure} ${tenure > 1 ? "years" : "year"}`,
+        value:
+          tenure < 1
+            ? `${tenureMonths} ${tenureMonths > 1 ? "months" : "month"}`
+            : `${tenure} ${tenure > 1 ? "years" : "year"}`,
         passed: tenure >= requirements.minTenure,
         rule: `${requirements.minTenure} ${requirements.minTenure > 1 ? "years" : "year"} required`,
       },
       {
         label: "Age",
-        value: `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
+        value:
+          memberAge < 1
+            ? `${memberAgeMonths} ${memberAgeMonths > 1 ? "months" : "month"} old`
+            : `${memberAge} ${memberAge > 1 ? "years" : "year"} old`,
         passed: memberAge >= requirements.minAge,
         rule: `${requirements.minAge} years minimum`,
       },
