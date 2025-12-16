@@ -202,6 +202,7 @@ function MemberDashboardV2() {
       });
 
   const nextPaymentAmount = nextPayment?.total_due ?? 0;
+  const nextPaymentLoanRef = nextPayment?.loan_ref_number || "N/A";
   const nextPaymentDate = nextPayment?.due_date
     ? new Date(nextPayment.due_date).toLocaleDateString("en-US", {
         month: "long",
@@ -325,6 +326,9 @@ function MemberDashboardV2() {
                   <p className="text-sm text-base-content/50">Loading...</p>
                 ) : nextPaymentAmount > 0 ? (
                   <>
+                    <p className="text-xs text-base-content/60 mb-1">
+                      Loan Ref: {nextPaymentLoanRef}
+                    </p>
                     <div className="text-3xl font-bold text-red-500">
                       ₱{nextPaymentAmount.toLocaleString()}
                     </div>
