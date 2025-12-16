@@ -22,6 +22,7 @@ const addLoanAcc = async (formData) => {
     first_due = null,
     service_fee = 0,
     loan_term_approved = 0,
+    decision_note = null,
   } = formData;
 
   const loanPayload = {
@@ -40,6 +41,7 @@ const addLoanAcc = async (formData) => {
     first_due,
     service_fee,
     loan_term_approved,
+    decision_note,
   };
 
   const { data, error: loanError } = await supabase
@@ -73,7 +75,9 @@ const sendTreasurerNotification = async (loanAccData, senderAccountNumber) => {
 };
 
 const sendMemberNotification = async (loanAccData, senderAccountNumber) => {
-  const message = `Your loan application has been approved. Loan Ref: ${loanAccData.loan_ref_number || "N/A"} | Approved Principal: ₱${loanAccData.principal?.toLocaleString() || "0"}`;
+  const message = loanAccData.decision_note?.trim()
+    ? loanAccData.decision_note.trim()
+    : `Your loan application has been approved. Loan Ref: ${loanAccData.loan_ref_number || "N/A"} | Approved Principal: ₱${loanAccData.principal?.toLocaleString() || "0"}`;
 
   const { error } = await supabase.rpc("send_notification", {
     p_title: "Loan Approved",

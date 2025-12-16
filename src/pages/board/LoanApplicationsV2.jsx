@@ -277,6 +277,7 @@ function LoanApplicationsV2() {
       maturity_date: "",
       first_due: "",
       service_fee: 0,
+      decision_note: "",
 
       // Front End Only Fields
       interest_rate: 0,
@@ -356,6 +357,7 @@ function LoanApplicationsV2() {
         release_date: null,
         approved_date: today,
         first_due: dayjs().add(1, "month").format("YYYY-MM-DD"),
+        decision_note: "", // Clear the application decision note for the account form
       });
     } else {
       // directly submit the loan application edit if not approved
@@ -390,12 +392,19 @@ function LoanApplicationsV2() {
   const onSubmitLoanAcc = (formDataLoanAcc) => {
     // Form data in here contains the data being passed in line 201 during the resetLoanAcc({}) call
 
+    const decisionNote = (formDataLoanAcc.decision_note || "").trim() || null;
+    const finalLoanAccPayload = {
+      ...formDataLoanAcc,
+      decision_note: decisionNote,
+    };
+
     mutateUpdateLoanApp(
       {
         application_id: formDataLoanAcc.application_id,
         reviewed_by: board_id,
         updated_at: todayWithTimezone,
         status: "Approved", // set status to approved when loan account is created
+        decision_note: decisionNote,
       },
       {
         onSuccess: () => {
@@ -410,7 +419,7 @@ function LoanApplicationsV2() {
       }
     );
 
-    mutateAddLoanAcc(formDataLoanAcc, {
+    mutateAddLoanAcc(finalLoanAccPayload, {
       onSuccess: () => {
         toast.success("Loan account created successfully.");
         resetLoanAcc();
@@ -1258,6 +1267,29 @@ function LoanApplicationsV2() {
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Decision note for approved loan account */}
+            <div className="p-3 bg-white rounded-lg border border-gray-200 mb-4">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Decision Note (Optional)
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Add an approval note to send with the notification"
+                className="textarea textarea-bordered w-full resize-none px-3 py-2 border-gray-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 rounded-lg"
+                {...registerLoanAcc("decision_note", {
+                  maxLength: {
+                    value: 1000,
+                    message: "Max 1000 characters",
+                  },
+                })}
+              />
+              {errorsLoanAcc.decision_note && (
+                <p className="text-error text-xs mt-2">
+                  {errorsLoanAcc.decision_note.message || "Invalid note"}
+                </p>
+              )}
             </div>
 
             {/* Application details (ref no, loan ref no, account no, name) */}

@@ -104,10 +104,13 @@ export const useEditLoanApp = () => {
       }
 
       // send personalized decision note to the member
-      try {
-        await sendDecisionNotification(data, loggedInAccountNumber);
-      } catch (err) {
-        console.warn("Failed to send member notification:", err.message);
+      // Skip notification if status is "Approved" - useAddLoanAcc will handle it
+      if (data.status !== "Approved") {
+        try {
+          await sendDecisionNotification(data, loggedInAccountNumber);
+        } catch (err) {
+          console.warn("Failed to send member notification:", err.message);
+        }
       }
     },
     onError: (error) => {
