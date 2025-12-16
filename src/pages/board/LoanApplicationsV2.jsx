@@ -80,12 +80,13 @@ function LoanApplicationsV2() {
   const { data: auth_member_id } = useFetchMemberId(); // Fetch board member id to store who updated the record
   const board_id = auth_member_id || null;
 
+  const [orderFilter, setOrderFilter] = useState("desc");
   const {
     data: view_loan_app,
     isLoading,
     isError,
     error,
-  } = useFetchLoanAppView({});
+  } = useFetchLoanAppView({ ascending: orderFilter === "asc" });
 
   // share capital total hook RPC
   const {
@@ -140,6 +141,11 @@ function LoanApplicationsV2() {
   const handleMonthChange = (value) => {
     startTransition(() => {
       setMonthFilter(value);
+    });
+  };
+  const handleOrderChange = (value) => {
+    startTransition(() => {
+      setOrderFilter(value);
     });
   };
 
@@ -222,6 +228,7 @@ function LoanApplicationsV2() {
     setStatusFilter("");
     setYearFilter("");
     setMonthFilter("");
+    setOrderFilter("desc");
   };
 
   /**
@@ -623,6 +630,7 @@ function LoanApplicationsV2() {
                   { label: "On Review", value: "On Review" },
                   { label: "Approved", value: "Approved" },
                   { label: "Denied", value: "Denied" },
+                  { label: "Cancelled", value: "Cancelled" },
                 ],
               },
               {
@@ -648,6 +656,15 @@ function LoanApplicationsV2() {
                   { label: "October", value: "October" },
                   { label: "November", value: "November" },
                   { label: "December", value: "December" },
+                ],
+              },
+              {
+                label: "Sort Order",
+                value: orderFilter,
+                onChange: handleOrderChange,
+                options: [
+                  { label: "Newest First", value: "desc" },
+                  { label: "Oldest First", value: "asc" },
                 ],
               },
             ]}

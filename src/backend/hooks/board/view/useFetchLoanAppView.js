@@ -10,11 +10,16 @@ import { useFetchAccountNumber } from "../../shared/useFetchAccountNumber.js";
  * If no accountNumber, returns all loan applications.
  */
 
-async function fetchLoanAppView({ accountNumber, page, limit }) {
+async function fetchLoanAppView({
+  accountNumber,
+  page,
+  limit,
+  ascending = false,
+}) {
   let query = supabase
     .from("view_loan_applications")
     .select("*", { count: "exact" })
-    .order("application_id", { ascending: false });
+    .order("application_id", { ascending });
 
   // Optionals if values are null return all data no filters
   if (accountNumber) {
@@ -37,6 +42,7 @@ export function useFetchLoanAppView({
   limit = null,
   accountNumber = null,
   useLoggedInMember = false,
+  ascending = false,
 } = {}) {
   const queryClient = useQueryClient();
 
@@ -80,9 +86,20 @@ export function useFetchLoanAppView({
   }, [effectiveAccountNumber, queryClient, useLoggedInMember]);
 
   return useQuery({
-    queryKey: ["view_loan_applications", effectiveAccountNumber, page, limit],
+    queryKey: [
+      "view_loan_applications",
+      effectiveAccountNumber,
+      page,
+      limit,
+      ascending,
+    ],
     queryFn: () =>
-      fetchLoanAppView({ accountNumber: effectiveAccountNumber, page, limit }),
+      fetchLoanAppView({
+        accountNumber: effectiveAccountNumber,
+        page,
+        limit,
+        ascending,
+      }),
     enabled: useLoggedInMember
       ? !!loggedInAccountNumber && !accountLoading
       : true,
