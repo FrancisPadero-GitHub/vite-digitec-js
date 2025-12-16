@@ -20,6 +20,7 @@ import { useFetchClubFundsView } from "../../backend/hooks/shared/view/useFetchC
 import { useFetchCoopView } from "../../backend/hooks/shared/view/useFetchCoopView";
 import { useFetchExpenses } from "../../backend/hooks/shared/useFetchExpenses";
 import { useFetchActivityLogs } from "../../backend/hooks/shared/useFetchActivityLogs";
+import { useFetchLoanAppView } from "../../backend/hooks/board/view/useFetchLoanAppView";
 
 // rpc fetch
 import { useFetchTotal } from "../../backend/hooks/shared/useFetchTotal";
@@ -41,6 +42,8 @@ import {
   CLUB_CATEGORY_COLORS,
   CAPITAL_CATEGORY_COLORS,
   ACTIVITY_LOGS_TYPE_COLORS,
+  LOAN_APPLICATION_STATUS_COLORS,
+  LOAN_PRODUCT_COLORS,
 } from "../../constants/Color";
 import placeHolderAvatar from "../../assets/placeholder-avatar.png";
 
@@ -80,6 +83,10 @@ function DashboardV2() {
     error: activityLogsError,
   } = useFetchActivityLogs({});
   const activityLogs = activity_logs_data?.data || [];
+
+  const { data: loan_app_data, isLoading: loanAppIsLoading } =
+    useFetchLoanAppView({ ascending: false });
+  const loanApplications = loan_app_data?.data || [];
 
   // Navigation
   const navigate = useNavigate();
@@ -347,6 +354,110 @@ function DashboardV2() {
 
             {/* Data Tables */}
             <div className="space-y-3">
+              {memberRole === "board" && (
+                <DataTableV2
+                  title={"Loan Applications"}
+                  type={"compact"}
+                  showLinkPath={true}
+                  linkPath={`/${memberRole}/coop-loans/loan-applications`}
+                  headers={[
+                    "Ref No.",
+                    "Account No",
+                    "Name",
+                    "Loan Product",
+                    "Amount",
+                    "Status",
+                    "Date",
+                  ]}
+                  data={loanApplications}
+                  isLoading={loanAppIsLoading}
+                  renderRow={(row) => {
+                    const TABLE_PREFIX = "LAPP_";
+                    const id = row?.application_id || "Not Found";
+                    const memberId = row?.member_id || null;
+                    const accountNo = row?.account_number || "Not Found";
+                    const avatarUrl = row?.avatar_url || placeHolderAvatar;
+                    const fullName = row?.full_name || "Not Found";
+                    const loanProduct = row?.product_name || "N/A";
+                    const loanAmount = row?.amount || 0;
+                    const appStatus = row?.status || "N/A";
+                    const appDate = row?.application_date
+                      ? new Date(row.application_date).toLocaleDateString()
+                      : "N/A";
+                    return (
+                      <tr
+                        key={id}
+                        className="text-center cursor-pointer hover:bg-base-200/50"
+                      >
+                        <td className="text-xs sm:text-sm font-medium px-2 py-3">
+                          {TABLE_PREFIX}
+                          {id}
+                        </td>
+                        <td
+                          className="text-xs sm:text-sm font-medium px-2 py-3 hover:underline"
+                          onClick={() => openProfile(memberId)}
+                        >
+                          {accountNo}
+                        </td>
+                        <td className="px-2 py-3">
+                          <span className="flex items-center gap-2 sm:gap-3">
+                            <Fragment>
+                              <div className="avatar">
+                                <div className="mask mask-circle w-8 h-8 sm:w-10 sm:h-10">
+                                  <img
+                                    src={avatarUrl}
+                                    alt={fullName}
+                                    className="object-cover"
+                                  />
+                                </div>
+                              </div>
+                              <span className="flex items-center gap-1 sm:gap-2">
+                                <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-[120px]">
+                                  {fullName}
+                                </span>
+                                <span className="xs:hidden text-xs truncate max-w-[60px]">
+                                  {fullName.split(" ")[0]}
+                                </span>
+                              </span>
+                            </Fragment>
+                          </span>
+                        </td>
+                        <td className="px-2 py-3">
+                          <span
+                            className={`font-semibold text-xs sm:text-sm ${LOAN_PRODUCT_COLORS[loanProduct] || "text-gray-500"}`}
+                          >
+                            <span className="hidden sm:inline">
+                              {loanProduct}
+                            </span>
+                            <span className="sm:hidden">
+                              {loanProduct.split(" ")[0]}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="font-semibold text-success text-xs sm:text-sm px-2 py-3">
+                          ₱ {display(loanAmount)}
+                        </td>
+                        <td className="px-2 py-3">
+                          <span
+                            className={`badge badge-soft font-semibold text-xs ${LOAN_APPLICATION_STATUS_COLORS[appStatus] || "badge-ghost"}`}
+                          >
+                            <span className="hidden sm:inline">
+                              {appStatus}
+                            </span>
+                            <span className="sm:hidden">
+                              {appStatus.split(" ")[0]}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="text-xs sm:text-sm px-2 py-3">
+                          {appDate}
+                        </td>
+                      </tr>
+                    );
+                  }}
+                />
+              )}
+
               <DataTableV2
                 title={"Share Capital / Coop"}
                 type={"compact"}
