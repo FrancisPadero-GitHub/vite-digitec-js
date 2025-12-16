@@ -203,7 +203,9 @@ export default function AdminCreateUserForm() {
               {/* Email */}
               <div className="form-control">
                 <label className="label" htmlFor="email">
-                  <span className="label-text">Email</span>
+                  <span className="label-text">
+                    Email <span className="text-red-500">*</span>
+                  </span>
                 </label>
                 <div className="relative">
                   <EmailOutlinedIcon
@@ -242,7 +244,9 @@ export default function AdminCreateUserForm() {
               {/* Password */}
               <div className="form-control">
                 <label className="label" htmlFor="password">
-                  <span className="label-text">Temporary Password</span>
+                  <span className="label-text">
+                    Temporary Password <span className="text-red-500">*</span>
+                  </span>
                 </label>
                 <div className="relative">
                   <LockOutlinedIcon

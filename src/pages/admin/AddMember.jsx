@@ -75,7 +75,7 @@ function AddMember() {
       club_fund_payment_method: "",
       club_fund_payment_date: today,
       club_fund_remarks: "Membership Initial",
-      initial_share_capital: "",
+      initial_share_capital: 300,
       share_capital_payment_method: "",
       share_capital_payment_date: today,
       share_capital_remarks: "Membership Initial",
@@ -580,6 +580,10 @@ function AddMember() {
                             <label htmlFor={name} className="label">
                               <span className="label-text text-sm sm:text-base font-medium">
                                 {label}
+                                {personalFields.find((f) => f.name === name)
+                                  ?.required && (
+                                  <span className="text-red-500 ml-1">*</span>
+                                )}
                               </span>
                             </label>
 
@@ -694,6 +698,10 @@ function AddMember() {
                         <label htmlFor={name} className="label">
                           <span className="label-text text-sm sm:text-base font-medium">
                             {label}
+                            {employmentFields.find((f) => f.name === name)
+                              ?.required && (
+                              <span className="text-red-500 ml-1">*</span>
+                            )}
                           </span>
                         </label>
 
@@ -796,6 +804,10 @@ function AddMember() {
                             <label htmlFor={name} className="label">
                               <span className="label-text text-sm sm:text-base font-medium">
                                 {label}
+                                {membershipFields.find((f) => f.name === name)
+                                  ?.required && (
+                                  <span className="text-red-500 ml-1">*</span>
+                                )}
                               </span>
                             </label>
                             {type === "select" ? (
@@ -824,6 +836,7 @@ function AddMember() {
                               <input
                                 id={name}
                                 type={type}
+                                disabled={name === "initial_club_funds"}
                                 autoComplete={autoComplete || "off"}
                                 value={
                                   name === "initial_club_funds"
@@ -842,6 +855,20 @@ function AddMember() {
                                   name === "club_fund_payment_date" ||
                                   name === "share_capital_payment_date" ||
                                   name === "initial_club_funds"
+                                }
+                                min={
+                                  name === "initial_share_capital"
+                                    ? 300
+                                    : undefined
+                                }
+                                onKeyDown={
+                                  name === "initial_share_capital"
+                                    ? (e) => {
+                                        if (e.key === "ArrowDown") {
+                                          e.preventDefault();
+                                        }
+                                      }
+                                    : undefined
                                 }
                                 onWheel={
                                   name === "initial_club_funds" ||
