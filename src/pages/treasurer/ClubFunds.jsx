@@ -762,7 +762,7 @@ function ClubFunds() {
           {/* Member Combobox with Controller */}
           <div className="form-control w-full">
             <label className="label text-sm font-semibold mb-2">
-              Member Account
+              Member Account<span className="text-error"> *</span>
             </label>
             <Controller
               name="account_number"
@@ -840,10 +840,13 @@ function ClubFunds() {
                 <label htmlFor={name}>
                   <span className="label text-sm font-semibold mb-2">
                     {label}
-                    {optional && (
+                    {optional ? (
                       <span className="text-base-content/60 text-sm">
+                        {" "}
                         (optional)
                       </span>
+                    ) : (
+                      <span className="text-error"> *</span>
                     )}
                   </span>
                 </label>
@@ -972,7 +975,7 @@ function ClubFunds() {
               <div className="form-control w-full mt-2">
                 <label htmlFor="period_start">
                   <span className="label text-sm font-semibold mb-2">
-                    Starting Month
+                    Starting Month<span className="text-error"> *</span>
                   </span>
                 </label>
                 <input
@@ -986,7 +989,7 @@ function ClubFunds() {
               <div className="form-control w-full mt-2">
                 <label htmlFor="period_end">
                   <span className="label text-sm font-semibold mb-2">
-                    Ending Month
+                    Ending Month<span className="text-error"> *</span>
                   </span>
                 </label>
                 <input

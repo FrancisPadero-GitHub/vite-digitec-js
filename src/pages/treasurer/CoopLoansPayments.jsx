@@ -1080,7 +1080,7 @@ function CoopLoansPayments() {
                 {/* Member Account */}
                 <div className="form-control w-full">
                   <label className="label text-xs font-medium text-gray-600 mb-1">
-                    Member Account
+                    Member Account<span className="text-error"> *</span>
                   </label>
                   <Controller
                     name="account_number"
@@ -1170,7 +1170,7 @@ function CoopLoansPayments() {
                 {/* Loan Account */}
                 <div className="form-control w-full">
                   <label className="label text-xs font-medium text-gray-600 mb-1">
-                    Loan Account
+                    Loan Account<span className="text-error"> *</span>
                   </label>
                   <Controller
                     name="loan_ref_number"
@@ -1470,6 +1470,7 @@ function CoopLoansPayments() {
                     className="label text-xs font-medium text-gray-600"
                   >
                     {label}
+                    <span className="text-error"> *</span>
                   </label>
 
                   {name === "total_amount" ? (

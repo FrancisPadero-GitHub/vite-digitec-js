@@ -583,12 +583,8 @@ function ClubExpenses() {
                 <label htmlFor={name} className="label mb-1">
                   <span className="label-text font-medium text-gray-700">
                     {label}
+                    {optional ? null : <span className="text-error"> *</span>}
                   </span>
-                  {optional && (
-                    <span className="text-base-content/60 text-sm">
-                      (optional)
-                    </span>
-                  )}
                 </label>
 
                 {name === "amount" ? (

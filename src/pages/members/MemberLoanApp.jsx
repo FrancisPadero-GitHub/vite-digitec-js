@@ -956,6 +956,7 @@ function MemberLoanApp() {
                       <div className="flex justify-between mb-2">
                         <label className="label text-xs font-medium text-base-content/70 mb-1">
                           {field.label}
+                          <span className="text-error"> *</span>
                         </label>
                         <label
                           className="label text-xs font-medium text-base-content/90 cursor-pointer underline hover:text-blue-600 transition-colors"
@@ -1112,6 +1113,7 @@ function MemberLoanApp() {
                     <div className="mb-3">
                       <label className="label text-xs font-medium text-base-content/70 mb-1">
                         {field.label} Requested
+                        <span className="text-error"> *</span>
                       </label>
                       {loanStatus ? (
                         <div className="input input-bordered w-full bg-base-100 flex items-center">
@@ -1159,7 +1161,7 @@ function MemberLoanApp() {
                       {termField && (
                         <div>
                           <label className="label text-xs font-medium text-base-content/70 mb-1">
-                            Term (Months)
+                            Term (Months)<span className="text-error"> *</span>
                           </label>
                           {loanStatus ? (
                             <div className="input input-bordered w-full bg-base-100 flex items-center">

@@ -481,6 +481,9 @@ function CoopLoansReleases() {
                     {watch("status") === "Active"
                       ? "Released On"
                       : "Release Date"}
+                    {watch("status") !== "Active" && (
+                      <span className="text-error"> *</span>
+                    )}
                   </label>
                   {watch("status") === "Active" ? (
                     <div className="px-3 py-2 bg-green-50 rounded border border-green-200 flex items-center gap-2">

@@ -722,7 +722,7 @@ function CoopShareCapital() {
         <div className="pl-1 pr-2 pb-2">
           <div className="form-control">
             <label className="label text-sm font-semibold mb-2">
-              Member Account
+              Member Account<span className="text-error"> *</span>
             </label>
             <Controller
               name="account_number"
@@ -800,10 +800,13 @@ function CoopShareCapital() {
                 <label htmlFor={name}>
                   <span className="label text-sm font-semibold mb-2">
                     {label}
-                    {optional && (
+                    {optional ? (
                       <span className="text-base-content/60 text-sm">
+                        {" "}
                         (optional)
                       </span>
+                    ) : (
+                      <span className="text-error"> *</span>
                     )}
                   </span>
                 </label>

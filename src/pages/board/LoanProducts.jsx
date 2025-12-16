@@ -207,6 +207,7 @@ function LoanProducts() {
                   className="label font-semibold mb-1 sm:mb-2"
                 >
                   {label}
+                  <span className="text-error"> *</span>
                 </label>
 
                 {/* Handle select dropdowns */}

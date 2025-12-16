@@ -1179,6 +1179,7 @@ function LoanApplicationsV2() {
                     <div>
                       <label className="block text-xs font-bold text-green-700 mb-1">
                         Principal / Approval Amount
+                        <span className="text-error"> *</span>
                       </label>
                       <input
                         value={field.value ?? ""}
@@ -1206,7 +1207,7 @@ function LoanApplicationsV2() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-blue-700 mb-1">
-                    First Due / Start Date
+                    First Due / Start Date<span className="text-error"> *</span>
                   </label>
                   <input
                     type="date"
@@ -1237,7 +1238,7 @@ function LoanApplicationsV2() {
 
                 <div>
                   <label className="block text-xs font-medium text-blue-700 mb-1">
-                    Maturity Date
+                    Maturity Date<span className="text-error"> *</span>
                   </label>
                   <input
                     type="date"
