@@ -1,6 +1,7 @@
 import { supabase } from "../../supabase";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAddActivityLog } from "../shared/useAddActivityLog";
+import { useFetchAccountNumber } from "../shared/useFetchAccountNumber";
 
 /**
  * Modify members loan applications (resolve status, adjust amount_req, or delete)
@@ -12,6 +13,7 @@ const updateLoanApp = async (formData) => {
     reviewed_by = null,
     updated_at = null,
     status = null,
+    decision_note = null,
   } = formData;
 
   if (!application_id) {
@@ -22,6 +24,7 @@ const updateLoanApp = async (formData) => {
     reviewed_by,
     updated_at,
     status,
+    decision_note,
   };
 
   const { data, error } = await supabase
@@ -50,9 +53,28 @@ const updateLoanApp = async (formData) => {
   };
 };
 
+const sendDecisionNotification = async (loanData, senderAccountNumber) => {
+  const message =
+    loanData.decision_note || "Your loan application was updated.";
+
+  const { error } = await supabase.rpc("send_notification", {
+    p_title: "Loan Application Update",
+    p_message: message,
+    p_type: "loan_application",
+    p_target: loanData.account_number,
+    p_sender: senderAccountNumber,
+  });
+
+  if (error) {
+    console.error("Failed to send decision notification:", error);
+    throw error;
+  }
+};
+
 export const useEditLoanApp = () => {
   const queryClient = useQueryClient();
   const { mutateAsync: logActivity } = useAddActivityLog();
+  const { data: loggedInAccountNumber } = useFetchAccountNumber();
 
   return useMutation({
     mutationFn: updateLoanApp,
@@ -79,6 +101,13 @@ export const useEditLoanApp = () => {
         });
       } catch (err) {
         console.warn("Failed to log activity:", err.message);
+      }
+
+      // send personalized decision note to the member
+      try {
+        await sendDecisionNotification(data, loggedInAccountNumber);
+      } catch (err) {
+        console.warn("Failed to send member notification:", err.message);
       }
     },
     onError: (error) => {

@@ -243,6 +243,7 @@ function LoanApplicationsV2() {
       product_name: "",
       amount: 0,
       purpose: "",
+      decision_note: "",
       loan_term: 0,
       reviewed_by: "",
       updated_at: todayWithTimezone,
@@ -364,6 +365,11 @@ function LoanApplicationsV2() {
           reviewed_by: board_id,
           updated_at: todayWithTimezone,
           status: formDataLoanApp.status,
+          decision_note: ["On Review", "Denied"].includes(
+            formDataLoanApp.status
+          )
+            ? (formDataLoanApp.decision_note || "").trim() || null
+            : null,
         },
         {
           onSuccess: () => {
@@ -812,6 +818,45 @@ function LoanApplicationsV2() {
                   );
                 })}
               </div>
+
+              {["On Review", "Denied"].includes(watchLoanApp("status")) &&
+                !isLoanAlreadyApproved && (
+                  <div className="my-4">
+                    <label className="block text-xs font-medium text-gray-600 mb-1 ml-3">
+                      Note
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder={
+                        watchLoanApp("status") === "Denied"
+                          ? "Provide reason for denial"
+                          : "Provide context or next steps for review"
+                      }
+                      className="textarea textarea-bordered w-full resize-none px-3 py-2 border-gray-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 rounded-lg"
+                      {...registerLoanApp("decision_note", {
+                        validate: (val) => {
+                          const needsNote = ["On Review", "Denied"].includes(
+                            watchLoanApp("status")
+                          );
+                          if (!needsNote) return true;
+                          return (
+                            (val && val.trim().length > 0) ||
+                            "Please provide a note for this decision."
+                          );
+                        },
+                        maxLength: {
+                          value: 1000,
+                          message: "Max 1000 characters",
+                        },
+                      })}
+                    />
+                    {errorsLoanApp.decision_note && (
+                      <p className="flex justify-center text-error text-xs mt-3">
+                        {errorsLoanApp.decision_note.message || "Required"}
+                      </p>
+                    )}
+                  </div>
+                )}
 
               {watchLoanApp("status") === "Approved" &&
                 !isLoanAlreadyApproved && (
